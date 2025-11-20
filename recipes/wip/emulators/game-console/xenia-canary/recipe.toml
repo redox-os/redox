@@ -1,0 +1,15 @@
+#TODO missing script: https://github.com/xenia-canary/xenia-canary/blob/canary_experimental/docs/building.md#linux
+[source]
+git = "https://github.com/xenia-canary/xenia-canary"
+shallow_clone = true
+[build]
+template = "custom"
+dependencies = [
+    "gtk3",
+    "sdl2",
+    "mesa-x11",
+    "lz4",
+    "libunwind",
+    "libpthread-stubs",
+    "libvulkan",
+]

@@ -1,0 +1,8 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/drahnr/cargo-spellcheck"
+[build]
+template = "cargo"
+dependencies = [
+    "llvm18",
+]

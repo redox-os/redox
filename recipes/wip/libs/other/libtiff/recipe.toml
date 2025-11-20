@@ -1,0 +1,5 @@
+#TODO compiled but not tested
+[source]
+tar = "https://download.osgeo.org/libtiff/tiff-4.5.0.tar.xz"
+[build]
+template = "configure"

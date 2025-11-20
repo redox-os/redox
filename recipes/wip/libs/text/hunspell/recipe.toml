@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/hunspell/hunspell#compiling-on-gnulinux-and-unixes
+[source]
+tar = "https://github.com/hunspell/hunspell/releases/download/v1.7.2/hunspell-1.7.2.tar.gz"
+[build]
+template = "configure"

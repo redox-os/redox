@@ -1,0 +1,9 @@
+[source]
+git = "https://github.com/simdjson/simdjson"
+rev = "0c0ce1bd48baa0677dc7c0945ea7cd1e8b52b297" # 3.13.0
+[build]
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_cmake
+"""

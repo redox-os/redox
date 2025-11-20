@@ -1,0 +1,17 @@
+#TODO can't find the configure script
+#TODO build instructions - https://github.com/openjdk/jdk11u/blob/master/doc/building.md
+[source]
+git = "https://github.com/openjdk/jdk11u"
+rev = "09b402a6bcecce976ee17ce358b0a90ea127ab69"
+[build]
+template = "custom"
+dependencies = [
+    "fontconfig",
+]
+script = """
+chmod a+x configure
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --enable-headless-only=yes
+)
+cookbook_configure
+"""

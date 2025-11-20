@@ -1,0 +1,25 @@
+#TODO not compiled or tested
+#TODO determine the minimum dependencies from cmake log
+# build instructions: https://developer.blender.org/docs/handbook/building_blender/
+[source]
+tar = "https://download.blender.org/source/blender-5.0.0.tar.xz"
+[build]
+template = "cmake"
+# dependencies = [
+#     "dbus",
+#     "libdecor",
+#     "libjpeg",
+#     "libpng",
+#     "freetype2",
+#     "fontconfig",
+#     "zstd",
+#     "bzip2",
+#     "xz",
+#     "sdl2",
+#     "libepoxy",
+#     "shaderc",
+#     "libxml2",
+#     "libharu",
+#     "mesa-x11",
+#     "libxkbcommon",
+# ]

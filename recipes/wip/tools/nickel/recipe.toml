@@ -1,0 +1,8 @@
+#TODO rustyline crate error
+[source]
+git = "https://github.com/tweag/nickel"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages nickel-lang-cli
+"""

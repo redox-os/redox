@@ -1,0 +1,5 @@
+#TODO users crate error (after cargo update)
+[source]
+git = "https://gitlab.com/edneville/please"
+[build]
+template = "cargo"

@@ -1,0 +1,36 @@
+diff '--color=auto' -ur source/srclib/getprogname.c source-new/srclib/getprogname.c
+--- source/srclib/getprogname.c	2022-01-04 19:33:29.000000000 +1100
++++ source-new/srclib/getprogname.c	2024-11-24 00:42:48.384997609 +1100
+@@ -28,6 +28,14 @@
+ # include <string.h>
+ #endif
+ 
++#if defined(__redox__)
++# include <string.h>
++# include <unistd.h>
++# include <stdio.h>
++# include <fcntl.h>
++# include <limits.h>
++#endif
++
+ #ifdef __MVS__
+ # ifndef _OPEN_SYS
+ #  define _OPEN_SYS
+@@ -287,6 +295,17 @@
+       close (fd);
+     }
+   return "?";
++# elif defined(__redox__)
++  char filename[PATH_MAX];
++  int fd = open ("sys:exe", O_RDONLY);
++  if (fd > 0) {
++    int len = read(fd, filename, PATH_MAX-1);
++    if (len > 0) {
++       filename[len] = '\0';
++       return strdup(filename);
++    }
++  }
++  return NULL;
+ # else
+ #  error "getprogname module not ported to this OS"
+ # endif

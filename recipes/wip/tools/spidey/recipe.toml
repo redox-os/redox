@@ -1,0 +1,9 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/kdwk/Spidey"
+[build]
+template = "meson"
+dependencies = [
+    "gtk4",
+    "glib",
+]

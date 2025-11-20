@@ -1,0 +1,8 @@
+#TODO missing script for waf
+#TODO discover how to build
+#TODO discover if it has external dependencies
+[source]
+git = "https://github.com/jackaudio/jack2"
+rev = "4f58969432339a250ce87fe855fb962c67d00ddb"
+[build]
+template = "custom"

@@ -1,0 +1,13 @@
+#TODO not compiled or tested
+# build instructions: https://gnome.pages.gitlab.gnome.org/gtkmm-documentation/sec-install-unix-and-linux.html
+[source]
+tar = "https://download.gnome.org/sources/gtkmm/3.24/gtkmm-3.24.8.tar.xz"
+[build]
+template = "meson"
+dependencies = [
+    "libsigc++",
+    "gtk3",
+    "glibmm",
+    "cairomm10+",
+    "pangomm",
+]

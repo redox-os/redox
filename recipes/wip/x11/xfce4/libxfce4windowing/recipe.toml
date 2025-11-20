@@ -1,0 +1,51 @@
+[source]
+tar = "https://archive.xfce.org/src/xfce/libxfce4windowing/4.20/libxfce4windowing-4.20.4.tar.bz2"
+blake3 = "396cbd13d547e6e109e348dd207747714dc4827b744fe729b1697c9dd1a55c3f"
+patches = ["redox.patch"]
+
+[build]
+dependencies = [
+    "atk",
+    "cairo",
+    "expat",
+    "fontconfig",
+    "freetype2",
+    "fribidi",
+    "gdk-pixbuf",
+    "gettext",
+    "glib",
+    "gtk3",
+    "harfbuzz",
+    "libepoxy",
+    "libffi",
+    "libiconv",
+    "libjpeg",
+    "libpng",
+    "libpthread-stubs",
+    "libwnck3",
+    "libx11",
+    "libxau",
+    "libxcb",
+    "libxext",
+    "libxfce4util",
+    "libxfixes",
+    "libxft",
+    "libxi",
+    "libxrandr",
+    "libxrender",
+    "libxxf86vm",
+    "mesa-x11",
+    "pango",
+    "pcre2",
+    "pixman",
+    "shared-mime-info",
+    "x11proto",
+    "xfconf",
+    "zlib",
+]
+template = "meson"
+mesonflags = [
+    "-Dintrospection=false",
+    "-Dwayland=disabled",
+    "-Dx11=enabled",
+]

@@ -1,0 +1,9 @@
+#TODO fix the script
+[source]
+git = "https://github.com/LyonSyonII/run"
+[build]
+template = "custom"
+script = """
+cd "${COOKBOOK_SOURCE}"/cli
+cookbook_cargo
+"""

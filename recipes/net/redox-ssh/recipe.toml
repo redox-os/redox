@@ -1,0 +1,5 @@
+[source]
+git = "https://gitlab.redox-os.org/redox-os/redox-ssh.git"
+
+[build]
+template = "cargo"

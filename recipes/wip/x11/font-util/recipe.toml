@@ -1,0 +1,6 @@
+[source]
+tar = "https://www.x.org/releases/individual/font/font-util-1.4.1.tar.xz"
+blake3 = "b430a69efcba19f59d95bcb967aab1d5838b38f2bc94cbc58f6867eeeba21a3e"
+
+[build]
+template = "configure"

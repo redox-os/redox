@@ -1,0 +1,6 @@
+#TODO missing gnu make script, see https://github.com/aristocratos/btop#compilation-linux
+[source]
+git = "https://github.com/aristocratos/btop"
+rev = "fd2a2acdad6fbaad76846cb5e802cf2ae022d670"
+[build]
+template = "custom"

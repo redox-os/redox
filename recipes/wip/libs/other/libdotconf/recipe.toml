@@ -1,0 +1,5 @@
+#TODO missing "configure" file, see https://github.com/williamh/dotconf/blob/master/INSTALL
+[source]
+git = "https://github.com/williamh/dotconf"
+[build]
+template = "custom"

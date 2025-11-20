@@ -1,0 +1,17 @@
+#TODO missing script for building, see https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_on_Linux/UNIX#Build_the_OpenSCAD_binary
+#TODO missing dependencies - https://github.com/openscad/openscad/#prerequisites
+[source]
+tar = "https://files.openscad.org/openscad-2021.01.src.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "qt5-base",
+    "libgmp",
+    "libmpfr",
+    "boost",
+    "glew",
+    "glib",
+    "fontconfig",
+    "freetype2",
+    "harfbuzz",
+]

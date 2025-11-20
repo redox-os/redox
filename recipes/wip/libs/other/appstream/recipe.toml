@@ -1,0 +1,13 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/ximion/appstream#build--install
+#TODO missing dependencies
+[source]
+tar = "https://www.freedesktop.org/software/appstream/releases/AppStream-1.1.1.tar.xz"
+[build]
+template = "meson"
+dependencies = [
+    "glib",
+    "gobject-introspection",
+    "libxml2",
+    "curl",
+]

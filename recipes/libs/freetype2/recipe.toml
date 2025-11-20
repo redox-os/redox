@@ -1,0 +1,14 @@
+[source]
+tar = "https://download.savannah.gnu.org/releases/freetype/freetype-2.13.3.tar.xz"
+blake3 = "07a01894ccdb584943ce817b57341a8595ce9a92bfaa77c602ec4757dfabd5e2"
+
+[build]
+template = "custom"
+dependencies = [
+    "libpng",
+    "zlib"
+]
+script = """
+DYNAMIC_STATIC_INIT
+cookbook_meson
+"""

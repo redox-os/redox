@@ -1,0 +1,12 @@
+diff -ruwN source-old/tls/tests/meson.build source/tls/tests/meson.build
+--- source-old/tls/tests/meson.build	2025-01-08 14:51:06.000000000 -0700
++++ source/tls/tests/meson.build	2025-11-10 20:33:28.041098208 -0700
+@@ -40,7 +40,7 @@
+ test_programs = [
+   ['certificate', [], deps, [], [mock_pkcs11_module]],
+   ['file-database', [], deps, [], []],
+-  ['connection', ['mock-interaction.c'], deps, [], [mock_pkcs11_module]],
++  #TODO: RTLD_NEXT on Redox: ['connection', ['mock-interaction.c'], deps, [], [mock_pkcs11_module]],
+ # DTLS tests are disabled until we fix https://gitlab.gnome.org/GNOME/glib-networking/issues/49
+ #  ['dtls-connection', ['mock-interaction.c', 'lossy-socket.c'], deps, [], [mock_pkcs11_module]],
+ ]

@@ -1,0 +1,9 @@
+#TODO not compiled or tested
+# lacking build instructions
+[source]
+tar = "https://github.com/libsdl-org/SDL_net/releases/download/release-2.2.0/SDL2_net-2.2.0.tar.gz"
+[build]
+template = "cmake"
+dependencies = [
+    "sdl2",
+]

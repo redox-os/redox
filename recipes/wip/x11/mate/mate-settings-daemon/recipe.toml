@@ -1,0 +1,21 @@
+[source]
+tar = "https://github.com/mate-desktop/mate-settings-daemon/releases/download/v1.28.0/mate-settings-daemon-1.28.0.tar.xz"
+blake3 = "396389887d2e79d22e8be28f51df8e6e807ffabb676fbd23888278cf39a65f3d"
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
+
+[build]
+dependencies = [
+    "dconf",
+    "gtk3",
+    "libcanberra",
+    "libmate-desktop-2",
+    "libmatekbd",
+]
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_configure --disable-rfkill
+"""

@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/samtay/so"
+[build]
+template = "custom"
+script = """
+cookbook_cargo --no-default-features --features termion-backend
+"""

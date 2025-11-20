@@ -1,0 +1,13 @@
+#TODO compilation error
+[source]
+tar = "https://download.videolan.org/pub/videolan/libbluray/1.3.4/libbluray-1.3.4.tar.bz2"
+[build]
+template = "configure"
+dependencies = [
+    "libxml2",
+    "freetype2",
+    "zlib",
+    "libpng",
+    "fontconfig",
+    "expat",
+]

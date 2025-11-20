@@ -1,0 +1,17 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/oxen-io/lokinet/blob/dev/docs/install.md#building
+[source]
+tar = "https://github.com/oxen-io/lokinet/releases/download/v0.9.11/lokinet-v0.9.11.tar.xz"
+[build]
+template = "cmake"
+dependencies = [
+    "libcap",
+    "libuv",
+    "libsodium",
+    "curl",
+    "libevent",
+    "libnettle",
+    "openssl1",
+    "unbound",
+    "nlohmann-json",
+]

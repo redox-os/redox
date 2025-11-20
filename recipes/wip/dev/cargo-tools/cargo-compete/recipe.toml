@@ -1,0 +1,5 @@
+#TODO serde crate error (after cargo update)
+[source]
+git = "https://github.com/qryxip/cargo-compete"
+[build]
+template = "cargo"

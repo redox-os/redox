@@ -1,0 +1,5 @@
+#TODO proc-macro2 crate error
+[source]
+git = "https://github.com/google/pix-image-viewer"
+[build]
+template = "cargo"

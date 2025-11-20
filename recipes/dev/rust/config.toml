@@ -1,0 +1,34 @@
+[llvm]
+download-ci-llvm = false
+static-libstdcpp = false
+targets = "X86"
+experimental-targets = ""
+# TODO: This currently must need to be set manually.
+# If you like to build llvm with sccache, uncomment:
+# ccache = "sccache"
+
+[build]
+host = ["x86_64-unknown-redox"]
+target = ["x86_64-unknown-redox"]
+docs = false
+submodules = false
+tools = ["src"]
+verbose = 1
+
+[install]
+prefix = "install"
+sysconfdir = "etc"
+
+[rust]
+backtrace = false
+codegen-tests = false
+
+[target.x86_64-unknown-redox]
+cc = "x86_64-unknown-redox-gcc"
+cxx = "x86_64-unknown-redox-g++"
+ar = "x86_64-unknown-redox-ar"
+linker = "x86_64-unknown-redox-gcc"
+# Nasty path, please fix
+llvm-config = "../../../../bin/x86_64-unknown-redox-llvm-config"
+rpath = false
+crt-static = false

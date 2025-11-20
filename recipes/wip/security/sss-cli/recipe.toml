@@ -1,0 +1,5 @@
+#TODO source code error (after cargo update)
+[source]
+git = "https://github.com/dsprenkels/sss-cli"
+[build]
+template = "cargo"

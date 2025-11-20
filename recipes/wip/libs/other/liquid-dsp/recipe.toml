@@ -1,0 +1,9 @@
+#TODO missing script, see https://github.com/jgaeddert/liquid-dsp#installation-and-dependencies
+[source]
+git = "https://github.com/jgaeddert/liquid-dsp"
+rev = "8bf87b6fe325d98c250d6911fa50518d14175d86"
+[build]
+template = "custom"
+dependencies = [
+    "fftw",
+]

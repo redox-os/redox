@@ -1,0 +1,17 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/LMMS/lmms/wiki/Compiling#build-environment
+[source]
+git = "https://github.com/LMMS/lmms"
+rev = "807751dc4dce53583ecf4140b67a5dc343c789a7"
+[build]
+template = "cmake"
+dependencies = [
+    "qt5-base",
+    "libsamplerate",
+    "libvorbis",
+    "libogg",
+    "sdl2",
+    "fftw",
+    "libstk",
+    "fltk",
+]

@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+# build instructions: https://gitlab.gnome.org/GNOME/libpeas
+[source]
+tar = "https://download.gnome.org/sources/libpeas/2.0/libpeas-2.0.0.tar.xz"
+[build]
+template = "meson"

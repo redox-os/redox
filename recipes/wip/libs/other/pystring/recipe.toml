@@ -1,0 +1,7 @@
+#TODO not compiled or tested
+# lacking build instructions
+[source]
+git = "https://github.com/imageworks/pystring"
+rev = "7d16bc814ccb4cad03c300dcb77440034caa84f7"
+[build]
+template = "cmake"

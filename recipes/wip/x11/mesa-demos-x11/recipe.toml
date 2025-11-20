@@ -1,0 +1,30 @@
+[source]
+tar = "https://archive.mesa3d.org/demos/mesa-demos-9.0.0.tar.xz"
+blake3 = "eef628aebdaa65d3bb1078bb6d6bdd7685c41fb67674e7f7b0e1e15f10433240"
+patches = ["redox.patch"]
+
+[build]
+dependencies = [
+    "expat",
+    "libpthread-stubs",
+    "libstdcxx",
+    "libx11",
+    "libxau",
+    "libxcb",
+    "libxext",
+    "libxfixes",
+    "libxml2",
+    "libxxf86vm",
+    "llvm18",
+    "mesa-x11",
+    "mesa-glu-x11",
+    "x11proto",
+    "xextproto",
+    "zlib",
+]
+template = "custom"
+script = """
+DYNAMIC_INIT
+#TODO: implement sincos for es2gears
+cookbook_meson -Dgles2=disabled
+"""

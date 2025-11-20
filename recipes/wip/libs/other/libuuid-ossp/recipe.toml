@@ -1,0 +1,7 @@
+#TODO require a data type for FTP
+# download link - ftp://ftp.ossp.org/pkg/lib/uuid/uuid-1.6.2.tar.gz
+#TODO if this template doesn't work, read this http://cvs.ossp.org/fileview?f=ossp-pkg/uuid/INSTALL&v=1.6
+[source]
+
+[build]
+template = "configure"

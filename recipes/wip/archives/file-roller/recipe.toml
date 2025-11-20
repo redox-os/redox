@@ -1,0 +1,13 @@
+#TODO not compiled or tested
+# build instructions: https://gitlab.gnome.org/GNOME/file-roller#building-locally
+# the libportal dependency is for flatpak, maybe it's optional
+[source]
+tar = "https://download.gnome.org/sources/file-roller/44/file-roller-44.3.tar.xz"
+[build]
+template = "meson"
+dependencies = [
+    "glib",
+    "gtk3",
+    "libhandy",
+    "libarchive",
+]

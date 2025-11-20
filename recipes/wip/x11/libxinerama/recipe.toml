@@ -1,0 +1,22 @@
+[source]
+tar = "https://www.x.org/releases/individual/lib/libXinerama-1.1.5.tar.xz"
+blake3 = "58b4020c8a8fb62707f5073f967bf8abbc8dc7cff35c5750fabe097f46a924b4"
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
+
+[build]
+dependencies = [
+    "libpthread-stubs",
+    "libx11",
+    "libxau",
+    "libxcb",
+    "libxext",
+    "x11proto",
+]
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_configure --enable-malloc0returnsnull
+"""

@@ -10,3 +10,14 @@
 .vscode/
 # Local settings folder for the devcontainer extension that most IDEs support.
 .devcontainer/
+# Cookbook
+/repo
+/cookbook.toml
+source
+source.tmp
+source-new
+source-old
+source.tar
+source.tar.tmp
+target
+wget-log

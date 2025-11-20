@@ -1,0 +1,6 @@
+#TODO Implement a Cookbook template for the Go programming language
+[source]
+git = "https://github.com/containers/podman"
+branch = "v5.2"
+[build]
+template = "go"

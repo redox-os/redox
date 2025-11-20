@@ -1,0 +1,15 @@
+[source]
+tar = "https://www.libssh2.org/download/libssh2-1.10.0.tar.gz"
+blake3 = "2447216ce82c1d22301456bb02f60dfb6688f1461417b90f900c099a87f1292f"
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+""" 
+
+[build]
+template = "custom"
+dependencies = ["openssl1"]
+script = """
+DYNAMIC_INIT
+cookbook_configure
+"""

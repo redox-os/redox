@@ -1,0 +1,19 @@
+[source]
+tar = "https://pkg-config.freedesktop.org/releases/pkg-config-0.29.2.tar.gz"
+blake3 = "713372b09a1fafeec130dc9bf812a3880f2a90496af5d2194e508d91ccf667d0"
+script = """
+GNU_CONFIG_GET config.sub
+"""
+
+[build]
+dependencies = [
+    "gettext",
+    "glib",
+    "libiconv",
+    "pcre2",
+]
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_configure
+"""

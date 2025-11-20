@@ -1,0 +1,8 @@
+#TODO libssh2-sys crate error
+[source]
+git = "https://github.com/rossmacarthur/sheldon"
+[build]
+template = "cargo"
+dependencies = [
+    "openssl1",
+]

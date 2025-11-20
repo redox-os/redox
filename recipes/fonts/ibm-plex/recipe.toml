@@ -1,0 +1,14 @@
+[source]
+tar="https://github.com/IBM/plex/archive/refs/tags/v6.3.0.tar.gz"
+blake3="6c67f5bf8069762eea1e31f5cca5b4e6f57ea1151b34b338046c7976072ccdef"
+
+[build]
+template = "custom"
+script = """
+for style in Mono Sans Serif
+do
+    DEST="${COOKBOOK_STAGE}/ui/fonts/${style}/IBM-Plex"
+    mkdir -pv "${DEST}"
+    cp -v "${COOKBOOK_SOURCE}/IBM-Plex-${style}/fonts/complete/ttf/"*".ttf" "${DEST}"
+done
+"""

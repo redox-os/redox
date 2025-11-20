@@ -1,0 +1,37 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/minetest/minetest/blob/master/doc/compiling/linux.md
+# customization - https://github.com/minetest/minetest/tree/master/doc/compiling#cmake-options
+[source]
+git = "https://github.com/minetest/minetest"
+branch = "stable-5"
+patches = ["redox.patch"]
+
+[build]
+template = "custom"
+dependencies = [
+    "curl",
+    "freetype2",
+    "libiconv",
+    "libjpeg",
+    "libogg",
+    "libpng",
+    "libvorbis",
+    "luajit",
+    "openal",
+    #TODO: openssl not detected by cmake
+    "openssl1",
+    "sdl2",
+    "sqlite3",
+    "zlib",
+    "zstd",
+]
+script = """
+DYNAMIC_INIT
+COOKBOOK_CMAKE_FLAGS+=(
+    -DOPENGL_opengl_LIBRARY=/dev/null
+    -DOPENGL_glx_LIBRARY=/dev/null
+    -DSDL2_INCLUDE_DIRS="${COOKBOOK_SYSROOT}/include/SDL2"
+    -DSDL2_LIBRARIES="$("${PKG_CONFIG}" --libs sdl2)"
+)
+cookbook_cmake
+"""

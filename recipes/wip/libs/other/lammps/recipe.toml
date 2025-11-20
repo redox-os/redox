@@ -1,0 +1,7 @@
+#TODO not compiled or tested
+# build instructions: https://docs.lammps.org/Build_cmake.html
+[source]
+git = "https://github.com/lammps/lammps"
+rev = "27e8d0f19cfd60ff513828af74d07d2c8f3c4451"
+[build]
+template = "cmake"

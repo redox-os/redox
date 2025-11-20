@@ -1,0 +1,24 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/alacritty/alacritty"
+[build]
+template = "custom"
+dependencies = [
+    "freetype2",
+    "fontconfig",
+    "libxcb",
+]
+script = """
+DYNAMIC_INIT
+package=alacritty
+"${COOKBOOK_CARGO}" build \
+            --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
+            --package "${package}" \
+            --release \
+            --no-default-features \
+            --features=x11
+        mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
+        cp -v \
+            "target/${TARGET}/release/${package}" \
+            "${COOKBOOK_STAGE}/usr/bin/${package}"
+"""

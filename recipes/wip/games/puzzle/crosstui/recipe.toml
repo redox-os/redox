@@ -1,0 +1,12 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/matrixfrog/crossword"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages crosstui
+"""
+[package]
+dependencies = [
+    "crosshare-data"
+]

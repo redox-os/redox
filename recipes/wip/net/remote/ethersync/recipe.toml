@@ -1,0 +1,9 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/ethersync/ethersync"
+[build]
+template = "custom"
+script = """
+COOKBOOK_SOURCE="${COOKBOOK_SOURCE}/daemon"
+cookbook_cargo
+"""

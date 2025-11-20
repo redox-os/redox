@@ -1,0 +1,5 @@
+#TODO if-addrs crate error
+[source]
+git = "https://github.com/Gobidev/pfetch-rs"
+[build]
+template = "cargo"

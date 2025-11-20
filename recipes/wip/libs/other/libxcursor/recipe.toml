@@ -1,0 +1,92 @@
+#TODO make dependencies work
+[source]
+tar = "https://www.x.org/releases/individual/lib/libXcursor-1.2.1.tar.xz"
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
+
+[build]
+dependencies = [
+    "libx11",
+    "libxcb",
+    "libxfixes",
+    "libxrender",
+    "x11proto",
+    "x11proto-kb",
+    "libxrender",
+    "xcb-proto",
+    "libxau",
+    "libpthread-stubs",
+]
+template = "custom"
+script = """
+DYNAMIC_INIT
+
+# Force libtool to build shared libraries for Redox
+# Override libtool's platform detection
+export lt_cv_deplibs_check_method=pass_all
+export ac_cv_lib_dl_dlopen=yes
+export enable_shared=yes
+export enable_static=yes
+
+#Configure with shared library support
+"${COOKBOOK_CONFIGURE}" \
+    --host="${GNU_TARGET}" \
+    --prefix="/usr" \
+    --enable-shared \
+    --enable-static \
+    --with-pic \
+    ac_cv_search_sendmsg=no \
+    lt_cv_prog_compiler_pic="-fPIC" \
+    lt_cv_prog_compiler_pic_works=yes
+
+# Build
+"${COOKBOOK_MAKE}"
+
+#After make, manually create the shared library if libtool didn't
+if [ ! -f src/.libs/libXcursor.so ]; then
+    echo "Creating shared library manually..."
+    cd src/.libs
+    # Extract all object files from the static library
+    ${GNU_TARGET}-ar x libXcursor.a
+    # Create the shared library from the object files
+    ${GNU_TARGET}-gcc -shared -fPIC -o libXcursor.so.1.0.2 *.o \
+        -L${COOKBOOK_SYSROOT}/lib -L${COOKBOOK_SYSROOT}/usr/lib \
+        -lXfixes -lXrender -lX11 -lxcb -lXau
+    # Create symlinks
+    ln -sf libXcursor.so.1.0.2 libXcursor.so.1
+    ln -sf libXcursor.so.1 libXcursor.so
+    cd ../..
+fi
+
+"${COOKBOOK_MAKE}" install DESTDIR="${COOKBOOK_STAGE}"
+
+# Also copy the shared libraries if they exist
+if [ -f src/.libs/libXcursor.so.1.0.2 ]; then
+    mkdir -p "${COOKBOOK_STAGE}/usr/lib"
+    cp -P src/.libs/libXcursor.so* "${COOKBOOK_STAGE}/usr/lib/"
+fi
+"""
+
+
+# script = """
+
+# # this /usr/share/pkgconfig comes from x11proto, that stages pc files in wrong dir.
+# export PKG_CONFIG_PATH="${COOKBOOK_SYSROOT}/lib/pkgconfig"
+# #:${COOKBOOK_SYSROOT}/usr/lib/pkgconfig:${COOKBOOK_SYSROOT}/usr/share/pkgconfig"
+# export PKG_CONFIG_LIBDIR="${COOKBOOK_SYSROOT}/lib/pkgconfig"
+# #:${COOKBOOK_SYSROOT}/usr/lib/pkgconfig"
+# export PKG_CONFIG_SYSROOT_DIR="${COOKBOOK_SYSROOT}"
+
+# rsync -a "${COOKBOOK_SOURCE}/" ./
+
+# # I'm tired trying figure out why multiple pkgconfig paths are ignored by cargo building stuff
+# # rsync -a -v ${COOKBOOK_SYSROOT}/usr/share/pkgconfig/*.pc ${COOKBOOK_SYSROOT}/lib/pkgconfig/
+# rsync -a -v ${COOKBOOK_SYSROOT}/usr/lib/pkgconfig/*.pc ${COOKBOOK_SYSROOT}/lib/pkgconfig/
+
+# echo "listing ${COOKBOOK_SYSROOT}/lib/pkgconfig"
+# ls -al ${COOKBOOK_SYSROOT}/lib/pkgconfig
+
+# cookbook_configure
+# """

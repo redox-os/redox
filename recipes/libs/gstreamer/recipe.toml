@@ -1,0 +1,79 @@
+[source]
+tar = "https://gitlab.freedesktop.org/gstreamer/gstreamer/-/archive/1.24.12/gstreamer-1.24.12.tar.gz"
+blake3 = "181daf73050f7472ec656e7461b7f67028d6002c1133870576033a32e43a364f"
+patches = ["redox.patch"]
+
+[build]
+template = "custom"
+dependencies = [
+    "bzip2",
+    "cairo",
+    "curl",
+    "expat",
+    #TODO: "ffmpeg6",
+    "fontconfig",
+    "freetype2",
+    "fribidi",
+    "gdk-pixbuf",
+    "gettext",
+    "glib",
+    "harfbuzz",
+    "libass",
+    "libffi",
+    "libgmp",
+    "libiconv",
+    "libicu",
+    "libjpeg",
+    "libmodplug1",
+    "libnettle",
+    "libogg",
+    "libpng",
+    "libpsl",
+    "libpthread-stubs",
+    "libsndfile",
+    "libsoup",
+    "libvorbis",
+    "libwebp",
+    "libx11",
+    "libxau",
+    "libxcb",
+    #TODO: "libxdamage",
+    "libxext",
+    "libxfixes",
+    "libxi",
+    "libxml2",
+    "libxxf86vm",
+    "mesa-x11",
+    "nghttp2",
+    #TODO: "openal",
+    "openssl1",
+    "pango",
+    "pcre2",
+    "pixman",
+    "sqlite3",
+    "x11proto",
+    "xextproto",
+    "xz",
+    "zlib",
+]
+script = """
+DYNAMIC_INIT
+
+export GLIB_GENMARSHAL="$(which glib-genmarshal)"
+export GLIB_MKENUMS="$(which glib-mkenums)"
+
+CFLAGS="${CFLAGS} -DM_LN2=0.69314718055994530942"
+cookbook_meson \
+    -Ddevtools=disabled \
+    -Dexamples=disabled \
+    -Dlibav=disabled \
+    -Dlibnice=disabled \
+    -Dorc=disabled \
+    -Dtests=disabled \
+    -Dtools=enabled \
+    -Dgstreamer:check=disabled \
+    -Dgstreamer:coretracers=disabled \
+    -Dgst-plugins-bad:shm=disabled \
+    -Dgst-plugins-base:xshm=disabled \
+    -Dgst-plugins-good:ximagesrc-xshm=disabled
+"""

@@ -1,0 +1,15 @@
+[source]
+tar="http://sourceforge.net/projects/dejavu/files/dejavu/2.37/dejavu-fonts-ttf-2.37.tar.bz2"
+blake3="b702bac8a0f8e0802758549da3b4d8041c3c83c3894e1e8a960eab53af18cce8"
+
+[build]
+template = "custom"
+script = """
+#TODO: Mono style included in Sans directory
+for style in Sans Serif
+do
+    DEST="${COOKBOOK_STAGE}/ui/fonts/${style}/DejaVu"
+    mkdir -pv "${DEST}"
+    cp -v "${COOKBOOK_SOURCE}/ttf/DejaVu${style}"*".ttf" "${DEST}"
+done
+"""

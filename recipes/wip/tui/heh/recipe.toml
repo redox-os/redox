@@ -1,0 +1,5 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/ndd7xv/heh"
+[build]
+template = "cargo"

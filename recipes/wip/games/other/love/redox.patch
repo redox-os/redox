@@ -1,0 +1,47 @@
+diff -ruwN source-old/CMakeLists.txt source/CMakeLists.txt
+--- source-old/CMakeLists.txt	2023-12-03 05:44:36.000000000 -0700
++++ source/CMakeLists.txt	2025-10-29 07:23:56.896601947 -0600
+@@ -188,7 +188,7 @@
+ 	find_package(ModPlug REQUIRED)
+ 	find_package(OpenAL REQUIRED)
+ 	find_package(OpenGL REQUIRED)
+-	find_package(SDL2 REQUIRED CONFIG COMPONENTS SDL2main)
++	#find_package(SDL2 REQUIRED CONFIG COMPONENTS SDL2main)
+ 	find_package(Theora REQUIRED)
+ 	find_package(Vorbis REQUIRED)
+ 	find_package(ZLIB REQUIRED)
+diff -ruwN source-old/src/common/config.h source/src/common/config.h
+--- source-old/src/common/config.h	2023-12-03 05:44:36.000000000 -0700
++++ source/src/common/config.h	2025-10-28 18:38:57.870055872 -0600
+@@ -48,7 +48,7 @@
+ #		define LOVE_MACOSX 1
+ #	endif
+ #endif
+-#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
++#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined (__redox__)
+ // I know it's not linux, but it seems most "linux-only" code is bsd-compatible
+ #	define LOVE_LINUX 1
+ #endif
+diff -ruwN source-old/src/libraries/luasocket/libluasocket/compat.c source/src/libraries/luasocket/libluasocket/compat.c
+--- source-old/src/libraries/luasocket/libluasocket/compat.c	2023-12-03 05:44:36.000000000 -0700
++++ source/src/libraries/luasocket/libluasocket/compat.c	2025-10-28 18:38:57.870118680 -0600
+@@ -1,6 +1,6 @@
+ #include "compat.h"
+ 
+-#if LUA_VERSION_NUM==501
++#if LUA_VERSION_NUM==501 && !defined(__redox__)
+ /*
+ ** Adapted from Lua 5.2
+ */
+diff -ruwN source-old/src/libraries/luasocket/libluasocket/compat.h source/src/libraries/luasocket/libluasocket/compat.h
+--- source-old/src/libraries/luasocket/libluasocket/compat.h	2023-12-03 05:44:36.000000000 -0700
++++ source/src/libraries/luasocket/libluasocket/compat.h	2025-10-28 18:38:57.870166330 -0600
+@@ -4,7 +4,7 @@
+ #include "lua.h"
+ #include "lauxlib.h"
+ 
+-#if LUA_VERSION_NUM==501
++#if LUA_VERSION_NUM==501 && !defined(__redox__)
+ void luaL_setfuncs (lua_State *L, const luaL_Reg *l, int nup);
+ #endif
+ 

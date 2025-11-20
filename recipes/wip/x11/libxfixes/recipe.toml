@@ -1,0 +1,22 @@
+[source]
+tar = "https://www.x.org/releases/individual/lib/libXfixes-6.0.1.tar.xz"
+blake3 = "ccbae58717aa81f1ef52a2e6cbb7c57553a98b93f5a7a6f8a78e793a3a0c7f78"
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
+
+[build]
+dependencies = [
+    "libpthread-stubs",
+    "libx11",
+    "libxau",
+    "libxcb",
+    "x11proto",
+    "xextproto",
+]
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_configure
+"""

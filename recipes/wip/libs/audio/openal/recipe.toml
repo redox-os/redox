@@ -1,0 +1,37 @@
+[source]
+tar = "https://github.com/kcat/openal-soft/archive/refs/tags/1.24.1.tar.gz"
+blake3 = "da65f839d4cee560371d08fc977f90757f964f49b14655b1d8d43f779c90a815"
+patches = [
+    "redox.patch"
+]
+
+[build]
+template = "custom"
+dependencies = [
+    "liborbital",
+    "libsndfile",
+    "llvm18",
+    "mesa",
+    "sdl2",
+    "zlib",
+]
+script = """
+DYNAMIC_INIT
+export CFLAGS="${CFLAGS} -I${COOKBOOK_SYSROOT}/include/SDL2"
+export CXXFLAGS="${CXXFLAGS} -I${COOKBOOK_SYSROOT}/include/SDL2"
+COOKBOOK_CMAKE_FLAGS+=(
+    -DALSOFT_EXAMPLES=OFF
+    -DALSOFT_INSTALL_EXAMPLES=OFF
+    -DALSOFT_INSTALL_UTILS=OFF
+    -DALSOFT_UTILS=OFF
+    -DALSOFT_BACKEND_SDL2=ON
+    -DALSOFT_REQUIRE_SDL2=ON
+)
+if [ "${COOKBOOK_DYNAMIC}" == "1" ]
+then
+    COOKBOOK_CMAKE_FLAGS+=(-DLIBTYPE=SHARED)
+else
+    COOKBOOK_CMAKE_FLAGS+=(-DLIBTYPE=STATIC)
+fi
+cookbook_cmake
+"""

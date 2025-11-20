@@ -1,0 +1,5 @@
+#TODO missing script for installation, lacking instructions
+[source]
+tar = "https://www.paraview.org/paraview-downloads/download.php?submit=Download&version=v5.11&type=data&os=Sources&downloadFile=ParaViewTestingDataFiles-v5.11.2.tar.xz"
+[build]
+template = "custom"

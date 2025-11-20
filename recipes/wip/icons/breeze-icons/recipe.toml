@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+# lacking build instructions
+[source]
+tar = "https://download.kde.org/stable/frameworks/5.112/breeze-icons-5.112.0.tar.xz"
+[build]
+template = "cmake"

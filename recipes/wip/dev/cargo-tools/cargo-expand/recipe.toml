@@ -1,0 +1,5 @@
+#TODO compiled but not tested
+[source]
+git = "https://github.com/dtolnay/cargo-expand"
+[build]
+template = "cargo"

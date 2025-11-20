@@ -1,0 +1,39 @@
+#TODO not compiled or tested yet
+#TODO determine minimum dependencies from cmake log
+# build instructions: https://github.com/RPCS3/rpcs3/blob/master/BUILDING.md
+# customization: https://wiki.rpcs3.net/index.php?title=Help:Building_RPCS3#CMake_Build_Options
+[source]
+git = "https://github.com/RPCS3/rpcs3"
+rev = "db8437b01cf24ba1146cf7d22e1be02202cc98f4"
+shallow_clone = true
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DUSE_NATIVE_INSTRUCTIONS=OFF",
+    "-DWITH_LLVM=OFF",
+    "-DUSE_ALSA=OFF",
+    "-DUSE_PULSE=OFF",
+    "-DUSE_LIBEVDEV=OFF",
+    "-DUSE_DISCORD_RPC=OFF",
+    "-DBUILD_LLVM_SUBMODULE=OFF",
+    "-DUSE_SYSTEM_FFMPEG=ON",
+    "-DUSE_VULKAN=OFF",
+]
+dependencies = [
+    #"mesa-x11",
+    "qt6-base",
+    "qt6-multimedia",
+    "qt6-svg",
+    "qt6-declarative",
+    #"sdl2",
+    #"eudev",
+    #"glew",
+    #"openal",
+    #"zlib",
+    #"libpng",
+    #"libevdev",
+    #"libedit",
+    #"libvulkan",
+    #"pulseaudio",
+    #"ffmpeg6",
+]

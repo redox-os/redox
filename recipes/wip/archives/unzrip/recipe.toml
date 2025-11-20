@@ -1,0 +1,8 @@
+#TODO make zstd work (after cargo update)
+[source]
+git = "https://github.com/quininer/unzrip"
+[build]
+template = "cargo"
+dependencies = [
+    "zstd",
+]

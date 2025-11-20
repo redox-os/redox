@@ -1,0 +1,13 @@
+[source]
+tar = "https://github.com/facebook/zstd/releases/download/v1.5.7/zstd-1.5.7.tar.gz"
+patches = [
+    "01_redox.patch"
+]
+[build]
+template = "custom"
+script = """
+DYNAMIC_INIT
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+${COOKBOOK_MAKE}
+${COOKBOOK_MAKE} install DESTDIR="${COOKBOOK_STAGE}" prefix="/usr"
+"""

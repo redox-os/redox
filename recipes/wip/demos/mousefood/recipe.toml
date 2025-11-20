@@ -1,0 +1,24 @@
+#TODO not compiled or tested
+#TODO maybe need a patch to use the sdl2 dependency from redox
+[source]
+git = "https://github.com/j-g00da/mousefood"
+[build]
+template = "custom"
+dependencies = [
+    "sdl2",
+]
+script = """
+recipe="$(basename "${COOKBOOK_RECIPE}")"
+    for example in simulator
+    do
+        "${COOKBOOK_CARGO}" build \
+            --manifest-path "${COOKBOOK_SOURCE}/${PACKAGE_PATH}/Cargo.toml" \
+            --example "${example}" \
+            --release \
+            --features=simulator
+        mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
+        cp -v \
+            "target/${TARGET}/${build_type}/examples/${example}" \
+            "${COOKBOOK_STAGE}/usr/bin/${recipe}_${example}"
+    done
+"""

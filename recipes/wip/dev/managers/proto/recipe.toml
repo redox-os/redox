@@ -1,0 +1,8 @@
+#TODO fs-set-times crate error
+[source]
+git = "https://github.com/moonrepo/proto"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages proto_cli
+"""

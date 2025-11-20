@@ -1,0 +1,8 @@
+#TODO ahash crate error
+[source]
+git = "https://github.com/pkulak/matui"
+[build]
+template = "cargo"
+dependencies = [
+    "openssl1",
+]

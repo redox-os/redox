@@ -1,0 +1,13 @@
+#TODO compilation error
+[source]
+git = "https://github.com/Orange-OpenSource/hurl"
+[build]
+template = "custom"
+dependencies = [
+    "openssl1",
+    "curl",
+    "libxml2",
+]
+script = """
+cookbook_cargo_packages hurl
+"""

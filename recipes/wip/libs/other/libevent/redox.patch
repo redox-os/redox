@@ -1,0 +1,26 @@
+diff -u --recursive orig/event_tagging.c modified/event_tagging.c
+--- orig/event_tagging.c	2019-02-10 21:26:04.000000000 +0000
++++ modified/event_tagging.c	2024-11-17 14:14:19.474910364 +0000
+@@ -54,9 +54,6 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
+-#ifndef _WIN32
+-#include <syslog.h>
+-#endif
+ #ifdef EVENT__HAVE_UNISTD_H
+ #include <unistd.h>
+ #endif
+diff -u --recursive orig/http.c modified/http.c
+--- orig/http.c	2020-07-05 13:01:34.000000000 +0100
++++ modified/http.c	2024-11-17 14:14:10.834742812 +0000
+@@ -83,9 +83,6 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
+-#ifndef _WIN32
+-#include <syslog.h>
+-#endif /* !_WIN32 */
+ #include <signal.h>
+ #ifdef EVENT__HAVE_UNISTD_H
+ #include <unistd.h>

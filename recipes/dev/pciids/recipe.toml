@@ -1,0 +1,9 @@
+[source]
+git = "https://github.com/pciutils/pciids.git"
+
+[build]
+template = "custom"
+script = """
+install -d "${COOKBOOK_STAGE}/share/misc/"
+install "${COOKBOOK_SOURCE}"/pci.ids "${COOKBOOK_STAGE}/share/misc/"
+"""

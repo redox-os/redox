@@ -1,0 +1,7 @@
+#TODO not compiled or tested
+# build instructions: https://gitlab.gnome.org/World/warp#meson
+[source]
+git = "https://gitlab.gnome.org/World/warp"
+rev = "1daa60691aa1a697acaff55450dcccb085023fc7"
+[build]
+template = "meson"

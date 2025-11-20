@@ -1,0 +1,8 @@
+#TODO rdev crate error
+[source]
+git = "https://github.com/ChrisVilches/horsetab"
+[build]
+template = "cargo"
+dependencies = [
+    "openssl1",
+]

@@ -1,0 +1,5 @@
+#TODO rfd crate error
+[source]
+git = "https://github.com/WINSDK/bite"
+[build]
+template = "cargo"

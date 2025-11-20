@@ -1,0 +1,31 @@
+[source]
+same_as = "../../../libs/mesa"
+
+[build]
+template = "custom"
+dependencies = [
+    "expat",
+    "libdrm",
+    "libpthread-stubs",
+    "libx11",
+    "libxau",
+    "libxcb",
+    "libxext",
+    "libxfixes",
+    "libxrandr",
+    "libxshmfence",
+    "libxxf86vm",
+    "llvm18",
+    "x11proto",
+    "zlib",
+]
+script = """
+DYNAMIC_INIT
+cookbook_meson \
+    -Ddri-drivers-path=/usr/lib/dri \
+    -Degl=enabled \
+    -Dglx=dri \
+    -Dllvm=enabled \
+    -Dplatforms=x11 \
+    -Dshader-cache=disabled
+"""

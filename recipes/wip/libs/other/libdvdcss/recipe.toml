@@ -1,0 +1,5 @@
+#TODO Compilation error
+[source]
+tar = "https://download.videolan.org/pub/libdvdcss/1.4.3/libdvdcss-1.4.3.tar.bz2"
+[build]
+template = "configure"

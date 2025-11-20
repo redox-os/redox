@@ -1,0 +1,19 @@
+diff -ru source/src/util.c source-new/src/util.c
+--- source/src/util.c	2015-03-06 16:34:20.000000000 -0800
++++ source-new/src/util.c	2017-08-11 18:24:56.991729200 -0700
+@@ -271,6 +271,7 @@
+ 
+       /* May fail if we are not privileged to set the file owner, or we are
+          not in group instat.st_gid.  Ignore those errors.  */
++      /*
+       if ((uid != -1 || gid != -1)
+ 	  && safe_lchown (to, uid, gid) != 0
+ 	  && (errno != EPERM
+@@ -281,6 +282,7 @@
+ 		(uid == -1) ? "owner" : "owning group",
+ 		S_ISLNK (mode) ? "symbolic link" : "file",
+ 		quotearg (to));
++      */
+     }
+   if (attr & FA_XATTRS)
+     if (copy_attr (from, to) != 0

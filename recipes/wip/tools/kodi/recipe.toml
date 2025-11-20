@@ -1,0 +1,46 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/xbmc/xbmc/blob/master/docs/README.Linux.md#4-build-kodi
+# maybe missing dependencies, see https://archlinux.org/packages/extra/x86_64/kodi/
+[source]
+git = "https://github.com/xbmc/xbmc"
+rev = "5f418d0b133535c6675154688ac7144e34f4d436"
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DCORE_PLATFORM_NAME=wayland",
+    "-DAPP_RENDER_SYSTEM=gl",
+]
+dependencies = [
+    "libass",
+    "libbluray",
+    "mesa",
+    "bzip2",
+    "curl",
+    "dbus",
+    "libflac",
+    "fontconfig",
+    "libfmt",
+    "freetype2",
+    "fribidi",
+    "libgcrypt",
+    "libgif",
+    "glew",
+    "gnutls3",
+    "mesa-glu",
+    "libgpg-error",
+    "libjpeg",
+    "libogg",
+    "pcre",
+    "libpng",
+    "openssl1",
+    "libtiff",
+    "sqlite3",
+    "libevdev",
+    "libunistring",
+    "libva",
+    "libvorbis",
+    "libxkbcommon",
+    "libuuid",
+    "libxslt",
+    "pipewire",
+]

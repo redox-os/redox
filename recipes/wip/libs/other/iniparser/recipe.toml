@@ -1,0 +1,5 @@
+#TODO missing script for a "make", see https://github.com/ndevilla/iniparser#ii---building-project
+[source]
+git = "https://github.com/ndevilla/iniparser"
+[build]
+template = "custom"

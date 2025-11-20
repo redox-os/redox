@@ -1,0 +1,22 @@
+[source]
+tar = "https://github.com/lxde/libfm/archive/refs/tags/1.4.0.tar.gz"
+blake3 = "b43b4a87b199fb0c6df08f09c7b12e4a545963fc0f4ffac48f8db2a425e47351"
+script = """
+DYNAMIC_INIT
+mkdir -p m4
+autotools_recursive_regenerate
+"""
+
+[build]
+dependencies = [
+    "gettext",
+    "libffi",
+    "glib",
+    "pcre2",
+    "zlib",
+]
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_configure --with-extra-only
+"""

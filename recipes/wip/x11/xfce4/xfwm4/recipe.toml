@@ -1,0 +1,53 @@
+[source]
+tar = "https://archive.xfce.org/src/xfce/xfwm4/4.20/xfwm4-4.20.0.tar.bz2"
+blake3 = "1c48e0fd80ef674a1d6cd8b3ab2452e87ab1597693f99c3217d271070b5ba8c2"
+
+[build]
+dependencies = [
+    "atk",
+    "cairo",
+    "expat",
+    "fontconfig",
+    "freetype2",
+    "fribidi",
+    "gdk-pixbuf",
+    "gettext",
+    "glib",
+    "gtk3",
+    "harfbuzz",
+    "libepoxy",
+    "libffi",
+    "libice",
+    "libiconv",
+    "libjpeg",
+    "libpng",
+    "libpthread-stubs",
+    "libwnck3",
+    "libx11",
+    "libxau",
+    "libxcb",
+    "libxext",
+    "libxfce4ui",
+    "libxfce4util",
+    "libxfixes",
+    "libxft",
+    "libxi",
+    "libxinerama",
+    "libxrandr",
+    "libxrender",
+    "libxxf86vm",
+    "mesa-x11",
+    "pango",
+    "pcre2",
+    "pixman",
+    "shared-mime-info",
+    "x11proto",
+    "xfconf",
+    "zlib",
+]
+template = "custom"
+script = """
+DYNAMIC_INIT
+export LIBS="$("${PKG_CONFIG}" --libs libxfce4util-1.0 x11)"
+cookbook_configure --disable-silent-rules
+"""

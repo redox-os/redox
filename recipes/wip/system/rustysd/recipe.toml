@@ -1,0 +1,27 @@
+#TODO: Unable to fork services, page fault on rsdctl
+[source]
+git = "https://github.com/willnode/rustysd"
+branch = "redox"
+
+[build]
+template = "custom"
+script = """
+cookbook_cargo
+
+mkdir -p ${COOKBOOK_STAGE}/etc/rustysd/system
+cat <<'EOF' > ${COOKBOOK_STAGE}/etc/rustysd/rustysd_config.toml
+unit_dirs = [
+  "/etc/rustysd/system",
+  "/etc/rustysd/user",
+]
+logging_dir = "/var/log/rustysd"
+log_to_disk = true
+log_to_stdout = false
+target_unit = "default.target"
+notifications_dir = "/var/run/rustysd"
+# selfpath = ""
+EOF
+
+cp ${COOKBOOK_SOURCE}/docker_test_units/*.target ${COOKBOOK_STAGE}/etc/rustysd/system/
+ln -s rsdctl ${COOKBOOK_STAGE}/usr/bin/systemctl
+"""

@@ -1,0 +1,9 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/cryfs/cryfs#building-from-source
+[source]
+tar = "https://github.com/cryfs/cryfs/releases/download/1.0.1/cryfs-1.0.1.tar.xz"
+[build]
+template = "cmake"
+dependencies = [
+    "libfuse3",
+]

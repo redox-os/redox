@@ -1,0 +1,9 @@
+#TODO termsize crate error (after cargo update)
+#TODO require bat and mpv at runtime
+[source]
+git = "https://github.com/mrfluffy-dev/kami"
+[build]
+template = "cargo"
+dependencies = [
+    "openssl1",
+]

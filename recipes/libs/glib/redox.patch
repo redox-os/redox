@@ -1,0 +1,223 @@
+diff -ruwN source-old/fuzzing/fuzz_resolver.c source/fuzzing/fuzz_resolver.c
+--- source-old/fuzzing/fuzz_resolver.c	2025-11-03 05:42:10.000000000 -0700
++++ source/fuzzing/fuzz_resolver.c	2025-11-10 12:32:57.663974728 -0700
+@@ -29,7 +29,7 @@
+                  gint          rrtype)
+ {
+   /* g_resolver_records_from_res_query() is only available on Unix */
+-#ifdef G_OS_UNIX
++#if defined(G_OS_UNIX) && !defined(__redox__)
+   GList *record_list = NULL;
+ 
+   /* Data too long? */
+diff -ruwN source-old/gio/gcredentialsprivate.h source/gio/gcredentialsprivate.h
+--- source-old/gio/gcredentialsprivate.h	2025-11-03 05:42:10.000000000 -0700
++++ source/gio/gcredentialsprivate.h	2025-11-10 12:35:09.114747806 -0700
+@@ -104,7 +104,7 @@
+  */
+ #undef G_CREDENTIALS_HAS_PID
+ 
+-#ifdef __linux__
++#if defined(__linux__) || defined(__redox__)
+ #define G_CREDENTIALS_SUPPORTED 1
+ #define G_CREDENTIALS_USE_LINUX_UCRED 1
+ #define G_CREDENTIALS_NATIVE_TYPE G_CREDENTIALS_TYPE_LINUX_UCRED
+diff -ruwN source-old/gio/glocalfile.c source/gio/glocalfile.c
+--- source-old/gio/glocalfile.c	2025-11-03 05:42:10.000000000 -0700
++++ source/gio/glocalfile.c	2025-11-10 12:32:57.664235788 -0700
+@@ -47,6 +47,10 @@
+ #include <sys/mount.h>
+ #endif
+ 
++#if defined(__redox__)
++#undef AT_FDCWD
++#endif
++
+ #ifndef O_BINARY
+ #define O_BINARY 0
+ #endif
+diff -ruwN source-old/gio/gnetworking.h.in source/gio/gnetworking.h.in
+--- source-old/gio/gnetworking.h.in	2025-11-03 05:42:10.000000000 -0700
++++ source/gio/gnetworking.h.in	2025-11-10 12:32:57.664602707 -0700
+@@ -40,13 +40,17 @@
+ #include <netdb.h>
+ #include <netinet/in.h>
+ #include <netinet/tcp.h>
++#if !defined(__redox__)
+ #include <resolv.h>
++#endif
+ #include <sys/socket.h>
+ #include <sys/un.h>
+ #include <net/if.h>
+ 
+ #include <arpa/inet.h>
++#if !defined(__redox__)
+ #include <arpa/nameser.h>
++#endif
+ @NAMESER_COMPAT_INCLUDE@
+ 
+ #ifndef __GI_SCANNER__
+diff -ruwN source-old/gio/gthreadedresolver.c source/gio/gthreadedresolver.c
+--- source-old/gio/gthreadedresolver.c	2025-11-03 05:42:10.000000000 -0700
++++ source/gio/gthreadedresolver.c	2025-11-10 12:32:57.664870630 -0700
+@@ -698,7 +698,7 @@
+ }
+ 
+ 
+-#if defined(G_OS_UNIX)
++#if defined(G_OS_UNIX) && !defined(__redox__)
+ 
+ #if defined __BIONIC__ && !defined BIND_4_COMPAT
+ /* Copy from bionic/libc/private/arpa_nameser_compat.h
+@@ -1393,7 +1393,11 @@
+ {
+   GList *records;
+ 
+-#if defined(G_OS_UNIX)
++#if defined(__redox__)
++  g_set_error (error, G_RESOLVER_ERROR, G_RESOLVER_ERROR_INTERNAL,
++                _("No support for resolving “%s” on redox"), rrname);
++  return NULL;
++#elif defined(G_OS_UNIX)
+   gint len = 512;
+   gint herr;
+   GByteArray *answer;
+diff -ruwN source-old/gio/gunixconnection.c source/gio/gunixconnection.c
+--- source-old/gio/gunixconnection.c	2025-11-03 05:42:10.000000000 -0700
++++ source/gio/gunixconnection.c	2025-11-10 12:36:14.017908505 -0700
+@@ -496,7 +496,7 @@
+   GSocket *socket;
+   gint n;
+   gssize num_bytes_read;
+-#ifdef __linux__
++#if defined(__linux__) || defined(__redox__)
+   gboolean turn_off_so_passcreds;
+ #endif
+ 
+@@ -512,7 +512,7 @@
+    * already. We also need to turn it off when we're done.  See
+    * #617483 for more discussion.
+    */
+-#ifdef __linux__
++#if defined(__linux__) || defined(__redox__)
+   {
+     gint opt_val;
+ 
+@@ -626,7 +626,7 @@
+ 
+  out:
+ 
+-#ifdef __linux__
++#if defined(__linux__) || defined(__redox__)
+   if (turn_off_so_passcreds)
+     {
+       if (!g_socket_set_option (socket,
+diff -ruwN source-old/gio/gunixmounts.c source/gio/gunixmounts.c
+--- source-old/gio/gunixmounts.c	2025-11-03 05:42:10.000000000 -0700
++++ source/gio/gunixmounts.c	2025-11-10 12:32:57.665218112 -0700
+@@ -1114,7 +1114,7 @@
+ }
+ 
+ /* QNX {{{2 */
+-#elif defined (HAVE_QNX)
++#elif defined (HAVE_QNX) || defined(__redox__)
+ 
+ static char *
+ get_mtab_monitor_file (void)
+@@ -1758,6 +1758,28 @@
+   return NULL;
+ }
+ 
++#elif defined(__redox__)
++
++static GUnixMountPoint **
++_g_unix_mount_points_get_from_file (const char *table_path,
++                                    uint64_t   *time_read_out,
++                                    size_t     *n_points_out)
++{
++  /* Not supported on Redox. */
++  if (time_read_out != NULL)
++    *time_read_out = 0;
++  if (n_points_out != NULL)
++    *n_points_out = 0;
++  return NULL;
++}
++
++static GList *
++_g_get_unix_mount_points (void)
++{
++  /* Not supported on Redox. */
++  return NULL;
++}
++
+ /* Common code {{{2 */
+ #else
+ #error No g_get_mount_table() implementation for system
+diff -ruwN source-old/gio/meson.build source/gio/meson.build
+--- source-old/gio/meson.build	2025-11-03 05:42:10.000000000 -0700
++++ source/gio/meson.build	2025-11-10 12:32:57.665641216 -0700
+@@ -18,7 +18,7 @@
+ 
+ gnetworking_h_nameser_compat_include = ''
+ 
+-if host_system not in ['windows', 'android']
++if host_system not in ['windows', 'android', 'redox']
+   # Don't check for C_IN on Android since it does not define it in public
+   # headers, we define it ourselves wherever necessary
+   if not cc.compiles('''#include <sys/types.h>
+@@ -39,7 +39,7 @@
+ 
+ network_libs = [ ]
+ network_args = [ ]
+-if host_system != 'windows'
++if host_system not in ['windows', 'redox']
+   # res_query()
+   res_query_test = '''#include <resolv.h>
+                       int main (int argc, char ** argv) {
+diff -ruwN source-old/gio/tests/gdbus-server-auth.c source/gio/tests/gdbus-server-auth.c
+--- source-old/gio/tests/gdbus-server-auth.c	2025-11-03 05:42:10.000000000 -0700
++++ source/gio/tests/gdbus-server-auth.c	2025-11-10 12:36:39.750972219 -0700
+@@ -243,7 +243,7 @@
+     }
+   else    /* We should prefer EXTERNAL whenever it is allowed. */
+     {
+-#ifdef __linux__
++#if defined(__linux__) || defined(__redox__)
+       /* We know that both GDBus and libdbus support full credentials-passing
+        * on Linux. */
+       g_assert_cmpint (uid, ==, getuid ());
+diff -ruwN source-old/glib/glib-unix.c source/glib/glib-unix.c
+--- source-old/glib/glib-unix.c	2025-11-03 05:42:10.000000000 -0700
++++ source/glib/glib-unix.c	2025-11-10 12:32:57.665846181 -0700
+@@ -74,6 +74,10 @@
+ #include <sys/user.h>
+ #endif  /* defined (__FreeBSD__ )*/
+ 
++#if defined(__redox__)
++#include <sys/redox.h>
++#endif
++
+ G_STATIC_ASSERT (sizeof (ssize_t) == GLIB_SIZEOF_SSIZE_T);
+ G_STATIC_ASSERT (G_ALIGNOF (gssize) == G_ALIGNOF (ssize_t));
+ G_STATIC_ASSERT (G_SIGNEDNESS_OF (ssize_t) == 1);
+@@ -1004,6 +1008,20 @@
+   g_set_error (error, G_FILE_ERROR, G_FILE_ERROR_NOSYS,
+                "g_unix_fd_query_path() not supported on HURD");
+   return NULL;
++#elif defined(__redox__)
++  char file_path[PATH_MAX] = {0};
++
++  if (redox_fpath (fd, file_path, PATH_MAX) < 0)
++    {
++      int errsv = errno;
++
++      g_set_error (error, G_FILE_ERROR, g_file_error_from_errno (errsv),
++                   "Error querying file information for FD %d: %s",
++                   fd, g_strerror (errsv));
++      return NULL;
++    }
++
++  return g_strdup (file_path);
+ #else
+   #error "g_unix_fd_query_path() not supported on this platform"
+ #endif

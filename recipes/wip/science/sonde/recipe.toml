@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/rnleach/sonde"
+[build]
+template = "cargo"
+dependencies = [
+    "gtk4",
+]

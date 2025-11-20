@@ -1,0 +1,92 @@
+diff -ruwN source/configure source-new/configure
+--- source/configure	2023-08-04 00:13:08.000000000 +0700
++++ source-new/configure	2025-09-20 05:04:59.993364619 +0700
+@@ -46043,7 +46043,7 @@
+   fi
+ 
+ 
+-  ax_cxx_compile_alternatives="11 0x"  ax_cxx_compile_cxx11_required=truednl
++  ax_cxx_compile_alternatives="17 0x"  ax_cxx_compile_cxx11_required=truednl
+   ac_ext=cpp
+ ac_cpp='$CXXCPP $CPPFLAGS'
+ ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+@@ -72692,7 +72692,7 @@
+   printf %s "(cached) " >&6
+ else $as_nop
+ 
+-    php_cv_crypt_r_style=none
++    php_cv_crypt_r_style=struct_crypt_data_gnu_source
+     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+ /* end confdefs.h.  */
+ 
+diff -ruwN source/ext/intl/config.m4 source-new/ext/intl/config.m4
+--- source/ext/intl/config.m4	2023-08-04 00:13:08.000000000 +0700
++++ source-new/ext/intl/config.m4	2025-09-20 05:05:18.892414632 +0700
+@@ -83,7 +83,7 @@
+     breakiterator/codepointiterator_methods.cpp"
+ 
+   PHP_REQUIRE_CXX()
+-  PHP_CXX_COMPILE_STDCXX(11, mandatory, PHP_INTL_STDCXX)
++  PHP_CXX_COMPILE_STDCXX(17, mandatory, PHP_INTL_STDCXX)
+   PHP_INTL_CXX_FLAGS="$INTL_COMMON_FLAGS $PHP_INTL_STDCXX $ICU_CXXFLAGS"
+   case $host_alias in
+   *cygwin*) PHP_INTL_CXX_FLAGS="$PHP_INTL_CXX_FLAGS -D_POSIX_C_SOURCE=200809L"
+diff -ruwN source/ext/phar/Makefile.frag source-new/ext/phar/Makefile.frag
+--- source/ext/phar/Makefile.frag	2023-08-04 00:13:08.000000000 +0700
++++ source-new/ext/phar/Makefile.frag	2025-09-19 23:19:19.020178026 +0700
+@@ -9,20 +9,7 @@
+ pharcmd: $(builddir)/phar.php $(builddir)/phar.phar
+ 
+ PHP_PHARCMD_SETTINGS = -n -d 'open_basedir=' -d 'output_buffering=0' -d 'memory_limit=-1' -d phar.readonly=0
+-PHP_PHARCMD_EXECUTABLE = ` \
+-	if test -x "$(top_builddir)/$(SAPI_CLI_PATH)"; then \
+-		$(top_srcdir)/build/shtool echo -n -- "$(top_builddir)/$(SAPI_CLI_PATH) -n"; \
+-		if test "x$(PHP_MODULES)" != "x"; then \
+-		$(top_srcdir)/build/shtool echo -n -- " -d extension_dir=$(top_builddir)/modules"; \
+-		for i in bz2 zlib phar; do \
+-			if test -f "$(top_builddir)/modules/$$i.la"; then \
+-				. $(top_builddir)/modules/$$i.la; $(top_srcdir)/build/shtool echo -n -- " -d extension=$$dlname"; \
+-			fi; \
+-		done; \
+-		fi; \
+-	else \
+-		$(top_srcdir)/build/shtool echo -n -- "$(PHP_EXECUTABLE)"; \
+-	fi;`
++PHP_PHARCMD_EXECUTABLE = "true"
+ PHP_PHARCMD_BANG = `$(top_srcdir)/build/shtool echo -n -- "$(INSTALL_ROOT)$(bindir)/$(program_prefix)php$(program_suffix)$(EXEEXT)";`
+ 
+ $(builddir)/phar/phar.inc: $(srcdir)/phar/phar.inc
+@@ -42,9 +29,3 @@
+ 
+ install-pharcmd: pharcmd
+ 	-@$(mkinstalldirs) $(INSTALL_ROOT)$(bindir)
+-	$(INSTALL) $(builddir)/phar.phar $(INSTALL_ROOT)$(bindir)/$(program_prefix)phar$(program_suffix).phar
+-	-@rm -f $(INSTALL_ROOT)$(bindir)/$(program_prefix)phar$(program_suffix)
+-	$(LN_S) -f $(program_prefix)phar$(program_suffix).phar $(INSTALL_ROOT)$(bindir)/$(program_prefix)phar$(program_suffix)
+-	@$(mkinstalldirs) $(INSTALL_ROOT)$(mandir)/man1
+-	@$(INSTALL_DATA) $(builddir)/phar.1 $(INSTALL_ROOT)$(mandir)/man1/$(program_prefix)phar$(program_suffix).1
+-	@$(INSTALL_DATA) $(builddir)/phar.phar.1 $(INSTALL_ROOT)$(mandir)/man1/$(program_prefix)phar$(program_suffix).phar.1
+diff -ruwN source/ext/posix/posix.c source-new/ext/posix/posix.c
+--- source/ext/posix/posix.c	2023-08-04 00:13:08.000000000 +0700
++++ source-new/ext/posix/posix.c	2025-09-19 22:21:28.998031846 +0700
+@@ -443,7 +443,7 @@
+ 
+ 	ZEND_PARSE_PARAMETERS_NONE();
+ 
+-	if ((ticks = times(&t)) == -1) {
++	{
+ 		POSIX_G(last_error) = errno;
+ 		RETURN_FALSE;
+ 	}
+diff -ruwN source/ext/standard/hrtime.c source-new/ext/standard/hrtime.c
+--- source/ext/standard/hrtime.c	2023-08-04 00:13:08.000000000 +0700
++++ source-new/ext/standard/hrtime.c	2025-09-19 23:34:34.839471333 +0700
+@@ -70,6 +70,8 @@
+ 		return -1;
+ 	}
+ 
++#elif defined(__redox__)
++	/* pass */
+ #elif PHP_HRTIME_PLATFORM_POSIX
+ 
+ #if !_POSIX_MONOTONIC_CLOCK

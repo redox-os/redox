@@ -1,0 +1,5 @@
+#TODO async-io and rustix crates error
+[source]
+git = "https://github.com/topgrade-rs/topgrade"
+[build]
+template = "cargo"

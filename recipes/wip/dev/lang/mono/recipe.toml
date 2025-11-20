@@ -1,0 +1,5 @@
+#TODO can't recognize the redox target
+[source]
+tar = "https://dl.winehq.org/mono/sources/mono/mono-6.14.1.tar.xz"
+[build]
+template = "configure"

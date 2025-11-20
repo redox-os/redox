@@ -1,0 +1,12 @@
+#TODO not compiled or tested
+# build intructions - https://wiki.filezilla-project.org/Client_Compile
+[source]
+tar = "https://dl3.cdn.filezilla-project.org/client/FileZilla_3.67.1_src.tar.xz?h=HG1-LUZAqtxJaEQhlQ9oNg&x=1722821782"
+[build]
+template = "configure"
+dependencies = [
+    "libfilezilla",
+    "gnutls3",
+    "libidn",
+    "dbus",
+]

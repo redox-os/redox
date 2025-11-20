@@ -1,0 +1,22 @@
+#TODO Promote
+[source]
+git = "https://github.com/willnode/htop"
+branch = "redox"
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
+
+[build]
+template = "configure"
+configureflags = [
+    "--disable-unicode",
+]
+dependencies = [
+    "ncurses",
+]
+
+[package]
+dependencies = [
+    "terminfo"
+]

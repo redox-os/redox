@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+# lacking build instructions
+[source]
+tar = "https://ftp.osuosl.org/pub/rpm/popt/releases/popt-1.x/popt-1.19.tar.gz"
+[build]
+template = "cmake"

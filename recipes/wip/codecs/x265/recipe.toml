@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+# build instructions: https://bitbucket.org/multicoreware/x265_git/src/master/build/README.txt#lines-68
+[source]
+tar = "https://bitbucket.org/multicoreware/x265_git/downloads/x265_3.5.tar.gz"
+[build]
+template = "cmake"

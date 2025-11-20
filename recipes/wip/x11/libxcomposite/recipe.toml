@@ -1,0 +1,19 @@
+[source]
+tar = "https://www.x.org/releases/individual/lib/libXcomposite-0.4.6.tar.xz"
+blake3 = "7e02026864066869aefc1d688415b1e8c6ab0b639556f93b6f5e86063aa1bbac"
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
+
+[build]
+template = "custom"
+dependencies = [
+    "libx11",
+    "libxfixes",
+    "x11proto",
+]
+script = """
+DYNAMIC_INIT
+cookbook_configure
+"""

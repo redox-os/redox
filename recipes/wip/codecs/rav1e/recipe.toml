@@ -1,0 +1,5 @@
+#TODO "malloc(): invalid size (unsorted)" error
+[source]
+git = "https://github.com/xiph/rav1e"
+[build]
+template = "cargo"

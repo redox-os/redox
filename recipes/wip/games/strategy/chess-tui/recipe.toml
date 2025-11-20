@@ -1,0 +1,5 @@
+#TODO promote
+[source]
+git = "https://github.com/thomas-mauran/chess-tui"
+[build]
+template = "cargo"

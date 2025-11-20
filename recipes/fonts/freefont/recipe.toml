@@ -1,0 +1,14 @@
+[source]
+tar="https://ftp.gnu.org/gnu/freefont/freefont-otf-20120503.tar.gz"
+blake3="e950397741d84981106cf648fbc143c7827b61d637c86c916232d47aabdfe253"
+
+[build]
+template = "custom"
+script = """
+for style in Mono Sans Serif
+do
+    DEST="${COOKBOOK_STAGE}/ui/fonts/${style}/FreeFont"
+    mkdir -pv "${DEST}"
+    cp -v "${COOKBOOK_SOURCE}/Free${style}"*".otf" "${DEST}"
+done
+"""
