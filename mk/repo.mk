@@ -6,7 +6,7 @@ ifeq ($(PODMAN_BUILD),1)
 else
 	export PATH="$(PREFIX_PATH):$$PATH" && \
 	export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
-	./cookbook/repo.sh $(REPO_APPSTREAM) $(REPO_NONSTOP) $(REPO_OFFLINE) $(COOKBOOK_OPTS)
+	./cookbook/repo.sh $(REPO_APPSTREAM) $(REPO_NONSTOP) $(REPO_OFFLINE) $(COOKBOOK_OPTS) --with-package-deps
 	mkdir -p $(BUILD)
 	# make sure fstools.tag are newer than the things repo modifies
 	touch $(FSTOOLS_TAG)
@@ -20,7 +20,7 @@ tree: $(FSTOOLS_TAG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
-	@cd ./cookbook && ./target/release/repo tree $(COOKBOOK_OPTS)
+	@cd ./cookbook && ./target/release/repo tree $(COOKBOOK_OPTS) --with-package-deps
 endif
 
 # Find recipe for one or more targets separated by comma
@@ -46,7 +46,7 @@ ifeq ($(PODMAN_BUILD),1)
 else
 	export PATH="$(PREFIX_PATH):$$PATH" && \
 	export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
-	cd ./cookbook && ./target/release/repo fetch $(foreach f,$(subst $(comma), ,$*),$(f))
+	cd ./cookbook && ./target/release/repo fetch $(foreach f,$(subst $(comma), ,$*),$(f)) $(COOKBOOK_OPTS)
 endif
 
 # Invoke repo.sh for one or more targets separated by comma
@@ -56,7 +56,7 @@ ifeq ($(PODMAN_BUILD),1)
 else
 	export PATH="$(PREFIX_PATH):$$PATH" && \
 	export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
-	./cookbook/repo.sh $(REPO_OFFLINE) $(foreach f,$(subst $(comma), ,$*),$(f))
+	./cookbook/repo.sh $(REPO_OFFLINE) $(foreach f,$(subst $(comma), ,$*),$(f)) $(COOKBOOK_OPTS)
 endif
 
 MOUNTED_TAG=$(MOUNT_DIR)~
@@ -94,7 +94,8 @@ else
 		$(MAKE) mount; \
 		touch $(MOUNTED_TAG); \
 	fi
-	cd ./cookbook && ./target/release/repo push $(COOKBOOK_OPTS) "--sysroot=../$(MOUNT_DIR)"
+	$(if $(findstring nonstop,$(REPO_NONSTOP)),export COOKBOOK_NONSTOP=true && ,) cd ./cookbook && \
+	./target/release/repo push $(COOKBOOK_OPTS) --with-package-deps "--sysroot=../$(MOUNT_DIR)"
 	@if [ -f $(MOUNTED_TAG) ]; then \
 		$(MAKE) unmount && rm -f $(MOUNTED_TAG); \
 	else echo "Not unmounting by ourself, don't forget to do it"; \

@@ -142,7 +142,7 @@ INSTALLER=$(FSTOOLS)/bin/redox_installer
 REDOXFS=$(FSTOOLS)/bin/redoxfs
 REDOXFS_MKFS=$(FSTOOLS)/bin/redoxfs-mkfs
 INSTALLER_OPTS=
-COOKBOOK_OPTS=--with-package-deps "--filesystem=../$(FILESYSTEM_CONFIG)"
+COOKBOOK_OPTS="--filesystem=../$(FILESYSTEM_CONFIG)"
 ifeq ($(REPO_BINARY),0)
 INSTALLER_OPTS+=--cookbook=cookbook
 else
