@@ -5,5 +5,5 @@
 [submodule "rust"]
 	path = rust
 	url = https://gitlab.redox-os.org/redox-os/rust.git
-	branch = redox-2025-01-12
+	branch = redox-2025-10-03
 	update = none
