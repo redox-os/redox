@@ -362,7 +362,7 @@ archLinux()
     gdb"
 
     if [ "$1" == "qemu" ]; then
-        packages="$packages qemu-system-x86 qemu-system-arm qemu-system-riscv edk2-aarch64"
+        packages="$packages qemu-system-x86 qemu-system-arm qemu-system-riscv"
     elif [ "$1" == "virtualbox" ]; then
         packages="$packages virtualbox"
     else
