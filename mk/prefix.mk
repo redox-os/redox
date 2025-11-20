@@ -37,8 +37,12 @@ PREFIX_STRIP=\
 		2> /dev/null
 
 $(RELIBC_SOURCE): $(FSTOOLS_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
 	./target/release/repo fetch relibc
 	touch $(RELIBC_SOURCE)
+endif
 
 $(PREFIX)/relibc: $(RELIBC_SOURCE)
 	mkdir -p "$(@D)"
