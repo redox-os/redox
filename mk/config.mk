@@ -78,7 +78,7 @@ endif
 endif
 
 ifeq ($(REPO_APPSTREAM),1)
-	export COOKBOOK_APPSTREAM="1"
+	export COOKBOOK_APPSTREAM=true
 endif
 ifeq ($(REPO_NONSTOP),1)
 	export COOKBOOK_NONSTOP=true
