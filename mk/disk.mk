@@ -62,38 +62,38 @@ mount: $(FSTOOLS) FORCE
 ifeq ($(FSTOOLS_IN_PODMAN),1)
 	$(PODMAN_RUN) make $@
 else
-	mkdir -p $(MOUNT_DIR)
+	@mkdir -p $(MOUNT_DIR)
 	$(REDOXFS) $(BUILD)/harddrive.img $(MOUNT_DIR)
-	sleep 2
-	pgrep redoxfs
+	@sleep 2
+	@pgrep redoxfs
 endif
 
 mount_extra: $(FSTOOLS) FORCE
 ifeq ($(FSTOOLS_IN_PODMAN),1)
 	$(PODMAN_RUN) make $@
 else
-	mkdir -p $(MOUNT_DIR)
+	@mkdir -p $(MOUNT_DIR)
 	$(REDOXFS) $(BUILD)/extra.img $(MOUNT_DIR)
-	sleep 2
-	pgrep redoxfs
+	@sleep 2
+	@pgrep redoxfs
 endif
 
 mount_live: $(FSTOOLS) FORCE
 ifeq ($(FSTOOLS_IN_PODMAN),1)
 	$(PODMAN_RUN) make $@
 else
-	mkdir -p $(MOUNT_DIR)
+	@mkdir -p $(MOUNT_DIR)
 	$(REDOXFS) $(BUILD)/redox-live.iso $(MOUNT_DIR)
-	sleep 2
-	pgrep redoxfs
+	@sleep 2
+	@pgrep redoxfs
 endif
 
 unmount: FORCE
 ifeq ($(FSTOOLS_IN_PODMAN),1)
 	$(PODMAN_RUN) make $@
 else
-	sync
-	-$(FUMOUNT) $(MOUNT_DIR) || true
-	rm -rf $(MOUNT_DIR)
-	-$(FUMOUNT) /tmp/redox_installer || true
+	@sync
+	-$(FUMOUNT) $(MOUNT_DIR)
+	@rm -rf $(MOUNT_DIR)
+	@-$(FUMOUNT) /tmp/redox_installer 2>/dev/null || true
 endif
