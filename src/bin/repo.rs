@@ -65,6 +65,7 @@ const REPO_HELP_STR: &str = r#"
         CI=                        set to any value to disable TUI
         COOKBOOK_LOGS=             whether to capture build logs (default is !CI)
         COOKBOOK_OFFLINE=false     prevent internet access if possible
+                                        ignored when command "fetch" is used
         COOKBOOK_NONSTOP=false     pkeep running even a recipe build failed
         COOKBOOK_VERBOSE=true      print success/error on each recipe
         COOKBOOK_MAKE_JOBS=        override build jobs count from nproc
@@ -277,8 +278,9 @@ fn repo_inner(
     Ok(match *command {
         CliCommand::Fetch | CliCommand::Cook => {
             let repo_inner_fn = move |logger: &PtyOut| -> Result<(), anyhow::Error> {
-                let source_dir = handle_fetch(recipe, config, logger)?;
-                if *command == CliCommand::Cook {
+                let is_cook = *command == CliCommand::Cook;
+                let source_dir = handle_fetch(recipe, config, is_cook, logger)?;
+                if is_cook {
                     handle_cook(recipe, config, source_dir, recipe.is_deps, logger)?;
                 }
                 Ok(())
@@ -534,10 +536,11 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
 fn handle_fetch(
     recipe: &CookRecipe,
     config: &CliConfig,
+    allow_offline: bool,
     logger: &PtyOut,
 ) -> anyhow::Result<PathBuf> {
     let recipe_dir = &recipe.dir;
-    let source_dir = match config.cook.offline {
+    let source_dir = match config.cook.offline && allow_offline {
         true => fetch_offline(recipe_dir, &recipe.recipe, logger),
         false => fetch(recipe_dir, &recipe.recipe, logger),
     }
@@ -1102,7 +1105,7 @@ fn run_tui_cook(
                 fetcher_status_tx
                     .send(StatusUpdate::StartFetch(name.clone()))
                     .unwrap();
-                let handler = handle_fetch(&recipe, &fetcher_config, &logger);
+                let handler = handle_fetch(&recipe, &fetcher_config, true, &logger);
                 if let Some(log_path) = fetcher_config.logs_dir.as_ref()
                     // successful fetch log usually not that helpful
                     && handler.is_err()
