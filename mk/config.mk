@@ -120,6 +120,19 @@ endif
 # Automatic variables
 ROOT=$(CURDIR)
 export RUST_COMPILER_RT_ROOT=$(ROOT)/rust/src/llvm-project/compiler-rt
+RUNNING_IN_PODMAN=$(shell [ -f /run/.containerenv ] && echo 1 || echo 0)
+ifeq ($(PODMAN_BUILD),1)
+ifeq ($(RUNNING_IN_PODMAN),1)
+$(info Please unset PODMAN_BUILD=1 in .config!)
+endif
+endif
+
+ALLOW_FSTOOLS?=0
+ifeq ($(FSTOOLS_IN_PODMAN),0)
+ifeq ($(RUNNING_IN_PODMAN),0)
+ALLOW_FSTOOLS=1
+endif
+endif
 
 ## Userspace variables
 ifeq ($(ARCH),riscv64gc)
