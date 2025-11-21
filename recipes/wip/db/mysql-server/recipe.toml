@@ -3,13 +3,9 @@
 [source]
 tar = "https://dev.mysql.com/downloads/file/?id=523432"
 [build]
-template = "custom"
+template = "cmake"
 dependencies = [
     "boost",
     "ncurses",
-    "openssl1",
+    "openssl3",
 ]
-script = """
-export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include/ncurses"
-cookbook_cmake
-"""

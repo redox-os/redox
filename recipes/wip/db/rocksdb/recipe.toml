@@ -1,7 +1,8 @@
-#TODO missing script for "make", see https://github.com/facebook/rocksdb/blob/main/INSTALL.md
+#TODO missing script for gnu make: https://github.com/facebook/rocksdb/blob/main/INSTALL.md
 [source]
 git = "https://github.com/facebook/rocksdb"
-rev = "49ce8a1064dd1ad89117899839bf136365e49e79"
+rev = "v10.7.5"
+shallow_clone = true
 [build]
 template = "custom"
 dependencies = [
