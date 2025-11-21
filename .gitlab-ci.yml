@@ -1,15 +1,27 @@
 # The GitLab Continuous Integration configuration
-image: "ubuntu:24.04"
 
 variables:
   GIT_STRATEGY: "clone"
-  GIT_SUBMODULE_STRATEGY: "recursive"
 
 stages:
+  - lint
   - test
-  - retag
+
+fmt:
+  stage: lint
+  script:
+    - rustup component add rustfmt
+    - cargo fmt -- --check
+
+cargo-test:
+  stage: lint
+  script:
+    # TODO: we should omit fuse from cargo install chains
+    - apt update && apt install -y fuse3 libfuse3-dev
+    - cargo test --locked
 
 img:
+  image: "ubuntu:24.04"
   stage: test
   rules:
     - if: '$CI_COMMIT_BRANCH == "master" && $CI_PROJECT_NAMESPACE == "redox-os"'
@@ -35,14 +47,12 @@ img:
           help2man \
           autoconf \
           automake \
-          zstd &&
-      curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain none
+          zstd
   script:
     - |
-      source "$HOME/.cargo/env" &&
+      export PATH="$HOME/.cargo/bin:$PATH" &&
       bash podman/rustinstall.sh &&
-      cargo build --manifest-path installer/Cargo.toml --release &&
-      PODMAN_BUILD=0 REPO_BINARY=1 make ci-img IMG_TAG=$CI_COMMIT_REF_NAME &&
+      PODMAN_BUILD=0 REPO_BINARY=1 COOKBOOK_VERBOSE=false make ci-img IMG_TAG=$CI_COMMIT_REF_NAME &&
       ([ $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master" ] && rm -rf build/img/* || true)
   artifacts:
     paths:
