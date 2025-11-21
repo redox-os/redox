@@ -1,0 +1,19 @@
+#TODO not compiled or tested
+#TODO discover minimum dependencies from meson log
+[source]
+tar = "https://download.gnome.org/sources/nautilus/49/nautilus-49.1.tar.xz"
+[build]
+template = "meson"
+mesonflags = [
+    "-Dextensions=false",
+    "-Dintrospection=false",
+    "-Dpackagekit=false",
+    "-Dselinux=disabled",
+    "-Dcloudproviders=disabled",
+    "-Dtests=none",
+]
+#[package] # probably optional dependencies
+#dependencies = [
+#    "localsearch",
+#    "xdg-user-dirs-gtk",
+#]

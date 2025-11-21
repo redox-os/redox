@@ -1,6 +1,5 @@
 #TODO not compiled or tested
-# lacking build instructions
-# build options: https://gitlab.gnome.org/GNOME/gnome-calculator/-/blob/main/meson_options.txt?ref_type=heads
+#TODO determine minimum dependencies from meson log
 [source]
 tar = "https://download.gnome.org/sources/gnome-calculator/49/gnome-calculator-49.1.1.tar.xz"
 [build]

@@ -1,0 +1,14 @@
+#TODO not compiled or tested
+#TODO discover minimum dependencies from meson log
+[source]
+tar = "https://download.gnome.org/sources/localsearch/3.10/localsearch-3.10.1.tar.xz"
+[build]
+template = "meson"
+mesonflags = [
+    "-Dfunctional_tests=false",
+    "-Dsandbox_tests=false",
+    "-Dseccomp=false",
+    "-Dbattery_detection=none",
+    "-Dsystemd_user_services=false",
+    "-Dman=false",
+]
