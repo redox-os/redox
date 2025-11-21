@@ -78,19 +78,13 @@ endif
 endif
 
 ifeq ($(REPO_APPSTREAM),1)
-	REPO_APPSTREAM=--appstream
-else ifeq ($(REPO_APPSTREAM),0)
-	REPO_APPSTREAM=
+	export COOKBOOK_APPSTREAM="1"
 endif
 ifeq ($(REPO_NONSTOP),1)
-	REPO_NONSTOP=--nonstop
-else ifeq ($(REPO_NONSTOP),0)
-	REPO_NONSTOP=
+	export COOKBOOK_NONSTOP=true
 endif
 ifeq ($(REPO_OFFLINE),1)
-	REPO_OFFLINE=--offline
-else ifeq ($(REPO_OFFLINE),0)
-	REPO_OFFLINE=
+	export COOKBOOK_OFFLINE=true
 endif
 ifeq ($(REPO_DEBUG),1)
 	export COOKBOOK_NOSTRIP=true
