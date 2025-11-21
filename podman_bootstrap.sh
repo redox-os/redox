@@ -560,7 +560,7 @@ rustInstall()
 boot()
 {
     echo "Cloning gitlab repo..."
-    git clone https://gitlab.redox-os.org/redox-os/redox.git --origin upstream --recursive
+    git clone https://gitlab.redox-os.org/redox-os/redox.git --origin upstream
     echo "Creating .config with PODMAN_BUILD=1"
     echo 'PODMAN_BUILD?=1' > redox/.config
     if [[ "$(uname -m)" == "arm64" ]]; then
@@ -596,7 +596,6 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
     usage
 elif [ "$1" == "-u" ]; then
     git pull upstream master
-    git submodule update --recursive --init
     exit
 fi
 
@@ -622,7 +621,6 @@ rustInstall "$noninteractive"
 
 if [ "$update" == "true" ]; then
     git pull upstream master
-    git submodule update --recursive --init
     exit
 fi
 
