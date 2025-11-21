@@ -1,23 +1,19 @@
+#TODO test dynamic linking
 [source]
 git = "https://gitlab.redox-os.org/tfinnegan937/dropbear.git"
 rev = "4c6828d39f988712cf4d2a64c7acf15d76f24aa9"
-
 [build]
-template = "custom"
+template = "configure"
+configureflags = [
+    "--disable-syslog",
+    "--disable-utmpx",
+    "--disable-utmp",
+    "--disable-lastlog",
+    "--disable-loginfunc",
+    "--disable-wtmp",
+    "--disable-wtmpx",
+]
 dependencies = [
     "openssl1",
     "zlib"
 ]
-script="""
-COOKBOOK_CONFIGURE_FLAGS+=(
-    --enable-static
-    --disable-syslog
-    --disable-utmpx
-    --disable-utmp
-    --disable-lastlog
-    --disable-loginfunc
-    --disable-wtmp
-    --disable-wtmpx
-)
-cookbook_configure
-"""
