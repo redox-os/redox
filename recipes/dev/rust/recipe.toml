@@ -8,7 +8,7 @@ shallow_clone = true
 [build]
 template = "custom"
 dependencies = [
-    "llvm18",
+    "llvm20",
     "zlib"
 ]
 script = """
