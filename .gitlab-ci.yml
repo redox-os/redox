@@ -1,5 +1,4 @@
 # The GitLab Continuous Integration configuration
-image: "ubuntu:24.04"
 
 variables:
   GIT_STRATEGY: "clone"
@@ -22,6 +21,7 @@ cargo-test:
     - cargo test --locked
 
 img:
+  image: "ubuntu:24.04"
   stage: test
   rules:
     - if: '$CI_COMMIT_BRANCH == "master" && $CI_PROJECT_NAMESPACE == "redox-os"'
@@ -50,6 +50,7 @@ img:
           zstd
   script:
     - |
+      export PATH="$HOME/.cargo/bin:$PATH" &&
       bash podman/rustinstall.sh &&
       source "$HOME/.cargo/env" &&
       PODMAN_BUILD=0 REPO_BINARY=1 COOKBOOK_VERBOSE=false make ci-img IMG_TAG=$CI_COMMIT_REF_NAME &&
