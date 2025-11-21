@@ -14,17 +14,15 @@ else
 	rm -rf $@ $@.partial
 	mkdir -p $@.partial
 	ln -sr recipes $@.partial/recipes
-	ln -sr $@-target $@.partial/target
 
 	# Install cookbook, installer, and redoxfs for host (may be outside of podman container)
 	#TODO: Build and install installer and redoxfs using cookbook?
-	export CARGO_TARGET_DIR=$@.partial/target && \
-		$(HOST_CARGO) install --root $@.partial --path . && \
-		cd $@.partial && \
-		./bin/repo fetch installer redoxfs && \
-		cd ../.. && \
-		$(HOST_CARGO) install --root $@.partial --path recipes/core/installer/source && \
-		$(HOST_CARGO) install --root $@.partial --path recipes/core/redoxfs/source
+	cd $@.partial && \
+		export CARGO_TARGET_DIR=../$@-target && \
+		$(HOST_CARGO) install --root . --path ../.. && \
+		env -u RUSTUP_TOOLCHAIN ./bin/repo fetch installer redoxfs && \
+		$(HOST_CARGO) install --root . --path recipes/core/installer/source && \
+		$(HOST_CARGO) install --root . --path recipes/core/redoxfs/source
 
 	mv $@.partial $@
 	touch $@
