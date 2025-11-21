@@ -84,10 +84,7 @@ function GNU_CONFIG_GET {
 
 pub(crate) static BUILD_PRESCRIPT: &str = r#"
 # Add cookbook bins to path
-if [ -z "${IS_REDOX}" ]
-then
 export PATH="${COOKBOOK_ROOT}/bin:${PATH}"
-fi
 
 # This puts cargo build artifacts in the build directory
 export CARGO_TARGET_DIR="${COOKBOOK_BUILD}/target"
@@ -184,16 +181,6 @@ COOKBOOK_CONFIGURE_FLAGS=(
     --enable-static
 )
 COOKBOOK_MAKE="make"
-
-if [ -z "${COOKBOOK_MAKE_JOBS}" ]
-then
-if [ -z "${IS_REDOX}" ]
-then
-COOKBOOK_MAKE_JOBS="$(nproc)"
-else
-COOKBOOK_MAKE_JOBS="1"
-fi
-fi
 
 function cookbook_configure {
     "${COOKBOOK_CONFIGURE}" "${COOKBOOK_CONFIGURE_FLAGS[@]}" "$@"
