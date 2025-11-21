@@ -411,7 +411,13 @@ fn build_auto_deps(
 }
 
 fn get_remote_url(name: &PackageName, ext: &str) -> String {
-    return format!("{}/{}/{}.{}", REMOTE_PKG_SOURCE, redoxer::target(), name, ext);
+    return format!(
+        "{}/{}/{}.{}",
+        REMOTE_PKG_SOURCE,
+        redoxer::target(),
+        name,
+        ext
+    );
 }
 fn get_pubkey_url() -> String {
     return format!("{}/id_ed25519.pub.toml", REMOTE_PKG_SOURCE);
