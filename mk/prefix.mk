@@ -47,7 +47,7 @@ endif
 $(PREFIX)/relibc: | $(RELIBC_SOURCE)
 	mkdir -p "$(@D)"
 	rm -rf "$@.partial" "$@"
-	cp -r "$^" "$@.partial"
+	cp -r "$(RELIBC_SOURCE)" "$@.partial"
 	touch "$@.partial"
 	mv "$@.partial" "$@"
 
@@ -247,7 +247,7 @@ endif
 $(PREFIX)/relibc-freestanding: | $(RELIBC_SOURCE)
 	mkdir -p "$(@D)"
 	rm -rf "$@.partial" "$@"
-	cp -r "$^" "$@.partial"
+	cp -r "$(RELIBC_SOURCE)" "$@.partial"
 	touch "$@.partial"
 	mv "$@.partial" "$@"
 
