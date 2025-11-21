@@ -69,8 +69,6 @@ endif # PODMAN_BUILD
 
 pull:
 	git pull
-	git submodule sync --recursive
-	git submodule update --recursive --init
 
 repo: $(BUILD)/repo.tag
 

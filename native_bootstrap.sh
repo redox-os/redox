@@ -1014,7 +1014,7 @@ statusCheck()
 boot()
 {
     echo "Cloning gitlab repo..."
-    git clone https://gitlab.redox-os.org/redox-os/redox.git --origin upstream --recursive
+    git clone https://gitlab.redox-os.org/redox-os/redox.git --origin upstream
     echo "Creating .config with PODMAN_BUILD=0"
     echo 'PODMAN_BUILD?=0' > redox/.config
     echo "Cleaning up..."
@@ -1047,7 +1047,6 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
     usage
 elif [ "$1" == "-u" ]; then
     git pull upstream master
-    git submodule update --recursive --init
     exit
 elif [ "$1" == "-s" ]; then
     statusCheck
@@ -1088,7 +1087,6 @@ fi
 
 if [ "$update" == "true" ]; then
     git pull upstream master
-    git submodule update --recursive --init
     exit
 fi
 

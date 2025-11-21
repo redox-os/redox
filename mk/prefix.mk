@@ -162,6 +162,7 @@ endif
 else
 
 $(ROOT)/rust/configure:
+	git submodule sync --recursive
 	git submodule update --progress --init --recursive --checkout rust
 
 PREFIX_FREESTANDING_INSTALL=$(PREFIX)/gcc-freestanding-install
