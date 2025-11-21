@@ -8,8 +8,6 @@ else
 	export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
 	./repo.sh $(REPO_APPSTREAM) $(REPO_NONSTOP) $(REPO_OFFLINE) $(COOKBOOK_OPTS) --with-package-deps
 	mkdir -p $(BUILD)
-	# make sure fstools.tag are newer than the things repo modifies
-	touch $(FSTOOLS_TAG)
 	touch $@
 endif
 
