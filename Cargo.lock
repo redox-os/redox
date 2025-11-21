@@ -2137,12 +2137,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "redox_termios"
-version = "0.1.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "20145670ba436b55d91fc92d25e71160fbfbdd57831631c8d7d36377a476f1cb"
-
-[[package]]
 name = "redox_users"
 version = "0.4.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2652,14 +2646,12 @@ dependencies = [
 
 [[package]]
 name = "termion"
-version = "4.0.5"
+version = "4.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3669a69de26799d6321a5aa713f55f7e2cd37bd47be044b50f2acafc42c122bb"
+checksum = "f44138a9ae08f0f502f24104d82517ef4da7330c35acd638f1f29d3cd5475ecb"
 dependencies = [
  "libc",
- "libredox",
  "numtoa",
- "redox_termios",
 ]
 
 [[package]]
