@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+#TODO determine minimum dependencies from cmake log
+[source]
+git = "https://invent.kde.org/plasma/discover"
+branch = "Plasma/6.5"
+shallow_clone = true
+[build]
+template = "cmake"

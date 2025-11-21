@@ -1,4 +1,4 @@
-#TODO missing script for cross-compilation
+#TODO missing script
 [source]
 tar = "https://dev.mysql.com/downloads/file/?id=524161"
 [build]
