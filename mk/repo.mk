@@ -6,7 +6,7 @@ ifeq ($(PODMAN_BUILD),1)
 else
 	export PATH="$(PREFIX_PATH):$$PATH" && \
 	export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
-	./repo.sh $(REPO_APPSTREAM) $(REPO_NONSTOP) $(REPO_OFFLINE) $(COOKBOOK_OPTS) --with-package-deps
+	./target/release/repo cook $(COOKBOOK_OPTS) --with-package-deps
 	mkdir -p $(BUILD)
 	touch $@
 endif
@@ -54,7 +54,7 @@ ifeq ($(PODMAN_BUILD),1)
 else
 	export PATH="$(PREFIX_PATH):$$PATH" && \
 	export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
-	./repo.sh $(REPO_OFFLINE) $(foreach f,$(subst $(comma), ,$*),$(f)) $(COOKBOOK_OPTS)
+	./target/release/repo cook $(foreach f,$(subst $(comma), ,$*),$(f)) $(COOKBOOK_OPTS)
 endif
 
 MOUNTED_TAG=$(MOUNT_DIR)~
@@ -70,7 +70,6 @@ else
 		$(MAKE) mount; \
 		touch $(MOUNTED_TAG); \
 	fi
-	$(if $(findstring nonstop,$(REPO_NONSTOP)),export COOKBOOK_NONSTOP=true && ,) \
 	./target/release/repo push $(foreach f,$(subst $(comma), ,$*),$(f)) "--sysroot=$(MOUNT_DIR)"
 	@if [ -f $(MOUNTED_TAG) ]; then \
 		$(MAKE) unmount && rm -f $(MOUNTED_TAG); \
@@ -92,7 +91,6 @@ else
 		$(MAKE) mount; \
 		touch $(MOUNTED_TAG); \
 	fi
-	$(if $(findstring nonstop,$(REPO_NONSTOP)),export COOKBOOK_NONSTOP=true && ,) \
 	./target/release/repo push $(COOKBOOK_OPTS) --with-package-deps "--sysroot=$(MOUNT_DIR)"
 	@if [ -f $(MOUNTED_TAG) ]; then \
 		$(MAKE) unmount && rm -f $(MOUNTED_TAG); \

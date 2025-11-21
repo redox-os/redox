@@ -38,7 +38,7 @@ pkgar-core = { git = "https://gitlab.redox-os.org/redox-os/pkgar.git" }
 pkgar-keys = { git = "https://gitlab.redox-os.org/redox-os/pkgar.git" }
 redox-pkg = "0.2.8"
 redox_installer = "0.2.37"
-redoxer = "0.2.60"
+redoxer = { git = "https://gitlab.redox-os.org/redox-os/redoxer" }
 regex = "1.11"
 serde = { version = "=1.0.197", features = ["derive"] }
 termion = "4"
