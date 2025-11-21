@@ -3,7 +3,6 @@ image: "ubuntu:24.04"
 
 variables:
   GIT_STRATEGY: "clone"
-  GIT_SUBMODULE_STRATEGY: "recursive"
 
 stages:
   - lint
@@ -48,13 +47,11 @@ img:
           help2man \
           autoconf \
           automake \
-          zstd &&
-      curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain none
+          zstd
   script:
     - |
       source "$HOME/.cargo/env" &&
       bash podman/rustinstall.sh &&
-      cargo build --manifest-path installer/Cargo.toml --release &&
       PODMAN_BUILD=0 REPO_BINARY=1 COOKBOOK_VERBOSE=false make ci-img IMG_TAG=$CI_COMMIT_REF_NAME &&
       ([ $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master" ] && rm -rf build/img/* || true)
   artifacts:
