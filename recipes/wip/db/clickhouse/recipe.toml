@@ -1,12 +1,13 @@
 #TODO not compiled or tested
 # build instructions: https://clickhouse.com/docs/en/development/build#how-to-build-clickhouse-on-any-linux
-#TODO probably disable some submodules to use our recipes
 [source]
-tar = "https://github.com/ClickHouse/ClickHouse"
+git = "https://github.com/ClickHouse/ClickHouse"
+rev = "v25.10.2.65-stable"
+shallow_clone = true
 [build]
 template = "cmake"
 dependencies = [
     "curl",
-    "openssl1",
+    "openssl3",
     "xz",
 ]
