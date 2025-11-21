@@ -28,7 +28,6 @@ cc = "x86_64-unknown-redox-gcc"
 cxx = "x86_64-unknown-redox-g++"
 ar = "x86_64-unknown-redox-ar"
 linker = "x86_64-unknown-redox-gcc"
-# Nasty path, please fix
-llvm-config = "../../../../bin/x86_64-unknown-redox-llvm-config"
+llvm-config = "./llvm-config"
 rpath = false
 crt-static = false
