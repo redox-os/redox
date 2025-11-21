@@ -90,7 +90,7 @@ fn publish_packages(recipe_list: Vec<String>, repo_dir: String) -> anyhow::Resul
     }
 
     // === 2. Optional AppStream generation ===
-    if env::var("APPSTREAM").ok().as_deref() == Some("1") {
+    if env::var("COOKBOOK_APPSTREAM").ok().as_deref() == Some("true") {
         eprintln!("\x1b[01;38;5;155mrepo - generating appstream data\x1b[0m");
 
         let root = env::var("ROOT").unwrap_or_else(|_| ".".into());

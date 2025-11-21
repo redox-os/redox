@@ -2166,9 +2166,8 @@ dependencies = [
 
 [[package]]
 name = "redoxer"
-version = "0.2.60"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2ef2d308648e7006723774da783dd5d9a6c931387b3dc7f903a10fa1c2026d0d"
+version = "0.2.61"
+source = "git+https://gitlab.redox-os.org/redox-os/redoxer#ea965186ce02cfc01a7d2085dfd007cdc67649c6"
 dependencies = [
  "anyhow",
  "dirs 6.0.0",
