@@ -405,7 +405,7 @@ pub(crate) fn fetch_cargo(
     } else {
         let cookbook_redoxer = Path::new("target/release/cookbook_redoxer")
             .canonicalize()
-            .unwrap_or(PathBuf::from("/bin/false"));
+            .unwrap_or(PathBuf::from("cargo"));
         Command::new(&cookbook_redoxer)
     };
     command.arg("fetch");
