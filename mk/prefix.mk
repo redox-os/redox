@@ -47,7 +47,7 @@ endif
 $(PREFIX)/relibc: | $(RELIBC_SOURCE)
 	mkdir -p "$(@D)"
 	rm -rf "$@.partial" "$@"
-	cp -r "$^" "$@.partial"
+	cp -r "$(RELIBC_SOURCE)" "$@.partial"
 	touch "$@.partial"
 	mv "$@.partial" "$@"
 
@@ -162,6 +162,7 @@ endif
 else
 
 $(ROOT)/rust/configure:
+	git submodule sync --recursive
 	git submodule update --progress --init --recursive --checkout rust
 
 PREFIX_FREESTANDING_INSTALL=$(PREFIX)/gcc-freestanding-install
@@ -247,7 +248,7 @@ endif
 $(PREFIX)/relibc-freestanding: | $(RELIBC_SOURCE)
 	mkdir -p "$(@D)"
 	rm -rf "$@.partial" "$@"
-	cp -r "$^" "$@.partial"
+	cp -r "$(RELIBC_SOURCE)" "$@.partial"
 	touch "$@.partial"
 	mv "$@.partial" "$@"
 

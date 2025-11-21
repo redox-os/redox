@@ -78,19 +78,13 @@ endif
 endif
 
 ifeq ($(REPO_APPSTREAM),1)
-	REPO_APPSTREAM=--appstream
-else ifeq ($(REPO_APPSTREAM),0)
-	REPO_APPSTREAM=
+	export COOKBOOK_APPSTREAM=true
 endif
 ifeq ($(REPO_NONSTOP),1)
-	REPO_NONSTOP=--nonstop
-else ifeq ($(REPO_NONSTOP),0)
-	REPO_NONSTOP=
+	export COOKBOOK_NONSTOP=true
 endif
 ifeq ($(REPO_OFFLINE),1)
-	REPO_OFFLINE=--offline
-else ifeq ($(REPO_OFFLINE),0)
-	REPO_OFFLINE=
+	export COOKBOOK_OFFLINE=true
 endif
 ifeq ($(REPO_DEBUG),1)
 	export COOKBOOK_NOSTRIP=true
@@ -141,13 +135,11 @@ FSTOOLS=build/fstools
 INSTALLER=$(FSTOOLS)/bin/redox_installer
 REDOXFS=$(FSTOOLS)/bin/redoxfs
 REDOXFS_MKFS=$(FSTOOLS)/bin/redoxfs-mkfs
-INSTALLER_OPTS=
+INSTALLER_OPTS=--cookbook=.
 COOKBOOK_OPTS="--filesystem=$(FILESYSTEM_CONFIG)"
-ifeq ($(REPO_BINARY),0)
-INSTALLER_OPTS+=--cookbook=.
-else
-INSTALLER_OPTS+=--cookbook=. --repo-binary
-COOKBOOK_OPTS+=" --repo-binary"
+ifeq ($(REPO_BINARY),1)
+INSTALLER_OPTS+=--repo-binary
+COOKBOOK_OPTS+=--repo-binary
 endif
 
 REPO_TAG=$(BUILD)/repo.tag
