@@ -17,6 +17,7 @@ RUN apt-get update \
         clang \
         cmake \
         curl \
+        default-jre-headless \
         dos2unix \
         doxygen \
         expect \
