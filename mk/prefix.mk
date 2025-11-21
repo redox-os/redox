@@ -36,7 +36,7 @@ PREFIX_STRIP=\
 		-exec strip --strip-unneeded {} ';' \
 		2> /dev/null
 
-$(RELIBC_SOURCE): $(FSTOOLS_TAG)
+$(RELIBC_SOURCE): | $(FSTOOLS_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
@@ -44,7 +44,7 @@ else
 	touch $(RELIBC_SOURCE)
 endif
 
-$(PREFIX)/relibc: $(RELIBC_SOURCE)
+$(PREFIX)/relibc: | $(RELIBC_SOURCE)
 	mkdir -p "$(@D)"
 	rm -rf "$@.partial" "$@"
 	cp -r "$^" "$@.partial"
@@ -244,7 +244,7 @@ else
 	mv "$@.partial" "$@"
 endif
 
-$(PREFIX)/relibc-freestanding: $(RELIBC_SOURCE)
+$(PREFIX)/relibc-freestanding: | $(RELIBC_SOURCE)
 	mkdir -p "$(@D)"
 	rm -rf "$@.partial" "$@"
 	cp -r "$^" "$@.partial"
