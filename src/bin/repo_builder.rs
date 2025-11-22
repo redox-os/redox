@@ -1,5 +1,6 @@
 use anyhow::anyhow;
 use cookbook::WALK_DEPTH;
+use cookbook::config::{get_config, init_config};
 use pkg::{Package, PackageName, recipes};
 use std::collections::{BTreeMap, HashMap};
 use std::env;
@@ -21,17 +22,38 @@ fn is_newer(src: &Path, dst: &Path) -> bool {
     }
 }
 
+#[derive(Clone)]
+struct CliConfig {
+    repo_dir: PathBuf,
+    nonstop: bool,
+    appstream: bool,
+    recipe_list: Vec<String>,
+}
+
+impl CliConfig {
+    fn parse_args() -> Result<Self, std::io::Error> {
+        let mut args = env::args().skip(1);
+        let repo_dir = args
+            .next()
+            .expect("Usage: repo_builder <REPO_DIR> <recipe1> <recipe2> ...");
+        Ok(CliConfig {
+            repo_dir: PathBuf::from(repo_dir),
+            nonstop: get_config().cook.nonstop,
+            appstream: env::var("COOKBOOK_APPSTREAM").ok().as_deref() == Some("true"),
+            recipe_list: args.collect(),
+        })
+    }
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut args = env::args().skip(1);
-    let repo_dir = args
-        .next()
-        .expect("Usage: repo_builder <REPO_DIR> <recipe1> <recipe2> ...");
-    Ok(publish_packages(args.collect(), repo_dir)?)
+    init_config();
+    let conf = CliConfig::parse_args()?;
+    Ok(publish_packages(&conf)?)
 }
 
 // TODO: Make this callable from repo bin
-fn publish_packages(recipe_list: Vec<String>, repo_dir: String) -> anyhow::Result<()> {
-    let repo_path = Path::new(&repo_dir);
+fn publish_packages(config: &CliConfig) -> anyhow::Result<()> {
+    let repo_path = &config.repo_dir;
     if !repo_path.is_dir() {
         fs::create_dir_all(repo_path)?;
     }
@@ -42,10 +64,12 @@ fn publish_packages(recipe_list: Vec<String>, repo_dir: String) -> anyhow::Resul
     // The following adds the package dependencies of the recipes to the repo as
     // well.
     let recipe_list = Package::new_recursive(
-        &recipe_list
+        &config
+            .recipe_list
             .iter()
             .map(PackageName::new)
             .collect::<Result<Vec<_>, _>>()?,
+        config.nonstop,
         WALK_DEPTH,
     )?
     .into_iter()
@@ -63,7 +87,7 @@ fn publish_packages(recipe_list: Vec<String>, repo_dir: String) -> anyhow::Resul
         };
 
         let cookbook_recipe = Path::new(&recipe_path);
-        let target = env::var("TARGET").unwrap_or_else(|_| "x86_64-unknown-linux-gnu".into());
+        let target = redoxer::target();
         let stage_dir = cookbook_recipe.join("target").join(&target).join("stage");
 
         let pkgar_src = stage_dir.with_extension("pkgar");
@@ -90,7 +114,7 @@ fn publish_packages(recipe_list: Vec<String>, repo_dir: String) -> anyhow::Resul
     }
 
     // === 2. Optional AppStream generation ===
-    if env::var("COOKBOOK_APPSTREAM").ok().as_deref() == Some("true") {
+    if config.appstream {
         eprintln!("\x1b[01;38;5;155mrepo - generating appstream data\x1b[0m");
 
         let root = env::var("ROOT").unwrap_or_else(|_| ".".into());
@@ -167,9 +191,10 @@ fn publish_packages(recipe_list: Vec<String>, repo_dir: String) -> anyhow::Resul
         let content = fs::read_to_string(&path)?;
         let parsed: Value = toml::from_str(&content)?;
 
+        let empty_ver = Value::String("".to_string());
         let version_str = parsed
-            .get("version")
-            .unwrap_or(&Value::String("".to_string()))
+            .get("blake3")
+            .unwrap_or_else(|| parsed.get("version").unwrap_or_else(|| &empty_ver))
             .to_string(); // includes quotes
         let package_name = path.file_stem().unwrap().to_string_lossy().to_string();
         packages.insert(package_name, version_str);

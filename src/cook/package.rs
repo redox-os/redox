@@ -1,8 +1,12 @@
-use std::{collections::BTreeSet, path::Path};
+use std::{
+    collections::BTreeSet,
+    path::{Path, PathBuf},
+};
 
 use pkg::{Package, PackageName};
 
 use crate::{
+    blake3::hash_to_hex,
     cook::{fs::*, pty::PtyOut},
     log_to_pty,
     recipe::{BuildKind, Recipe},
@@ -18,7 +22,7 @@ pub fn package(
 ) -> Result<(), String> {
     if recipe.build.kind == BuildKind::None {
         // metapackages don't have stage dir
-        package_toml(target_dir, name, recipe, auto_deps)?;
+        package_toml(target_dir, name, recipe, None, auto_deps)?;
         return Ok(());
     }
 
@@ -59,7 +63,13 @@ pub fn package(
     }
 
     if !package_meta.is_file() {
-        package_toml(target_dir, name, recipe, auto_deps)?;
+        package_toml(
+            target_dir,
+            name,
+            recipe,
+            Some((Path::new(public_path), &package_file)),
+            auto_deps,
+        )?;
     }
 
     Ok(())
@@ -69,6 +79,7 @@ pub fn package_toml(
     target_dir: &Path,
     name: &PackageName,
     recipe: &Recipe,
+    package_file: Option<(&Path, &PathBuf)>,
     auto_deps: &BTreeSet<PackageName>,
 ) -> Result<(), String> {
     let mut depends = recipe.package.dependencies.clone();
@@ -77,10 +88,37 @@ pub fn package_toml(
             depends.push(dep.clone());
         }
     }
+
+    let (hash, size) = if let Some((pkey_path, archive_path)) = package_file {
+        use pkgar_core::PackageSrc;
+        let pkey = pkgar_keys::PublicKeyFile::open(pkey_path)
+            .map_err(|e| format!("Unable to read public key: {e:?}"))?
+            .pkey;
+        let package = pkgar::PackageFile::new(archive_path, &pkey).map_err(|e| {
+            format!(
+                "Unable to read packaged pkgar file {}: {e:?}",
+                archive_path.display(),
+            )
+        })?;
+        let mt = std::fs::metadata(archive_path).map_err(|e| {
+            format!(
+                "Unable to read packaged pkgar file {}: {e:?}",
+                archive_path.display(),
+            )
+        })?;
+        (hash_to_hex(package.header().blake3), mt.len())
+    } else {
+        ("".into(), 0)
+    };
+
     let package = Package {
         name: name.clone(),
         version: package_version(recipe),
         target: redoxer::target().to_string(),
+        blake3: hash,
+        // this size will be different once pkgar supports compression
+        network_size: size,
+        storage_size: size,
         depends,
     };
 

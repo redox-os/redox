@@ -2047,6 +2047,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "redox-pkg"
+version = "0.2.8"
+source = "git+https://gitlab.redox-os.org/redox-os/pkgutils.git#08b71582e7fd43bf7af401cfcd5f0d402dd3f6da"
+dependencies = [
+ "anyhow",
+ "ignore",
+ "pkgar 0.1.19 (registry+https://github.com/rust-lang/crates.io-index)",
+ "pkgar-core 0.1.19 (registry+https://github.com/rust-lang/crates.io-index)",
+ "pkgar-keys 0.1.19 (registry+https://github.com/rust-lang/crates.io-index)",
+ "reqwest",
+ "serde",
+ "serde_derive",
+ "thiserror 1.0.69",
+ "toml 0.8.23",
+]
+
+[[package]]
 name = "redox-scheme"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2072,7 +2089,7 @@ dependencies = [
  "pkgar-core 0.1.19 (git+https://gitlab.redox-os.org/redox-os/pkgar.git)",
  "pkgar-keys 0.1.19 (git+https://gitlab.redox-os.org/redox-os/pkgar.git)",
  "ratatui",
- "redox-pkg",
+ "redox-pkg 0.2.8 (git+https://gitlab.redox-os.org/redox-os/pkgutils.git)",
  "redox_installer",
  "redoxer",
  "regex",
@@ -2102,7 +2119,7 @@ dependencies = [
  "pkgar-core 0.1.19 (registry+https://github.com/rust-lang/crates.io-index)",
  "pkgar-keys 0.1.19 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.8.5",
- "redox-pkg",
+ "redox-pkg 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "redox_liner",
  "redox_syscall",
  "redoxfs",
@@ -2161,12 +2178,12 @@ dependencies = [
 [[package]]
 name = "redoxer"
 version = "0.2.61"
-source = "git+https://gitlab.redox-os.org/redox-os/redoxer#ea965186ce02cfc01a7d2085dfd007cdc67649c6"
+source = "git+https://gitlab.redox-os.org/redox-os/redoxer.git#ea965186ce02cfc01a7d2085dfd007cdc67649c6"
 dependencies = [
  "anyhow",
  "dirs 6.0.0",
  "proc-mounts",
- "redox-pkg",
+ "redox-pkg 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "redox_installer",
  "redox_syscall",
  "redoxfs",

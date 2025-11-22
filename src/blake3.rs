@@ -29,3 +29,7 @@ pub fn blake3_silent<P: AsRef<Path>>(path: P) -> Result<String> {
     let res = format!("{}", hash.to_hex());
     Ok(res)
 }
+
+pub fn hash_to_hex(h: [u8; 32]) -> String {
+    format!("{}", blake3::Hash::from_bytes(h).to_hex())
+}
