@@ -1,0 +1,44 @@
+
+[source]
+tar = "https://tar.goaccess.io/goaccess-1.9.4.tar.gz"
+blake3 = "a7a7641c98956e8941191956129141e071321851d004269c7d21bce536d9224a"
+
+#git = "https://github.com/allinurl/goaccess.git"
+#branch = "master"
+
+patches = [
+    "redox1.patch",
+    "redox2.patch",
+]
+
+# This is only needed when compiling from git. The tar.gz already has the make files.
+script = """
+autoreconf -fiv
+automake --add-missing --copy --force-missing
+"""
+
+[build]
+dependencies = ["ncursesw"]
+template = "custom"
+
+script = """
+# Compile bin2c to be executed on the host
+gcc -O2 -o "$COOKBOOK_BUILD/bin2c" "$COOKBOOK_SOURCE/src/bin2c.c"
+chmod +x "$COOKBOOK_BUILD/bin2c"
+
+# Compile goaccess
+export COOKBOOK_NOSTRIP=1
+DYNAMIC_INIT
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --host=$ARCH-unknown-redox
+    --enable-utf8
+    --disable-geoip
+    --prefix=/usr
+    --disable-dependency-tracking
+    --with-bin2c-path="$COOKBOOK_BUILD/src/bin2c"
+)
+cookbook_configure
+"""
+
+
+
