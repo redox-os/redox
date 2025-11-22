@@ -8,12 +8,16 @@ default-run = "repo"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [[bin]]
-name = "cook"
-path = "src/bin/cook.rs"
-
-[[bin]]
 name = "cookbook_redoxer"
 path = "src/bin/cookbook_redoxer.rs"
+
+[[bin]]
+name = "repo"
+path = "src/bin/repo.rs"
+
+[[bin]]
+name = "repo_builder"
+path = "src/bin/repo_builder.rs"
 
 [lib]
 name = "cookbook"
@@ -36,9 +40,9 @@ pbr = "1.0.2"
 pkgar = { git = "https://gitlab.redox-os.org/redox-os/pkgar.git" }
 pkgar-core = { git = "https://gitlab.redox-os.org/redox-os/pkgar.git" }
 pkgar-keys = { git = "https://gitlab.redox-os.org/redox-os/pkgar.git" }
-redox-pkg = "0.2.8"
+redox-pkg = { git = "https://gitlab.redox-os.org/redox-os/pkgutils.git" }
 redox_installer = "0.2.37"
-redoxer = { git = "https://gitlab.redox-os.org/redox-os/redoxer" }
+redoxer = { git = "https://gitlab.redox-os.org/redox-os/redoxer.git" }
 regex = "1.11"
 serde = { version = "=1.0.197", features = ["derive"] }
 termion = "4"
