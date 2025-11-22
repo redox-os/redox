@@ -69,7 +69,7 @@ New reports should use an independent alphabetical order in the "Vendor" and "Mo
 
 A comes before S, R comes before X, G comes before L
 
-Each "Vendor" has its own alphabetical order in "Model", independent from items from other vendor.
+Each "Vendor" has its own alphabetical order in "Model", independent from models from other vendor.
 
 ## Recommended
 
