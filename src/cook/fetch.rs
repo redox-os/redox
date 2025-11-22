@@ -1,3 +1,4 @@
+use crate::REMOTE_PKG_SOURCE;
 use crate::config::translate_mirror;
 use crate::cook::fs::*;
 use crate::cook::pty::PtyOut;
@@ -33,10 +34,15 @@ pub fn fetch_offline(
     logger: &PtyOut,
 ) -> Result<PathBuf, String> {
     let source_dir = recipe_dir.join("source");
-    if recipe.build.kind == BuildKind::None || recipe.build.kind == BuildKind::Remote {
+    if recipe.build.kind == BuildKind::None {
         // the build function doesn't need source dir exists
         return Ok(source_dir);
     }
+    if recipe.build.kind == BuildKind::Remote {
+        fetch_remote(recipe_dir, true, logger)?;
+        return Ok(source_dir);
+    }
+
     match &recipe.source {
         Some(SourceRecipe::Path { path: _ }) | None => {
             return fetch(recipe_dir, recipe, logger);
@@ -71,6 +77,7 @@ pub fn fetch_offline(
                                 "The downloaded tar blake3 '{source_tar_blake3}' is not equal to blake3 in recipe.toml."
                             ));
                         }
+                        create_dir(&source_dir)?;
                         fetch_extract_tar(source_tar, &source_dir, logger)?;
                         fetch_apply_patches(recipe_dir, patches, script, &source_dir, logger)?;
                     } else {
@@ -92,10 +99,15 @@ pub fn fetch_offline(
 
 pub fn fetch(recipe_dir: &Path, recipe: &Recipe, logger: &PtyOut) -> Result<PathBuf, String> {
     let source_dir = recipe_dir.join("source");
-    if recipe.build.kind == BuildKind::None || recipe.build.kind == BuildKind::Remote {
+    if recipe.build.kind == BuildKind::None {
         // the build function doesn't need source dir exists
         return Ok(source_dir);
     }
+    if recipe.build.kind == BuildKind::Remote {
+        fetch_remote(recipe_dir, false, logger)?;
+        return Ok(source_dir);
+    }
+
     match &recipe.source {
         Some(SourceRecipe::SameAs { same_as }) => {
             let (canon_dir, recipe) = fetch_resolve_canon(recipe_dir, &same_as)?;
@@ -412,6 +424,45 @@ pub(crate) fn fetch_cargo(
     command.arg("--manifest-path");
     command.arg(source_dir.join("Cargo.toml").into_os_string());
     run_command(command, logger)?;
+    Ok(())
+}
+
+fn get_remote_url(name: &str, ext: &str) -> String {
+    return format!(
+        "{}/{}/{}.{}",
+        REMOTE_PKG_SOURCE,
+        redoxer::target(),
+        name,
+        ext
+    );
+}
+
+fn get_pubkey_url() -> String {
+    return format!("{}/id_ed25519.pub.toml", REMOTE_PKG_SOURCE);
+}
+
+pub fn fetch_remote(recipe_dir: &Path, offline_mode: bool, logger: &PtyOut) -> Result<(), String> {
+    let target_dir = create_target_dir(recipe_dir)?;
+    let name = recipe_dir
+        .file_name()
+        .ok_or("Unable to get recipe name")?
+        .to_str()
+        .unwrap();
+    let source_pkgar = target_dir.join("source.pkgar");
+    let source_toml = target_dir.join("source.toml");
+    let source_pubkey = target_dir.join("id_ed25519.pub.toml");
+
+    if !offline_mode {
+        //TODO: Check freshness
+        download_wget(&get_remote_url(name, "pkgar"), &source_pkgar, logger)?;
+        download_wget(&get_remote_url(name, "toml"), &source_toml, logger)?;
+        download_wget(&get_pubkey_url(), &source_pubkey, logger)?;
+    } else {
+        offline_check_exists(&source_pkgar)?;
+        offline_check_exists(&source_toml)?;
+        offline_check_exists(&source_pubkey)?;
+    }
+
     Ok(())
 }
 

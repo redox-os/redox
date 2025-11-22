@@ -19,8 +19,6 @@ use std::{
 
 use crate::{is_redox, log_to_pty};
 
-use crate::REMOTE_PKG_SOURCE;
-
 fn auto_deps_from_dynamic_linking(
     stage_dir: &Path,
     dep_pkgars: &BTreeSet<(PackageName, PathBuf)>,
@@ -314,7 +312,7 @@ pub fn build(
                 flags_fn("COOKBOOK_MESON_FLAGS", mesonflags),
             ),
             BuildKind::Custom { script } => script.clone(),
-            BuildKind::Remote => return build_remote(target_dir, name, offline_mode, logger),
+            BuildKind::Remote => return build_remote(target_dir),
             BuildKind::None => "".to_owned(),
         };
 
@@ -410,41 +408,13 @@ fn build_auto_deps(
     Ok(auto_deps)
 }
 
-fn get_remote_url(name: &PackageName, ext: &str) -> String {
-    return format!(
-        "{}/{}/{}.{}",
-        REMOTE_PKG_SOURCE,
-        redoxer::target(),
-        name,
-        ext
-    );
-}
-fn get_pubkey_url() -> String {
-    return format!("{}/id_ed25519.pub.toml", REMOTE_PKG_SOURCE);
-}
-
-pub fn build_remote(
-    target_dir: &Path,
-    name: &PackageName,
-    offline_mode: bool,
-    logger: &PtyOut,
-) -> Result<(PathBuf, BTreeSet<PackageName>), String> {
+pub fn build_remote(target_dir: &Path) -> Result<(PathBuf, BTreeSet<PackageName>), String> {
     // download straight from remote source then declare pkg dependencies as autodeps dependency
     let stage_dir = target_dir.join("stage");
 
     let source_pkgar = target_dir.join("source.pkgar");
     let source_toml = target_dir.join("source.toml");
     let source_pubkey = target_dir.join("id_ed25519.pub.toml");
-
-    if !offline_mode {
-        download_wget(&get_remote_url(name, "pkgar"), &source_pkgar, logger)?;
-        download_wget(&get_remote_url(name, "toml"), &source_toml, logger)?;
-        download_wget(&get_pubkey_url(), &source_pubkey, logger)?;
-    } else {
-        offline_check_exists(&source_pkgar)?;
-        offline_check_exists(&source_toml)?;
-        offline_check_exists(&source_pubkey)?;
-    }
 
     if stage_dir.is_dir() && modified(&source_pkgar)? > modified(&stage_dir)? {
         remove_all(&stage_dir)?
