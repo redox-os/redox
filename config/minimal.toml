@@ -12,7 +12,7 @@ filesystem_size = 196
 coreutils = {}
 extrautils = {}
 ion = {}
-smith = {}
+kibi = {}
 
 [[files]]
 path = "/usr/lib/init.d/30_console"
