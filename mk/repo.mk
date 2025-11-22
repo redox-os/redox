@@ -21,6 +21,14 @@ else
 	@./target/release/repo tree $(COOKBOOK_OPTS) --with-package-deps
 endif
 
+# Fetch all recipes source or binary from filesystem config
+fetch: $(FSTOOLS_TAG) FORCE
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
+	@./target/release/repo fetch $(COOKBOOK_OPTS) --with-package-deps
+endif
+
 # Find recipe for one or more targets separated by comma
 find.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
