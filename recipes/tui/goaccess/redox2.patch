@@ -1,0 +1,60 @@
+From 4a564a6b0f9d4ee7a804b9dbb391e7421187014b Mon Sep 17 00:00:00 2001
+From: Rafael Senties Martinelli <rafael@rsm92.fr>
+Date: Sun, 19 Oct 2025 20:08:10 +0200
+Subject: [PATCH 2/2] Add option to ignore building bin2c
+
+---
+ Makefile.am  |  9 +++++++++
+ configure.ac | 16 ++++++++++++++++
+ 2 files changed, 25 insertions(+)
+
+diff --git a/Makefile.am b/Makefile.am
+index 7696c8f5..8d0fcdcd 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -51,6 +51,15 @@ CLEANFILES =                          \
+   resources/js/charts.js.tmp          \
+   resources/js/app.js.tmp
+ 
++# Prevent rebuilding bin2c if binary already exists
++bin2c$(EXEEXT):
++if USE_PREBUILT_BIN2C
++	@echo "Using prebuilt bin2c from $(BIN2C_PATH)"
++	cp $(BIN2C_PATH) bin2c$(EXEEXT)
++else
++	$(AM_V_CCLD)$(LINK) $(bin2c_OBJECTS) $(bin2c_LDADD) $(LIBS)
++endif
++
+ # Tpls
+ src/tpls.h: bin2c$(EXEEXT) $(srcdir)/resources/tpls.html
+ if HAS_SEDTR
+diff --git a/configure.ac b/configure.ac
+index 790499ce..feaf72d2 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -105,6 +105,22 @@ if test "$with_getline" = "yes"; then
+   AC_DEFINE([WITH_GETLINE], 1, [Build using GNU getline.])
+ fi
+ 
++# bin2c
++AC_ARG_WITH([bin2c-path],
++    [AS_HELP_STRING([--with-bin2c-path=PATH], [Use prebuilt bin2c binary at PATH])],
++    [BIN2C_PATH="$withval"],
++    [BIN2C_PATH=""])
++
++if test -n "$BIN2C_PATH"; then
++    USE_PREBUILT_BIN2C=true
++else
++    USE_PREBUILT_BIN2C=false
++fi
++
++AM_CONDITIONAL([USE_PREBUILT_BIN2C], [test "$USE_PREBUILT_BIN2C" = true])
++AC_SUBST([BIN2C_PATH])
++
++
+ # UTF8
+ AC_ARG_ENABLE([utf8],[AS_HELP_STRING([--enable-utf8],[Enable ncurses library that handles wide characters. Default is disabled])],[utf8="$enableval"],[utf8=no])
+ 
+-- 
+2.51.1.dirty
+
