@@ -8,7 +8,7 @@ This document tracks the current hardware compatibility of Redox.
 - [General](#general)
 - [Contribute to this document](#contribute-to-this-document)
     - [Template](#template)
-    - [Data ordering](#data-ordering)
+    - [Table row ordering](#table-row-ordering)
 - [Recommended](#recommended)
 - [Booting](#booting)
 - [Broken](#broken)
@@ -35,17 +35,16 @@ You can use the "Custom" word on the "Vendor" and "Model" categories, we also re
 
 ## General
 
-This section cover things to consider.
+This section contain limitations to consider.
 
 - ACPI support is incomplete (some things are hardcoded on the kernel)
-- Only USB input devices are supported
-- Wi-Fi is not supported
-- GPU drivers aren't supported (only VESA and UEFI GOP)
+- Wi-Fi is not supported yet
+- GPU drivers aren't supported yet (only VESA and UEFI GOP)
 - Automatic operating system discovery on boot loader is not implemented (remember this before installing Redox)
 
 ## Contribute to this document
 
-For project-wide contribution guidelines, please refer to the [CONTRIBUTING.md](./CONTRIBUTING.md) file.
+To contribute to this document, learn how to create your GitLab account, follow the project-wide contribution guidelines and suggestions, please refer to the [CONTRIBUTING.md](./CONTRIBUTING.md) document.
 
 ### Template
 
@@ -55,19 +54,26 @@ You will use this template to insert your computer on the table.
 |  |  |  |  |  |  |  |  |
 ```
 
-### Data ordering
+The Redox image date should use the [ISO format](https://en.wikipedia.org/wiki/ISO_8601)
 
-Please insert new rows in alphabetical order on the applicable table. Alphabetical order is determined by a naive comparison of the entire row as a string, as shown in the following snippet:
+### Table row ordering
 
-```rust
-let row1 = "| System76 | Galago Pro (galp5) | [...] |";
-let row2 = "| System76 | Lemur Pro (lemp9) | [...] |";
-assert!(row1 < row2); // row1 comes before row2, as "G" comes before "L"
+New reports should use an independent alphabetical order in the "Vendor" and "Model" table rows, for example:
+
 ```
+| ASUS | ROG g55vw |
+| ASUS | X554L |
+| System76 | Galago Pro (galp5) |
+| System76 | Lemur Pro (lemp9) |
+```
+
+A comes before S, R comes before X, G comes before L
+
+Each "Vendor" has its own alphabetical order in "Model", independent from items from other vendor.
 
 ## Recommended
 
-| **Vendor** | **Model** | **Redox Version** | **Image Date ([ISO format](https://en.wikipedia.org/wiki/ISO_8601))** | **Variant** | **CPU Architecture** | **Motherboard Firmware** | **Report** |
+| **Vendor** | **Model** | **Redox Version** | **Image Date** | **Variant** | **CPU Architecture** | **Motherboard Firmware** | **Report** |
 |------------|-----------|-------------------|----------------|-------------|----------------------|--------------------------|------------|
 | Lenovo | IdeaPad Y510P | 0.8.0 | 2022-11-11 | desktop | x86-64 | BIOS, UEFI | Boots to Orbital |
 | System76 | Galago Pro (galp5) | 0.8.0 | 2022-11-11 | desktop | x86-64 | UEFI | Boots to Orbital |
@@ -75,7 +81,7 @@ assert!(row1 < row2); // row1 comes before row2, as "G" comes before "L"
 
 ## Booting
 
-| **Vendor** | **Model** | **Redox Version** | **Image Date ([ISO format](https://en.wikipedia.org/wiki/ISO_8601))** | **Variant** | **CPU Architecture** | **Motherboard Firmware** | **Report** |
+| **Vendor** | **Model** | **Redox Version** | **Image Date** | **Variant** | **CPU Architecture** | **Motherboard Firmware** | **Report** |
 |------------|-----------|-------------------|----------------|-------------|----------------------|--------------------------|------------|
 | ASUS | Eee PC 900 | 0.8.0 | 2022-11-11 | desktop | i686 | BIOS | Boots to Orbital, No ethernet driver, Correct video mode not offered (firmware issue) |
 | ASUS | PRIME B350M-E (custom) | 0.9.0 | 2024-09-20 | desktop | x86-64 | UEFI | Partial support for the PS/2 keyboard, PS/2 mouse is broken |
@@ -96,7 +102,7 @@ assert!(row1 < row2); // row1 comes before row2, as "G" comes before "L"
 
 ## Broken
 
-| **Vendor** | **Model** | **Redox Version** | **Image Date ([ISO format](https://en.wikipedia.org/wiki/ISO_8601))** | **Variant** | **CPU Architecture** | **Motherboard Firmware** | **Report** |
+| **Vendor** | **Model** | **Redox Version** | **Image Date** | **Variant** | **CPU Architecture** | **Motherboard Firmware** | **Report** |
 |------------|-----------|-------------------|----------------|-------------|----------------------|--------------------------|------------|
 | ASUS | PN41 | 0.8.0 | 2024-05-30 | server | x86-64 | Unknown | Aborts after panic in xhcid |
 | BEELINK | U59 | 0.8.0 | 2024-05-30 | server | x86-64 | Unknown | Aborts after panic in xhcid |
