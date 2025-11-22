@@ -6,7 +6,7 @@ git = "https://github.com/uutils/coreutils"
 template = "custom"
 script = """
 DYNAMIC_INIT
-cookbook_cargo --no-default-features --features feat_os_unix_redox --bin coreutils
+CARGO_PROFILE_RELEASE_LTO=thin cookbook_cargo --no-default-features --features feat_os_unix_redox --bin coreutils
 
 BINS=(
     '['
