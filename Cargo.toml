@@ -40,9 +40,9 @@ pbr = "1.0.2"
 pkgar = { git = "https://gitlab.redox-os.org/redox-os/pkgar.git" }
 pkgar-core = { git = "https://gitlab.redox-os.org/redox-os/pkgar.git" }
 pkgar-keys = { git = "https://gitlab.redox-os.org/redox-os/pkgar.git" }
-redox-pkg = { git = "https://gitlab.redox-os.org/redox-os/pkgutils.git" }
-redox_installer = "0.2.37"
-redoxer = { git = "https://gitlab.redox-os.org/redox-os/redoxer.git" }
+redox-pkg = { git = "https://gitlab.redox-os.org/redox-os/pkgutils.git", default-features = false }
+redox_installer = { git = "https://gitlab.redox-os.org/redox-os/installer.git", default-features = false }
+redoxer = { git = "https://gitlab.redox-os.org/redox-os/redoxer.git", default-features = false }
 regex = "1.11"
 serde = { version = "=1.0.197", features = ["derive"] }
 termion = "4"
@@ -57,6 +57,3 @@ version = "0.29.0"
 default-features = false
 features = ["termion"]
 optional = true
-
-[dev-dependencies]
-tempfile = "3"
