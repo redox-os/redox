@@ -69,6 +69,7 @@ endif # PODMAN_BUILD
 
 pull:
 	git pull
+	rm -f $(FSTOOLS_TAG)
 
 repo: $(BUILD)/repo.tag
 
