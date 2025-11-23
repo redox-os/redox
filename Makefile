@@ -37,8 +37,8 @@ ifeq ($(PODMAN_BUILD),1)
 ifneq ("$(wildcard $(CONTAINER_TAG))","")
 	$(PODMAN_RUN) make $@
 else
-	$(info will not run cookbook clean as container is not built)
-	$(MAKE) clean PODMAN_BUILD=0 NOT_ON_PODMAN=1
+    $(info will not run cookbook clean as container is not built)
+	$(MAKE) clean PODMAN_BUILD=0 NOT_ON_PODMAN=1 SKIP_CHECK_TOOLS=1
 endif # CONTAINER_TAG
 else
 ifneq ($(NOT_ON_PODMAN),1)
@@ -47,7 +47,6 @@ ifneq ($(NOT_ON_PODMAN),1)
 	-$(FUMOUNT) /tmp/redox_installer/ || true
 endif # NOT_ON_PODMAN
 	rm -rf repo
-	rm -rf relibc/target
 	rm -rf $(BUILD) $(PREFIX)
 	$(MAKE) fstools_clean
 endif # PODMAN_BUILD
@@ -57,8 +56,8 @@ ifeq ($(PODMAN_BUILD),1)
 ifneq ("$(wildcard $(CONTAINER_TAG))","")
 	$(PODMAN_RUN) make $@
 else
-	$(info will not run cookbook unfetch as container is not built)
-	$(MAKE) distclean PODMAN_BUILD=0 NOT_ON_PODMAN=1
+    $(info will not run cookbook unfetch as container is not built)
+	$(MAKE) distclean PODMAN_BUILD=0 NOT_ON_PODMAN=1 SKIP_CHECK_TOOLS=1
 endif # CONTAINER_TAG
 else
 ifneq ($(NOT_ON_PODMAN),1)
