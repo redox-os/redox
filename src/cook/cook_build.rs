@@ -469,11 +469,14 @@ mod tests {
 
     #[test]
     fn file_system_loop_no_infinite_loop() {
+        let mut root = std::env::temp_dir();
+        root.push("temp_test_dir_file_system_loop_no_infinite_loop");
+        let _ = std::fs::remove_dir_all(&root);
+        std::fs::create_dir_all(&root).expect("Failed to create temporary root directory");
+
         // Hierarchy with an infinite loop
-        let temp = tempfile::tempdir().unwrap();
-        let root = temp.path();
         let dir = root.join("loop");
-        unix::fs::symlink(root, &dir).expect("Linking {dir:?} to {root:?}");
+        unix::fs::symlink(&root, &dir).expect("Linking {dir:?} to {root:?}");
 
         // Sanity check that we have a loop
         assert_eq!(
@@ -482,7 +485,7 @@ mod tests {
             "Expected a loop where {dir:?} points to {root:?}"
         );
 
-        let entries = auto_deps_from_dynamic_linking(root, &Default::default(), &None);
+        let entries = auto_deps_from_dynamic_linking(&root, &Default::default(), &None);
         assert!(
             entries.is_empty(),
             "auto_deps shouldn't have yielded any libraries"
