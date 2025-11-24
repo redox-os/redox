@@ -292,13 +292,20 @@ fn repo_inner(
             let (status_tx, status_rx) = mpsc::channel::<StatusUpdate>();
             let (mut stdout_writer, mut stderr_writer) = setup_logger(&status_tx, &recipe.name);
             let mut app = TuiApp::new(vec![recipe.clone()]);
-            app.dump_logs_anyway = true;
+            app.dump_logs_anyway = config.cook.verbose || !config.cook.nonstop;
+            let dump_fail_logs = !app.dump_logs_anyway;
             let th = thread::spawn(move || {
                 while let Ok(update) = status_rx.recv() {
-                    if update == StatusUpdate::CookThreadFinished {
-                        break;
+                    match &update {
+                        StatusUpdate::CookThreadFinished => break,
+                        StatusUpdate::FailCook(r, _) => {
+                            let (logs, line) = app.get_recipe_log(&r.name);
+                            if let Some(logs) = logs {
+                                println!("{}", join_logs(logs, line));
+                            }
+                        }
+                        _ => app.update_status(update),
                     }
-                    app.update_status(update);
                 }
             });
             let mut logger = Some((&mut stdout_writer, &mut stderr_writer));
@@ -313,11 +320,17 @@ fn repo_inner(
                 status_tx
                     .send(StatusUpdate::FlushLog(recipe.name.clone(), log_path))
                     .unwrap_or_default();
+                if dump_fail_logs && result.is_err() {
+                    status_tx
+                        .send(StatusUpdate::FailCook(recipe.clone(), "".into()))
+                        .unwrap_or_default();
+                }
             }
             status_tx
                 .send(StatusUpdate::CookThreadFinished)
                 .unwrap_or_default();
             let _ = th.join();
+            result?;
         }
         CliCommand::Unfetch => handle_clean(recipe, config, true, true)?,
         CliCommand::Clean => handle_clean(recipe, config, false, true)?,
