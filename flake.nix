@@ -6,9 +6,7 @@
     flake-parts.url = "github:hercules-ci/flake-parts";
     rust-overlay = {
       url = "github:oxalica/rust-overlay";
-      inputs = {
-        nixpkgs.follows = "nixpkgs";
-      };
+      inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
@@ -47,7 +45,7 @@
 
               overlays = [ rust-overlay.overlays.default ];
             };
-            rust-bin = pkgs.rust-bin.nightly."2025-01-12".default.override {
+            rust-bin = pkgs.rust-bin.nightly."2025-10-03".default.override {
               extensions = [
                 "rust-analyzer"
                 "rust-src"
@@ -71,19 +69,6 @@
                     rustc = rust-bin;
                   };
 
-                  cargo-config = rustPlatform.buildRustPackage {
-                    pname = "cargo-config";
-                    version = "0.1.1";
-                    src = pkgs.fetchFromGitHub {
-                      owner = "wesleywiser";
-                      repo = "cargo-config";
-                      rev = "cf576faf65913615ed424914daa960800ed3ebc4";
-                      sha256 = "sha256-HrITNTfjBppOH1MhfZHfzHc6N8ymcm7vaiBI94ctUOA=";
-                      fetchSubmodules = true;
-                    };
-                    # useFetchCargoVendor = true; # this is recommended, but fails in some python code?
-                    cargoHash = "sha256-yQpIKclZ8KLE5JGkB/tjKZA8ezaD9SbUthDsuBXYZjQ=";
-                  };
                   podmanSetupScript =
                     let
                       registriesConf = pkgs.writeText "registries.conf" ''
@@ -106,7 +91,7 @@
                       export PODMAN_SYSTEMD_UNIT=podman.socket
                     '';
                   # Provides a fake "docker" binary mapping to podman
-                  dockerCompat = pkgs.runCommandNoCC "docker-podman-compat" { } ''
+                  dockerCompat = pkgs.runCommand "docker-podman-compat" { } ''
                     mkdir -p $out/bin
                     ln -s ${pkgs.podman}/bin/podman $out/bin/docker
                   '';
@@ -114,13 +99,6 @@
                 in
                 pkgs.mkShell rec {
                   buildInputs = with pkgs; [
-                    # Compilation
-                    rust-bin
-
-                    # Utils
-                    cowsay
-                    lolcat
-
                     # Podman
                     dockerCompat
                     podman # Docker compat
@@ -130,65 +108,24 @@
                     slirp4netns # User-mode networking for unprivileged namespaces
                     fuse-overlayfs # CoW for images, much faster than default vfs
 
-                    # Cargo utilities
-                    cargo-config
-
-                    # Build Redox
-                    ant
-                    autoconf
-                    automake
-                    bison
-                    cmake
-                    curl
-                    doxygen
-                    expat
-                    expect
-                    file
-                    flex
-                    fuse
-                    gmp
-                    gnumake
-                    gnupatch
-                    gperf
-                    just
-                    libjpeg
-                    libpng
-                    libtool
-                    llvmPackages.clang
-                    llvmPackages.llvm
-                    lua
-                    m4
-                    meson
-                    nasm
-                    perl
-                    perl540Packages.HTMLParser
-                    perl540Packages.Po4a
-                    pkgconf
-                    podman
-                    protobuf
-                    (python3.withPackages (ps: with ps; [ mako ]))
+                    # with FSTOOLS_IN_PODMAN=1 these are not needed
+                    # without it, the installer fails to link FUSE somehow
+                    #fuse
+                    #rust-bin
                     qemu_kvm
-                    rust-cbindgen
-                    scons
-                    SDL
-                    syslinux
-                    texinfo
-                    unzip
-                    waf
-                    wget
-                    xdg-utils
-                    zip
                   ];
 
                   LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath buildInputs;
                   NIX_SHELL_BUILD = "1";
+                  FSTOOLS_IN_PODMAN = "1";
                   shellHook = ''
                     # Install required configuration
                     ${podmanSetupScript}
-                    echo "Redox environment loaded" | cowsay | lolcat
+                    echo "Redox podman build environment loaded"
                   '';
                 };
 
+              #TODO: This isn't tested yet, use at your own risk
               native = pkgs.mkShell rec {
                 nativeBuildInputs =
                   let
@@ -228,7 +165,6 @@
                     qemu_kvm
                     rust-cbindgen
                     scons
-                    syslinux
                     texinfo
                     unzip
                     waf
@@ -236,6 +172,8 @@
                     xdg-utils
                     xxd
                     zip
+                  ] ++ pkgs.lib.optionals pkgs.stdenv.hostPlatform.isx86 [
+                    pkgs.syslinux
                   ];
 
                 buildInputs = with pkgs; [
@@ -254,7 +192,7 @@
                 PODMAN_BUILD = "0";
                 shellHook = with pkgs; ''
                   export PKG_CONFIG_PATH="${fuse.dev}/lib/pkgconfig\
-                  :${libpng.dev}/lib/pkgconfig
+                  :${libpng.dev}/lib/pkgconfig"
                 '';
               };
             };
