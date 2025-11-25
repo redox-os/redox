@@ -3,6 +3,20 @@ git = "https://gitlab.redox-os.org/redox-os/website"
 [build]
 template = "custom"
 script = """
+export PATH="$HOME/.local/bin:$HOME/.local/opt/node/bin:$PATH"
+if ! command -v node &> /dev/null; then
+   echo "Installing Node via webi..."
+   curl -sS https://webi.sh/node | sh
+fi
+if ! command -v hugo &> /dev/null; then
+   echo "Installing Hugo via webi..."
+   curl -sS https://webi.sh/hugo | sh
+fi
+if ! command -v postcss &> /dev/null; then
+   echo "Installing PostCSS via npm..."
+   npm install -g postcss-cli
+fi
+
 rsync -a "${COOKBOOK_SOURCE}/" ./
 ./hugo.sh
 mkdir -pv "${COOKBOOK_STAGE}"/usr/share/website
