@@ -1,8 +1,10 @@
 [source]
 git = "https://github.com/RustPython/RustPython"
-# requires https://github.com/rust-lang/rust/pull/137319
-# since https://github.com/RustPython/RustPython/pull/5858
-rev = "e41d7f523a74c36b9f360d992ce0a9eb7e604c2b"
+# newer rev requires TLS 1.3 (openssl3) and 'bits/libc-header-start.h' for bindgen
+rev = "2025-10-13-main-51"
+patches = [
+  "redox.patch"
+]
 
 [build]
 dependencies = [
