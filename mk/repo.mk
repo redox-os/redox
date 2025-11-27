@@ -166,24 +166,13 @@ rp.%: $(FSTOOLS_TAG) FORCE
 
 # Invoke clean, repo.sh and push for one of more targets separated by comma
 crp.%: $(FSTOOLS_TAG) FORCE
-ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) make $@
-else
-	$(MAKE) c.$*
-	$(MAKE) r.$*
+	$(MAKE) cr.$*
 	$(MAKE) p.$*
-endif
 
 # Invoke unfetch. clean, repo.sh and push for one of more targets separated by comma
 ucrp.%: $(FSTOOLS_TAG) FORCE
-ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) make $@
-else
-	$(MAKE) u.$*
-	$(MAKE) c.$*
-	$(MAKE) r.$*
+	$(MAKE) ucr.$*
 	$(MAKE) p.$*
-endif
 
 export DEBUG_BIN?=
 
