@@ -872,6 +872,78 @@ solus()
     perl-html-parser
 }
 
+# Function to detect if the OS is Redox
+is_os_redox()
+{
+    [ "$(uname -s)" = "Redox" ]
+}
+
+# Function to detect what packages are installed
+detect_installed_packages()
+{
+    # This function can be used to check installed packages using pkg list
+    # For now, it lists installed packages
+    pkg list
+}
+
+###############################################################################
+# This function takes care of installing all dependencies for building Redox on
+# Redox OS
+# @params:    $1 the emulator to install, "virtualbox" or "qemu"
+###############################################################################
+redox()
+{
+    echo "Detected Redox OS"
+    echo "Installing missing packages..."
+
+    packages="rust \
+    cargo \
+    gcc \
+    gnu-make \
+    bison \
+    cmake \
+    wget \
+    file \
+    flex \
+    gperf \
+    expat \
+    libgmp \
+    libpng \
+    libjpeg \
+    sdl \
+    sdl2-ttf \
+    html-parser-perl \
+    libtool \
+    m4 \
+    nasm \
+    patch \
+    automake \
+    autoconf \
+    scons \
+    pkg-config \
+    po4a \
+    texinfo \
+    ninja-build \
+    meson \
+    python \
+    python3-mako \
+    xdg-utils \
+    vim \
+    perl \
+    doxygen"
+
+    if [ "$1" == "qemu" ]; then
+        packages="$packages qemu-system-x86_64"
+    elif [ "$1" == "virtualbox" ]; then
+        packages="$packages virtualbox"
+    else
+        echo "Unknown emulator: $1"
+        exit 1
+    fi
+
+    sudo pkg install $packages
+}
+
 ######################################################################
 # This function outlines the different options available for bootstrap
 ######################################################################
@@ -1097,8 +1169,11 @@ if [ "Darwin" == "$(uname -s)" ]; then
 else
     # Here we will use package managers to determine which operating system the user is using.
 
+    # Redox OS
+    if [ "Redox" == "$(uname -s)" ]; then
+        redox "$emulator"
     # SUSE and derivatives
-    if hash 2>/dev/null zypper; then
+    elif hash 2>/dev/null zypper; then
         suse "$emulator"
     # Debian or any derivative of it
     elif hash 2>/dev/null apt-get; then
