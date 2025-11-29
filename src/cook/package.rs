@@ -112,9 +112,9 @@ pub fn package_toml(
     };
 
     let package = Package {
-        name: name.clone(),
+        name: PackageName::new(name.name()).unwrap(),
         version: package_version(recipe),
-        target: redoxer::target().to_string(),
+        target: package_target(name).to_string(),
         blake3: hash,
         // this size will be different once pkgar supports compression
         network_size: size,
@@ -141,5 +141,13 @@ fn package_version(recipe: &Recipe) -> String {
         }
     } else {
         "TODO".into()
+    }
+}
+
+pub fn package_target(name: &PackageName) -> &'static str {
+    if name.is_host() {
+        redoxer::host_target()
+    } else {
+        redoxer::target()
     }
 }

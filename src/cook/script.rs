@@ -86,6 +86,12 @@ pub(crate) static BUILD_PRESCRIPT: &str = r#"
 # Add cookbook bins to path
 export PATH="${COOKBOOK_ROOT}/bin:${PATH}"
 
+# Add toolchain dir to path if exists
+if [ ! -z "${COOKBOOK_TOOLCHAIN}" ]
+then
+export PATH="${COOKBOOK_TOOLCHAIN}/bin:${PATH}"
+fi
+
 # This puts cargo build artifacts in the build directory
 export CARGO_TARGET_DIR="${COOKBOOK_BUILD}/target"
 

@@ -1,6 +1,7 @@
 use anyhow::anyhow;
 use cookbook::WALK_DEPTH;
 use cookbook::config::{get_config, init_config};
+use cookbook::cook::package::package_target;
 use pkg::{Package, PackageName, recipes};
 use std::collections::{BTreeMap, HashMap};
 use std::env;
@@ -53,7 +54,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 // TODO: Make this callable from repo bin
 fn publish_packages(config: &CliConfig) -> anyhow::Result<()> {
-    let repo_path = &config.repo_dir;
+    let repo_path = &config.repo_dir.join(redoxer::target());
     if !repo_path.is_dir() {
         fs::create_dir_all(repo_path)?;
     }
@@ -68,12 +69,14 @@ fn publish_packages(config: &CliConfig) -> anyhow::Result<()> {
             .recipe_list
             .iter()
             .map(PackageName::new)
+            // Don't publish host packages
+            .filter(|pkg| pkg.as_ref().is_ok_and(|p| !p.is_host()))
             .collect::<Result<Vec<_>, _>>()?,
         config.nonstop,
         WALK_DEPTH,
     )?
     .into_iter()
-    .map(|pkg| pkg.name.as_str().to_owned())
+    .map(|pkg| pkg.name.clone())
     .collect::<Vec<_>>();
 
     let mut appstream_sources: HashMap<String, PathBuf> = HashMap::new();
@@ -81,13 +84,12 @@ fn publish_packages(config: &CliConfig) -> anyhow::Result<()> {
 
     // === 1. Push recipes in list ===
     for recipe in &recipe_list {
-        let Some(recipe_path) = recipes::find(recipe) else {
+        let Some(recipe_path) = recipes::find(recipe.name()) else {
             eprintln!("recipe {} not found", recipe);
             continue;
         };
-
         let cookbook_recipe = Path::new(&recipe_path);
-        let target = redoxer::target();
+        let target = package_target(recipe);
         let stage_dir = cookbook_recipe.join("target").join(&target).join("stage");
 
         let pkgar_src = stage_dir.with_extension("pkgar");
@@ -109,7 +111,7 @@ fn publish_packages(config: &CliConfig) -> anyhow::Result<()> {
         }
 
         if stage_dir.join("usr/share/metainfo").exists() {
-            appstream_sources.insert(recipe.clone(), stage_dir.clone());
+            appstream_sources.insert(recipe.name().to_string(), stage_dir.clone());
         }
     }
 

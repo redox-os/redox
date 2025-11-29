@@ -442,7 +442,9 @@ fn get_pubkey_url() -> String {
 }
 
 pub fn fetch_remote(recipe_dir: &Path, offline_mode: bool, logger: &PtyOut) -> Result<(), String> {
-    let target_dir = create_target_dir(recipe_dir)?;
+    // TODO: allow download to host target
+    let target = redoxer::target();
+    let target_dir = create_target_dir(recipe_dir, target)?;
     let name = recipe_dir
         .file_name()
         .ok_or("Unable to get recipe name")?

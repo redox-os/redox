@@ -4,7 +4,7 @@ use cookbook::config::{CookConfig, get_config, init_config};
 use cookbook::cook::cook_build::build;
 use cookbook::cook::fetch::{fetch, fetch_offline};
 use cookbook::cook::fs::{create_target_dir, run_command};
-use cookbook::cook::package::package;
+use cookbook::cook::package::{package, package_target};
 use cookbook::cook::pty::{PtyOut, UnixSlavePty, flush_pty, setup_pty};
 use cookbook::cook::script::KILL_ALL_PID;
 use cookbook::cook::tree::{WalkTreeEntry, display_tree_entry, format_size, walk_tree_entry};
@@ -316,7 +316,8 @@ fn repo_inner(
             // successful fetch is not that useful to log
             if *command == CliCommand::Cook || result.is_err() {
                 flush_pty(&mut logger);
-                let log_path = log_path.join(format!("{}.log", recipe.name.as_str()));
+                let log_path =
+                    log_path.join(format!("{}/{}.log", recipe.target, recipe.name.name()));
                 status_tx
                     .send(StatusUpdate::FlushLog(recipe.name.clone(), log_path))
                     .unwrap_or_default();
@@ -344,7 +345,7 @@ fn publish_packages(recipe_names: &Vec<CookRecipe>, repo_path: &PathBuf) -> anyh
     let repo_bin = env::current_exe()?.parent().unwrap().join("repo_builder");
     let mut command = Command::new(repo_bin);
     command
-        .arg(repo_path.join(redoxer::target()))
+        .arg(repo_path)
         .args(recipe_names.iter().filter_map(|n| {
             if !n.is_deps {
                 Some(n.name.as_str())
@@ -415,7 +416,6 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
         config.category = Some(PathBuf::from("recipes").join(c));
     }
     if let Some(c) = config.logs_dir.as_mut() {
-        *c = c.join(redoxer::target());
         fs::create_dir_all(c).map_err(|e| anyhow!(e))?;
     }
     if override_filesystem_repo_binary {
@@ -487,7 +487,7 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
         } else {
             recipe_names
                 .iter()
-                .map(|f| CookRecipe::from_name(f.as_str()).unwrap())
+                .map(|f| CookRecipe::from_name(f.clone()).unwrap())
                 .collect()
         }
     };
@@ -570,7 +570,7 @@ fn handle_cook(
     logger: &PtyOut,
 ) -> anyhow::Result<()> {
     let recipe_dir = &recipe.dir;
-    let target_dir = create_target_dir(recipe_dir).map_err(|e| anyhow!(e))?;
+    let target_dir = create_target_dir(recipe_dir, recipe.target).map_err(|e| anyhow!(e))?;
     let (stage_dir, auto_deps) = build(
         recipe_dir,
         &source_dir,
@@ -639,7 +639,7 @@ fn handle_push(recipes: &Vec<CookRecipe>, config: &CliConfig) -> anyhow::Result<
             }
             WalkTreeEntry::NotBuilt => Err(anyhow!(
                 "Package {} has not been built",
-                package_name.as_str()
+                package_name.name()
             )),
             WalkTreeEntry::Deduped | WalkTreeEntry::Missing => {
                 return Ok(());
@@ -1026,7 +1026,8 @@ fn run_tui_cook(
                         log_to_pty!(&logger, "\n{:?}", err_ctx)
                     }
                     flush_pty(&mut logger);
-                    let log_path = log_path.join(format!("{}.log", name.as_str()));
+                    let log_path =
+                        log_path.join(format!("{}/{}.log", package_target(&name), name.name()));
                     cooker_status_tx
                         .send(StatusUpdate::FlushLog(name.clone(), log_path))
                         .unwrap_or_default();
@@ -1127,7 +1128,7 @@ fn run_tui_cook(
                         log_to_pty!(&logger, "\n{:?}", err_ctx)
                     }
                     flush_pty(&mut logger);
-                    let log_path = log_path.join(format!("{}.log", name.as_str()));
+                    let log_path = log_path.join(format!("{}/{}.log", recipe.target, name.name()));
                     fetcher_status_tx
                         .send(StatusUpdate::FlushLog(name.clone(), log_path))
                         .unwrap_or_default();
