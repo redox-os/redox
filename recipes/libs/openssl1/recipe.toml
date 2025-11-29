@@ -9,12 +9,18 @@ DYNAMIC_INIT
 ARCH="${TARGET%%-*}"
 COOKBOOK_CONFIGURE="${COOKBOOK_SOURCE}/Configure"
 COOKBOOK_CONFIGURE_FLAGS=(
-    shared
     threads
     no-dgram
     "redox-${ARCH}"
     --prefix="/"
 )
+
+if [ "${COOKBOOK_DYNAMIC}" = "1" ]; then
+    COOKBOOK_CONFIGURE_FLAGS+=(shared)
+else
+    COOKBOOK_CONFIGURE_FLAGS+=(no-shared)
+fi
+
 export CC="${CC_WRAPPER} ${GNU_TARGET}-gcc"
 "${COOKBOOK_CONFIGURE}" "${COOKBOOK_CONFIGURE_FLAGS[@]}"
 "${COOKBOOK_MAKE}" -j"${COOKBOOK_MAKE_JOBS}"
