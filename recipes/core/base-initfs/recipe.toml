@@ -4,16 +4,69 @@ same_as = "../base"
 [build]
 template = "custom"
 dependencies = [
-  "drivers-initfs",
   "redoxfs",
 ]
 script = """
-INITFS_RM_BINS='redoxfs-ar redoxfs-mkfs'
+BINS=(
+    init
+    logd
+    ramfs
+    randd
+    zerod
+
+    acpid
+    fbbootlogd
+    fbcond
+    hwd
+    inputd
+    lived
+    nvmed
+    pcid
+    pcid-spawner
+    rtcd
+    vesad
+)
+
+virt_bins()
+{
+    BINS+=(virtio-blkd virtio-gpud)
+}
+
+x86_common_bins()
+{
+    BINS+=(ahcid ided ps2d vesad)
+    virt_bins
+}
+
+aarch64_bins()
+{
+    case "${BOARD}" in
+        raspi3b*)
+            BINS+=(bcm2835-sdhcid)
+        ;;
+        *)
+        #qemu-virt
+            virt_bins
+        ;;
+    esac
+}
+
+case "${TARGET}" in
+    i586-unknown-redox | i686-unknown-redox)
+        x86_common_bins
+        ;;
+    x86_64-unknown-redox)
+        x86_common_bins
+        ;;
+    aarch64-unknown-redox)
+        aarch64_bins
+        ;;
+    *)
+        ;;
+esac
 
 rm -rf "${COOKBOOK_BUILD}/initfs"
 mkdir -p "${COOKBOOK_BUILD}/initfs/etc"
-
-cp -r "${COOKBOOK_SYSROOT}/"* "${COOKBOOK_BUILD}/initfs"
 
 # TODO: Move init.rc to another recipe, perhaps initfs-misc? Then it can be installed as a regular dependency.
 cp "${COOKBOOK_RECIPE}/init.rc" "${COOKBOOK_BUILD}/initfs/etc/init.rc"
@@ -24,32 +77,34 @@ elif [ -e ${COOKBOOK_RECIPE}/${TARGET}/init_drivers.rc ]; then
     cp "${COOKBOOK_RECIPE}/${TARGET}/init_drivers.rc" "${COOKBOOK_BUILD}/initfs/etc/init_drivers.rc"
 fi
 
-# Move /usr folders to / and remove links
-for folder in bin lib include share
+mkdir -pv "${COOKBOOK_BUILD}/initfs/etc/pcid"
+cp -v "${COOKBOOK_SOURCE}/drivers/initfs.toml" "${COOKBOOK_BUILD}/initfs/etc/pcid/initfs.toml"
+
+export CARGO_PROFILE_RELEASE_OPT_LEVEL=s
+export CARGO_PROFILE_RELEASE_PANIC=abort
+"${COOKBOOK_CARGO}" build ${build_flags} \
+    --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
+    $(for bin in "${BINS[@]}"; do echo "-p" "${bin}"; done)
+
+mkdir -pv "${COOKBOOK_BUILD}/initfs/bin" "${COOKBOOK_BUILD}/initfs/lib/drivers"
+for bin in "${BINS[@]}"
 do
-    rm "${COOKBOOK_BUILD}/initfs/${folder}"
-    mv "${COOKBOOK_BUILD}/initfs/usr/${folder}" "${COOKBOOK_BUILD}/initfs/${folder}"
-done
-rmdir "${COOKBOOK_BUILD}/initfs/usr"
-
-for bin in ${INITFS_RM_BINS}; do
-  rm -f "${COOKBOOK_BUILD}/initfs/bin/$bin"
-done
-
-mkdir -pv "${COOKBOOK_BUILD}/initfs/bin"
-for package in init logd ramfs randd zerod; do
-    "${COOKBOOK_CARGO}" build \
-        --manifest-path "${COOKBOOK_SOURCE}/${package}/Cargo.toml" \
-        ${build_flags}
-    cp -v \
-        "target/${TARGET}/${build_type}/${package}" \
-        "${COOKBOOK_BUILD}/initfs/bin/${package}"
+    case "${bin}" in
+      init | logd | ramfs | randd | zerod | pcid | pcid-spawner | fbbootlogd | fbcond | inputd | vesad | lived | ps2d | acpid | bcm2835-sdhcid | rtcd | hwd)
+        cp -v "target/${TARGET}/${build_type}/${bin}" "${COOKBOOK_BUILD}/initfs/bin"
+        ;;
+      *)
+        cp -v "target/${TARGET}/${build_type}/${bin}" "${COOKBOOK_BUILD}/initfs/lib/drivers"
+        ;;
+    esac
 done
 
 # TODO: symlinks aren't supported by redox-initfs
 #ln -sv zerod "${COOKBOOK_BUILD}/initfs/bin/nulld"
 
 cp "${COOKBOOK_BUILD}/initfs/bin/zerod" "${COOKBOOK_BUILD}/initfs/bin/nulld"
+
+cp "${COOKBOOK_SYSROOT}/usr/bin/redoxfs" "${COOKBOOK_BUILD}/initfs/bin"
 
 ARCH="$(echo "${GNU_TARGET}" | cut -d - -f1)"
 cargo \
