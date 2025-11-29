@@ -12,7 +12,6 @@ prompt = false
 base = {}
 base-initfs = {}
 bootloader = {}
-drivers = {}
 kernel = {}
 libgcc = {}
 libstdcxx = {}
