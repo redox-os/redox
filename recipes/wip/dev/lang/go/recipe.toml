@@ -21,27 +21,31 @@ fi
 # Go does not support out-of-tree builds :(
 rsync -a --delete "${COOKBOOK_SOURCE}/" ./
 
-export GOOS=redox
 case "${TARGET}" in
-    x86-unknown-redox)     export GOARCH=386;;
-    x86_64-unknown-redox)  export GOARCH=amd64;;
-    aarch64-unknown-redox) export GOARCH=arm64;;
-    riscv64-unknown-redox) export GOARCH=riscv64;;
+    x86_64-unknown-linux-gnu)  export GOARCH=amd64 GOOS=linux;;
+    aarch64-unknown-linux-gnu) export GOARCH=arm64 GOOS=linux;;
+    i586-unknown-redox)     export GOARCH=386 GOOS=redox;;
+    x86_64-unknown-redox)  export GOARCH=amd64 GOOS=redox;;
+    aarch64-unknown-redox) export GOARCH=arm64 GOOS=redox;;
+    riscv64gc-unknown-redox) export GOARCH=riscv64 GOOS=redox;;
 esac
 
 export CGO_ENABLED=1
-export CC=x86_64-unknown-redox-gcc
-export CCX=x86_64-unknown-redox-g++
-echo "go1.25" > VERSION # to set -trimpath
+echo "go1.25.0" > VERSION # to set -trimpath
 (cd ./src && bash ./make.bash)
 
 mkdir -p "${COOKBOOK_STAGE}"/usr/bin \
     "${COOKBOOK_STAGE}"/usr/lib/golang/{bin,lib,misc,pkg/include,pkg/tool,src}
-rsync -a bin/redox_${GOARCH}/* "${COOKBOOK_STAGE}"/usr/lib/golang/bin/
+
+if [ "$TARGET" = "$COOKBOOK_HOST_TARGET" ]; then
+    rsync -a bin/* "${COOKBOOK_STAGE}"/usr/lib/golang/bin/
+else
+    rsync -a bin/${GOOS}_${GOARCH}/* "${COOKBOOK_STAGE}"/usr/lib/golang/bin/
+fi
 rsync -a lib/* "${COOKBOOK_STAGE}"/usr/lib/golang/lib/
 rsync -a misc/* "${COOKBOOK_STAGE}"/usr/lib/golang/misc/
 rsync -a pkg/include/* "${COOKBOOK_STAGE}"/usr/lib/golang/pkg/include/
-rsync -a pkg/tool/redox_${GOARCH} "${COOKBOOK_STAGE}"/usr/lib/golang/pkg/tool/
+rsync -a pkg/tool/${GOOS}_${GOARCH} "${COOKBOOK_STAGE}"/usr/lib/golang/pkg/tool/
 rsync -a src/* "${COOKBOOK_STAGE}"/usr/lib/golang/src/
 cat go.env > "${COOKBOOK_STAGE}"/usr/lib/golang/go.env
 ln -s "../lib/golang/bin/go" "${COOKBOOK_STAGE}"/usr/bin/go
