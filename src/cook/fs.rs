@@ -36,12 +36,12 @@ pub fn create_dir_clean(dir: &Path) -> Result<(), String> {
     create_dir(dir)
 }
 
-pub fn create_target_dir(recipe_dir: &Path) -> Result<PathBuf, String> {
+pub fn create_target_dir(recipe_dir: &Path, target: &'static str) -> Result<PathBuf, String> {
     let target_parent_dir = recipe_dir.join("target");
     if !target_parent_dir.is_dir() {
         create_dir(&target_parent_dir)?;
     }
-    let target_dir = target_parent_dir.join(redoxer::target());
+    let target_dir = target_parent_dir.join(target);
     if !target_dir.is_dir() {
         create_dir(&target_dir)?;
     }
