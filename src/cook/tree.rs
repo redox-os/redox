@@ -54,7 +54,7 @@ pub fn walk_tree_entry(
     };
 
     let package_dir = &cook_recipe.dir;
-    let target_dir = create_target_dir(package_dir).map_err(|e| anyhow!(e))?;
+    let target_dir = create_target_dir(package_dir, redoxer::target()).map_err(|e| anyhow!(e))?;
     let pkg_path = target_dir.join("stage.pkgar");
     let pkg_toml = target_dir.join("stage.toml");
 

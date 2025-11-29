@@ -2,6 +2,7 @@ use pkg::package::PackageError;
 use pkg::{Package, PackageName};
 
 use crate::cook::fs::*;
+use crate::cook::package::package_target;
 use crate::cook::pty::PtyOut;
 use crate::cook::script::*;
 use crate::recipe::BuildKind;
@@ -174,6 +175,7 @@ pub fn build(
     logger: &PtyOut,
 ) -> Result<(PathBuf, BTreeSet<PackageName>), String> {
     let sysroot_dir = target_dir.join("sysroot");
+    let toolchain_dir = target_dir.join("toolchain");
     let stage_dir = target_dir.join("stage");
     let cli_verbose = crate::config::get_config().cook.verbose;
     let cli_jobs = crate::config::get_config().cook.jobs;
@@ -183,17 +185,24 @@ pub fn build(
     }
 
     let mut dep_pkgars = BTreeSet::new();
-    let build_deps = CookRecipe::get_build_deps_recursive(&recipe.build.dependencies, false, false)
-        .map_err(|e| format!("{:?}", e))?;
+    let mut dep_host_pkgars = BTreeSet::new();
+    let mut build_deps =
+        CookRecipe::get_build_deps_recursive(&recipe.build.dependencies, false, false)
+            .map_err(|e| format!("{:?}", e))?;
+    for dep in &recipe.build.dev_dependencies {
+        build_deps.push(CookRecipe::from_name(dep.clone()).map_err(|e| format!("{:?}", e))?);
+    }
     for dependency in build_deps.iter() {
-        dep_pkgars.insert((
-            dependency.name.clone(),
-            dependency
-                .dir
-                .join("target")
-                .join(redoxer::target())
-                .join("stage.pkgar"),
-        ));
+        let pkgar = dependency
+            .dir
+            .join("target")
+            .join(dependency.target)
+            .join("stage.pkgar");
+        if dependency.name.is_host() {
+            dep_host_pkgars.insert((dependency.name.clone(), pkgar));
+        } else {
+            dep_pkgars.insert((dependency.name.clone(), pkgar));
+        }
     }
 
     if stage_dir.exists() && !check_source {
@@ -207,57 +216,43 @@ pub fn build(
         .map(|(_dep, pkgar)| modified(pkgar))
         .max()
         .unwrap_or(Ok(SystemTime::UNIX_EPOCH))?;
+    let deps_host_modified = dep_host_pkgars
+        .iter()
+        .map(|(_dep, pkgar)| modified(pkgar))
+        .max()
+        .unwrap_or(Ok(SystemTime::UNIX_EPOCH))?;
 
     // Rebuild sysroot if source is newer
     //TODO: rebuild on recipe changes
-    if sysroot_dir.is_dir() {
-        let sysroot_modified = modified_dir(&sysroot_dir)?;
-        if sysroot_modified < source_modified || sysroot_modified < deps_modified {
-            log_to_pty!(logger, "DEBUG: updating '{}'", sysroot_dir.display());
-            remove_all(&sysroot_dir)?;
-        }
+    if recipe.build.kind != BuildKind::Remote {
+        build_deps_dir(
+            logger,
+            &sysroot_dir,
+            target_dir.join("sysroot.tmp"),
+            &dep_pkgars,
+            source_modified,
+            deps_modified,
+        )?;
     }
-    if !sysroot_dir.is_dir() && recipe.build.kind != BuildKind::Remote {
-        // Create sysroot.tmp
-        let sysroot_dir_tmp = target_dir.join("sysroot.tmp");
-        create_dir_clean(&sysroot_dir_tmp)?;
-
-        // Make sure sysroot/usr exists
-        create_dir(&sysroot_dir_tmp.join("usr"))?;
-        for folder in &["bin", "include", "lib", "share"] {
-            // Make sure sysroot/usr/$folder exists
-            create_dir(&sysroot_dir_tmp.join("usr").join(folder))?;
-
-            // Link sysroot/$folder sysroot/usr/$folder
-            symlink(Path::new("usr").join(folder), &sysroot_dir_tmp.join(folder))?;
-        }
-
-        for (_dep, archive_path) in &dep_pkgars {
-            let public_path = "build/id_ed25519.pub.toml";
-            pkgar::extract(
-                public_path,
-                &archive_path,
-                sysroot_dir_tmp.to_str().unwrap(),
-            )
-            .map_err(|err| {
-                format!(
-                    "failed to install '{}' in '{}': {:?}",
-                    archive_path.display(),
-                    sysroot_dir_tmp.display(),
-                    err
-                )
-            })?;
-        }
-
-        // Move sysroot.tmp to sysroot atomically
-        rename(&sysroot_dir_tmp, &sysroot_dir)?;
+    if recipe.build.kind != BuildKind::Remote && dep_host_pkgars.len() > 0 {
+        build_deps_dir(
+            logger,
+            &toolchain_dir,
+            target_dir.join("toolchain.tmp"),
+            &dep_host_pkgars,
+            source_modified,
+            deps_host_modified,
+        )?;
     }
 
     // Rebuild stage if source is newer
     //TODO: rebuild on recipe changes
     if stage_dir.is_dir() {
         let stage_modified = modified_dir(&stage_dir)?;
-        if stage_modified < source_modified || stage_modified < deps_modified {
+        if stage_modified < source_modified
+            || stage_modified < deps_modified
+            || stage_modified < deps_host_modified
+        {
             log_to_pty!(logger, "DEBUG: updating '{}'", stage_dir.display());
             remove_all(&stage_dir)?;
         }
@@ -324,6 +319,7 @@ pub fn build(
             let cookbook_stage = stage_dir_tmp.canonicalize().unwrap();
             let cookbook_source = source_dir.canonicalize().unwrap();
             let cookbook_sysroot = sysroot_dir.canonicalize().unwrap();
+            let cookbook_toolchain = toolchain_dir.canonicalize().ok();
             let bash_args = if cli_verbose { "-ex" } else { "-e" };
             let mut command = if is_redox() {
                 let mut command = Command::new("bash");
@@ -340,14 +336,18 @@ pub fn build(
                 command
             };
             command.current_dir(&cookbook_build);
+            command.env("TARGET", package_target(name));
             command.env("COOKBOOK_BUILD", &cookbook_build);
-            command.env("COOKBOOK_NAME", name.as_str());
+            command.env("COOKBOOK_NAME", name.name());
             command.env("COOKBOOK_HOST_TARGET", redoxer::host_target());
             command.env("COOKBOOK_RECIPE", &cookbook_recipe);
             command.env("COOKBOOK_ROOT", &cookbook_root);
             command.env("COOKBOOK_STAGE", &cookbook_stage);
             command.env("COOKBOOK_SOURCE", &cookbook_source);
             command.env("COOKBOOK_SYSROOT", &cookbook_sysroot);
+            if let Some(cookbook_toolchain) = &cookbook_toolchain {
+                command.env("COOKBOOK_TOOLCHAIN", cookbook_toolchain);
+            }
             command.env("COOKBOOK_MAKE_JOBS", cli_jobs.to_string());
             if cli_verbose {
                 command.env("COOKBOOK_VERBOSE", "1");
@@ -371,6 +371,56 @@ pub fn build(
     let auto_deps = build_auto_deps(recipe, target_dir, &stage_dir, dep_pkgars, logger)?;
 
     Ok((stage_dir, auto_deps))
+}
+
+fn build_deps_dir(
+    logger: &PtyOut,
+    deps_dir: &PathBuf,
+    deps_dir_tmp: PathBuf,
+    dep_pkgars: &BTreeSet<(PackageName, PathBuf)>,
+    source_modified: SystemTime,
+    deps_modified: SystemTime,
+) -> Result<(), String> {
+    if deps_dir.is_dir() {
+        let sysroot_modified = modified_dir(deps_dir)?;
+        if sysroot_modified < source_modified || sysroot_modified < deps_modified {
+            log_to_pty!(logger, "DEBUG: updating '{}'", deps_dir.display());
+            remove_all(deps_dir)?;
+        }
+    }
+    if !deps_dir.is_dir() {
+        // Create sysroot.tmp
+        create_dir_clean(&deps_dir_tmp)?;
+
+        // Make sure sysroot/usr exists
+        create_dir(&deps_dir_tmp.join("usr"))?;
+        for folder in &["bin", "include", "lib", "share"] {
+            // Make sure sysroot/usr/$folder exists
+            create_dir(&deps_dir_tmp.join("usr").join(folder))?;
+
+            // Link sysroot/$folder sysroot/usr/$folder
+            symlink(Path::new("usr").join(folder), &deps_dir_tmp.join(folder))?;
+        }
+
+        for (_dep, archive_path) in dep_pkgars {
+            let public_path = "build/id_ed25519.pub.toml";
+            pkgar::extract(public_path, &archive_path, deps_dir_tmp.to_str().unwrap()).map_err(
+                |err| {
+                    format!(
+                        "failed to install '{}' in '{}': {:?}",
+                        archive_path.display(),
+                        deps_dir_tmp.display(),
+                        err
+                    )
+                },
+            )?;
+        }
+
+        // Move sysroot.tmp to sysroot atomically
+        rename(&deps_dir_tmp, deps_dir)?;
+    }
+
+    Ok(())
 }
 
 /// Calculate automatic dependencies

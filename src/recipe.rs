@@ -12,7 +12,7 @@ use serde::{
     de::{Error as DeErrorT, value::Error as DeError},
 };
 
-use crate::WALK_DEPTH;
+use crate::{WALK_DEPTH, cook::package::package_target};
 
 /// Specifies how to download the source for a recipe
 #[derive(Debug, Clone, Deserialize, PartialEq, Serialize)]
@@ -189,6 +189,7 @@ pub struct CookRecipe {
     pub name: PackageName,
     pub dir: PathBuf,
     pub recipe: Recipe,
+    pub target: &'static str,
     /// If false, it's listed on install config
     pub is_deps: bool,
 }
@@ -208,19 +209,18 @@ impl Recipe {
 
 impl CookRecipe {
     pub fn new(name: PackageName, dir: PathBuf, recipe: Recipe) -> Result<Self, PackageError> {
+        let target = package_target(&name);
         Ok(Self {
             name,
             dir,
             recipe,
+            target,
             is_deps: false,
         })
     }
 
-    pub fn from_name(
-        name: impl TryInto<PackageName, Error = PackageError>,
-    ) -> Result<Self, PackageError> {
-        let name: PackageName = name.try_into()?;
-        let dir = recipes::find(name.as_str())
+    pub fn from_name(name: PackageName) -> Result<Self, PackageError> {
+        let dir = recipes::find(name.name())
             .ok_or_else(|| PackageError::PackageNotFound(name.clone()))?;
         let file = dir.join("recipe.toml");
         let recipe = Recipe::new(&file)?;
@@ -255,7 +255,7 @@ impl CookRecipe {
 
         let mut recipes = Vec::new();
         for name in names {
-            let recipe = Self::from_name(name.as_str())?;
+            let recipe = Self::from_name(name.clone())?;
 
             if recurse_build_deps {
                 let dependencies = Self::new_recursive(
