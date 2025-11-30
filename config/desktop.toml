@@ -32,7 +32,7 @@ data = """
 audiod
 export BROWSER /bin/netsurf-fb
 export VT 3
-orbital orblogin launcher
+nowait orbital orblogin launcher
 unset BROWSER
 unset VT
 """

@@ -14,6 +14,6 @@ data = """
 echo
 echo ## running redoxer in orbital ##
 export VT 3
-orbital redoxerd
+nowait orbital redoxerd
 unset VT
 """
