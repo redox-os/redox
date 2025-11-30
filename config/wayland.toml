@@ -12,6 +12,7 @@ filesystem_size = 2048
 # Package settings
 [packages]
 adwaita-icon-theme = {}
+bash = {}
 gtk3 = {}
 libxcursor = {}
 mesa = {}
@@ -31,10 +32,16 @@ export WAYLAND_DISPLAY wayland-1
 glib-compile-schemas /usr/share/glib-2.0/schemas/
 """
 
+# Overridden to launch smallvil instead of orblogin
 [[files]]
-path = "/usr/lib/init.d/40_wayland"
+path = "/usr/lib/init.d/20_orbital"
 data = """
-orbital-wayland
+audiod
+export BROWSER /bin/netsurf-fb
+export VT 3
+nowait orbital orbital-wayland
+unset BROWSER
+unset VT
 """
 
 [[files]]
