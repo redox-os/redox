@@ -898,8 +898,9 @@ redox()
 
     # Handle emulator selection
     if [ "$1" == "qemu" ]; then
-        echo "Note: QEMU is not yet available as a native package on Redox OS."
-        echo "Cross-compilation or building on another system is recommended for running the built system."
+        echo "QEMU is not available on Redox OS yet, but it is mandatory for running the built system."
+        echo "Please install QEMU manually on a compatible host or use another machine to run the emulator."
+        exit 1
     elif [ "$1" == "virtualbox" ]; then
         echo "VirtualBox is not supported on Redox OS."
         exit 1
@@ -912,23 +913,23 @@ redox()
     
     # Core development packages that are likely available on Redox
     # This list is conservative and only includes essentials
-    PKGS="gcc \
-    make \
-    cmake \
-    nasm \
-    pkg-config \
-    patch \
+    packages=""autoconf \
     automake \
-    autoconf \
-    bison \
-    flex \
-    curl \
-    wget \
-    perl \
-    python \
-    file \
-    libtool \
-    m4"
+    expat \
+    gcc13 \
+    gnu-make \
+    libgmp \
+    libjpeg \
+    libpng \
+    nasm \
+    patch \
+    pkg-config \
+    rust \
+    rustpython \
+    sdl1 \
+    sdl2-ttf \
+    vim"
+
     
     # Try to install packages, but don't fail if some are unavailable
     # since Redox package ecosystem is still developing
