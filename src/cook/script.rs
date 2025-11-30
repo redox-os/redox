@@ -90,6 +90,7 @@ export PATH="${COOKBOOK_ROOT}/bin:${PATH}"
 if [ ! -z "${COOKBOOK_TOOLCHAIN}" ]
 then
 export PATH="${COOKBOOK_TOOLCHAIN}/bin:${PATH}"
+export LD_LIBRARY_PATH="${COOKBOOK_TOOLCHAIN}/lib:${LD_LIBRARY_PATH}"
 fi
 
 # This puts cargo build artifacts in the build directory
