@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/nasedkinpv/numr"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages numr-cli numr-tui
+"""
