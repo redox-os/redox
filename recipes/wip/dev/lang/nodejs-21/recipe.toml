@@ -18,6 +18,20 @@ dependencies = [
     "zlib",
     "zstd",
 ]
+
+dev-dependencies = [
+    "host:libbrotli",
+    "host:c-ares",
+    "host:libuv",
+    "host:ngtcp2",
+    "host:nghttp2",
+    "host:nghttp3",
+    "host:openssl3",
+    "host:sqlite3",
+    "host:zlib",
+    "host:zstd",
+]
+
 script = """
 DYNAMIC_INIT
 export PYTHONDONTWRITEBYTECODE=1
@@ -26,15 +40,17 @@ export CC_host="$CC_WRAPPER gcc" CXX_host="$CC_WRAPPER g++"
 rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 
 case "${TARGET}" in
-    x86-unknown-redox)     export NODE_CPU=x32;;
-    x86_64-unknown-redox)  export NODE_CPU=x64;;
-    aarch64-unknown-redox) export NODE_CPU=arm64;;
+    x86_64-unknown-linux-gnu)  export NODE_CPU=x64 NODE_OS=linux;;
+    aarch64-unknown-linux-gnu) export NODE_CPU=arm64 NODE_OS=linux;;
+    i586-unknown-redox)        export NODE_CPU=ia32 NODE_OS=redox;;
+    x86_64-unknown-redox)      export NODE_CPU=x64 NODE_OS=redox;;
+    aarch64-unknown-redox)     export NODE_CPU=arm64 NODE_OS=redox;;
 esac
 
 COOKBOOK_CONFIGURE_FLAGS=(
   --prefix=/usr
   --dest-cpu=${NODE_CPU}
-  --dest-os=redox
+  --dest-os=${NODE_OS}
   --shared-cares
   --shared-libuv
   --shared-ngtcp2
@@ -42,6 +58,11 @@ COOKBOOK_CONFIGURE_FLAGS=(
   --shared-nghttp3
   --shared-openssl
   --shared-zlib
+# TODO: Find a way to separate host and target flags instead?
+# --shared-zlib-includes="${COOKBOOK_TOOLCHAIN}/include"
+  --shared-openssl-includes="${COOKBOOK_SYSROOT}/include"
+  --shared-zlib-libpath="${COOKBOOK_TOOLCHAIN}/lib"
+  --shared-openssl-libpath="${COOKBOOK_SYSROOT}/lib"
   --cross-compiling
 )
 COOKBOOK_CONFIGURE="./configure"
