@@ -13,7 +13,7 @@ netutils = {}
 path = "/usr/lib/init.d/10_net"
 data = """
 smolnetd
-dhcpd -b
+nowait dhcpd
 """
 
 ## Default net configuration (optimized for QEMU)
