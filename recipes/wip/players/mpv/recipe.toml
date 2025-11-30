@@ -1,9 +1,10 @@
 #TODO not compiled or tested
-# build instructions: https://github.com/mpv-player/mpv#compilation
 #TODO missing dependencies
+# build instructions: https://github.com/mpv-player/mpv#compilation
 [source]
 git = "https://github.com/mpv-player/mpv"
-rev = "e48ac7ce08462f5e33af6ef9deeac6fa87eef01e"
+branch = "release/0.40"
+shallow_clone = true
 [build]
 template = "meson"
 dependencies = [

@@ -1,8 +1,9 @@
-#TODO maybe wrong template, see https://gitlab.gnome.org/GNOME/snapshot
+#TODO not compiled or tested
 [source]
-tar = "https://download.gnome.org/sources/snapshot/45/snapshot-45.2.tar.xz"
+git = "https://gitlab.gnome.org/GNOME/snapshot"
+shallow_clone = true
 [build]
-template = "cargo"
+template = "meson"
 dependencies = [
     "glib",
     "gtk4",
