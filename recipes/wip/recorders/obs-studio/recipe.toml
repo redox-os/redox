@@ -1,32 +1,31 @@
 #TODO not compiled or tested
+#TODO discover minimum dependencies from cmake log
 # build instructions: https://github.com/obsproject/obs-studio/wiki/Building-OBS-Studio
-# maybe missing dependencies
 [source]
-git = "https://github.com/obsproject/obs-studio"
-rev = "b45a73296f4f898e2ed455023020058075c30bab"
+tar = "https://github.com/obsproject/obs-studio/releases/download/32.0.2/OBS-Studio-32.0.2-Sources.tar.gz"
 [build]
 template = "cmake"
-dependencies = [
-    "boost",
-    "librsvg",
-    "dbus",
-    "fontconfig",
-    "freetype2",
-    "jansson",
-    "pipewire",
-    "mesa",
-    "speexdsp",
-    "ffmpeg6",
-    "x264",
-    "curl",
-    "mbedtls",
-    "libva",
-    "qt5-base",
-    "qt5-svg",
-    "eudev",
-    "pciutils",
-    "libqrcodegenc",
-    "librist",
-    "libsrt",
-    "libwebsocket++",
-]
+# dependencies = [
+#     "boost",
+#     "librsvg",
+#     "dbus",
+#     "fontconfig",
+#     "freetype2",
+#     "jansson",
+#     "pipewire",
+#     "mesa",
+#     "speexdsp",
+#     "ffmpeg6",
+#     "x264",
+#     "curl",
+#     "mbedtls",
+#     "libva",
+#     "qt5-base",
+#     "qt5-svg",
+#     "eudev",
+#     "pciutils",
+#     "libqrcodegenc",
+#     "librist",
+#     "libsrt",
+#     "libwebsocket++",
+# ]
