@@ -1,0 +1,19 @@
+#TODO not compiled or tested
+[source]
+tar = "https://download.gnome.org/sources/evince/48/evince-48.1.tar.xz"
+[build]
+template = "meson"
+mesonflags = [
+    "-Dgtk_doc=false",
+    "-Duser_doc=false",
+    "-Dintrospection=false",
+    "-Ddbus=false",
+]
+dependencies = [
+    "glib",
+    "gtk4",
+    "libadwaita",
+    "cairo",
+    "libxml2",
+    "cairo",
+]
