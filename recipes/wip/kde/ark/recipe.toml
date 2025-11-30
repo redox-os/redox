@@ -1,0 +1,11 @@
+#TODO not compiled or tested
+#TODO discover minimum dependencies from cmake log
+[source]
+git = "https://invent.kde.org/utilities/ark"
+branch = "release/25.08"
+shallow_clone = true
+[build]
+template = "cmake"
+dependencies = [
+    "libarchive",
+]
