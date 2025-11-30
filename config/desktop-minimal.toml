@@ -20,7 +20,7 @@ orbutils-orblogin = {}
 path = "/usr/lib/init.d/20_orbital"
 data = """
 export VT 3
-orbital orblogin launcher
+nowait orbital orblogin launcher
 unset VT
 """
 

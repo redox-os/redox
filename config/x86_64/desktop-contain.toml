@@ -19,7 +19,7 @@ path = "/usr/lib/init.d/20_orbital"
 data = """
 audiod
 export VT 3
-orbital contain_orblogin launcher
+nowait orbital contain_orblogin launcher
 unset VT
 """
 

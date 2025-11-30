@@ -63,7 +63,7 @@ data = """
 audiod
 export BROWSER /bin/netsurf-fb
 export VT 3
-orbital orbital-x11
+nowait orbital orbital-x11
 unset BROWSER
 unset VT
 """
