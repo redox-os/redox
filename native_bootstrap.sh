@@ -872,33 +872,34 @@ solus()
     perl-html-parser
 }
 
-# Function to detect if the OS is Redox
+###############################################################################
+# Helper function to detect if we're running on Redox OS
+# This needs to be checked before FreeBSD since both use 'pkg' package manager
+###############################################################################
 is_os_redox()
 {
     [ "$(uname -s)" = "Redox" ]
 }
 
-# Function to detect what packages are installed on Redox OS
-# This is a utility function that can be used to check installed packages
-# Usage: detect_installed_packages
-# Returns: List of installed packages via 'pkg list'
-detect_installed_packages()
-{
-    pkg list
-}
-
 ###############################################################################
 # This function takes care of installing all dependencies for building Redox on
-# Redox OS
+# Redox OS itself (bootstrapping Redox on Redox)
 # @params:    $1 the emulator to install, "virtualbox" or "qemu"
 ###############################################################################
 redox()
 {
     echo "Detected Redox OS"
+    
+    # Check if git is installed
+    if [ -z "$(which git)" ]; then
+        echo "Installing git..."
+        sudo pkg install git
+    fi
 
+    # Handle emulator selection
     if [ "$1" == "qemu" ]; then
-        echo "QEMU is not available on Redox OS yet, but it is mandatory for running the built system."
-        echo "Please install QEMU manually on a compatible host or use another machine to run the emulator."
+        echo "Note: QEMU is not yet available as a native package on Redox OS."
+        echo "Cross-compilation or building on another system is recommended for running the built system."
     elif [ "$1" == "virtualbox" ]; then
         echo "VirtualBox is not supported on Redox OS."
         exit 1
@@ -907,47 +908,45 @@ redox()
         exit 1
     fi
 
-    echo "Installing missing packages..."
-
-    # Package list
-    # Note: Some packages may not be available yet on Redox OS
-    packages="rust \
-    cargo \
-    gcc \
-    gnu-make \
-    bison \
+    echo "Installing necessary build tools..."
+    
+    # Core development packages that are likely available on Redox
+    # This list is conservative and only includes essentials
+    PKGS="gcc \
+    make \
     cmake \
-    wget \
-    file \
-    flex \
-    gperf \
-    expat \
-    libgmp \
-    libpng \
-    libjpeg \
-    sdl \
-    sdl2-ttf \
-    html-parser-perl \
-    libtool \
-    m4 \
     nasm \
+    pkg-config \
     patch \
     automake \
     autoconf \
-    scons \
-    pkg-config \
-    po4a \
-    texinfo \
-    ninja-build \
-    meson \
-    python \
-    python3-mako \
-    xdg-utils \
-    vim \
+    bison \
+    flex \
+    curl \
+    wget \
     perl \
-    doxygen"
-
-    sudo pkg install $packages
+    python \
+    file \
+    libtool \
+    m4"
+    
+    # Try to install packages, but don't fail if some are unavailable
+    # since Redox package ecosystem is still developing
+    for pkg in $PKGS; do
+        if ! pkg list | grep -q "^${pkg}"; then
+            echo "Attempting to install ${pkg}..."
+            if ! sudo pkg install ${pkg} 2>/dev/null; then
+                echo "Warning: ${pkg} could not be installed. It may not be available yet."
+            fi
+        else
+            echo "${pkg} is already installed."
+        fi
+    done
+    
+    echo ""
+    echo "Note: Building Redox on Redox itself is experimental."
+    echo "Some dependencies may not be available yet in the Redox package repository."
+    echo "For the best build experience, consider using podman_bootstrap.sh on another system."
 }
 
 ######################################################################
