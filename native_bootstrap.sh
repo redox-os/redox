@@ -872,6 +872,84 @@ solus()
     perl-html-parser
 }
 
+# Function to detect if the OS is Redox
+is_os_redox()
+{
+    [ "$(uname -s)" = "Redox" ]
+}
+
+# Function to detect what packages are installed on Redox OS
+# This is a utility function that can be used to check installed packages
+# Usage: detect_installed_packages
+# Returns: List of installed packages via 'pkg list'
+detect_installed_packages()
+{
+    pkg list
+}
+
+###############################################################################
+# This function takes care of installing all dependencies for building Redox on
+# Redox OS
+# @params:    $1 the emulator to install, "virtualbox" or "qemu"
+###############################################################################
+redox()
+{
+    echo "Detected Redox OS"
+
+    if [ "$1" == "qemu" ]; then
+        echo "QEMU is not available on Redox OS yet, but it is mandatory for running the built system."
+        echo "Please install QEMU manually on a compatible host or use another machine to run the emulator."
+    elif [ "$1" == "virtualbox" ]; then
+        echo "VirtualBox is not supported on Redox OS."
+        exit 1
+    else
+        echo "Unknown emulator: $1"
+        exit 1
+    fi
+
+    echo "Installing missing packages..."
+
+    # Package list
+    # Note: Some packages may not be available yet on Redox OS
+    packages="rust \
+    cargo \
+    gcc \
+    gnu-make \
+    bison \
+    cmake \
+    wget \
+    file \
+    flex \
+    gperf \
+    expat \
+    libgmp \
+    libpng \
+    libjpeg \
+    sdl \
+    sdl2-ttf \
+    html-parser-perl \
+    libtool \
+    m4 \
+    nasm \
+    patch \
+    automake \
+    autoconf \
+    scons \
+    pkg-config \
+    po4a \
+    texinfo \
+    ninja-build \
+    meson \
+    python \
+    python3-mako \
+    xdg-utils \
+    vim \
+    perl \
+    doxygen"
+
+    sudo pkg install $packages
+}
+
 ######################################################################
 # This function outlines the different options available for bootstrap
 ######################################################################
@@ -1097,8 +1175,11 @@ if [ "Darwin" == "$(uname -s)" ]; then
 else
     # Here we will use package managers to determine which operating system the user is using.
 
+    # Redox OS
+    if is_os_redox; then
+        redox "$emulator"
     # SUSE and derivatives
-    if hash 2>/dev/null zypper; then
+    elif hash 2>/dev/null zypper; then
         suse "$emulator"
     # Debian or any derivative of it
     elif hash 2>/dev/null apt-get; then
