@@ -14,6 +14,8 @@ function DYNAMIC_INIT {
             ;;
         "x86_64-unknown-linux-gnu")
             ;;
+        "aarch64-unknown-linux-gnu")
+            ;;
         *)
             [ -z "${COOKBOOK_VERBOSE}" ] || echo "WARN: ${TARGET} does not support dynamic linking." >&2
             return
@@ -202,6 +204,11 @@ COOKBOOK_CMAKE_FLAGS=(
     -DENABLE_STATIC=True
 )
 function cookbook_cmake {
+if [ "$(echo "${TARGET}" | cut -d - -f3)" = "linux" ]; then
+    SYSTEM_NAME="Linux"
+else
+    SYSTEM_NAME="UnixPaths"
+fi
     cat > cross_file.cmake <<EOF
 set(CMAKE_AR ${GNU_TARGET}-ar)
 set(CMAKE_CXX_COMPILER ${GNU_TARGET}-g++)
@@ -214,7 +221,7 @@ set(CMAKE_PLATFORM_USES_PATH_WHEN_NO_SONAME 1)
 set(CMAKE_PREFIX_PATH, ${COOKBOOK_SYSROOT})
 set(CMAKE_RANLIB ${GNU_TARGET}-ranlib)
 set(CMAKE_SHARED_LIBRARY_SONAME_C_FLAG "-Wl,-soname,")
-set(CMAKE_SYSTEM_NAME UnixPaths)
+set(CMAKE_SYSTEM_NAME ${SYSTEM_NAME})
 set(CMAKE_SYSTEM_PROCESSOR $(echo "${TARGET}" | cut -d - -f1))
 EOF
 
@@ -262,7 +269,7 @@ function cookbook_meson {
     echo "glib-compile-schemas = 'glib-compile-schemas'" >> cross_file.txt
 
     echo "[host_machine]" >> cross_file.txt
-    echo "system = 'redox'" >> cross_file.txt
+    echo "system = '$(echo "${TARGET}" | cut -d - -f3)'" >> cross_file.txt
     echo "cpu_family = '$(echo "${TARGET}" | cut -d - -f1)'" >> cross_file.txt
     echo "cpu = '$(echo "${TARGET}" | cut -d - -f1)'" >> cross_file.txt
     echo "endian = 'little'" >> cross_file.txt

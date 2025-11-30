@@ -7,11 +7,12 @@ template = "custom"
 script = """
 DYNAMIC_INIT
 ARCH="${TARGET%%-*}"
+OS=$(echo "${TARGET}" | cut -d - -f3)
 COOKBOOK_CONFIGURE="${COOKBOOK_SOURCE}/Configure"
 COOKBOOK_CONFIGURE_FLAGS=(
     threads
     no-dgram
-    "redox-${ARCH}"
+    "${OS}-${ARCH}"
     --prefix="/"
 )
 

@@ -229,12 +229,16 @@ pub fn build(
             logger,
             &sysroot_dir,
             target_dir.join("sysroot.tmp"),
-            &dep_pkgars,
+            if name.is_host() {
+                &dep_host_pkgars
+            } else {
+                &dep_pkgars
+            },
             source_modified,
             deps_modified,
         )?;
     }
-    if recipe.build.kind != BuildKind::Remote && dep_host_pkgars.len() > 0 {
+    if recipe.build.kind != BuildKind::Remote && !name.is_host() && dep_host_pkgars.len() > 0 {
         build_deps_dir(
             logger,
             &toolchain_dir,
@@ -347,6 +351,8 @@ pub fn build(
             command.env("COOKBOOK_SYSROOT", &cookbook_sysroot);
             if let Some(cookbook_toolchain) = &cookbook_toolchain {
                 command.env("COOKBOOK_TOOLCHAIN", cookbook_toolchain);
+            } else if name.is_host() {
+                command.env("COOKBOOK_TOOLCHAIN", &cookbook_sysroot);
             }
             command.env("COOKBOOK_MAKE_JOBS", cli_jobs.to_string());
             if cli_verbose {

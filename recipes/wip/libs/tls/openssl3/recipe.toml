@@ -11,17 +11,24 @@ dependencies = [
 script = """
 DYNAMIC_INIT
 ARCH="${TARGET%%-*}"
+OS=$(echo "${TARGET}" | cut -d - -f3)
 export ARFLAGS=cr
 COOKBOOK_CONFIGURE="${COOKBOOK_SOURCE}/Configure"
 COOKBOOK_CONFIGURE_FLAGS=(
     no-tests
     no-unit-test
-    shared
     zlib
     enable-zstd
-    "redox-${ARCH}"
+    "${OS}-${ARCH}"
     --prefix="/usr"
 )
+
+if [ "${COOKBOOK_DYNAMIC}" = "1" ]; then
+    COOKBOOK_CONFIGURE_FLAGS+=(shared)
+else
+    COOKBOOK_CONFIGURE_FLAGS+=(no-shared)
+fi
+
 "${COOKBOOK_CONFIGURE}" "${COOKBOOK_CONFIGURE_FLAGS[@]}"
 "${COOKBOOK_MAKE}" -j1 # bug in make/ar
 "${COOKBOOK_MAKE}" install_sw install_ssldirs DESTDIR="${COOKBOOK_STAGE}"
