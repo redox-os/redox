@@ -1341,10 +1341,13 @@ fn run_tui_cook(
                     }
                 } else {
                     if total_log_lines > panel_height {
-                        if app.log_scroll >= total_log_lines - panel_height {
+                        let limit = 2; // arbitrary number
+                        if app.log_scroll >= total_log_lines - limit {
+                            if app.prompt.is_none() || config.cook.nonstop {
                             enable_auto_scroll = true;
-                            intended_scroll_pos = total_log_lines - panel_height;
-                            total_log_lines - panel_height
+                            }
+                            intended_scroll_pos = total_log_lines - limit;
+                            total_log_lines - limit
                         } else {
                             app.log_scroll
                         }
@@ -1397,14 +1400,16 @@ fn run_tui_cook(
                 }
             );
 
-            let log_paragraph = Paragraph::new(log_lines)
-                .block(
+            let mut log_paragraph = Paragraph::new(log_lines).block(
                     Block::default()
                         .title(log_title)
                         .title_bottom(instruct)
                         .borders(Borders::ALL),
-                )
-                .wrap(Wrap { trim: false });
+            );
+
+            if !app.auto_scroll {
+                log_paragraph = log_paragraph.wrap(Wrap { trim: false });
+            }
 
             f.render_widget(
                 log_paragraph,
