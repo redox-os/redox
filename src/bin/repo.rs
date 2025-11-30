@@ -480,9 +480,9 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
             }
             CookRecipe::get_build_deps_recursive(
                 &recipe_names,
-                true,
+                !command.is_pushing(),
                 // In CliCommand::Cook, is_deps==true will make it skip checking source
-                command == CliCommand::Tree || !config.with_package_deps,
+                command.is_pushing() || !config.with_package_deps,
             )?
         } else {
             recipe_names
