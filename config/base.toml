@@ -29,7 +29,7 @@ mkdir -m a=rwxt /tmp
 
 ipcd
 ptyd
-sudo --daemon
+nowait sudo --daemon
 """
 
 [[files]]
