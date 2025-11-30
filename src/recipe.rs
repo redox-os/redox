@@ -208,8 +208,30 @@ impl Recipe {
 }
 
 impl CookRecipe {
-    pub fn new(name: PackageName, dir: PathBuf, recipe: Recipe) -> Result<Self, PackageError> {
+    pub fn new(name: PackageName, dir: PathBuf, mut recipe: Recipe) -> Result<Self, PackageError> {
         let target = package_target(&name);
+        if name.is_host() {
+            let thisname = name.name();
+            let fn_map = |p: PackageName| {
+                if p.is_host() {
+                    if p.name() == thisname { None } else { Some(p) }
+                } else {
+                    Some(PackageName::new(format!("host:{}", p.as_str())).unwrap())
+                }
+            };
+            recipe.build.dependencies = recipe
+                .build
+                .dependencies
+                .into_iter()
+                .filter_map(fn_map)
+                .collect();
+            recipe.build.dev_dependencies = recipe
+                .build
+                .dev_dependencies
+                .into_iter()
+                .filter_map(fn_map)
+                .collect();
+        }
         Ok(Self {
             name,
             dir,
