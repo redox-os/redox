@@ -97,7 +97,7 @@ Please follow [our process](https://doc.redox-os.org/book/creating-proper-pull-r
 
 Before starting to contribute, we recommend reading the [Website FAQ](https://www.redox-os.org/faq/) and the [Redox Book](https://doc.redox-os.org/book/).
 
-You can contribute to the Redox documentation and code on the following repositories (non-exhaustive, easiest first):
+You can contribute to the Redox documentation and code on the following repositories (non-exhaustive, easiest-to-hardest order):
 
 - [Website](https://gitlab.redox-os.org/redox-os/website)
 - [Book](https://gitlab.redox-os.org/redox-os/book) - High-level documentation
@@ -108,11 +108,9 @@ You can contribute to the Redox documentation and code on the following reposito
 - [acid](https://gitlab.redox-os.org/redox-os/acid) - Redox Test Suite
 - [relibc](https://gitlab.redox-os.org/redox-os/relibc) - Redox C Library
 - [libredox](https://gitlab.redox-os.org/redox-os/libredox) - Redox System Library
-- [netstack](https://gitlab.redox-os.org/redox-os/netstack) - Network Stack
 - [Bootloader](https://gitlab.redox-os.org/redox-os/bootloader)
 - [RedoxFS](https://gitlab.redox-os.org/redox-os/redoxfs) - Default filesystem
-- [Drivers](https://gitlab.redox-os.org/redox-os/drivers) - Device Drivers
-- [Base](https://gitlab.redox-os.org/redox-os/base) - Essential system daemons
+- [Base](https://gitlab.redox-os.org/redox-os/base) - Essential system components and drivers
 - [Kernel](https://gitlab.redox-os.org/redox-os/kernel)
 
 To see all Redox repositories open the [redox-os group](https://gitlab.redox-os.org/redox-os).
