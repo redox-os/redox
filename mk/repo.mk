@@ -26,7 +26,9 @@ fetch: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
-	@./target/release/repo fetch $(COOKBOOK_OPTS) --with-package-deps
+	export PATH="$(PREFIX_PATH):$$PATH" && \
+	export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
+	./target/release/repo fetch $(COOKBOOK_OPTS) --with-package-deps
 endif
 
 # Find recipe for one or more targets separated by comma
