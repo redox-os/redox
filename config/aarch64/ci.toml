@@ -24,7 +24,6 @@ curl = {}
 dash = {}
 dejavu = {}
 diffutils = {}
-drivers = {}
 expat = {}
 extrautils = {}
 findutils = {}
