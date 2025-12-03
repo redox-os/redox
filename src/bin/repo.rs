@@ -207,7 +207,9 @@ fn main_inner() -> anyhow::Result<()> {
     for recipe in &recipe_names {
         match repo_inner(&config, &command, recipe) {
             Ok(_) => {
-                print_success(&command, Some(&recipe.name));
+                if !command.is_informational() {
+                    print_success(&command, Some(&recipe.name));
+                }
             }
             Err(e) => {
                 if config.cook.nonstop && verbose {
