@@ -1,7 +1,7 @@
 [source]
 git = "https://gitlab.redox-os.org/redox-os/openssl.git"
 branch = "redox-v1"
-
+shallow_clone = true
 [build]
 template = "custom"
 script = """

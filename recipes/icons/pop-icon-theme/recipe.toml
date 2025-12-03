@@ -1,6 +1,6 @@
 [source]
 git = "https://github.com/pop-os/icon-theme.git"
-
+shallow_clone = true
 [build]
 template = "custom"
 script = """

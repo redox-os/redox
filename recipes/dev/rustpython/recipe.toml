@@ -2,6 +2,7 @@
 git = "https://github.com/RustPython/RustPython"
 # newer rev requires TLS 1.3 (openssl3) and 'bits/libc-header-start.h' for bindgen
 rev = "2025-10-13-main-51"
+shallow_clone = true
 patches = [
   "redox.patch"
 ]
