@@ -2,7 +2,7 @@
 git = "https://gitlab.redox-os.org/redox-os/mesa.git"
 upstream = "https://gitlab.freedesktop.org/mesa/mesa"
 branch = "redox-24.0"
-
+shallow_clone = true
 [build]
 template = "custom"
 dependencies = [
