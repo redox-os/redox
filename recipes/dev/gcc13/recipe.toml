@@ -45,3 +45,15 @@ rm -f "${COOKBOOK_STAGE}"/usr/lib/libgcc_s.so* "${COOKBOOK_STAGE}"/usr/lib/libst
 dependencies = [
     "gnu-binutils"
 ]
+
+[[optional-packages]]
+name = "cxx"
+dependencies = []
+files = [
+    "usr/bin/*c++",
+    "usr/bin/*g++",
+    "usr/include/c++/**",
+    "usr/lib/*c++*",
+    "usr/libexec/gcc/**/cc1plus",
+    "usr/share/gcc-*/python/libstdcxx/**",
+]

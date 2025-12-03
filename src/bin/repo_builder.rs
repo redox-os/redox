@@ -1,7 +1,8 @@
 use anyhow::anyhow;
 use cookbook::WALK_DEPTH;
 use cookbook::config::{get_config, init_config};
-use cookbook::cook::package::package_target;
+use cookbook::cook::package::{get_package_name, package_stage_paths, package_target};
+use cookbook::recipe::CookRecipe;
 use pkg::{Package, PackageName, recipes};
 use std::collections::{BTreeMap, HashMap};
 use std::env;
@@ -88,30 +89,38 @@ fn publish_packages(config: &CliConfig) -> anyhow::Result<()> {
             eprintln!("recipe {} not found", recipe);
             continue;
         };
-        let cookbook_recipe = Path::new(&recipe_path);
-        let target = package_target(recipe);
-        let stage_dir = cookbook_recipe.join("target").join(&target).join("stage");
-
-        let pkgar_src = stage_dir.with_extension("pkgar");
-        let pkgar_dst = repo_path.join(format!("{}.pkgar", recipe));
-        let toml_src = stage_dir.with_extension("toml");
-        let toml_dst = repo_path.join(format!("{}.toml", recipe));
-
-        if !fs::exists(&toml_src)? {
-            eprintln!("recipe {} is missing stage.toml", recipe);
+        let Ok(cookbook_recipe) = CookRecipe::from_path(recipe_path, true) else {
+            eprintln!("recipe {} unable to read", recipe);
             continue;
-        }
+        };
 
-        if is_newer(&toml_src, &toml_dst) {
-            eprintln!("\x1b[01;38;5;155mrepo - publishing {}\x1b[0m", recipe);
-            if fs::exists(&pkgar_src)? {
-                fs::copy(&pkgar_src, &pkgar_dst)?;
+        let target = package_target(recipe);
+        let target_dir = cookbook_recipe.dir.join("target").join(&target);
+
+        let packages = cookbook_recipe.recipe.get_packages_list();
+
+        for package in packages {
+            let (stage_dir, pkgar_src, toml_src) = package_stage_paths(package, &target_dir);
+            let recipe_name = get_package_name(recipe.name(), package);
+            let pkgar_dst = repo_path.join(format!("{}.pkgar", recipe_name));
+            let toml_dst = repo_path.join(format!("{}.toml", recipe_name));
+
+            if !fs::exists(&toml_src)? {
+                eprintln!("recipe {} is missing stage.toml", recipe_name);
+                continue;
             }
-            fs::copy(&toml_src, &toml_dst)?;
-        }
 
-        if stage_dir.join("usr/share/metainfo").exists() {
-            appstream_sources.insert(recipe.name().to_string(), stage_dir.clone());
+            if is_newer(&toml_src, &toml_dst) {
+                eprintln!("\x1b[01;38;5;155mrepo - publishing {}\x1b[0m", recipe_name);
+                if fs::exists(&pkgar_src)? {
+                    fs::copy(&pkgar_src, &pkgar_dst)?;
+                }
+                fs::copy(&toml_src, &toml_dst)?;
+            }
+
+            if stage_dir.join("usr/share/metainfo").exists() {
+                appstream_sources.insert(recipe.name().to_string(), stage_dir.clone());
+            }
         }
     }
 
@@ -205,7 +214,11 @@ fn publish_packages(config: &CliConfig) -> anyhow::Result<()> {
     // FIXME: Use proper TOML serializer
     let mut output = String::from("[packages]\n");
     for (name, version) in &packages {
-        output.push_str(&format!("{name} = {version}\n"));
+        output.push_str(&if name.contains('.') {
+            format!("\"{name}\" = {version}\n")
+        } else {
+            format!("{name} = {version}\n")
+        });
     }
 
     let mut output_file = File::create(&repo_toml_path)?;

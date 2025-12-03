@@ -9,11 +9,11 @@ use crate::{
     blake3::hash_to_hex,
     cook::{fs::*, pty::PtyOut},
     log_to_pty,
-    recipe::{BuildKind, Recipe},
+    recipe::{BuildKind, OptionalPackageRecipe, Recipe},
 };
 
 pub fn package(
-    stage_dir: &Path,
+    stage_dirs: &Vec<PathBuf>,
     target_dir: &Path,
     name: &PackageName,
     recipe: &Recipe,
@@ -21,8 +21,15 @@ pub fn package(
     logger: &PtyOut,
 ) -> Result<(), String> {
     if recipe.build.kind == BuildKind::None {
-        // metapackages don't have stage dir
-        package_toml(target_dir, name, recipe, None, auto_deps)?;
+        // metapackages don't have stage dir and optional packages
+        package_toml(
+            target_dir.join("stage.toml"),
+            name,
+            recipe,
+            None,
+            recipe.package.dependencies.clone(),
+            &auto_deps,
+        )?;
         return Ok(());
     }
 
@@ -41,51 +48,82 @@ pub fn package(
             .map_err(|err| format!("failed to save pkgar secret key: {:?}", err))?;
     }
 
-    let package_file = target_dir.join("stage.pkgar");
-    let package_meta = target_dir.join("stage.toml");
-    // Rebuild package if stage is newer
-    //TODO: rebuild on recipe changes
-    if package_file.is_file() {
-        let stage_modified = modified_dir(stage_dir)?;
-        if modified(&package_file)? < stage_modified {
+    let stage_modified = modified_all(stage_dirs, modified_dir)?;
+
+    let packages = recipe.get_packages_list();
+
+    for package in packages {
+        let (stage_dir, package_file, package_meta) = package_stage_paths(package, target_dir);
+        // Rebuild package if stage is newer
+        if package_file.is_file() && modified(&package_file)? < stage_modified {
             log_to_pty!(logger, "DEBUG: updating '{}'", package_file.display());
             remove_all(&package_file)?;
-            remove_all(&package_meta)?;
+            if package_meta.is_file() {
+                remove_all(&package_meta)?;
+            }
         }
-    }
-    if !package_file.is_file() {
-        pkgar::create(
-            secret_path,
-            package_file.to_str().unwrap(),
-            stage_dir.to_str().unwrap(),
-        )
-        .map_err(|err| format!("failed to create pkgar archive: {:?}", err))?;
-    }
 
-    if !package_meta.is_file() {
-        package_toml(
-            target_dir,
-            name,
-            recipe,
-            Some((Path::new(public_path), &package_file)),
-            auto_deps,
-        )?;
+        if !package_file.is_file() {
+            pkgar::create(
+                secret_path,
+                package_file.to_str().unwrap(),
+                stage_dir.to_str().unwrap(),
+            )
+            .map_err(|err| format!("failed to create pkgar archive: {:?}", err))?;
+        }
+
+        let deps = if let Some(package) = package {
+            let mut b = BTreeSet::new();
+            for dep in &package.dependencies {
+                let dep_name = if dep.name() == "" {
+                    PackageName::new(format!("{}.{}", name.name(), package.name))
+                        .map_err(|e| format!("{}", e))?
+                } else {
+                    dep.clone()
+                };
+                b.insert(dep_name);
+            }
+            b.insert(name.clone());
+            b
+        } else {
+            auto_deps.clone()
+        };
+
+        if !package_meta.is_file() {
+            let name = match package {
+                Some(p) => PackageName::new(format!("{}.{}", name.name(), p.name))
+                    .map_err(|e| format!("{}", e))?,
+                None => name.clone(),
+            };
+            let package_deps = match package {
+                Some(p) => p.dependencies.clone(),
+                None => recipe.package.dependencies.clone(),
+            };
+            package_toml(
+                package_meta,
+                &name,
+                recipe,
+                Some((Path::new(public_path), &package_file)),
+                package_deps,
+                &deps,
+            )?;
+        }
     }
 
     Ok(())
 }
 
 pub fn package_toml(
-    target_dir: &Path,
+    toml_path: PathBuf,
     name: &PackageName,
     recipe: &Recipe,
     package_file: Option<(&Path, &PathBuf)>,
+    mut package_deps: Vec<PackageName>,
     auto_deps: &BTreeSet<PackageName>,
 ) -> Result<(), String> {
-    let mut depends = recipe.package.dependencies.clone();
     for dep in auto_deps.iter() {
-        if !depends.contains(dep) {
-            depends.push(dep.clone());
+        if !package_deps.contains(dep) {
+            package_deps.push(dep.clone());
         }
     }
 
@@ -112,19 +150,22 @@ pub fn package_toml(
     };
 
     let package = Package {
-        name: PackageName::new(name.name()).unwrap(),
+        name: PackageName::new(if name.is_host() {
+            &name.as_str()["host:".len()..]
+        } else {
+            name.as_str()
+        })
+        .unwrap(),
         version: package_version(recipe),
         target: package_target(name).to_string(),
         blake3: hash,
         // this size will be different once pkgar supports compression
         network_size: size,
         storage_size: size,
-        depends,
+        depends: package_deps,
     };
 
-    let toml_path = &target_dir.join("stage.toml");
     serialize_and_write(&toml_path, &package)?;
-
     return Ok(());
 }
 
@@ -150,4 +191,43 @@ pub fn package_target(name: &PackageName) -> &'static str {
     } else {
         redoxer::target()
     }
+}
+
+pub fn package_stage_paths(
+    package: Option<&OptionalPackageRecipe>,
+    target_dir: &Path,
+) -> (PathBuf, PathBuf, PathBuf) {
+    package_name_paths(package, target_dir, "stage")
+}
+
+pub fn package_source_paths(
+    package: Option<&OptionalPackageRecipe>,
+    target_dir: &Path,
+) -> (PathBuf, PathBuf, PathBuf) {
+    package_name_paths(package, target_dir, "source")
+}
+
+fn package_name_paths(
+    package: Option<&OptionalPackageRecipe>,
+    target_dir: &Path,
+    name: &str,
+) -> (PathBuf, PathBuf, PathBuf) {
+    let prefix_name = get_package_name(name, package);
+    let package_stage = target_dir.join(&prefix_name);
+    let package_file = package_stage.with_added_extension("pkgar");
+    let package_meta = package_stage.with_added_extension("toml");
+    (package_stage, package_file, package_meta)
+}
+
+pub fn get_package_name(name: &str, package: Option<&OptionalPackageRecipe>) -> String {
+    get_package_name_inner(name, package.map(|p| p.name.as_str()))
+}
+
+fn get_package_name_inner(name: &str, package: Option<&str>) -> String {
+    let mut prefix_name = name.to_string();
+    if let Some(package) = package {
+        prefix_name.push('.');
+        prefix_name.push_str(package);
+    }
+    prefix_name
 }
