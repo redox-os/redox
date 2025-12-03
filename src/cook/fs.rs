@@ -62,6 +62,44 @@ pub fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> io::Result<
     Ok(())
 }
 
+pub fn move_dir_all_fn<'a>(
+    src: impl AsRef<Path>,
+    mv: &'a Box<impl Fn(PathBuf) -> Option<&'a Path>>,
+) -> io::Result<()> {
+    move_dir_all_inner_fn(&src, &src, mv)
+}
+
+fn move_dir_all_inner_fn<'a>(
+    src: impl AsRef<Path>,
+    srcrel: impl AsRef<Path>,
+    mv: &'a Box<impl Fn(PathBuf) -> Option<&'a Path>>,
+) -> io::Result<()> {
+    let mut files = Vec::new();
+    for entry in fs::read_dir(&src)? {
+        let entry = entry?;
+        let ty = entry.file_type()?;
+        if ty.is_dir() {
+            move_dir_all_inner_fn(entry.path(), srcrel.as_ref(), mv)?;
+        } else {
+            let path: PathBuf = entry.path();
+            let Ok(relpath) = path.strip_prefix(&srcrel) else {
+                continue;
+            };
+
+            if let Some(dst) = mv(relpath.to_path_buf()) {
+                files.push((entry.path(), relpath.to_path_buf(), dst.to_owned()));
+            }
+        }
+    }
+    for (src, srcrel, dst) in files {
+        let path = dst.join(&srcrel);
+        fs::create_dir_all(&path.parent().unwrap())?;
+        println!("{:?} -> {:?}", src.display(), path.display());
+        std::fs::rename(&src, &path)?;
+    }
+    Ok(())
+}
+
 pub fn symlink(original: impl AsRef<Path>, link: impl AsRef<Path>) -> Result<(), String> {
     std::os::unix::fs::symlink(&original, &link).map_err(|err| {
         format!(
@@ -91,6 +129,20 @@ pub fn modified(path: &Path) -> Result<SystemTime, String> {
             err
         )
     })
+}
+
+pub fn modified_all(
+    path: &Vec<PathBuf>,
+    func: fn(path: &Path) -> Result<SystemTime, String>,
+) -> Result<SystemTime, String> {
+    let mut newest = SystemTime::UNIX_EPOCH;
+    for entry_res in path {
+        let modified = func(entry_res)?;
+        if modified > newest {
+            newest = modified;
+        }
+    }
+    Ok(newest)
 }
 
 pub fn modified_dir_inner<F: FnMut(&DirEntry) -> bool>(

@@ -1344,7 +1344,7 @@ fn run_tui_cook(
                         let limit = 2; // arbitrary number
                         if app.log_scroll >= total_log_lines - limit {
                             if app.prompt.is_none() || config.cook.nonstop {
-                            enable_auto_scroll = true;
+                                enable_auto_scroll = true;
                             }
                             intended_scroll_pos = total_log_lines - limit;
                             total_log_lines - limit
@@ -1401,10 +1401,10 @@ fn run_tui_cook(
             );
 
             let mut log_paragraph = Paragraph::new(log_lines).block(
-                    Block::default()
-                        .title(log_title)
-                        .title_bottom(instruct)
-                        .borders(Borders::ALL),
+                Block::default()
+                    .title(log_title)
+                    .title_bottom(instruct)
+                    .borders(Borders::ALL),
             );
 
             if !app.auto_scroll {
