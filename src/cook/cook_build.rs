@@ -2,12 +2,12 @@ use pkg::package::PackageError;
 use pkg::{Package, PackageName};
 
 use crate::cook::fs::*;
-use crate::cook::package::package_target;
+use crate::cook::package::{package_source_paths, package_target};
 use crate::cook::pty::PtyOut;
 use crate::cook::script::*;
-use crate::recipe::BuildKind;
 use crate::recipe::Recipe;
 use crate::recipe::{AutoDeps, CookRecipe};
+use crate::recipe::{BuildKind, OptionalPackageRecipe};
 use std::collections::VecDeque;
 use std::{
     collections::BTreeSet,
@@ -21,7 +21,8 @@ use std::{
 use crate::{is_redox, log_to_pty};
 
 fn auto_deps_from_dynamic_linking(
-    stage_dir: &Path,
+    stage_dirs: &Vec<PathBuf>,
+    target_dir: &Path,
     dep_pkgars: &BTreeSet<(PackageName, PathBuf)>,
     logger: &PtyOut,
 ) -> BTreeSet<PackageName> {
@@ -29,13 +30,14 @@ fn auto_deps_from_dynamic_linking(
     let mut visited = BTreeSet::new();
     let verbose = crate::config::get_config().cook.verbose;
     // Base directories may need to be updated for packages that place binaries in odd locations.
-    let mut walk = VecDeque::from([
-        stage_dir.join("libexec"),
-        stage_dir.join("usr/bin"),
-        stage_dir.join("usr/games"),
-        stage_dir.join("usr/lib"),
-        stage_dir.join("usr/libexec"),
-    ]);
+    let mut walk = VecDeque::new();
+
+    for stage_dir in stage_dirs {
+        walk.push_back(stage_dir.join("usr/bin"));
+        walk.push_back(stage_dir.join("usr/games"));
+        walk.push_back(stage_dir.join("usr/lib"));
+        walk.push_back(stage_dir.join("usr/libexec"));
+    }
 
     // Recursively (DFS) walk each directory to ensure nested libs and bins are checked.
     while let Some(dir) = walk.pop_front() {
@@ -93,7 +95,7 @@ fn auto_deps_from_dynamic_linking(
                 let Ok(name) = str::from_utf8(val) else {
                     continue;
                 };
-                if let Ok(relative_path) = path.strip_prefix(stage_dir) {
+                if let Ok(relative_path) = path.strip_prefix(target_dir) {
                     if verbose {
                         log_to_pty!(logger, "DEBUG: {} needs {}", relative_path.display(), name);
                     }
@@ -173,15 +175,15 @@ pub fn build(
     offline_mode: bool,
     check_source: bool,
     logger: &PtyOut,
-) -> Result<(PathBuf, BTreeSet<PackageName>), String> {
+) -> Result<(Vec<PathBuf>, BTreeSet<PackageName>), String> {
     let sysroot_dir = target_dir.join("sysroot");
     let toolchain_dir = target_dir.join("toolchain");
-    let stage_dir = target_dir.join("stage");
+    let stage_dirs = get_stage_dirs(&recipe.optional_packages, target_dir);
     let cli_verbose = crate::config::get_config().cook.verbose;
     let cli_jobs = crate::config::get_config().cook.jobs;
     if recipe.build.kind == BuildKind::None {
         // metapackages don't need to do anything here
-        return Ok((stage_dir, BTreeSet::new()));
+        return Ok((stage_dirs, BTreeSet::new()));
     }
 
     let mut dep_pkgars = BTreeSet::new();
@@ -205,9 +207,9 @@ pub fn build(
         }
     }
 
-    if stage_dir.exists() && !check_source {
-        let auto_deps = build_auto_deps(recipe, target_dir, &stage_dir, dep_pkgars, logger)?;
-        return Ok((stage_dir, auto_deps));
+    if !check_source && stage_dirs.iter().all(|dir| dir.exists()) {
+        let auto_deps = build_auto_deps(recipe, target_dir, &stage_dirs, dep_pkgars, logger)?;
+        return Ok((stage_dirs, auto_deps));
     }
 
     let source_modified = modified_dir_ignore_git(source_dir).unwrap_or(SystemTime::UNIX_EPOCH);
@@ -251,18 +253,26 @@ pub fn build(
 
     // Rebuild stage if source is newer
     //TODO: rebuild on recipe changes
-    if stage_dir.is_dir() {
-        let stage_modified = modified_dir(&stage_dir)?;
+    if stage_dirs.iter().any(|dir| dir.is_dir()) {
+        let stage_modified =
+            modified_all(&stage_dirs, modified_dir).unwrap_or(SystemTime::UNIX_EPOCH);
         if stage_modified < source_modified
             || stage_modified < deps_modified
             || stage_modified < deps_host_modified
         {
-            log_to_pty!(logger, "DEBUG: updating '{}'", stage_dir.display());
-            remove_all(&stage_dir)?;
+            for stage_dir in &stage_dirs {
+                log_to_pty!(logger, "DEBUG: updating '{}'", stage_dir.display());
+                if stage_dir.is_dir() {
+                    remove_all(&stage_dir)?;
+                }
+            }
         }
     }
 
-    if !stage_dir.is_dir() {
+    if !stage_dirs.last().is_some_and(|dir| dir.is_dir()) {
+        let stage_dir = stage_dirs
+            .last()
+            .expect("Should have atleast one stage dir");
         // Create stage.tmp
         let stage_dir_tmp = target_dir.join("stage.tmp");
         create_dir_clean(&stage_dir_tmp)?;
@@ -285,6 +295,9 @@ pub fn build(
             )
         };
 
+        if recipe.build.kind == BuildKind::Remote {
+            return build_remote(stage_dirs, recipe, target_dir);
+        }
         //TODO: better integration with redoxer (library instead of binary)
         //TODO: configurable target
         //TODO: Add more configurability, convert scripts to Rust?
@@ -311,7 +324,7 @@ pub fn build(
                 flags_fn("COOKBOOK_MESON_FLAGS", mesonflags),
             ),
             BuildKind::Custom { script } => script.clone(),
-            BuildKind::Remote => return build_remote(target_dir),
+            BuildKind::Remote => unreachable!(),
             BuildKind::None => "".to_owned(),
         };
 
@@ -370,13 +383,46 @@ pub fn build(
         );
         run_command_stdin(command, full_script.as_bytes(), logger)?;
 
+        // Move to each features dir
+        let mut globs = Vec::new();
+        for (i, feat) in recipe.optional_packages.iter().enumerate() {
+            let stage_dir = &stage_dirs[i];
+            create_dir_clean(&stage_dir)?;
+            for path in &feat.files {
+                let glob = globset::Glob::new(&path).map_err(|e| format!("{}", e))?;
+                globs.push((glob.compile_matcher(), stage_dir.clone()));
+            }
+        }
+        move_dir_all_fn(
+            &stage_dir_tmp,
+            &Box::new(|path: PathBuf| {
+                for (glob, dst) in &globs {
+                    if glob.is_match(&path) {
+                        return Some(dst.as_path());
+                    }
+                }
+                None
+            }),
+        )
+        .map_err(|e| format!("Unable to move {e:?}"))?;
+
         // Move stage.tmp to stage atomically
         rename(&stage_dir_tmp, &stage_dir)?;
     }
 
-    let auto_deps = build_auto_deps(recipe, target_dir, &stage_dir, dep_pkgars, logger)?;
+    let auto_deps = build_auto_deps(recipe, target_dir, &stage_dirs, dep_pkgars, logger)?;
 
-    Ok((stage_dir, auto_deps))
+    Ok((stage_dirs, auto_deps))
+}
+
+fn get_stage_dirs(features: &Vec<OptionalPackageRecipe>, target_dir: &Path) -> Vec<PathBuf> {
+    let mut v = Vec::new();
+    for f in features {
+        v.push(target_dir.join(format!("stage.{}", f.name)));
+    }
+    // intentionally added last as it contains leftover files from package features
+    v.push(target_dir.join(format!("stage")));
+    v
 }
 
 fn build_deps_dir(
@@ -433,12 +479,13 @@ fn build_deps_dir(
 fn build_auto_deps(
     recipe: &Recipe,
     target_dir: &Path,
-    stage_dir: &PathBuf,
+    stage_dirs: &Vec<PathBuf>,
     mut dep_pkgars: BTreeSet<(PackageName, PathBuf)>,
     logger: &PtyOut,
 ) -> Result<BTreeSet<PackageName>, String> {
     let auto_deps_path = target_dir.join("auto_deps.toml");
-    if auto_deps_path.is_file() && modified(&auto_deps_path)? < modified(stage_dir)? {
+    if auto_deps_path.is_file() && modified(&auto_deps_path)? < modified_all(stage_dirs, modified)?
+    {
         remove_all(&auto_deps_path)?
     }
 
@@ -449,7 +496,8 @@ fn build_auto_deps(
             toml::from_str(&toml_content).map_err(|_| "failed to deserialize cached auto_deps")?;
         wrapper.packages
     } else {
-        let mut dynamic_deps = auto_deps_from_dynamic_linking(stage_dir, &dep_pkgars, logger);
+        let mut dynamic_deps =
+            auto_deps_from_dynamic_linking(stage_dirs, target_dir, &dep_pkgars, logger);
         dep_pkgars.retain(|x| recipe.build.dependencies.contains(&x.0));
         let package_deps =
             auto_deps_from_static_package_deps(&dep_pkgars, &dynamic_deps).unwrap_or_default();
@@ -464,35 +512,38 @@ fn build_auto_deps(
     Ok(auto_deps)
 }
 
-pub fn build_remote(target_dir: &Path) -> Result<(PathBuf, BTreeSet<PackageName>), String> {
-    // download straight from remote source then declare pkg dependencies as autodeps dependency
-    let stage_dir = target_dir.join("stage");
-
-    let source_pkgar = target_dir.join("source.pkgar");
+pub fn build_remote(
+    stage_dirs: Vec<PathBuf>,
+    recipe: &Recipe,
+    target_dir: &Path,
+) -> Result<(Vec<PathBuf>, BTreeSet<PackageName>), String> {
     let source_toml = target_dir.join("source.toml");
     let source_pubkey = target_dir.join("id_ed25519.pub.toml");
 
-    if stage_dir.is_dir() && modified(&source_pkgar)? > modified(&stage_dir)? {
-        remove_all(&stage_dir)?
-    }
-    if !stage_dir.is_dir() {
-        let stage_dir_tmp = target_dir.join("stage.tmp");
+    let packages = recipe.get_packages_list();
+    for (i, package) in packages.into_iter().enumerate() {
+        // declare pkg dependencies as autodeps dependency
+        let stage_dir = &stage_dirs[i];
 
-        pkgar::extract(&source_pubkey, &source_pkgar, &stage_dir_tmp).map_err(|err| {
-            format!(
-                "failed to install '{}' in '{}': {:?}",
-                source_pkgar.display(),
-                stage_dir_tmp.display(),
-                err
-            )
-        })?;
-
-        // Move stage.tmp to stage atomically
-        rename(&stage_dir_tmp, &stage_dir)?;
+        if !stage_dir.is_dir() {
+            let (_, source_pkgar, _) = package_source_paths(package, &target_dir);
+            let stage_dir_tmp = target_dir.join("stage.tmp");
+            pkgar::extract(&source_pubkey, &source_pkgar, &stage_dir_tmp).map_err(|err| {
+                format!(
+                    "failed to install '{}' in '{}': {:?}",
+                    source_pkgar.display(),
+                    stage_dir_tmp.display(),
+                    err
+                )
+            })?;
+            // Move stage.tmp to stage atomically
+            rename(&stage_dir_tmp, &stage_dir)?;
+        }
     }
 
     let auto_deps_path = target_dir.join("auto_deps.toml");
-    if auto_deps_path.is_file() && modified(&auto_deps_path)? < modified(&stage_dir)? {
+    if auto_deps_path.is_file() && modified(&auto_deps_path)? < modified_all(&stage_dirs, modified)?
+    {
         remove_all(&auto_deps_path)?
     }
 
@@ -513,15 +564,12 @@ pub fn build_remote(target_dir: &Path) -> Result<(PathBuf, BTreeSet<PackageName>
         serialize_and_write(&auto_deps_path, &wrapper)?;
         wrapper.packages
     };
-
-    Ok((stage_dir, auto_deps))
+    Ok((stage_dirs, auto_deps))
 }
 
 #[cfg(test)]
 mod tests {
     use std::os::unix;
-
-    use super::auto_deps_from_dynamic_linking;
 
     #[test]
     fn file_system_loop_no_infinite_loop() {
@@ -541,7 +589,12 @@ mod tests {
             "Expected a loop where {dir:?} points to {root:?}"
         );
 
-        let entries = auto_deps_from_dynamic_linking(&root, &Default::default(), &None);
+        let entries = super::auto_deps_from_dynamic_linking(
+            &root,
+            &root.join(".."),
+            &Default::default(),
+            &None,
+        );
         assert!(
             entries.is_empty(),
             "auto_deps shouldn't have yielded any libraries"

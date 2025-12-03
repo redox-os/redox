@@ -930,6 +930,7 @@ dependencies = [
  "anyhow",
  "blake3 1.5.3",
  "filedescriptor",
+ "globset",
  "ignore",
  "libc",
  "object",
