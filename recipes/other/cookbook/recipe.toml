@@ -17,6 +17,7 @@ dependencies = [
     "autoconf",
     "automake",
     "gcc13",
+    "gcc13.cxx",
     "git",
     "gnu-make",
     "libtool",
