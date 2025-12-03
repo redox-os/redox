@@ -135,34 +135,43 @@ impl Default for BuildKind {
 }
 
 #[derive(Debug, Clone, Default, Deserialize, PartialEq, Serialize)]
+#[serde(default)]
 pub struct BuildRecipe {
-    #[serde(flatten, default)]
+    #[serde(flatten)]
     pub kind: BuildKind,
-    #[serde(default)]
     pub dependencies: Vec<PackageName>,
-    #[serde(default, rename = "dev-dependencies")]
+    #[serde(rename = "dev-dependencies")]
     pub dev_dependencies: Vec<PackageName>,
 }
 
 #[derive(Debug, Clone, Default, Deserialize, PartialEq, Serialize)]
+#[serde(default)]
 pub struct PackageRecipe {
-    #[serde(default)]
     pub dependencies: Vec<PackageName>,
-    #[serde(default)]
     pub version: Option<String>,
+}
+
+#[derive(Debug, Clone, Default, Deserialize, PartialEq, Serialize)]
+#[serde(default)]
+pub struct OptionalPackageRecipe {
+    pub name: String,
+    pub dependencies: Vec<PackageName>,
+    pub files: Vec<String>,
 }
 
 /// Everything required to build a Redox package
 #[derive(Debug, Clone, Default, Deserialize, PartialEq, Serialize)]
+#[serde(default)]
 pub struct Recipe {
     /// Specifies how to download the source for this recipe
     pub source: Option<SourceRecipe>,
     /// Specifies how to build this recipe
-    #[serde(default)]
     pub build: BuildRecipe,
     /// Specifies how to package this recipe
-    #[serde(default)]
     pub package: PackageRecipe,
+    /// Specifies optional packages based from this recipe
+    #[serde(rename = "optional-packages")]
+    pub optional_packages: Vec<OptionalPackageRecipe>,
 }
 
 impl BuildRecipe {
@@ -204,6 +213,14 @@ impl Recipe {
         let recipe: Recipe = toml::from_str(&toml)
             .map_err(|err| PackageError::Parse(DeError::custom(err), Some(file.clone())))?;
         Ok(recipe)
+    }
+
+    pub fn get_packages_list(&self) -> Vec<Option<&OptionalPackageRecipe>> {
+        let mut packages: Vec<Option<&OptionalPackageRecipe>> =
+            self.optional_packages.iter().map(|p| Some(p)).collect();
+        // the mandatory package, put last because of cook_build
+        packages.push(None);
+        packages
     }
 }
 
@@ -443,7 +460,7 @@ mod tests {
                     package_path: None,
                     cargoflags: String::new(),
                 }),
-                package: PackageRecipe::default(),
+                ..Default::default()
             }
         );
     }
@@ -480,7 +497,7 @@ mod tests {
                 build: BuildRecipe::new(BuildKind::Custom {
                     script: "make".to_string()
                 }),
-                package: PackageRecipe::default(),
+                ..Default::default()
             }
         );
 
@@ -509,8 +526,9 @@ mod tests {
                 build: BuildRecipe::new(BuildKind::None),
                 package: PackageRecipe {
                     dependencies: vec![PackageName::new("gcc13").unwrap()],
-                    version: None,
+                    ....Default::default()
                 },
+                ..Default::default()
             }
         );
     }

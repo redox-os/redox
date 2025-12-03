@@ -1,6 +1,8 @@
 use crate::REMOTE_PKG_SOURCE;
 use crate::config::translate_mirror;
 use crate::cook::fs::*;
+use crate::cook::package::get_package_name;
+use crate::cook::package::package_source_paths;
 use crate::cook::pty::PtyOut;
 use crate::cook::script::*;
 use crate::is_redox;
@@ -39,7 +41,7 @@ pub fn fetch_offline(
         return Ok(source_dir);
     }
     if recipe.build.kind == BuildKind::Remote {
-        fetch_remote(recipe_dir, true, logger)?;
+        fetch_remote(recipe_dir, recipe, true, logger)?;
         return Ok(source_dir);
     }
 
@@ -104,7 +106,7 @@ pub fn fetch(recipe_dir: &Path, recipe: &Recipe, logger: &PtyOut) -> Result<Path
         return Ok(source_dir);
     }
     if recipe.build.kind == BuildKind::Remote {
-        fetch_remote(recipe_dir, false, logger)?;
+        fetch_remote(recipe_dir, recipe, false, logger)?;
         return Ok(source_dir);
     }
 
@@ -441,28 +443,46 @@ fn get_pubkey_url() -> String {
     return format!("{}/id_ed25519.pub.toml", REMOTE_PKG_SOURCE);
 }
 
-pub fn fetch_remote(recipe_dir: &Path, offline_mode: bool, logger: &PtyOut) -> Result<(), String> {
-    // TODO: allow download to host target
+pub fn fetch_remote(
+    recipe_dir: &Path,
+    recipe: &Recipe,
+    offline_mode: bool,
+    logger: &PtyOut,
+) -> Result<(), String> {
+    // TODO: allow download to host target (waiting for build server to have them)
     let target = redoxer::target();
     let target_dir = create_target_dir(recipe_dir, target)?;
+    let source_pubkey = target_dir.join("id_ed25519.pub.toml");
+    if !offline_mode {
+        download_wget(&get_pubkey_url(), &source_pubkey, logger)?;
+    } else {
+        offline_check_exists(&source_pubkey)?;
+    }
+
+    let packages = recipe.get_packages_list();
+
     let name = recipe_dir
         .file_name()
         .ok_or("Unable to get recipe name")?
         .to_str()
         .unwrap();
-    let source_pkgar = target_dir.join("source.pkgar");
-    let source_toml = target_dir.join("source.toml");
-    let source_pubkey = target_dir.join("id_ed25519.pub.toml");
 
-    if !offline_mode {
-        //TODO: Check freshness
-        download_wget(&get_remote_url(name, "pkgar"), &source_pkgar, logger)?;
-        download_wget(&get_remote_url(name, "toml"), &source_toml, logger)?;
-        download_wget(&get_pubkey_url(), &source_pubkey, logger)?;
-    } else {
-        offline_check_exists(&source_pkgar)?;
-        offline_check_exists(&source_toml)?;
-        offline_check_exists(&source_pubkey)?;
+    for package in packages {
+        let (_, source_pkgar, source_toml) = package_source_paths(package, &target_dir);
+        let source_name = get_package_name(name, package);
+
+        if !offline_mode {
+            //TODO: Check freshness
+            download_wget(
+                &get_remote_url(&source_name, "pkgar"),
+                &source_pkgar,
+                logger,
+            )?;
+            download_wget(&get_remote_url(&source_name, "toml"), &source_toml, logger)?;
+        } else {
+            offline_check_exists(&source_pkgar)?;
+            offline_check_exists(&source_toml)?;
+        }
     }
 
     Ok(())
