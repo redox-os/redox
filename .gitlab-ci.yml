@@ -9,12 +9,18 @@ stages:
 
 fmt:
   stage: lint
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master" && $CI_PROJECT_NAMESPACE == "redox-os"'
+    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"'
   script:
     - rustup component add rustfmt
     - cargo fmt -- --check
 
 cargo-test:
   stage: lint
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master" && $CI_PROJECT_NAMESPACE == "redox-os"'
+    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"'
   script:
     # TODO: we should omit fuse from cargo install chains
     - apt update && apt install -y fuse3 libfuse3-dev
