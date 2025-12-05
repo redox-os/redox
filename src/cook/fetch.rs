@@ -146,10 +146,7 @@ pub fn fetch(recipe_dir: &Path, recipe: &Recipe, logger: &PtyOut) -> Result<Path
             shallow_clone,
         }) => {
             //TODO: use libgit?
-            let shallow_clone = match shallow_clone {
-                Some(o) => *o,
-                None => rev.is_some(),
-            };
+            let shallow_clone = *shallow_clone == Some(true);
             if !source_dir.is_dir() {
                 // Create source.tmp
                 let source_dir_tmp = recipe_dir.join("source.tmp");
