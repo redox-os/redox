@@ -162,15 +162,16 @@ pub fn fetch(recipe_dir: &Path, recipe: &Recipe, logger: &PtyOut) -> Result<Path
                     command.arg("--branch").arg(branch);
                 }
                 if shallow_clone {
-                    command.arg("--depth").arg("1").arg("--shallow-submodules");
+                    command
+                        .arg("--filter=tree:0")
+                        .arg("--also-filter-submodules");
                 }
                 command.arg(&source_dir_tmp);
                 run_command(command, logger)?;
 
                 // Move source.tmp to source atomically
                 rename(&source_dir_tmp, &source_dir)?;
-            } else if !shallow_clone {
-                // Don't let this code reset the origin for the cookbook repo
+            } else {
                 let source_git_dir = source_dir.join(".git");
                 if !source_git_dir.is_dir() {
                     return Err(format!(
@@ -205,7 +206,14 @@ pub fn fetch(recipe_dir: &Path, recipe: &Recipe, logger: &PtyOut) -> Result<Path
                 command.arg("-C").arg(&source_dir);
                 command.arg("checkout").arg(rev);
                 run_command(command, logger)?;
-            } else if !shallow_clone && !is_redox() {
+            } else if !is_redox() {
+                //If patches exists, we have to drop it
+                if patches.len() > 0 {
+                    let mut command = Command::new("git");
+                    command.arg("-C").arg(&source_dir);
+                    command.arg("reset").arg("--hard");
+                    run_command(command, logger)?;
+                }
                 //TODO: complicated stuff to check and reset branch to origin
                 //TODO: redox can't undestand this (got exit status 1)
                 let mut command = Command::new("bash");
@@ -225,23 +233,25 @@ pub fn fetch(recipe_dir: &Path, recipe: &Recipe, logger: &PtyOut) -> Result<Path
                 run_command(command, logger)?;
             }
 
-            if !shallow_clone {
-                // Sync submodules URL
-                let mut command = Command::new("git");
-                command.arg("-C").arg(&source_dir);
-                command.arg("submodule").arg("sync").arg("--recursive");
-                run_command(command, logger)?;
+            // Sync submodules URL
+            let mut command = Command::new("git");
+            command.arg("-C").arg(&source_dir);
+            command.arg("submodule").arg("sync").arg("--recursive");
 
-                // Update submodules
-                let mut command = Command::new("git");
-                command.arg("-C").arg(&source_dir);
-                command
-                    .arg("submodule")
-                    .arg("update")
-                    .arg("--init")
-                    .arg("--recursive");
-                run_command(command, logger)?;
+            run_command(command, logger)?;
+
+            // Update submodules
+            let mut command = Command::new("git");
+            command.arg("-C").arg(&source_dir);
+            command
+                .arg("submodule")
+                .arg("update")
+                .arg("--init")
+                .arg("--recursive");
+            if shallow_clone {
+                command.arg("--filter=tree:0");
             }
+            run_command(command, logger)?;
 
             fetch_apply_patches(recipe_dir, patches, script, &source_dir, logger)?;
         }
