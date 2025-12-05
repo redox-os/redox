@@ -286,3 +286,17 @@ pub fn download_wget(url: &str, dest: &PathBuf, logger: &PtyOut) -> Result<(), S
     }
     Ok(())
 }
+
+pub fn get_git_head_rev(dir: &PathBuf) -> Result<String, String> {
+    let git_head = dir.join(".git/HEAD");
+    let head_str = fs::read_to_string(&git_head)
+        .map_err(|e| format!("unable to read {path}: {e}", path = git_head.display()))?;
+    if head_str.starts_with("ref: ") {
+        let git_ref = dir.join(head_str["ref: ".len()..].trim_end());
+        let ref_str = fs::read_to_string(&git_ref)
+            .map_err(|e| format!("unable to read {path}: {e}", path = git_ref.display()))?;
+        Ok(ref_str)
+    } else {
+        Ok(head_str.trim_end().to_string())
+    }
+}
