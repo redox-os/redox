@@ -94,7 +94,6 @@ fn move_dir_all_inner_fn<'a>(
     for (src, srcrel, dst) in files {
         let path = dst.join(&srcrel);
         fs::create_dir_all(&path.parent().unwrap())?;
-        println!("{:?} -> {:?}", src.display(), path.display());
         std::fs::rename(&src, &path)?;
     }
     Ok(())
