@@ -43,8 +43,7 @@ pub enum SourceRecipe {
         /// The optional revision of the git repository to use for builds. Please specify for
         /// reproducible builds
         rev: Option<String>,
-        /// The optional config to run as shallow fetch. Only use this for heavy git like "rust"
-        /// This will disable recipe autofetching because of its cost on git server
+        /// The optional config to clone with treeless clone. Default is true if "rev" added
         shallow_clone: Option<bool>,
         /// A list of patch files to apply to the source
         #[serde(default)]
@@ -449,12 +448,9 @@ mod tests {
             Recipe {
                 source: Some(SourceRecipe::Git {
                     git: "https://gitlab.redox-os.org/redox-os/acid.git".to_string(),
-                    upstream: None,
                     branch: Some("master".to_string()),
                     rev: Some("06344744d3d55a5ac9a62a6059cb363d40699bbc".to_string()),
-                    patches: Vec::new(),
-                    script: None,
-                    shallow_clone: None,
+                    ..Default::default()
                 }),
                 build: BuildRecipe::new(BuildKind::Cargo {
                     package_path: None,
