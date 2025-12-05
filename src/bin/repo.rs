@@ -4,7 +4,7 @@ use cookbook::config::{CookConfig, get_config, init_config};
 use cookbook::cook::cook_build::build;
 use cookbook::cook::fetch::{fetch, fetch_offline};
 use cookbook::cook::fs::{create_target_dir, run_command};
-use cookbook::cook::package::{package, package_target};
+use cookbook::cook::package::package;
 use cookbook::cook::pty::{PtyOut, UnixSlavePty, flush_pty, setup_pty};
 use cookbook::cook::script::KILL_ALL_PID;
 use cookbook::cook::tree::{WalkTreeEntry, display_tree_entry, format_size, walk_tree_entry};
@@ -418,7 +418,8 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
         config.category = Some(PathBuf::from("recipes").join(c));
     }
     if let Some(c) = config.logs_dir.as_mut() {
-        fs::create_dir_all(c).map_err(|e| anyhow!(e))?;
+        fs::create_dir_all(c.join(redoxer::target())).map_err(|e| anyhow!(e))?;
+        fs::create_dir_all(c.join(redoxer::host_target())).map_err(|e| anyhow!(e))?;
     }
     if override_filesystem_repo_binary {
         if let Some(conf) = config.filesystem.as_mut() {
@@ -1028,8 +1029,7 @@ fn run_tui_cook(
                         log_to_pty!(&logger, "\n{:?}", err_ctx)
                     }
                     flush_pty(&mut logger);
-                    let log_path =
-                        log_path.join(format!("{}/{}.log", package_target(&name), name.name()));
+                    let log_path = log_path.join(format!("{}/{}.log", recipe.target, name.name()));
                     cooker_status_tx
                         .send(StatusUpdate::FlushLog(name.clone(), log_path))
                         .unwrap_or_default();
@@ -1577,6 +1577,8 @@ fn kill_everything() {
     Command::new("bash")
         .arg("-c")
         .arg(KILL_ALL_PID.replace("$PID", &pid.to_string()))
+        .stdout(process::Stdio::null())
+        .stderr(process::Stdio::null())
         .spawn()
         .expect("unable to spawn kill");
 }
