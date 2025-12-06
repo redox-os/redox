@@ -416,6 +416,12 @@ impl CookRecipe {
         Ok(packages.into_iter().map(|p| p.name).collect())
     }
 
+    pub fn reload_recipe(&mut self) -> Result<(), PackageError> {
+        let r = Self::from_path(&self.dir, true)?;
+        self.recipe = r.recipe;
+        Ok(())
+    }
+
     /// returns stage dir, pkgar file and toml file.
     pub fn stage_paths(&self) -> (PathBuf, PathBuf, PathBuf) {
         let r = self.name.suffix().map(|p| OptionalPackageRecipe {
