@@ -1,7 +1,7 @@
 use anyhow::anyhow;
 use cookbook::WALK_DEPTH;
 use cookbook::config::{get_config, init_config};
-use cookbook::cook::package::{get_package_name, package_stage_paths, package_target};
+use cookbook::cook::package as cook_package;
 use cookbook::recipe::CookRecipe;
 use pkg::{Package, PackageName, recipes};
 use std::collections::{BTreeMap, HashMap};
@@ -94,14 +94,11 @@ fn publish_packages(config: &CliConfig) -> anyhow::Result<()> {
             continue;
         };
 
-        let target = package_target(recipe);
-        let target_dir = cookbook_recipe.dir.join("target").join(&target);
-
-        let packages = cookbook_recipe.recipe.get_packages_list();
-
-        for package in packages {
-            let (stage_dir, pkgar_src, toml_src) = package_stage_paths(package, &target_dir);
-            let recipe_name = get_package_name(recipe.name(), package);
+        let target_dir = cookbook_recipe.target_dir();
+        for package in cookbook_recipe.recipe.get_packages_list() {
+            let (stage_dir, pkgar_src, toml_src) =
+                cook_package::package_stage_paths(package, &target_dir);
+            let recipe_name = recipe.without_host();
             let pkgar_dst = repo_path.join(format!("{}.pkgar", recipe_name));
             let toml_dst = repo_path.join(format!("{}.toml", recipe_name));
 
