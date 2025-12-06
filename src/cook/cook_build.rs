@@ -195,11 +195,7 @@ pub fn build(
         build_deps.push(CookRecipe::from_name(dep.clone()).map_err(|e| format!("{:?}", e))?);
     }
     for dependency in build_deps.iter() {
-        let pkgar = dependency
-            .dir
-            .join("target")
-            .join(dependency.target)
-            .join("stage.pkgar");
+        let (_, pkgar, _) = dependency.stage_paths();
         if dependency.name.is_host() {
             dep_host_pkgars.insert((dependency.name.clone(), pkgar));
         } else {

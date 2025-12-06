@@ -1008,7 +1008,7 @@ fn run_tui_cook(
     let cooker_status_tx = status_tx.clone();
     let cooker_prompting = prompting.clone();
     let cooker_handle = thread::spawn(move || {
-        'done: for (recipe, source_dir) in work_rx {
+        'done: for (mut recipe, source_dir) in work_rx {
             let name = recipe.name.clone();
             let is_deps = recipe.is_deps;
             let (mut stdout_writer, mut stderr_writer) = setup_logger(&cooker_status_tx, &name);
@@ -1017,6 +1017,7 @@ fn run_tui_cook(
                 cooker_status_tx
                     .send(StatusUpdate::StartCook(name.clone()))
                     .unwrap();
+                let _ = recipe.reload_recipe(); // reread recipe.toml in case we're retrying
                 let handler = handle_cook(
                     &recipe,
                     &cooker_config,
@@ -1113,7 +1114,7 @@ fn run_tui_cook(
     let fetcher_config = config.clone();
     let fetcher_prompting = prompting.clone();
     let fetcher_handle = thread::spawn(move || {
-        'done: for recipe in fetcher_recipes {
+        'done: for mut recipe in fetcher_recipes {
             let name = recipe.name.clone();
             let (mut stdout_writer, mut stderr_writer) = setup_logger(&fetcher_status_tx, &name);
             let mut logger = Some((&mut stdout_writer, &mut stderr_writer));
@@ -1121,6 +1122,7 @@ fn run_tui_cook(
                 fetcher_status_tx
                     .send(StatusUpdate::StartFetch(name.clone()))
                     .unwrap();
+                let _ = recipe.reload_recipe(); // reread recipe.toml in case we're retrying
                 let handler = handle_fetch(&recipe, &fetcher_config, true, &logger);
                 if let Some(log_path) = fetcher_config.logs_dir.as_ref()
                     // successful fetch log usually not that helpful

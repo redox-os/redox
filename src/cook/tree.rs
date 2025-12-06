@@ -4,10 +4,10 @@ use std::{
     path::PathBuf,
 };
 
-use anyhow::{Context, anyhow};
+use anyhow::Context;
 use pkg::{Package, PackageName};
 
-use crate::{cook::fs::create_target_dir, recipe::CookRecipe};
+use crate::recipe::CookRecipe;
 
 pub enum WalkTreeEntry<'a> {
     Built(&'a PathBuf, u64),
@@ -53,10 +53,7 @@ pub fn walk_tree_entry(
         }
     };
 
-    let package_dir = &cook_recipe.dir;
-    let target_dir = create_target_dir(package_dir, redoxer::target()).map_err(|e| anyhow!(e))?;
-    let pkg_path = target_dir.join("stage.pkgar");
-    let pkg_toml = target_dir.join("stage.toml");
+    let (_, pkg_path, pkg_toml) = cook_recipe.stage_paths();
 
     let deduped = visited.contains(package_name);
     let entry = match (std::fs::metadata(&pkg_path), deduped) {
