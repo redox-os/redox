@@ -430,8 +430,14 @@ fn build_deps_dir(
     deps_modified: SystemTime,
 ) -> Result<(), String> {
     if deps_dir.is_dir() {
-        let sysroot_modified = modified_dir(deps_dir)?;
-        if sysroot_modified < source_modified || sysroot_modified < deps_modified {
+        let tags_dir = deps_dir.join(".tags");
+        let sysroot_modified = modified_dir(&tags_dir).unwrap_or(SystemTime::UNIX_EPOCH);
+        if sysroot_modified < source_modified
+            || sysroot_modified < deps_modified
+            || dep_pkgars
+                .iter()
+                .any(|(pkg, _)| !tags_dir.join(pkg.as_str()).is_file())
+        {
             log_to_pty!(logger, "DEBUG: updating '{}'", deps_dir.display());
             remove_all(deps_dir)?;
         }
@@ -439,20 +445,25 @@ fn build_deps_dir(
     if !deps_dir.is_dir() {
         // Create sysroot.tmp
         create_dir_clean(&deps_dir_tmp)?;
+        let tags_dir = deps_dir_tmp.join(".tags");
+        let usr_dir = deps_dir_tmp.join("usr");
+        create_dir(&tags_dir)?;
+        create_dir(&usr_dir)?;
 
-        // Make sure sysroot/usr exists
-        create_dir(&deps_dir_tmp.join("usr"))?;
         for folder in &["bin", "include", "lib", "share"] {
             // Make sure sysroot/usr/$folder exists
-            create_dir(&deps_dir_tmp.join("usr").join(folder))?;
+            create_dir(&usr_dir.join(folder))?;
 
             // Link sysroot/$folder sysroot/usr/$folder
             symlink(Path::new("usr").join(folder), &deps_dir_tmp.join(folder))?;
         }
 
-        for (_dep, archive_path) in dep_pkgars {
-            let public_path = "build/id_ed25519.pub.toml";
-            pkgar::extract(public_path, &archive_path, deps_dir_tmp.to_str().unwrap()).map_err(
+        let pkey_path = "build/id_ed25519.pub.toml";
+        for (name, archive_path) in dep_pkgars {
+            let tag_file = tags_dir.join(name.without_host().as_str());
+            fs::write(&tag_file, "")
+                .map_err(|e| format!("failed to write tag file {}: {:?}", tag_file.display(), e))?;
+            pkgar::extract(pkey_path, &archive_path, deps_dir_tmp.to_str().unwrap()).map_err(
                 |err| {
                     format!(
                         "failed to install '{}' in '{}': {:?}",
