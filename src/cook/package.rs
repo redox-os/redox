@@ -150,12 +150,7 @@ pub fn package_toml(
     };
 
     let package = Package {
-        name: PackageName::new(if name.is_host() {
-            &name.as_str()["host:".len()..]
-        } else {
-            name.as_str()
-        })
-        .unwrap(),
+        name: name.without_host(),
         version: package_version(recipe),
         target: package_target(name).to_string(),
         blake3: hash,

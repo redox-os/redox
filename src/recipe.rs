@@ -12,7 +12,7 @@ use serde::{
     de::{Error as DeErrorT, value::Error as DeError},
 };
 
-use crate::{WALK_DEPTH, cook::package::package_target};
+use crate::{WALK_DEPTH, cook::package as cook_package};
 
 /// Specifies how to download the source for a recipe
 #[derive(Debug, Clone, Deserialize, PartialEq, Serialize)]
@@ -225,14 +225,14 @@ impl Recipe {
 
 impl CookRecipe {
     pub fn new(name: PackageName, dir: PathBuf, mut recipe: Recipe) -> Result<Self, PackageError> {
-        let target = package_target(&name);
+        let target = cook_package::package_target(&name);
         if name.is_host() {
             let thisname = name.name();
             let fn_map = |p: PackageName| {
                 if p.is_host() {
                     if p.name() == thisname { None } else { Some(p) }
                 } else {
-                    Some(PackageName::new(format!("host:{}", p.as_str())).unwrap())
+                    Some(p.with_host())
                 }
             };
             recipe.build.dependencies = recipe
@@ -414,6 +414,19 @@ impl CookRecipe {
         )?;
 
         Ok(packages.into_iter().map(|p| p.name).collect())
+    }
+
+    /// returns stage dir, pkgar file and toml file.
+    pub fn stage_paths(&self) -> (PathBuf, PathBuf, PathBuf) {
+        let r = self.name.suffix().map(|p| OptionalPackageRecipe {
+            name: p.to_string(),
+            ..Default::default()
+        });
+        cook_package::package_stage_paths(r.as_ref(), &self.target_dir())
+    }
+
+    pub fn target_dir(&self) -> PathBuf {
+        self.dir.join("target").join(self.target)
     }
 }
 
