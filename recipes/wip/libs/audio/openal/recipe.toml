@@ -10,7 +10,6 @@ template = "custom"
 dependencies = [
     "liborbital",
     "libsndfile",
-    "llvm18",
     "mesa",
     "sdl2",
     "zlib",

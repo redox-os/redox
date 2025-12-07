@@ -24,7 +24,6 @@ dependencies = [
     "liborbital",
     "libpng",
     "libvorbis",
-    "llvm18",
     "mesa",
     "mesa-glu",
     "pcre",
