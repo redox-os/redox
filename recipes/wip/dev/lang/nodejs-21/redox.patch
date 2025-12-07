@@ -179,7 +179,7 @@ diff -ruwN source/deps/v8/src/base/platform/platform-posix.cc source-new/deps/v8
  #endif
  
 +#if defined(__redox__)
-+  #define PTHREAD_STACK_MIN 4096
++  #define PTHREAD_STACK_MIN 1024 * 1024
 +#endif
 +
  #if defined(ANDROID) && !defined(V8_ANDROID_LOG_STDOUT)
@@ -392,6 +392,40 @@ diff -ruwN source/src/node_credentials.cc source-new/src/node_credentials.cc
      return value.As<Uint32>()->Value();
    } else {
      Utf8Value name(isolate, value);
+diff -ruwN source/src/node_dotenv.cc source-new/src/node_dotenv.cc
+--- source/src/node_dotenv.cc	2024-04-10 19:46:14.000000000 +0700
++++ source-new/src/node_dotenv.cc	2025-11-30 23:39:21.486092041 +0700
+@@ -16,10 +16,14 @@
+  * The inspiration for this implementation comes from the original dotenv code,
+  * available at https://github.com/motdotla/dotenv
+  */
++
++// redox crash on compiling this regex
++#if !defined(__redox__)
+ const std::regex LINE(
+     "\\s*(?:export\\s+)?([\\w.-]+)(?:\\s*=\\s*?|:\\s+?)(\\s*'(?:\\\\'|[^']"
+     ")*'|\\s*\"(?:\\\\\"|[^\"])*\"|\\s*`(?:\\\\`|[^`])*`|[^#\r\n]+)?\\s*(?"
+     ":#.*)?");  // NOLINT(whitespace/line_length)
++#endif
+ 
+ std::vector<std::string> Dotenv::GetPathFromArgs(
+     const std::vector<std::string>& args) {
+@@ -102,6 +106,7 @@
+ }
+ 
+ void Dotenv::ParseContent(const std::string_view content) {
++#if !defined(__redox__)
+   std::string lines = std::string(content);
+   lines = std::regex_replace(lines, std::regex("\r\n?"), "\n");
+ 
+@@ -131,6 +136,7 @@
+     store_.insert_or_assign(std::string(key), value);
+     lines = match.suffix();
+   }
++#endif
+ }
+ 
+ Dotenv::ParseResult Dotenv::ParsePath(const std::string_view path) {
 diff -ruwN source/src/node_report.cc source-new/src/node_report.cc
 --- source/src/node_report.cc	2024-04-10 19:46:14.000000000 +0700
 +++ source-new/src/node_report.cc	2025-10-10 13:46:05.190512964 +0700
