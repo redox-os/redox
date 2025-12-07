@@ -39,7 +39,6 @@ dependencies = [
     "libxrandr",
     "libxrender",
     "libxxf86vm",
-    "llvm18",
     "mesa-x11",
     "pango",
     "pcre",

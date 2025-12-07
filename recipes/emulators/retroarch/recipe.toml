@@ -6,7 +6,6 @@ template = "custom"
 dependencies = [
     "liborbital",
     "libretro-super",
-    "llvm18",
     "mesa",
     "openssl1",
     "sdl2",
