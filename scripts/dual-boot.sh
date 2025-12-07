@@ -55,3 +55,6 @@ set +x
 sync
 
 echo "Finished installing Redox OS dual boot"
+echo ""
+echo "To mount the RedoxFS partition, run:"
+echo "  ./scripts/mount-redoxfs.sh ${DISK}"
