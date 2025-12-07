@@ -7,7 +7,6 @@ dependencies = [
     "libjpeg",
     "liborbital",
     "libpng",
-    "llvm18",
     "mesa",
     "sdl2",
     "zlib",

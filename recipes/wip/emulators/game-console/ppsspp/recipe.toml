@@ -7,7 +7,6 @@ tar = "https://github.com/hrydgard/ppsspp/releases/download/v1.19.3/ppsspp-1.19.
 template = "custom"
 dependencies = [
     #"liborbital",
-    "llvm18",
     "mesa",
     "mesa-glu",
     "sdl2",

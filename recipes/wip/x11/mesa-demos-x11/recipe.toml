@@ -5,23 +5,12 @@ patches = ["redox.patch"]
 
 [build]
 dependencies = [
-    "expat",
-    "libpthread-stubs",
-    "libstdcxx",
-    "libx11",
-    "libxau",
-    "libxcb",
-    "libxext",
-    "libxfixes",
-    "libxml2",
-    "libxxf86vm",
-    "llvm18",
-    "mesa-x11",
     "mesa-glu-x11",
-    "x11proto",
-    "xextproto",
-    "zlib",
 ]
+dev-dependencies = [
+    "libstdcxx",
+]
+
 template = "custom"
 script = """
 DYNAMIC_INIT

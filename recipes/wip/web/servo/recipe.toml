@@ -37,6 +37,7 @@ export CLANGFLAGS="-I $PREFIX_INCLUDE/c++/13.2.0 -I $PREFIX_INCLUDE/c++/13.2.0/$
 
 #Mozjs specifics
 export CARGO_MAKEFLAGS="-j $COOKBOOK_MAKE_JOBS" CCACHE="sccache"
+unset CC_WRAPPER
 
 PACKAGE_PATH="ports/servoshell" cookbook_cargo
 

@@ -7,59 +7,36 @@ shallow_clone = true
 [build]
 template = "custom"
 dependencies = [
-    "zlib"
+    "zlib",
+    "libxml2",
+]
+dev-dependencies = [
+    "host:xz",
+    "host:libarchive",
 ]
 script = """
 DYNAMIC_INIT
-
-# https://llvm.org/docs/CMake.html
-case "${TARGET}" in
-    x86-unknown-redox)
-        LLVM_TARGETS_TO_BUILD="X86"
-        ;;
-    x86_64-unknown-redox)
-        LLVM_TARGETS_TO_BUILD="X86"
-        ;;
-    aarch64-unknown-redox)
-        LLVM_TARGETS_TO_BUILD="AArch64"
-        ;;
-    riscv64gc-unknown-redox)
-        LLVM_TARGETS_TO_BUILD="RISCV"
-        ;;
-    *)
-        LLVM_TARGETS_TO_BUILD="host"
-        ;;
-esac
 
 COOKBOOK_CMAKE_FLAGS+=(
     -DCMAKE_CXX_FLAGS="--std=gnu++11"
     -DBUILD_SHARED_LIBS=False
     -DLLVM_LINK_LLVM_DYLIB=On
     -DCROSS_TOOLCHAIN_FLAGS_NATIVE="-DCMAKE_TOOLCHAIN_FILE=$(realpath "${COOKBOOK_RECIPE}/native.cmake")"
-    -DLLVM_BUILD_BENCHMARKS=Off
     -DLLVM_BUILD_EXAMPLES=Off
     -DLLVM_BUILD_TESTS=Off
-    -DLLVM_BUILD_UTILS=Off
+    -DLLVM_BUILD_UTILS=On
     -DLLVM_DEFAULT_TARGET_TRIPLE="${TARGET}"
     -DLLVM_ENABLE_LTO=Off
     -DLLVM_ENABLE_RTTI=On
     -DLLVM_ENABLE_THREADS=On
-    -DLLVM_ENABLE_ZSTD=Off
-    -DLLVM_INCLUDE_BENCHMARKS=Off
     -DLLVM_INCLUDE_EXAMPLES=Off
     -DLLVM_INCLUDE_TESTS=Off
-    -DLLVM_INCLUDE_UTILS=Off
+    -DLLVM_INSTALL_UTILS=On
     -DLLVM_OPTIMIZED_TABLEGEN=On
     -DLLVM_TARGET_ARCH="$(echo "${TARGET}" | cut -d - -f1)"
-    -DLLVM_TARGETS_TO_BUILD="${LLVM_TARGETS_TO_BUILD}"
-    -DLLVM_TOOL_LLVM_COV_BUILD=Off
-    -DLLVM_TOOL_LLVM_LTO_BUILD=Off
-    -DLLVM_TOOL_LLVM_LTO2_BUILD=Off
-    -DLLVM_TOOL_LLVM_PROFDATA_BUILD=Off
-    -DLLVM_TOOL_LLVM_RTDYLD_BUILD=Off
-    -DLLVM_TOOL_LLVM_XRAY_BUILD=Off
-    -DLLVM_TOOL_LLI_BUILD=Off
-    -DLLVM_TOOL_LTO_BUILD=Off
+    -DLLVM_TARGETS_TO_BUILD="X86;AArch64"
+    -DLLVM_TOOL_LLVM_COV_BUILD=On
+    -DLLVM_TOOL_LLVM_PROFDATA_BUILD=On
     -DLLVM_TOOLS_INSTALL_DIR=bin
     -DLLVM_UTILS_INSTALL_DIR=bin
     -DUNIX=1
@@ -68,5 +45,21 @@ COOKBOOK_CMAKE_FLAGS+=(
 
 # Native tablegen build fails with too many jobs, limit to 16
 COOKBOOK_MAKE_JOBS="$(( ${COOKBOOK_MAKE_JOBS} > 16 ? 16 : ${COOKBOOK_MAKE_JOBS} ))"
-cookbook_cmake "${COOKBOOK_SOURCE}/llvm"
+COOKBOOK_SOURCE="$COOKBOOK_SOURCE/llvm"
+cookbook_cmake
 """
+
+[[optional-packages]]
+name = "dev"
+dependencies = [ ".runtime" ]
+files = [
+    "usr/include/**",
+    "usr/lib/*.a",
+    "usr/lib/cmake/**",
+]
+
+[[optional-packages]]
+name = "runtime"
+files = [
+    "usr/bin/**",
+]

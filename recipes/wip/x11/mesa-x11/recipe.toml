@@ -6,19 +6,20 @@ template = "custom"
 dependencies = [
     "expat",
     "libdrm",
-    "libpthread-stubs",
     "libx11",
-    "libxau",
     "libxcb",
     "libxext",
     "libxfixes",
     "libxrandr",
     "libxshmfence",
     "libxxf86vm",
-    "llvm18",
-    "x11proto",
+    "llvm21",
     "zlib",
 ]
+dev-dependencies = [
+    "llvm21.dev"
+]
+
 script = """
 DYNAMIC_INIT
 cookbook_meson \

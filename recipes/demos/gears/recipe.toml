@@ -1,7 +1,6 @@
 [build]
 dependencies=[
     "liborbital",
-    "llvm18",
     "mesa",
     "mesa-glu",
     "zlib",

@@ -13,7 +13,6 @@ dependencies = [
     "freetype2",
     "glew",
     "imath",
-    "llvm18",
     "lz4",
     "libffi",
     "libjpeg",
