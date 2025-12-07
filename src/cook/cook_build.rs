@@ -188,12 +188,13 @@ pub fn build(
 
     let mut dep_pkgars = BTreeSet::new();
     let mut dep_host_pkgars = BTreeSet::new();
-    let mut build_deps =
-        CookRecipe::get_build_deps_recursive(&recipe.build.dependencies, false, false)
-            .map_err(|e| format!("{:?}", e))?;
-    for dep in &recipe.build.dev_dependencies {
-        build_deps.push(CookRecipe::from_name(dep.clone()).map_err(|e| format!("{:?}", e))?);
-    }
+    let build_deps = [
+        &recipe.build.dependencies[..],
+        &recipe.build.dev_dependencies[..],
+    ]
+    .concat();
+    let build_deps = CookRecipe::get_build_deps_recursive(&build_deps, false, false)
+        .map_err(|e| format!("{:?}", e))?;
     for dependency in build_deps.iter() {
         let (_, pkgar, _) = dependency.stage_paths();
         if dependency.name.is_host() {
