@@ -265,9 +265,12 @@ impl CookRecipe {
         Self::new(name, dir.to_path_buf(), recipe)
     }
 
-    pub fn from_path(dir: &Path, read_recipe: bool) -> Result<Self, PackageError> {
+    pub fn from_path(dir: &Path, read_recipe: bool, is_host: bool) -> Result<Self, PackageError> {
         let file = dir.join("recipe.toml");
-        let name: PackageName = dir.file_name().unwrap().try_into()?;
+        let mut name: PackageName = dir.file_name().unwrap().try_into()?;
+        if is_host {
+            name = name.with_host();
+        }
         let recipe = if read_recipe {
             Recipe::new(&file)?
         } else {
@@ -417,7 +420,7 @@ impl CookRecipe {
     }
 
     pub fn reload_recipe(&mut self) -> Result<(), PackageError> {
-        let r = Self::from_path(&self.dir, true)?;
+        let r = Self::from_path(&self.dir, true, self.name.is_host())?;
         self.recipe = r.recipe;
         Ok(())
     }
