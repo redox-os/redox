@@ -89,7 +89,7 @@ fn publish_packages(config: &CliConfig) -> anyhow::Result<()> {
             eprintln!("recipe {} not found", recipe);
             continue;
         };
-        let Ok(cookbook_recipe) = CookRecipe::from_path(recipe_path, true) else {
+        let Ok(cookbook_recipe) = CookRecipe::from_path(recipe_path, true, false) else {
             eprintln!("recipe {} unable to read", recipe);
             continue;
         };

@@ -208,7 +208,12 @@ pub fn build(
         return Ok((stage_dirs, auto_deps));
     }
 
-    let source_modified = modified_dir_ignore_git(source_dir).unwrap_or(SystemTime::UNIX_EPOCH);
+    let mut source_modified = modified_dir_ignore_git(source_dir).unwrap_or(SystemTime::UNIX_EPOCH);
+    if let Ok(recipe_modified) = modified(&recipe_dir.join("recipe.toml")) {
+        if recipe_modified > source_modified {
+            source_modified = recipe_modified
+        }
+    }
     let deps_modified = dep_pkgars
         .iter()
         .map(|(_dep, pkgar)| modified(pkgar))
@@ -221,7 +226,6 @@ pub fn build(
         .unwrap_or(Ok(SystemTime::UNIX_EPOCH))?;
 
     // Rebuild sysroot if source is newer
-    //TODO: rebuild on recipe changes
     if recipe.build.kind != BuildKind::Remote {
         build_deps_dir(
             logger,
@@ -248,7 +252,6 @@ pub fn build(
     }
 
     // Rebuild stage if source is newer
-    //TODO: rebuild on recipe changes
     if stage_dirs.iter().any(|dir| dir.is_dir()) {
         let stage_modified =
             modified_all(&stage_dirs, modified_dir).unwrap_or(SystemTime::UNIX_EPOCH);
