@@ -452,7 +452,8 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
                 .collect(),
         }
         .iter()
-        .map(|f| CookRecipe::from_path(f, !command.is_cleaning()))
+        // TODO: Allow selecting recipes from category as host?
+        .map(|f| CookRecipe::from_path(f, !command.is_cleaning(), false))
         .collect::<Result<Vec<CookRecipe>, PackageError>>()?
     } else {
         if recipe_names.is_empty() {
