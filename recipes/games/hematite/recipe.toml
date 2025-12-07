@@ -6,7 +6,6 @@ upstream = "https://github.com/PistonDevelopers/hematite.git"
 [build]
 template = "custom"
 dependencies = [
-    "llvm18",
     "mesa",
     "zlib"
 ]

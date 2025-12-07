@@ -32,5 +32,4 @@ cp -rv "${COOKBOOK_SOURCE}/shaders" "${COOKBOOK_STAGE}/home/user/systemshock/sha
 """
 [package]
 dependencies = [
-    "llvm18",
 ]

@@ -11,7 +11,6 @@ dependencies = [
     "liborbital",
     "libjpeg",
     "libpng",
-    "llvm18",
     "openssl1",
     "mesa",
     "nghttp2",
