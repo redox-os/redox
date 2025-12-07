@@ -1,11 +1,9 @@
+#TODO: use sed to replace hardcoded paths into env
 [llvm]
 download-ci-llvm = false
 static-libstdcpp = false
 targets = "X86"
 experimental-targets = ""
-# TODO: This currently must need to be set manually.
-# If you like to build llvm with sccache, uncomment:
-# ccache = "sccache"
 
 [build]
 host = ["x86_64-unknown-redox"]
@@ -30,3 +28,10 @@ ar = "x86_64-unknown-redox-ar"
 linker = "x86_64-unknown-redox-gcc"
 rpath = false
 crt-static = false
+llvm-config = "/mnt/redox/recipes/dev/rust/target/x86_64-unknown-redox/sysroot/bin/llvm-config"
+
+[target.aarch64-unknown-linux-gnu]
+llvm-config = "/mnt/redox/recipes/dev/rust/target/x86_64-unknown-redox/toolchain/bin/llvm-config"
+
+[target.x86_64-unknown-linux-gnu]
+llvm-config = "/mnt/redox/recipes/dev/rust/target/x86_64-unknown-redox/toolchain/bin/llvm-config"

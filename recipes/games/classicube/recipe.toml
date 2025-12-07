@@ -5,7 +5,6 @@ git = "https://github.com/jackpot51/ClassiCube.git"
 template = "custom"
 dependencies = [
     "liborbital",
-    "llvm18",
     "mesa",
     "sdl2",
     "zlib",

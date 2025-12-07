@@ -13,7 +13,6 @@ dependencies = [
     "libxext",
     "libxfixes",
     "libxxf86vm",
-    "llvm18",
     "mesa-x11",
     "x11proto",
     "zlib",

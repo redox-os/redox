@@ -15,7 +15,6 @@ dependencies = [
     "sdl2-mixer",
     "sdl2",
     "liborbital",
-    "llvm18",
     "mesa",
     "mesa-glu",
     "zlib",

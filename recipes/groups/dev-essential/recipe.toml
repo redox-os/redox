@@ -5,7 +5,7 @@ dependencies = [
     "cargo",
     "gcc13",
     "gcc13.cxx",
-    "llvm18",
+    "llvm21",
     "gnu-binutils",
     "gnu-make",
     "gnu-grep",
