@@ -72,19 +72,8 @@ pub fn package(
             .map_err(|err| format!("failed to create pkgar archive: {:?}", err))?;
         }
 
-        let deps = if let Some(package) = package {
-            let mut b = BTreeSet::new();
-            for dep in &package.dependencies {
-                let dep_name = if dep.name() == "" {
-                    PackageName::new(format!("{}.{}", name.name(), package.name))
-                        .map_err(|e| format!("{}", e))?
-                } else {
-                    dep.clone()
-                };
-                b.insert(dep_name);
-            }
-            b.insert(name.clone());
-            b
+        let deps = if package.is_some() {
+            BTreeSet::from([name.without_host()])
         } else {
             auto_deps.clone()
         };
@@ -96,7 +85,17 @@ pub fn package(
                 None => name.clone(),
             };
             let package_deps = match package {
-                Some(p) => p.dependencies.clone(),
+                Some(p) => p
+                    .dependencies
+                    .iter()
+                    .map(|dep| {
+                        if dep.name().is_empty() {
+                            name.with_suffix(dep.suffix())
+                        } else {
+                            dep.clone()
+                        }
+                    })
+                    .collect(),
                 None => recipe.package.dependencies.clone(),
             };
             package_toml(
