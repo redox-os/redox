@@ -17,7 +17,9 @@ dependencies = [
     "zlib",
 ]
 dev-dependencies = [
-    "llvm21.dev"
+    "llvm21.dev",
+    "host:llvm21.dev",
+    "host:llvm21.runtime",
 ]
 
 script = """
