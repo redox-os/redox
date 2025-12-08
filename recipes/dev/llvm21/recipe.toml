@@ -11,8 +11,9 @@ dependencies = [
     "libxml2",
 ]
 dev-dependencies = [
+    "libstdcxx",
     "host:xz",
-    "host:libarchive",
+    "host:libarchive",  # workaround for cmake error
 ]
 script = """
 DYNAMIC_INIT
@@ -39,8 +40,9 @@ COOKBOOK_CMAKE_FLAGS+=(
     -DLLVM_TOOL_LLVM_PROFDATA_BUILD=On
     -DLLVM_TOOLS_INSTALL_DIR=bin
     -DLLVM_UTILS_INSTALL_DIR=bin
+    -DLIBCLANG_BUILD_STATIC=On
     -DUNIX=1
-    -DLLVM_ENABLE_PROJECTS="llvm"
+    -DLLVM_ENABLE_PROJECTS="llvm;clang;clang-tools-extra;lld"
 )
 
 # Native tablegen build fails with too many jobs, limit to 16
@@ -49,17 +51,61 @@ COOKBOOK_SOURCE="$COOKBOOK_SOURCE/llvm"
 cookbook_cmake
 """
 
+# clang library and runtime
 [[optional-packages]]
-name = "dev"
+name = "clang"
 dependencies = [ ".runtime" ]
 files = [
-    "usr/include/**",
-    "usr/lib/*.a",
-    "usr/lib/cmake/**",
+    "usr/bin/clang*",
+    "usr/libexec/**",
+    "usr/lib/libclang-cpp.so*",
+    "usr/lib/libclang.so*",
+    "usr/lib/clang/**",
+    "usr/lib/libear/**",
+    "usr/lib/libscanbuild/**",
+    "usr/share/clang*/**",
 ]
 
+# lld runtime (no library)
+[[optional-packages]]
+name = "lld"
+dependencies = [ ".runtime" ]
+files = [
+    "usr/bin/*.lld",
+    "usr/bin/*-ld",
+    "usr/bin/lld*",
+]
+
+# llvm runtime
 [[optional-packages]]
 name = "runtime"
 files = [
     "usr/bin/**",
+]
+
+[[optional-packages]]
+name = "clang-dev"
+dependencies = [ ".clang" ]
+files = [
+    "usr/include/clang*/**",
+    "usr/lib/libclang*.a",
+    "usr/lib/cmake/clang/**",
+]
+
+[[optional-packages]]
+name = "lld-dev"
+dependencies = [ ".lld" ]
+files = [
+    "usr/include/lld*/**",
+    "usr/lib/liblld*.a",
+    "usr/lib/cmake/lld/**",
+]
+
+[[optional-packages]]
+name = "dev"
+dependencies = [ ".runtime" ]
+files = [
+    "usr/include/llvm*/**",
+    "usr/lib/libLLVM*.a",
+    "usr/lib/cmake/llvm/**",
 ]
