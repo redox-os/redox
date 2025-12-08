@@ -98,7 +98,7 @@ fn publish_packages(config: &CliConfig) -> anyhow::Result<()> {
         for package in cookbook_recipe.recipe.get_packages_list() {
             let (stage_dir, pkgar_src, toml_src) =
                 cook_package::package_stage_paths(package, &target_dir);
-            let recipe_name = recipe.without_host();
+            let recipe_name = cook_package::get_package_name(recipe.name(), package);
             let pkgar_dst = repo_path.join(format!("{}.pkgar", recipe_name));
             let toml_dst = repo_path.join(format!("{}.toml", recipe_name));
 
