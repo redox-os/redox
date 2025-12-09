@@ -1,7 +1,9 @@
 [source]
 tar = "https://sourceforge.net/projects/libuuid/files/libuuid-1.0.3.tar.gz/download"
+blake3 = "ac6582304401d2be6e5db4570c0d9d6d1500f12c918591a05066679bb2e41e55"
 patches = [
   "redox.patch"
 ]
+
 [build]
 template = "configure"
