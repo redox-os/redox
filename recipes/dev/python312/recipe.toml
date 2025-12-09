@@ -27,6 +27,7 @@ DYNAMIC_INIT
 
 export PYTHONDONTWRITEBYTECODE=1
 ARCH="${TARGET%%-*}"
+OS=$(echo "${TARGET}" | cut -d - -f3-4)
 
 if [ "$TARGET" != "$COOKBOOK_HOST_TARGET" ]; then
     COOKBOOK_CONFIGURE_FLAGS=(
@@ -50,4 +51,15 @@ if [ "${COOKBOOK_DYNAMIC}" != "1" ]; then
 fi
 
 cookbook_configure
+
+# A same file to save 60MB
+(cd "${COOKBOOK_STAGE}/usr/lib/python3.12/config-3.12-$ARCH-$OS" && \
+    rm -f libpython3.12.a && ln -s ../../libpython3.12.a)
 """
+
+[[optional-packages]]
+name = "dev"
+files = [
+    "usr/lib/python3.12/config-*/**",
+    "usr/lib/libpython*.a"
+]
