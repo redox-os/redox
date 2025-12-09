@@ -15,7 +15,7 @@ use serde::{
 use crate::{WALK_DEPTH, cook::package as cook_package};
 
 /// Specifies how to download the source for a recipe
-#[derive(Debug, Clone, Deserialize, PartialEq, Serialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(untagged)]
 pub enum SourceRecipe {
     /// Reuse the source directory of another package
@@ -450,7 +450,7 @@ mod tests {
 
     #[test]
     fn git_cargo_recipe() {
-        use crate::recipe::{BuildKind, BuildRecipe, PackageRecipe, Recipe, SourceRecipe};
+        use crate::recipe::{BuildKind, BuildRecipe, Recipe, SourceRecipe};
 
         let recipe: Recipe = toml::from_str(
             r#"
@@ -470,9 +470,12 @@ mod tests {
             Recipe {
                 source: Some(SourceRecipe::Git {
                     git: "https://gitlab.redox-os.org/redox-os/acid.git".to_string(),
+                    upstream: None,
                     branch: Some("master".to_string()),
                     rev: Some("06344744d3d55a5ac9a62a6059cb363d40699bbc".to_string()),
-                    ..Default::default()
+                    patches: Vec::new(),
+                    script: None,
+                    shallow_clone: None,
                 }),
                 build: BuildRecipe::new(BuildKind::Cargo {
                     package_path: None,
@@ -485,7 +488,7 @@ mod tests {
 
     #[test]
     fn tar_custom_recipe() {
-        use crate::recipe::{BuildKind, BuildRecipe, PackageRecipe, Recipe, SourceRecipe};
+        use crate::recipe::{BuildKind, BuildRecipe, Recipe, SourceRecipe};
 
         let recipe: Recipe = toml::from_str(
             r#"
@@ -544,7 +547,7 @@ mod tests {
                 build: BuildRecipe::new(BuildKind::None),
                 package: PackageRecipe {
                     dependencies: vec![PackageName::new("gcc13").unwrap()],
-                    ....Default::default()
+                    ..Default::default()
                 },
                 ..Default::default()
             }
