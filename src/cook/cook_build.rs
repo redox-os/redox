@@ -21,7 +21,7 @@ use std::{
 use crate::{is_redox, log_to_pty};
 
 fn auto_deps_from_dynamic_linking(
-    stage_dirs: &Vec<PathBuf>,
+    stage_dirs: &[PathBuf],
     target_dir: &Path,
     dep_pkgars: &BTreeSet<(PackageName, PathBuf)>,
     logger: &PtyOut,
@@ -601,7 +601,7 @@ mod tests {
         );
 
         let entries = super::auto_deps_from_dynamic_linking(
-            &root,
+            &vec![root.clone()],
             &root.join(".."),
             &Default::default(),
             &None,
