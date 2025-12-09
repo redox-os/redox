@@ -13,6 +13,9 @@ dependencies = [
 script = """
 DYNAMIC_INIT
 cookbook_configure
-ln -s "libhistory.so.7" "${COOKBOOK_STAGE}"/usr/lib/libhistory.so
-ln -s "libreadline.so.7" "${COOKBOOK_STAGE}"/usr/lib/libreadline.so
+OS=$(echo "${TARGET}" | cut -d - -f3)
+if [ "${OS}" = "redox" ]; then
+    ln -s "libhistory.so.7" "${COOKBOOK_STAGE}"/usr/lib/libhistory.so
+    ln -s "libreadline.so.7" "${COOKBOOK_STAGE}"/usr/lib/libreadline.so
+fi
 """
