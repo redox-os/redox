@@ -11,10 +11,10 @@ DYNAMIC_INIT
 # The static lib is preferred according to the README because it's faster
 rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 "${COOKBOOK_MAKE}" -j"${COOKBOOK_MAKE_JOBS}" \
-    AR="${TARGET}-ar" \
-    CC="${CC_WRAPPER} ${TARGET}-gcc" \
+    AR="${AR}" \
+    CC="${CC}" \
+    RANLIB="${RANLIB}" \
     PREFIX="${COOKBOOK_STAGE}" \
-    RANLIB="${TARGET}-ranlib" \
     install
 
 # However, distros distribute libbz2 as well so we'll support it too
@@ -24,10 +24,10 @@ rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 # This DOES NOT build/clobber the binaries already built above
 "${COOKBOOK_MAKE}" -f Makefile-libbz2_so \
     -j"${COOKBOOK_MAKE_JOBS}" \
-    AR="${TARGET}-ar" \
-    CC="${CC_WRAPPER} ${TARGET}-gcc" \
-    PREFIX="${COOKBOOK_STAGE}" \
-    RANLIB="${TARGET}-ranlib"
+    AR="${AR}" \
+    CC="${CC}" \
+    RANLIB="${RANLIB}" \
+    PREFIX="${COOKBOOK_STAGE}"
 
 cp -av libbz2.so* "${COOKBOOK_STAGE}/lib"
 ln -sr "${COOKBOOK_STAGE}/lib/libbz2.so.1.0" "${COOKBOOK_STAGE}/lib/libbz2.so.1"
