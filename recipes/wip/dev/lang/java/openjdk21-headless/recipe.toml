@@ -1,17 +1,15 @@
-#TODO build instructions - https://github.com/openjdk/jdk21u/blob/master/doc/building.md
-#TODO can't find the configure script
+#TODO not compiled or tested
+# build instructions: https://github.com/openjdk/jdk21u/blob/master/doc/building.md
 [source]
 git = "https://github.com/openjdk/jdk21u"
-rev = "060c4f7589e7f13febd402f4dac3320f4c032b08"
+rev = "jdk-21.0.9-ga"
+shallow_clone = true
+script = "chmod a+x configure"
 [build]
-template = "custom"
+template = "configure"
+configureflags = [
+    "--enable-headless-only=yes",
+]
 dependencies = [
     "fontconfig",
 ]
-script = """
-chmod a+x configure
-COOKBOOK_CONFIGURE_FLAGS+=(
-    --enable-headless-only=yes
-)
-cookbook_configure
-"""

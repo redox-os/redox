@@ -1,6 +1,7 @@
 #TODO compiled but not tested
 [source]
 git = "https://github.com/BLAKE3-team/BLAKE3"
+shallow_clone = true
 [build]
 template = "custom"
 script = """

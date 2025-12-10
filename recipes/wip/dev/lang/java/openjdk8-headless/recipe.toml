@@ -1,10 +1,15 @@
-#TODO build instructions - https://github.com/openjdk/jdk8u/blob/master/doc/building.md
-#TODO require the headless option
+#TODO not compiled or tested
+# build instructions: https://github.com/openjdk/jdk8u/blob/master/doc/building.md
 [source]
 git = "https://github.com/openjdk/jdk8u"
-rev = "9c9d6b267c41e4c713cacc41befb66007cdb2601"
+rev = "jdk8u472-ga"
+shallow_clone = true
+script = "chmod a+x configure"
 [build]
-template = "custom"
+template = "configure"
+configureflags = [
+    "--enable-headless-only=yes",
+]
 dependencies = [
     "freetype2",
 ]
