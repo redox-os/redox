@@ -1,0 +1,13 @@
+#TODO not compiled or tested
+#TODO resource packaging: https://github.com/lockedmutex/rhyolite/blob/master/Cargo.toml#L43
+[source]
+git = "https://github.com/lockedmutex/rhyolite"
+[build]
+template = "custom"
+dependencies = [
+    "freetype2",
+    "fontconfig",
+]
+script = """
+cookbook_cargo --profile release
+"""

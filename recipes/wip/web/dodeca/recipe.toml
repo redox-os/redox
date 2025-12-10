@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/bearcove/dodeca"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages dodeca
+"""

@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/AfaanBilal/NanoCore"
+[build]
+template = "custom"
+script = """
+cookbook_cargo
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/nanocore"
+cp -rv "${COOKBOOK_SOURCE}"/programs/* "${COOKBOOK_STAGE}/usr/share/nanocore"
+"""
