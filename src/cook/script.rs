@@ -12,6 +12,8 @@ function DYNAMIC_INIT {
     case "${TARGET}" in
         "x86_64-unknown-redox")
             ;;
+        "aarch64-unknown-redox")
+            ;;
         "x86_64-unknown-linux-gnu")
             ;;
         "aarch64-unknown-linux-gnu")
