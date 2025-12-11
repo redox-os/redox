@@ -9,13 +9,9 @@ ca-certificates = {}
 coreutils = {}
 extrautils = {}
 findutils = {}
-gcc13 = {}
-"gcc13.cxx" = {}
-gnu-binutils = {}
 ion = {}
 netdb = {}
 pkgutils = {}
-redoxerd = {}
 relibc = {}
 
 # Override to not background dhcpd
