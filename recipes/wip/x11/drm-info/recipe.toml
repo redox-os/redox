@@ -1,0 +1,11 @@
+[source]
+tar = "https://gitlab.freedesktop.org/emersion/drm_info/-/archive/v2.9.0/drm_info-v2.9.0.tar.gz"
+blake3 = "48ff592b206a85c1d946abfe2f8a4e7ef40f9f1ee7d3d5ee454a33390f86d8cb"
+patches = ["redox.patch"]
+
+[build]
+dependencies = [
+    "json-c",
+    "libdrm",
+]
+template = "meson"
