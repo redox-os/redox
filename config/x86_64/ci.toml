@@ -181,7 +181,6 @@ procedural-wallpapers-rs = {}
 python312 = {}
 #qemu = {} # can be built, but not working
 readline = {}
-redoxerd = {}
 redox-fatfs = {}
 redoxfs = {}
 redox-games = {}

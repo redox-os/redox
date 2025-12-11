@@ -38,6 +38,7 @@ BINS=(
     virtio-netd
     xhcid
     inputd
+    redoxerd
 )
 
 # Add additional drivers to the list to build, that are not in drivers-initfs
@@ -59,7 +60,7 @@ export CARGO_PROFILE_RELEASE_PANIC=abort
     $(for bin in "${BINS[@]}"; do echo "-p" "${bin}"; done)
 for bin in "${BINS[@]}"
 do
-    if [[ "${bin}" == "inputd" || "${bin}" == "pcid" || "${bin}" == "pcid-spawner" ]]; then
+    if [[ "${bin}" == "inputd" || "${bin}" == "pcid" || "${bin}" == "pcid-spawner" || "${bin}" == "redoxerd" ]]; then
         cp -v "target/${TARGET}/${build_type}/${bin}" "${COOKBOOK_STAGE}/usr/bin"
     else
         cp -v "target/${TARGET}/${build_type}/${bin}" "${COOKBOOK_STAGE}/usr/lib/drivers"
