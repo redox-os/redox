@@ -13,13 +13,14 @@ template = "custom"
 script = """
 "${COOKBOOK_CARGO}" build \
     --manifest-path "${COOKBOOK_SOURCE}/${PACKAGE_PATH}/Cargo.toml" \
-    --example hnefatafl-client \
+    --bin hnefatafl-client \
+    --features client \
     --release \
     --no-default-features
 
 mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
 cp -v \
-    "target/${TARGET}/release/examples/hnefatafl-client" \
+    "target/${TARGET}/release/hnefatafl-client" \
     "${COOKBOOK_STAGE}/usr/bin/hnefatafl-client"
 
 mkdir -pv "${COOKBOOK_STAGE}"/usr/games
