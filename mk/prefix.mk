@@ -175,11 +175,15 @@ $(PREFIX)/binutils-$(BINUTILS_BRANCH).tar.bz2:
 	mv $@.partial $@
 
 $(PREFIX)/binutils: $(PREFIX)/binutils-$(BINUTILS_BRANCH).tar.bz2
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
 	rm -rf "$@.partial" "$@"
 	mkdir -p "$@.partial"
 	tar --extract --file "$<" --directory "$@.partial" --no-same-owner --strip-components=1
 	touch "$@.partial"
 	mv "$@.partial" "$@"
+endif
 
 $(PREFIX)/binutils-install: $(PREFIX)/binutils $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
@@ -211,11 +215,15 @@ $(PREFIX)/gcc-$(GCC_BRANCH).tar.bz2:
 	mv "$@.partial" "$@"
 
 $(PREFIX)/gcc: $(PREFIX)/gcc-$(GCC_BRANCH).tar.bz2
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
 	mkdir -p "$@.partial"
 	tar --extract --file "$<" --directory "$@.partial" --no-same-owner --strip-components=1
 	cd "$@.partial" && ./contrib/download_prerequisites
 	touch "$@.partial"
 	mv "$@.partial" "$@"
+endif
 
 $(PREFIX)/gcc-freestanding-install: $(PREFIX)/gcc | $(PREFIX)/binutils-install $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
