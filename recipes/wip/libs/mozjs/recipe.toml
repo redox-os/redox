@@ -29,7 +29,6 @@ dependencies = [
     "libpthread-stubs",
     "fontconfig",
     "expat",
-    "llvm18",
     "gcc13",
 ]
 

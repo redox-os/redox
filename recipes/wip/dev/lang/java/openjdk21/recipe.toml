@@ -1,0 +1,15 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/openjdk/jdk21u/blob/master/doc/building.md
+[source]
+git = "https://github.com/openjdk/jdk21u"
+rev = "jdk-21.0.9-ga"
+shallow_clone = true
+script = "chmod a+x configure"
+[build]
+template = "configure"
+configureflags = [
+    "--enable-headless-only=yes",
+]
+dependencies = [
+    "fontconfig",
+]

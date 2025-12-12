@@ -1,0 +1,12 @@
+diff -ruwN source-old/meson.build source/meson.build
+--- source-old/meson.build	2025-11-16 10:35:59.000000000 -0700
++++ source/meson.build	2025-12-11 15:29:28.845861423 -0700
+@@ -68,7 +68,7 @@
+ elif libdrm.type_name() == 'internal'
+   fourcc_h = meson.current_source_dir() / 'subprojects/libdrm/include/drm/drm_fourcc.h'
+ else
+-  fourcc_h = libdrm.get_variable(pkgconfig: 'pc_sysrootdir') + libdrm.get_variable(pkgconfig: 'includedir') / 'libdrm/drm_fourcc.h'
++  fourcc_h = libdrm.get_variable(pkgconfig: 'includedir') / 'libdrm/drm_fourcc.h'
+ endif
+ 
+ # The DRM_BUS_FAUX bus and its information is included in libdrm v2.4.127

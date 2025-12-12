@@ -8,6 +8,7 @@ stages:
   - test
 
 fmt:
+  image: "rust:trixie"
   stage: lint
   rules:
     - if: '$CI_COMMIT_BRANCH == "master" && $CI_PROJECT_NAMESPACE == "redox-os"'
@@ -17,6 +18,7 @@ fmt:
     - cargo fmt -- --check
 
 cargo-test:
+  image: "rust:trixie"
   stage: lint
   rules:
     - if: '$CI_COMMIT_BRANCH == "master" && $CI_PROJECT_NAMESPACE == "redox-os"'

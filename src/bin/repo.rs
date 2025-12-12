@@ -498,45 +498,46 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
     if let Some(conf) = config.filesystem.as_ref()
         && !command.is_cleaning()
     {
-        for recipe in recipes.iter_mut() {
-            if let Some(recipe_conf) = conf.packages.get(recipe.name.as_str()) {
-                match recipe_conf {
-                    // build from source as usual
-                    PackageConfig::Build(rule) if rule == "source" => {}
-                    // keep local changes
-                    PackageConfig::Build(rule) if rule == "local" => recipe.recipe.source = None,
-                    // download from remote build
-                    PackageConfig::Build(rule) if rule == "binary" => {
-                        recipe.recipe.source = None;
-                        recipe.recipe.build.set_as_remote();
-                    }
-                    // don't build this recipe (unlikely to go here unless some deps need it)
-                    // TODO: Note that we're assuming this being ignored from e.g. metapackages
-                    // TODO: Will totally broke build if this recipe needed as some other build dependencies
-                    PackageConfig::Build(rule) if rule == "ignore" => {
-                        recipe.recipe.source = None;
-                        recipe.recipe.build.set_as_none();
-                    }
-                    PackageConfig::Build(rule) => {
-                        bail!(
-                            // Fail fast because we could risk losing local changes if "local" was typo'ed
-                            "Invalid pkg config {} = \"{}\"\nExpecting either 'source', 'local', 'binary' or 'ignore'",
-                            recipe.name.as_str(),
-                            rule
-                        );
-                    }
+        let repo_binary = conf.general.repo_binary == Some(true);
+        let mut last_rule = if repo_binary { "binary" } else { "source" };
+        // Use rev() so recipes that don't listed in config is inherited from parent
+        for recipe in recipes.iter_mut().rev() {
+            if let Some(conf) = conf.packages.get(recipe.name.as_str()) {
+                last_rule = match conf {
+                    PackageConfig::Build(rule) => &rule,
                     _ => {
-                        if conf.general.repo_binary == Some(true) {
-                            // same reason as Build("binary")
-                            recipe.recipe.source = None;
-                            recipe.recipe.build.set_as_remote();
+                        if repo_binary {
+                            "binary"
+                        } else {
+                            "source"
                         }
                     }
                 }
-            } else {
-                if conf.general.repo_binary == Some(true) {
+            };
+            match last_rule {
+                // build from source as usual
+                "source" => {}
+                // keep local changes
+                "local" => recipe.recipe.source = None,
+                // download from remote build
+                "binary" => {
                     recipe.recipe.source = None;
                     recipe.recipe.build.set_as_remote();
+                }
+                // don't build this recipe (unlikely to go here unless some deps need it)
+                // TODO: Note that we're assuming this being ignored from e.g. metapackages
+                // TODO: Will totally broke build if this recipe needed as some other build dependencies
+                "ignore" => {
+                    recipe.recipe.source = None;
+                    recipe.recipe.build.set_as_none();
+                }
+                rule => {
+                    bail!(
+                        // Fail fast because we could risk losing local changes if "local" was typo'ed
+                        "Invalid pkg config {} = \"{}\"\nExpecting either 'source', 'local', 'binary' or 'ignore'",
+                        recipe.name.as_str(),
+                        rule
+                    );
                 }
             }
         }

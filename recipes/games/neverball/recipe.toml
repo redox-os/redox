@@ -13,7 +13,6 @@ dependencies = [
     "liborbital",
     "libpng",
     "libvorbis",
-    "llvm18",
     "mesa",
     "sdl2",
     "sdl2-ttf",

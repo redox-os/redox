@@ -5,7 +5,6 @@ git = "https://github.com/maxcurzi/tplay"
 template = "cargo"
 dependencies = [
     "ffmpeg6",
-    "llvm18",
     "openssl1",
     "opencv4",
 ]

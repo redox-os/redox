@@ -13,6 +13,6 @@ autotools_recursive_regenerate
 template = "custom"
 script = """
 DYNAMIC_INIT
-cp -rp "$COOKBOOK_SOURCE/." ./
+rsync -av --delete "$COOKBOOK_SOURCE/." ./
 cookbook_configure
 """

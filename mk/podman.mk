@@ -58,8 +58,6 @@ container_kill: FORCE
 build/container.tag: $(CONTAINERFILE)
 ifeq ($(PODMAN_BUILD),1)
 	rm -f build/container.tag
-	-chmod -R 0700 $(PODMAN_HOME) || true
-	-rm -rf $(PODMAN_HOME) || true
 	-podman image rm --force $(IMAGE_TAG) || true
 	mkdir -p $(PODMAN_HOME)
 	@echo "Building Podman image. This may take some time."

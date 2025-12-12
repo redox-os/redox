@@ -40,6 +40,19 @@ diff -ruwN source/configure source-new/configure
    version_type=linux # correct to gnu/linux during the next big refactor
    need_lib_prefix=no
    need_version=no
+diff -ruwN source/gen_uuid.c source-new/gen_uuid.c
+--- source/gen_uuid.c	2014-08-12 04:07:18.000000000 -0400
++++ source-new/gen_uuid.c	2025-12-09 10:49:12.580466005 -0500
+@@ -59,9 +59,7 @@
+ #include <sys/time.h>
+ #endif
+ #include <sys/stat.h>
+-#ifdef HAVE_SYS_FILE_H
+ #include <sys/file.h>
+-#endif
+ #ifdef HAVE_SYS_IOCTL_H
+ #include <sys/ioctl.h>
+ #endif
 diff -ruwN source/randutils.c source-new/randutils.c
 --- source/randutils.c	2014-08-12 15:07:18.000000000 +0700
 +++ source-new/randutils.c	2025-09-19 21:11:57.907659403 +0700

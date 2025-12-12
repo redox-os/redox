@@ -21,7 +21,7 @@ use std::{
 use crate::{is_redox, log_to_pty};
 
 fn auto_deps_from_dynamic_linking(
-    stage_dirs: &Vec<PathBuf>,
+    stage_dirs: &[PathBuf],
     target_dir: &Path,
     dep_pkgars: &BTreeSet<(PackageName, PathBuf)>,
     logger: &PtyOut,
@@ -188,12 +188,13 @@ pub fn build(
 
     let mut dep_pkgars = BTreeSet::new();
     let mut dep_host_pkgars = BTreeSet::new();
-    let mut build_deps =
-        CookRecipe::get_build_deps_recursive(&recipe.build.dependencies, false, false)
-            .map_err(|e| format!("{:?}", e))?;
-    for dep in &recipe.build.dev_dependencies {
-        build_deps.push(CookRecipe::from_name(dep.clone()).map_err(|e| format!("{:?}", e))?);
-    }
+    let build_deps = [
+        &recipe.build.dependencies[..],
+        &recipe.build.dev_dependencies[..],
+    ]
+    .concat();
+    let build_deps = CookRecipe::get_build_deps_recursive(&build_deps, false, false)
+        .map_err(|e| format!("{:?}", e))?;
     for dependency in build_deps.iter() {
         let (_, pkgar, _) = dependency.stage_paths();
         if dependency.name.is_host() {
@@ -600,7 +601,7 @@ mod tests {
         );
 
         let entries = super::auto_deps_from_dynamic_linking(
-            &root,
+            &vec![root.clone()],
             &root.join(".."),
             &Default::default(),
             &None,
