@@ -106,7 +106,7 @@ cp "${COOKBOOK_BUILD}/initfs/bin/zerod" "${COOKBOOK_BUILD}/initfs/bin/nulld"
 cp "${COOKBOOK_SYSROOT}/usr/bin/redoxfs" "${COOKBOOK_BUILD}/initfs/bin"
 
 ARCH="$(echo "${GNU_TARGET}" | cut -d - -f1)"
-cargo \
+RUSTFLAGS="$RUSTFLAGS -Ctarget-feature=+crt-static" cargo \
     -Zbuild-std=core,alloc,compiler_builtins \
     -Zbuild-std-features=compiler-builtins-mem build \
     --target "${TARGET}" \
