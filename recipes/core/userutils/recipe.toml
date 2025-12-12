@@ -1,7 +1,5 @@
 [source]
-# git = "https://gitlab.redox-os.org/redox-os/userutils.git"
 git = "https://gitlab.redox-os.org/Ibuki.O/userutils.git"
-# branch = "scheme_root_fd"
 branch = "namespace-improvement"
 
 [build]

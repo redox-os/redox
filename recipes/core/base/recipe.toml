@@ -1,10 +1,6 @@
 [source]
-# git = "https://gitlab.redox-os.org/redox-os/base.git"
 git = "https://gitlab.redox-os.org/Ibuki.O/base.git"
-# branch = "unlinkat"
-# branch = "filter-uidgid"
 branch = "namespace-improvement"
-# branch = "debug"
 
 [build]
 template = "custom"
