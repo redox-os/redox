@@ -200,6 +200,7 @@ pub struct CookRecipe {
     pub target: &'static str,
     /// If false, it's listed on install config
     pub is_deps: bool,
+    pub rule: String,
 }
 
 impl Recipe {
@@ -254,6 +255,7 @@ impl CookRecipe {
             recipe,
             target,
             is_deps: false,
+            rule: "".into(),
         })
     }
 
@@ -420,8 +422,8 @@ impl CookRecipe {
     }
 
     pub fn reload_recipe(&mut self) -> Result<(), PackageError> {
-        let r = Self::from_path(&self.dir, true, self.name.is_host())?;
-        self.recipe = r.recipe;
+        self.recipe = Self::from_path(&self.dir, true, self.name.is_host())?.recipe;
+        let _ = self.apply_filesystem_config(&self.rule.clone());
         Ok(())
     }
 
@@ -436,6 +438,38 @@ impl CookRecipe {
 
     pub fn target_dir(&self) -> PathBuf {
         self.dir.join("target").join(self.target)
+    }
+
+    pub fn apply_filesystem_config(&mut self, rule: &str) -> Result<(), String> {
+        match rule {
+            // build from source as usual
+            "source" => {}
+            // keep local changes
+            "local" => self.recipe.source = None,
+            // download from remote build
+            "binary" => {
+                self.recipe.source = None;
+                self.recipe.build.set_as_remote();
+            }
+            // don't build this recipe (unlikely to go here unless some deps need it)
+            // TODO: Note that we're assuming this being ignored from e.g. metapackages
+            // TODO: Will totally broke build if this recipe needed as some other build dependencies
+            "ignore" => {
+                self.recipe.source = None;
+                self.recipe.build.set_as_none();
+            }
+            rule => {
+                return Err(format!(
+                    // Fail fast because we could risk losing local changes if "local" was typo'ed
+                    "Invalid pkg config {} = \"{}\"\nExpecting either 'source', 'local', 'binary' or 'ignore'",
+                    self.name.as_str(),
+                    rule
+                ));
+            }
+        }
+        self.rule = rule.to_string();
+
+        Ok(())
     }
 }
 
