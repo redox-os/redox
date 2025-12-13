@@ -514,32 +514,9 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
                     }
                 }
             };
-            match last_rule {
-                // build from source as usual
-                "source" => {}
-                // keep local changes
-                "local" => recipe.recipe.source = None,
-                // download from remote build
-                "binary" => {
-                    recipe.recipe.source = None;
-                    recipe.recipe.build.set_as_remote();
-                }
-                // don't build this recipe (unlikely to go here unless some deps need it)
-                // TODO: Note that we're assuming this being ignored from e.g. metapackages
-                // TODO: Will totally broke build if this recipe needed as some other build dependencies
-                "ignore" => {
-                    recipe.recipe.source = None;
-                    recipe.recipe.build.set_as_none();
-                }
-                rule => {
-                    bail!(
-                        // Fail fast because we could risk losing local changes if "local" was typo'ed
-                        "Invalid pkg config {} = \"{}\"\nExpecting either 'source', 'local', 'binary' or 'ignore'",
-                        recipe.name.as_str(),
-                        rule
-                    );
-                }
-            }
+            recipe
+                .apply_filesystem_config(last_rule)
+                .map_err(|e| anyhow!(e))?;
         }
     }
 
