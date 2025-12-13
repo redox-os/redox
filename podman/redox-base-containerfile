@@ -14,7 +14,6 @@ RUN apt-get update \
         bison \
         bsdextrautils \
         build-essential \
-        clang \
         cmake \
         curl \
         dos2unix \
@@ -51,13 +50,11 @@ RUN apt-get update \
         libsdl1.2-dev \
         libsdl2-ttf-dev \
         libxml2-utils \
-        llvm \
-        lua5.4 \
-        luajit \
         lzip \
         m4 \
         make \
         meson \
+        nano \
         nasm \
         ninja-build \
         patch \

@@ -8,7 +8,6 @@ dependencies = [
     "freetype2",
     "liborbital",
     "libpng",
-    "llvm18",
     "mesa",
     "mesa-glu",
     "sdl2",

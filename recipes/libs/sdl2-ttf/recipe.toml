@@ -13,7 +13,6 @@ dependencies = [
     "libdrm",
     "liborbital",
     "libpng",
-    "llvm18",
     "mesa",
     "sdl2",
     "zlib",

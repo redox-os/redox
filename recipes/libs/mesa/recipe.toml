@@ -9,8 +9,13 @@ dependencies = [
     "expat",
     "libdrm",
     "liborbital",
-    "llvm18",
+    "llvm21",
     "zlib",
+]
+dev-dependencies = [
+    "llvm21.dev",
+    "host:llvm21.dev",
+    "host:llvm21.runtime",
 ]
 script = """
 DYNAMIC_INIT

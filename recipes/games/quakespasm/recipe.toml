@@ -10,7 +10,6 @@ rev = "cc32abe09ed417ce3be10af300d2dc2f686349ba"
 [build]
 template = "custom"
 dependencies = [
-  "llvm18",
   "libiconv",
   "libogg",
   "liborbital",

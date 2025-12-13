@@ -34,10 +34,10 @@ dev-dependencies = [
 
 script = """
 DYNAMIC_INIT
-export PYTHONDONTWRITEBYTECODE=1
+export PYTHONDONTWRITEBYTECODE=1 COOKBOOK_NOSTRIP=true
 export CC_host="$CC_WRAPPER gcc" CXX_host="$CC_WRAPPER g++"
 
-rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+rsync -av "${COOKBOOK_SOURCE}/" ./
 
 case "${TARGET}" in
     x86_64-unknown-linux-gnu)  export NODE_CPU=x64 NODE_OS=linux;;
@@ -58,6 +58,10 @@ COOKBOOK_CONFIGURE_FLAGS=(
   --shared-nghttp3
   --shared-openssl
   --shared-zlib
+  --disable-shared-readonly-heap
+  --without-node-snapshot
+  --without-node-code-cache
+  --v8-lite-mode
 # TODO: Find a way to separate host and target flags instead?
 # --shared-zlib-includes="${COOKBOOK_TOOLCHAIN}/include"
   --shared-openssl-includes="${COOKBOOK_SYSROOT}/include"
