@@ -1,4 +1,4 @@
-use anyhow::anyhow;
+use anyhow::{anyhow, bail};
 use cookbook::WALK_DEPTH;
 use cookbook::cook::ident::{get_ident, init_ident};
 use cookbook::cook::{fetch, package as cook_package};
@@ -74,6 +74,11 @@ fn publish_packages(config: &CliConfig) -> anyhow::Result<()> {
             .collect::<Result<Vec<_>, _>>()?,
         WALK_DEPTH,
     );
+
+    if recipe_list.len() == 0 {
+        // Fail-Safe
+        bail!("Zero packages are passing the build");
+    }
 
     let mut appstream_sources: HashMap<String, PathBuf> = HashMap::new();
     let mut packages: BTreeMap<String, String> = BTreeMap::new();
