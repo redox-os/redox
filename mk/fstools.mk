@@ -19,7 +19,7 @@ else
 	#TODO: Build and install installer and redoxfs using cookbook?
 	cd $@.partial && \
 		export CARGO_TARGET_DIR=../$@-target && \
-		$(HOST_CARGO) install --root . --path ../.. && \
+		$(HOST_CARGO) install --root . --path ../.. --locked && \
 		env -u RUSTUP_TOOLCHAIN ./bin/repo fetch installer redoxfs && \
 		$(HOST_CARGO) install --root . --path recipes/core/installer/source && \
 		$(HOST_CARGO) install --root . --path recipes/core/redoxfs/source
@@ -32,7 +32,7 @@ $(FSTOOLS_TAG): $(FSTOOLS)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
-	$(HOST_CARGO) build --manifest-path Cargo.toml --release
+	$(HOST_CARGO) build --manifest-path Cargo.toml --release --locked
 	touch $@
 endif
 
