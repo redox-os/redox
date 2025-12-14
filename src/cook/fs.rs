@@ -301,6 +301,7 @@ pub fn get_git_head_rev(dir: &PathBuf) -> Result<(String, bool), String> {
     }
 }
 
+/// get commit from "rev" which either a full commit hash or a tag name
 pub fn get_git_tag_rev(dir: &PathBuf, tag: &str) -> Result<String, String> {
     if tag.len() == 40 && tag.chars().all(|f| f.is_ascii_hexdigit()) {
         return Ok(tag.to_string());
