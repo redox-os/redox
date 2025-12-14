@@ -1,10 +1,11 @@
-use anyhow::anyhow;
+use anyhow::{anyhow, bail};
 use cookbook::WALK_DEPTH;
-use cookbook::config::{get_config, init_config};
-use cookbook::cook::package as cook_package;
+use cookbook::cook::ident::{get_ident, init_ident};
+use cookbook::cook::{fetch, package as cook_package};
 use cookbook::recipe::CookRecipe;
+use pkg::package::{Repository, SourceIdentifier};
 use pkg::{Package, PackageName, recipes};
-use std::collections::{BTreeMap, HashMap};
+use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::env;
 use std::fs::{self, File};
 use std::io::{Read, Write};
@@ -27,7 +28,6 @@ fn is_newer(src: &Path, dst: &Path) -> bool {
 #[derive(Clone)]
 struct CliConfig {
     repo_dir: PathBuf,
-    nonstop: bool,
     appstream: bool,
     recipe_list: Vec<String>,
 }
@@ -40,7 +40,6 @@ impl CliConfig {
             .expect("Usage: repo_builder <REPO_DIR> <recipe1> <recipe2> ...");
         Ok(CliConfig {
             repo_dir: PathBuf::from(repo_dir),
-            nonstop: get_config().cook.nonstop,
             appstream: env::var("COOKBOOK_APPSTREAM").ok().as_deref() == Some("true"),
             recipe_list: args.collect(),
         })
@@ -48,7 +47,7 @@ impl CliConfig {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    init_config();
+    init_ident();
     let conf = CliConfig::parse_args()?;
     Ok(publish_packages(&conf)?)
 }
@@ -65,7 +64,7 @@ fn publish_packages(config: &CliConfig) -> anyhow::Result<()> {
     //
     // The following adds the package dependencies of the recipes to the repo as
     // well.
-    let recipe_list = Package::new_recursive(
+    let (recipe_list, recipe_map) = Package::new_recursive_nonstop(
         &config
             .recipe_list
             .iter()
@@ -73,18 +72,21 @@ fn publish_packages(config: &CliConfig) -> anyhow::Result<()> {
             // Don't publish host packages
             .filter(|pkg| pkg.as_ref().is_ok_and(|p| !p.is_host()))
             .collect::<Result<Vec<_>, _>>()?,
-        config.nonstop,
         WALK_DEPTH,
-    )?
-    .into_iter()
-    .map(|pkg| pkg.name.clone())
-    .collect::<Vec<_>>();
+    );
+
+    if recipe_list.len() == 0 {
+        // Fail-Safe
+        bail!("Zero packages are passing the build");
+    }
 
     let mut appstream_sources: HashMap<String, PathBuf> = HashMap::new();
     let mut packages: BTreeMap<String, String> = BTreeMap::new();
+    let mut outdated_packages: BTreeMap<String, SourceIdentifier> = BTreeMap::new();
 
     // === 1. Push recipes in list ===
-    for recipe in &recipe_list {
+    for recipe_toml in &recipe_list {
+        let recipe = &recipe_toml.name;
         let Some(recipe_path) = recipes::find(recipe.name()) else {
             eprintln!("recipe {} not found", recipe);
             continue;
@@ -163,22 +165,68 @@ fn publish_packages(config: &CliConfig) -> anyhow::Result<()> {
         }
     }
 
+    // === 3. List outdated packages ===
+    for (recipe, e) in recipe_map
+        .into_iter()
+        .filter_map(|(k, v)| v.err().and_then(|e| Some((k, e))))
+    {
+        eprintln!(
+            "\x1b[0;91;49mrepo - marking {} as outdated:\x1b[0m {e}",
+            recipe
+        );
+
+        let Some(recipe_path) = recipes::find(recipe.name()) else {
+            eprintln!("recipe {} not found", recipe);
+            continue;
+        };
+        let Ok(cookbook_recipe) = CookRecipe::from_path(recipe_path, true, false) else {
+            eprintln!("recipe {} unable to read", recipe);
+            continue;
+        };
+
+        match fetch::fetch_get_source_info(&cookbook_recipe) {
+            Ok(source_ident) => {
+                outdated_packages.insert(recipe.name().to_string(), source_ident);
+            }
+            Err(e) => {
+                eprintln!(
+                    "\x1b[0;91;49m  source of {} is not identifiable:\x1b[0m {e}",
+                    recipe
+                );
+                let ident = get_ident();
+                outdated_packages.insert(
+                    recipe.name().to_string(),
+                    SourceIdentifier {
+                        source_identifier: "missing_source".to_string(),
+                        commit_identifier: ident.commit.clone(),
+                        time_identifier: ident.time.clone(),
+                    },
+                );
+            }
+        };
+    }
+
     eprintln!("\x1b[01;38;5;155mrepo - generating repo.toml\x1b[0m");
 
-    // === 3. Read and update repo.toml ===
+    // === 4. Read and update repo.toml ===
     let repo_toml_path = repo_path.join("repo.toml");
     if repo_toml_path.exists() {
         let mut file = File::open(&repo_toml_path)?;
         let mut contents = String::new();
         file.read_to_string(&mut contents)?;
 
-        let parsed: Value = toml::from_str(&contents)?;
-        if let Some(pkg_table) = parsed.get("packages").and_then(|v| v.as_table()) {
-            for (k, v) in pkg_table {
-                if let Some(s) = v.as_str() {
-                    packages.insert(k.clone(), format!("\"{}\"", s));
-                } else {
-                    packages.insert(k.clone(), v.to_string());
+        let parsed: Repository = toml::from_str(&contents)?;
+        for (k, v) in parsed.packages {
+            packages.insert(k, v);
+        }
+        if parsed.outdated_packages.len() > 0 {
+            let built_packages: BTreeSet<String> = recipe_list
+                .iter()
+                .map(|p| p.name.name().to_string())
+                .collect();
+            for (k, v) in parsed.outdated_packages {
+                if outdated_packages.contains_key(&k) || !built_packages.contains(&k) {
+                    outdated_packages.insert(k, v);
                 }
             }
         }
@@ -203,21 +251,16 @@ fn publish_packages(config: &CliConfig) -> anyhow::Result<()> {
         let version_str = parsed
             .get("blake3")
             .unwrap_or_else(|| parsed.get("version").unwrap_or_else(|| &empty_ver))
-            .to_string(); // includes quotes
+            .as_str()
+            .unwrap_or("");
         let package_name = path.file_stem().unwrap().to_string_lossy().to_string();
-        packages.insert(package_name, version_str);
+        packages.insert(package_name, version_str.to_string());
     }
 
-    // FIXME: Use proper TOML serializer
-    let mut output = String::from("[packages]\n");
-    for (name, version) in &packages {
-        output.push_str(&if name.contains('.') {
-            format!("\"{name}\" = {version}\n")
-        } else {
-            format!("{name} = {version}\n")
-        });
-    }
-
+    let output = toml::to_string(&Repository {
+        packages,
+        outdated_packages,
+    })?;
     let mut output_file = File::create(&repo_toml_path)?;
     output_file.write_all(output.as_bytes())?;
 

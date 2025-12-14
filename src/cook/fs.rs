@@ -285,3 +285,187 @@ pub fn download_wget(url: &str, dest: &PathBuf, logger: &PtyOut) -> Result<(), S
     }
     Ok(())
 }
+
+/// get commit rev and return if it's detached or not
+pub fn get_git_head_rev(dir: &PathBuf) -> Result<(String, bool), String> {
+    let git_head = dir.join(".git/HEAD");
+    let head_str = fs::read_to_string(&git_head)
+        .map_err(|e| format!("unable to read {path}: {e}", path = git_head.display()))?;
+    if head_str.starts_with("ref: ") {
+        let git_ref = dir.join(".git").join(head_str["ref: ".len()..].trim_end());
+        let ref_str = fs::read_to_string(&git_ref)
+            .map_err(|e| format!("unable to read {path}: {e}", path = git_ref.display()))?;
+        Ok((ref_str.trim().to_string(), false))
+    } else {
+        Ok((head_str.trim().to_string(), true))
+    }
+}
+
+/// get commit from "rev" which either a full commit hash or a tag name
+pub fn get_git_tag_rev(dir: &PathBuf, tag: &str) -> Result<String, String> {
+    if tag.len() == 40 && tag.chars().all(|f| f.is_ascii_hexdigit()) {
+        return Ok(tag.to_string());
+    }
+    let git_refs = dir.join(".git/packed-refs");
+    let refs_str = fs::read_to_string(&git_refs)
+        .map_err(|e| format!("unable to read {path}: {e}", path = git_refs.display()))?;
+    let expected_comment_part = format!("refs/tags/{tag}");
+    for line in refs_str.lines() {
+        if line.contains(&expected_comment_part) {
+            let sha = line
+                .split_whitespace()
+                .next()
+                .ok_or_else(|| "packed-refs line is malformed.".to_string())?;
+
+            return Ok(sha.to_string());
+        }
+    }
+
+    Err(format!(
+        "Could not find a rev tag for {}",
+        expected_comment_part
+    ))
+}
+
+/// get commit rev after fetch
+pub fn get_git_fetch_rev(
+    dir: &PathBuf,
+    remote_url: &str,
+    remote_branch: &str,
+) -> Result<String, String> {
+    let git_fetch_head = dir.join(".git/FETCH_HEAD");
+
+    let fetch_head_content = fs::read_to_string(&git_fetch_head).map_err(|e| {
+        format!(
+            "unable to read {path}: {e}",
+            path = git_fetch_head.display()
+        )
+    })?;
+
+    let expected_comment_part = format!("branch '{}' of {}", remote_branch, remote_url);
+
+    for line in fetch_head_content.lines() {
+        if line.contains(&expected_comment_part) && !line.contains("not-for-merge") {
+            let sha = line
+                .split_whitespace()
+                .next()
+                .ok_or_else(|| "FETCH_HEAD line is malformed.".to_string())?;
+
+            return Ok(sha.to_string());
+        }
+    }
+
+    Err(format!(
+        "Could not find a fetch target for tracking {}",
+        expected_comment_part
+    ))
+}
+
+/// (local_branch_name, remote_branch, remote_name, remote_url)
+///    -> ("fix_stuff", "master", "origin", "https://gitlab.redox-os.org/willnode/redox")
+pub fn get_git_remote_tracking(dir: &PathBuf) -> Result<(String, String, String, String), String> {
+    let git_head = dir.join(".git/HEAD");
+    let git_config = dir.join(".git/config");
+
+    let head_content = fs::read_to_string(&git_head)
+        .map_err(|e| format!("unable to read {path}: {e}", path = git_head.display()))?;
+
+    if !head_content.starts_with("ref: ") {
+        let sha = head_content.trim_end().to_string();
+        return Ok((sha, "".to_string(), "".to_string(), "".to_string()));
+    }
+
+    let local_branch_path = head_content["ref: ".len()..].trim_end();
+    let local_branch_name = get_git_branch_name(local_branch_path)?;
+
+    let config_content = fs::read_to_string(&git_config)
+        .map_err(|e| format!("unable to read {path}: {e}", path = git_config.display()))?;
+
+    let branch_section = format!("[branch \"{}\"]", local_branch_name);
+    let mut remote_name: Option<String> = None;
+    let mut remote_branch: Option<String> = None;
+    let mut parsing_branch_section = false;
+
+    for line in config_content.lines().map(|l| l.trim()) {
+        if line.is_empty() {
+            continue;
+        }
+
+        if line == branch_section {
+            parsing_branch_section = true;
+            continue;
+        }
+
+        if parsing_branch_section {
+            if line.starts_with('[') {
+                break;
+            }
+            if line.starts_with("remote = ") {
+                remote_name = Some(line["remote = ".len()..].trim().to_string());
+            }
+            if line.starts_with("merge = ") {
+                remote_branch = Some(get_git_branch_name(line["merge = ".len()..].trim())?);
+            }
+        }
+    }
+
+    let remote_name_str = remote_name
+        .ok_or_else(|| format!("Branch '{}' is not tracking a remote.", local_branch_name))?;
+    let remote_branch_str = remote_branch.unwrap_or("".into());
+
+    let remote_section = format!("[remote \"{}\"]", remote_name_str);
+    let mut remote_url: Option<String> = None;
+    let mut parsing_remote_section = false;
+
+    for line in config_content.lines().map(|l| l.trim()) {
+        if line.is_empty() {
+            continue;
+        }
+
+        if line == remote_section {
+            parsing_remote_section = true;
+            continue;
+        }
+
+        if parsing_remote_section {
+            if line.starts_with('[') {
+                break;
+            }
+            if line.starts_with("url = ") {
+                let mut url = line["url = ".len()..].trim();
+                url = chop_dot_git(url);
+                remote_url = Some(url.to_string());
+            }
+        }
+    }
+
+    let remote_url_str = remote_url.ok_or_else(|| {
+        format!(
+            "Could not find URL for remote '{}' in .git/config.",
+            remote_name_str
+        )
+    })?;
+
+    Ok((
+        local_branch_name,
+        remote_branch_str,
+        remote_name_str,
+        remote_url_str,
+    ))
+}
+
+pub(crate) fn chop_dot_git(url: &str) -> &str {
+    if url.ends_with(".git") {
+        return &url[..url.len() - ".git".len()];
+    }
+    url
+}
+
+fn get_git_branch_name(local_branch_path: &str) -> Result<String, String> {
+    // TODO: incorrectly handle branch with slashes
+    Ok(local_branch_path
+        .split('/')
+        .last()
+        .ok_or_else(|| format!("Failed to parse branch name of {:?}", local_branch_path))?
+        .to_string())
+}

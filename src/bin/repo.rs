@@ -4,6 +4,7 @@ use cookbook::config::{CookConfig, get_config, init_config};
 use cookbook::cook::cook_build::build;
 use cookbook::cook::fetch::{fetch, fetch_offline};
 use cookbook::cook::fs::{create_target_dir, run_command};
+use cookbook::cook::ident;
 use cookbook::cook::package::package;
 use cookbook::cook::pty::{PtyOut, UnixSlavePty, flush_pty, setup_pty};
 use cookbook::cook::script::KILL_ALL_PID;
@@ -185,6 +186,9 @@ fn main_inner() -> anyhow::Result<()> {
     }
 
     let (config, command, recipe_names) = parse_args(args)?;
+    if command.is_building() {
+        ident::init_ident();
+    }
     if command == CliCommand::Cook && config.cook.tui {
         if let Some((name, e)) = run_tui_cook(config.clone(), recipe_names.clone())? {
             let _ = stderr().write(e.as_bytes());
@@ -534,10 +538,9 @@ fn handle_fetch(
     allow_offline: bool,
     logger: &PtyOut,
 ) -> anyhow::Result<PathBuf> {
-    let recipe_dir = &recipe.dir;
     let source_dir = match config.cook.offline && allow_offline {
-        true => fetch_offline(recipe_dir, &recipe.recipe, logger),
-        false => fetch(recipe_dir, &recipe.recipe, logger),
+        true => fetch_offline(&recipe, logger),
+        false => fetch(&recipe, logger),
     }
     .map_err(|e| anyhow!("failed to fetch: {:?}", e))?;
 
@@ -553,7 +556,7 @@ fn handle_cook(
 ) -> anyhow::Result<()> {
     let recipe_dir = &recipe.dir;
     let target_dir = create_target_dir(recipe_dir, recipe.target).map_err(|e| anyhow!(e))?;
-    let (stage_dir, auto_deps) = build(
+    let (stage_dirs, auto_deps) = build(
         recipe_dir,
         &source_dir,
         &target_dir,
@@ -565,15 +568,8 @@ fn handle_cook(
     )
     .map_err(|err| anyhow!("failed to build: {:?}", err))?;
 
-    package(
-        &stage_dir,
-        &target_dir,
-        &recipe.name,
-        &recipe.recipe,
-        &auto_deps,
-        logger,
-    )
-    .map_err(|err| anyhow!("failed to package: {:?}", err))?;
+    package(&recipe, &stage_dirs, &auto_deps, logger)
+        .map_err(|err| anyhow!("failed to package: {:?}", err))?;
 
     Ok(())
 }

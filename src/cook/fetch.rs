@@ -1,3 +1,5 @@
+use pkg::package::SourceIdentifier;
+
 use crate::REMOTE_PKG_SOURCE;
 use crate::config::translate_mirror;
 use crate::cook::fs::*;
@@ -8,9 +10,11 @@ use crate::cook::script::*;
 use crate::is_redox;
 use crate::log_to_pty;
 use crate::recipe::BuildKind;
-use crate::recipe::Recipe;
+use crate::recipe::CookRecipe;
 use crate::{blake3, recipe::SourceRecipe};
 use std::fs;
+use std::fs::File;
+use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
@@ -30,27 +34,33 @@ pub(crate) fn get_blake3(path: &PathBuf, show_progress: bool) -> Result<String, 
     })
 }
 
-pub fn fetch_offline(
-    recipe_dir: &Path,
-    recipe: &Recipe,
-    logger: &PtyOut,
-) -> Result<PathBuf, String> {
+pub fn fetch_offline(recipe: &CookRecipe, logger: &PtyOut) -> Result<PathBuf, String> {
+    let recipe_dir = &recipe.dir;
     let source_dir = recipe_dir.join("source");
-    if recipe.build.kind == BuildKind::None {
-        // the build function doesn't need source dir exists
-        return Ok(source_dir);
-    }
-    if recipe.build.kind == BuildKind::Remote {
-        fetch_remote(recipe_dir, recipe, true, logger)?;
-        return Ok(source_dir);
+    match recipe.recipe.build.kind {
+        BuildKind::None => {
+            // the build function doesn't need source dir exists
+            fetch_apply_source_info(recipe, "".to_string())?;
+            return Ok(source_dir);
+        }
+        BuildKind::Remote => {
+            fetch_remote(recipe_dir, recipe, true, logger)?;
+            return Ok(source_dir);
+        }
+        _ => {}
     }
 
-    match &recipe.source {
+    let ident = match &recipe.recipe.source {
         Some(SourceRecipe::Path { path: _ }) | None => {
-            return fetch(recipe_dir, recipe, logger);
+            fetch(recipe, logger)?;
+            "local_source".to_string()
         }
-        Some(SourceRecipe::SameAs { same_as: _ }) => {
-            return fetch(recipe_dir, recipe, logger);
+        Some(SourceRecipe::SameAs { same_as }) => {
+            let recipe = fetch_resolve_canon(recipe_dir, &same_as, recipe.name.is_host())?;
+            // recursively fetch
+            fetch_offline(&recipe, logger)?;
+            fetch_make_symlink(&source_dir, &same_as)?;
+            fetch_get_source_info(&recipe)?.source_identifier
         }
         Some(SourceRecipe::Git {
             git: _,
@@ -62,6 +72,8 @@ pub fn fetch_offline(
             shallow_clone: _,
         }) => {
             offline_check_exists(&source_dir)?;
+            let (head_rev, _) = get_git_head_rev(&source_dir)?;
+            head_rev
         }
         Some(SourceRecipe::Tar {
             tar: _,
@@ -93,29 +105,38 @@ pub fn fetch_offline(
                     offline_check_exists(&source_dir)?;
                 }
             }
+            blake3.clone().unwrap_or("no_tar_blake3_hash_info".into())
         }
-    }
+    };
+
+    fetch_apply_source_info(recipe, ident)?;
 
     Ok(source_dir)
 }
 
-pub fn fetch(recipe_dir: &Path, recipe: &Recipe, logger: &PtyOut) -> Result<PathBuf, String> {
+pub fn fetch(recipe: &CookRecipe, logger: &PtyOut) -> Result<PathBuf, String> {
+    let recipe_dir = &recipe.dir;
     let source_dir = recipe_dir.join("source");
-    if recipe.build.kind == BuildKind::None {
-        // the build function doesn't need source dir exists
-        return Ok(source_dir);
-    }
-    if recipe.build.kind == BuildKind::Remote {
-        fetch_remote(recipe_dir, recipe, false, logger)?;
-        return Ok(source_dir);
+    match recipe.recipe.build.kind {
+        BuildKind::None => {
+            // the build function doesn't need source dir exists
+            fetch_apply_source_info(recipe, "".to_string())?;
+            return Ok(source_dir);
+        }
+        BuildKind::Remote => {
+            fetch_remote(recipe_dir, recipe, false, logger)?;
+            return Ok(source_dir);
+        }
+        _ => {}
     }
 
-    match &recipe.source {
+    let ident = match &recipe.recipe.source {
         Some(SourceRecipe::SameAs { same_as }) => {
-            let (canon_dir, recipe) = fetch_resolve_canon(recipe_dir, &same_as)?;
+            let recipe = fetch_resolve_canon(recipe_dir, &same_as, recipe.name.is_host())?;
             // recursively fetch
-            fetch(&canon_dir, &recipe, logger)?;
+            fetch(&recipe, logger)?;
             fetch_make_symlink(&source_dir, &same_as)?;
+            fetch_get_source_info(&recipe)?.source_identifier
         }
         Some(SourceRecipe::Path { path }) => {
             if !source_dir.is_dir() || modified_dir(Path::new(&path))? > modified_dir(&source_dir)?
@@ -135,6 +156,7 @@ pub fn fetch(recipe_dir: &Path, recipe: &Recipe, logger: &PtyOut) -> Result<Path
                     )
                 })?;
             }
+            "local_source".to_string()
         }
         Some(SourceRecipe::Git {
             git,
@@ -147,7 +169,7 @@ pub fn fetch(recipe_dir: &Path, recipe: &Recipe, logger: &PtyOut) -> Result<Path
         }) => {
             //TODO: use libgit?
             let shallow_clone = *shallow_clone == Some(true);
-            if !source_dir.is_dir() {
+            let can_skip_rebuild = if !source_dir.is_dir() {
                 // Create source.tmp
                 let source_dir_tmp = recipe_dir.join("source.tmp");
                 create_dir_clean(&source_dir_tmp)?;
@@ -171,9 +193,10 @@ pub fn fetch(recipe_dir: &Path, recipe: &Recipe, logger: &PtyOut) -> Result<Path
 
                 // Move source.tmp to source atomically
                 rename(&source_dir_tmp, &source_dir)?;
+
+                false
             } else {
-                let source_git_dir = source_dir.join(".git");
-                if !source_git_dir.is_dir() {
+                if !source_dir.join(".git").is_dir() {
                     return Err(format!(
                         "'{}' is not a git repository, but recipe indicated git source",
                         source_dir.display(),
@@ -191,69 +214,96 @@ pub fn fetch(recipe_dir: &Path, recipe: &Recipe, logger: &PtyOut) -> Result<Path
                 command.arg("-C").arg(&source_dir);
                 command.arg("fetch").arg("origin");
                 run_command(command, logger)?;
-            }
 
-            if let Some(_upstream) = upstream {
-                //TODO: set upstream URL
-                // git remote set-url upstream "$GIT_UPSTREAM" &> /dev/null ||
-                // git remote add upstream "$GIT_UPSTREAM"
-                // git fetch upstream
-            }
+                let (head_rev, detached_rev) = get_git_head_rev(&source_dir)?;
+                if detached_rev {
+                    if let Some(rev) = rev
+                        && let Ok(exp_rev) = get_git_tag_rev(&source_dir, &rev)
+                    {
+                        exp_rev == head_rev
+                    } else {
+                        false
+                    }
+                } else {
+                    let (_, remote_branch, remote_name, remote_url) =
+                        get_git_remote_tracking(&source_dir)?;
+                    // TODO: how to get default branch and compare it here?
+                    if remote_name == "origin" && &remote_url == chop_dot_git(git) {
+                        let fetch_rev =
+                            get_git_fetch_rev(&source_dir, &remote_url, &remote_branch)?;
+                        fetch_rev == head_rev
+                    } else {
+                        false
+                    }
+                }
+            };
 
-            if let Some(rev) = rev {
-                // Check out specified revision
-                let mut command = Command::new("git");
-                command.arg("-C").arg(&source_dir);
-                command.arg("checkout").arg(rev);
-                run_command(command, logger)?;
-            } else if !is_redox() {
-                //If patches exists, we have to drop it
-                if patches.len() > 0 {
+            if !can_skip_rebuild {
+                if let Some(_upstream) = upstream {
+                    //TODO: set upstream URL (is this needed?)
+                    // git remote set-url upstream "$GIT_UPSTREAM" &> /dev/null ||
+                    // git remote add upstream "$GIT_UPSTREAM"
+                    // git fetch upstream
+                }
+
+                if let Some(rev) = rev {
+                    // Check out specified revision
+                    let mut command = Command::new("git");
+                    command.arg("-C").arg(&source_dir);
+                    command.arg("checkout").arg(rev);
+                    run_command(command, logger)?;
+                } else if !is_redox() {
+                    //If patches exists, we have to drop it
+                    if patches.len() > 0 {
+                        let mut command = Command::new("git");
+                        command.arg("-C").arg(&source_dir);
+                        command.arg("reset").arg("--hard");
+                        run_command(command, logger)?;
+                    }
+                    //TODO: complicated stuff to check and reset branch to origin
+                    //TODO: redox can't undestand this (got exit status 1)
+                    let mut command = Command::new("bash");
+                    command.arg("-c").arg(GIT_RESET_BRANCH);
+                    if let Some(branch) = branch {
+                        command.env("BRANCH", branch);
+                    }
+                    command.current_dir(&source_dir);
+                    run_command(command, logger)?;
+                }
+
+                if !patches.is_empty() || script.is_some() {
+                    // Hard reset
                     let mut command = Command::new("git");
                     command.arg("-C").arg(&source_dir);
                     command.arg("reset").arg("--hard");
                     run_command(command, logger)?;
                 }
-                //TODO: complicated stuff to check and reset branch to origin
-                //TODO: redox can't undestand this (got exit status 1)
-                let mut command = Command::new("bash");
-                command.arg("-c").arg(GIT_RESET_BRANCH);
-                if let Some(branch) = branch {
-                    command.env("BRANCH", branch);
-                }
-                command.current_dir(&source_dir);
-                run_command(command, logger)?;
-            }
 
-            if !patches.is_empty() || script.is_some() {
-                // Hard reset
+                // Sync submodules URL
                 let mut command = Command::new("git");
                 command.arg("-C").arg(&source_dir);
-                command.arg("reset").arg("--hard");
+                command.arg("submodule").arg("sync").arg("--recursive");
+
                 run_command(command, logger)?;
+
+                // Update submodules
+                let mut command = Command::new("git");
+                command.arg("-C").arg(&source_dir);
+                command
+                    .arg("submodule")
+                    .arg("update")
+                    .arg("--init")
+                    .arg("--recursive");
+                if shallow_clone {
+                    command.arg("--filter=tree:0");
+                }
+                run_command(command, logger)?;
+
+                fetch_apply_patches(recipe_dir, patches, script, &source_dir, logger)?;
             }
 
-            // Sync submodules URL
-            let mut command = Command::new("git");
-            command.arg("-C").arg(&source_dir);
-            command.arg("submodule").arg("sync").arg("--recursive");
-
-            run_command(command, logger)?;
-
-            // Update submodules
-            let mut command = Command::new("git");
-            command.arg("-C").arg(&source_dir);
-            command
-                .arg("submodule")
-                .arg("update")
-                .arg("--init")
-                .arg("--recursive");
-            if shallow_clone {
-                command.arg("--filter=tree:0");
-            }
-            run_command(command, logger)?;
-
-            fetch_apply_patches(recipe_dir, patches, script, &source_dir, logger)?;
+            let (head_rev, _) = get_git_head_rev(&source_dir)?;
+            head_rev
         }
         Some(SourceRecipe::Tar {
             tar,
@@ -316,6 +366,7 @@ pub fn fetch(recipe_dir: &Path, recipe: &Recipe, logger: &PtyOut) -> Result<Path
                 // Move source.tmp to source atomically
                 rename(&source_dir_tmp, &source_dir)?;
             }
+            blake3.clone().unwrap_or("no_tar_blake3_hash_info".into())
         }
         // Local Sources
         None => {
@@ -327,16 +378,19 @@ pub fn fetch(recipe_dir: &Path, recipe: &Recipe, logger: &PtyOut) -> Result<Path
                 );
                 create_dir(&source_dir)?;
             }
+            "local_source".into()
         }
-    }
+    };
 
     if let BuildKind::Cargo {
         package_path,
         cargoflags: _,
-    } = &recipe.build.kind
+    } = &recipe.recipe.build.kind
     {
         fetch_cargo(&source_dir, package_path.as_ref(), logger)?;
     }
+
+    fetch_apply_source_info(recipe, ident)?;
 
     Ok(source_dir)
 }
@@ -367,7 +421,8 @@ pub(crate) fn fetch_make_symlink(source_dir: &PathBuf, same_as: &String) -> Resu
 pub(crate) fn fetch_resolve_canon(
     recipe_dir: &Path,
     same_as: &String,
-) -> Result<(PathBuf, Recipe), String> {
+    is_host: bool,
+) -> Result<CookRecipe, String> {
     let canon_dir = Path::new(recipe_dir).join(same_as);
     if canon_dir
         .to_str()
@@ -382,12 +437,8 @@ pub(crate) fn fetch_resolve_canon(
     if !canon_dir.exists() {
         return Err(format!("'{dir}' is not exists.", dir = canon_dir.display()));
     }
-    let recipe_path = canon_dir.join("recipe.toml");
-    let recipe_str = fs::read_to_string(&recipe_path)
-        .map_err(|e| format!("unable to read {path}: {e}", path = recipe_path.display()))?;
-    let recipe: Recipe = toml::from_str(&recipe_str)
-        .map_err(|e| format!("Unable to parse {path}: {e}", path = recipe_path.display()))?;
-    Ok((canon_dir, recipe))
+    CookRecipe::from_path(canon_dir.as_path(), true, is_host)
+        .map_err(|e| format!("Unable to load {dir}: {e:?}", dir = canon_dir.display()))
 }
 
 pub(crate) fn fetch_extract_tar(
@@ -455,13 +506,11 @@ fn get_pubkey_url() -> String {
 
 pub fn fetch_remote(
     recipe_dir: &Path,
-    recipe: &Recipe,
+    recipe: &CookRecipe,
     offline_mode: bool,
     logger: &PtyOut,
 ) -> Result<(), String> {
-    // TODO: allow download to host target (waiting for build server to have them)
-    let target = redoxer::target();
-    let target_dir = create_target_dir(recipe_dir, target)?;
+    let target_dir = create_target_dir(recipe_dir, recipe.target)?;
     let source_pubkey = target_dir.join("id_ed25519.pub.toml");
     if !offline_mode {
         download_wget(&get_pubkey_url(), &source_pubkey, logger)?;
@@ -469,7 +518,7 @@ pub fn fetch_remote(
         offline_check_exists(&source_pubkey)?;
     }
 
-    let packages = recipe.get_packages_list();
+    let packages = recipe.recipe.get_packages_list();
 
     let name = recipe_dir
         .file_name()
@@ -492,6 +541,28 @@ pub fn fetch_remote(
         } else {
             offline_check_exists(&source_pkgar)?;
             offline_check_exists(&source_toml)?;
+        }
+
+        // guaranteed to exist once
+        if package.is_none() {
+            let mut file = File::open(&source_toml)
+                .map_err(|e| format!("Unable to open source.toml: {e:?}"))?;
+            let mut contents = String::new();
+            file.read_to_string(&mut contents)
+                .map_err(|e| format!("Unable to read source.toml: {e:?}"))?;
+
+            let pkg_toml = pkg::Package::from_toml(&contents)
+                .map_err(|e| format!("Unable to parse source.toml: {e:?}"))?;
+
+            fetch_apply_source_info_from_remote(
+                recipe,
+                &SourceIdentifier {
+                    commit_identifier: pkg_toml.commit_identifier.clone(),
+                    source_identifier: pkg_toml.source_identifier.clone(),
+                    time_identifier: pkg_toml.time_identifier.clone(),
+                    ..Default::default()
+                },
+            )?;
         }
     }
 
@@ -562,4 +633,38 @@ pub(crate) fn fetch_apply_patches(
             logger,
         )?;
     })
+}
+
+pub(crate) fn fetch_apply_source_info(
+    recipe: &CookRecipe,
+    source_identifier: String,
+) -> Result<(), String> {
+    let ident = crate::cook::ident::get_ident();
+    let info = pkg::package::SourceIdentifier {
+        commit_identifier: ident.commit.to_string(),
+        time_identifier: ident.time.to_string(),
+        source_identifier: source_identifier,
+    };
+
+    fetch_apply_source_info_from_remote(&recipe, &info)
+}
+
+pub(crate) fn fetch_apply_source_info_from_remote(
+    recipe: &CookRecipe,
+    info: &pkg::package::SourceIdentifier,
+) -> Result<(), String> {
+    let target_dir = create_target_dir(&recipe.dir, recipe.target)?;
+    let source_toml_path = target_dir.join("source_info.toml");
+    serialize_and_write(&source_toml_path, &info)?;
+    Ok(())
+}
+
+pub fn fetch_get_source_info(recipe: &CookRecipe) -> Result<SourceIdentifier, String> {
+    let target_dir = recipe.target_dir();
+    let source_toml_path = target_dir.join("source_info.toml");
+    let toml_content = fs::read_to_string(source_toml_path)
+        .map_err(|e| format!("Unable to read source_info.toml: {:?}", e))?;
+    let parsed = toml::from_str(&toml_content)
+        .map_err(|e| format!("Unable to parse source_info.toml: {:?}", e))?;
+    Ok(parsed)
 }

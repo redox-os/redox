@@ -265,6 +265,15 @@ pub fn build(
                 if stage_dir.is_dir() {
                     remove_all(&stage_dir)?;
                 }
+                // delete to let repo_builder know if this build fail later
+                let stage_file = stage_dir.with_added_extension("pkgar");
+                if stage_file.is_file() {
+                    remove_all(&stage_file)?;
+                }
+                let stage_meta = stage_dir.with_added_extension("toml");
+                if stage_meta.is_file() {
+                    remove_all(&stage_meta)?;
+                }
             }
         }
     }

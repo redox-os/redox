@@ -7,27 +7,26 @@ use pkg::{Package, PackageName};
 
 use crate::{
     blake3::hash_to_hex,
-    cook::{fs::*, pty::PtyOut},
+    cook::{fetch, fs::*, pty::PtyOut},
     log_to_pty,
-    recipe::{BuildKind, OptionalPackageRecipe, Recipe},
+    recipe::{BuildKind, CookRecipe, OptionalPackageRecipe, Recipe},
 };
 
 pub fn package(
+    recipe: &CookRecipe,
     stage_dirs: &Vec<PathBuf>,
-    target_dir: &Path,
-    name: &PackageName,
-    recipe: &Recipe,
     auto_deps: &BTreeSet<PackageName>,
     logger: &PtyOut,
 ) -> Result<(), String> {
-    if recipe.build.kind == BuildKind::None {
+    let name = &recipe.name;
+    let target_dir = &recipe.target_dir();
+    if recipe.recipe.build.kind == BuildKind::None {
         // metapackages don't have stage dir and optional packages
         package_toml(
             target_dir.join("stage.toml"),
-            name,
             recipe,
             None,
-            recipe.package.dependencies.clone(),
+            recipe.recipe.package.dependencies.clone(),
             &auto_deps,
         )?;
         return Ok(());
@@ -50,7 +49,7 @@ pub fn package(
 
     let stage_modified = modified_all(stage_dirs, modified_dir)?;
 
-    let packages = recipe.get_packages_list();
+    let packages = recipe.recipe.get_packages_list();
 
     for package in packages {
         let (stage_dir, package_file, package_meta) = package_stage_paths(package, target_dir);
@@ -96,11 +95,10 @@ pub fn package(
                         }
                     })
                     .collect(),
-                None => recipe.package.dependencies.clone(),
+                None => recipe.recipe.package.dependencies.clone(),
             };
             package_toml(
                 package_meta,
-                &name,
                 recipe,
                 Some((Path::new(public_path), &package_file)),
                 package_deps,
@@ -114,8 +112,7 @@ pub fn package(
 
 pub fn package_toml(
     toml_path: PathBuf,
-    name: &PackageName,
-    recipe: &Recipe,
+    recipe: &CookRecipe,
     package_file: Option<(&Path, &PathBuf)>,
     mut package_deps: Vec<PackageName>,
     auto_deps: &BTreeSet<PackageName>,
@@ -148,15 +145,21 @@ pub fn package_toml(
         ("".into(), 0)
     };
 
+    let ident_source = fetch::fetch_get_source_info(recipe)?;
+
     let package = Package {
-        name: name.without_host(),
-        version: package_version(recipe),
-        target: package_target(name).to_string(),
+        name: recipe.name.without_host(),
+        version: package_version(&recipe.recipe),
+        target: recipe.target.to_string(),
         blake3: hash,
         // this size will be different once pkgar supports compression
         network_size: size,
         storage_size: size,
         depends: package_deps,
+        commit_identifier: ident_source.commit_identifier,
+        source_identifier: ident_source.source_identifier,
+        time_identifier: ident_source.time_identifier,
+        ..Default::default()
     };
 
     serialize_and_write(&toml_path, &package)?;
