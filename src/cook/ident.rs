@@ -14,7 +14,7 @@ impl IdentifierConfig {
         let (commit, _) = crate::cook::fs::get_git_head_rev(
             &std::env::current_dir().expect("unable to get $PWD"),
         )
-        .expect("Can't read this repository commit");
+        .unwrap_or(("".into(), false));
         // better than importing heavy deps like chrono
         let time = String::from_utf8_lossy(
             &Command::new("date")
