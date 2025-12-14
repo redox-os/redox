@@ -78,6 +78,7 @@ struct CliConfig {
     sysroot_dir: PathBuf,
     logs_dir: Option<PathBuf>,
     category: Option<PathBuf>,
+    update_tag: Option<PathBuf>,
     filesystem: Option<redox_installer::Config>,
     with_package_deps: bool,
     all: bool,
@@ -160,6 +161,7 @@ impl CliConfig {
             } else {
                 current_dir.join("sysroot")
             },
+            update_tag: None,
             with_package_deps: false,
             cook: get_config().cook.clone(),
             all: false,
@@ -372,6 +374,7 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
                     "--repo" => config.repo_dir = PathBuf::from(value),
                     "--sysroot" => config.sysroot_dir = PathBuf::from(value),
                     "--category" => config.category = Some(PathBuf::from(value)),
+                    "--update-tag" => config.update_tag = Some(PathBuf::from(value)),
                     "--filesystem" => {
                         config.filesystem = Some({
                             let r = redox_installer::Config::from_file(&PathBuf::from(value));
@@ -537,7 +540,7 @@ fn handle_fetch(
     let recipe_dir = &recipe.dir;
     let source_dir = match config.cook.offline && allow_offline {
         true => fetch_offline(recipe_dir, &recipe.recipe, logger),
-        false => fetch(recipe_dir, &recipe.recipe, logger),
+        false => fetch(recipe_dir, &recipe.recipe, &config.update_tag, logger),
     }
     .map_err(|e| anyhow!("failed to fetch: {:?}", e))?;
 

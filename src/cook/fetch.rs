@@ -47,10 +47,10 @@ pub fn fetch_offline(
 
     match &recipe.source {
         Some(SourceRecipe::Path { path: _ }) | None => {
-            return fetch(recipe_dir, recipe, logger);
+            return fetch(recipe_dir, recipe, &None, logger);
         }
         Some(SourceRecipe::SameAs { same_as: _ }) => {
-            return fetch(recipe_dir, recipe, logger);
+            return fetch(recipe_dir, recipe, &None, logger);
         }
         Some(SourceRecipe::Git {
             git: _,
@@ -99,7 +99,12 @@ pub fn fetch_offline(
     Ok(source_dir)
 }
 
-pub fn fetch(recipe_dir: &Path, recipe: &Recipe, logger: &PtyOut) -> Result<PathBuf, String> {
+pub fn fetch(
+    recipe_dir: &Path,
+    recipe: &Recipe,
+    update_tag: &Option<PathBuf>,
+    logger: &PtyOut,
+) -> Result<PathBuf, String> {
     let source_dir = recipe_dir.join("source");
     if recipe.build.kind == BuildKind::None {
         // the build function doesn't need source dir exists
@@ -114,7 +119,7 @@ pub fn fetch(recipe_dir: &Path, recipe: &Recipe, logger: &PtyOut) -> Result<Path
         Some(SourceRecipe::SameAs { same_as }) => {
             let (canon_dir, recipe) = fetch_resolve_canon(recipe_dir, &same_as)?;
             // recursively fetch
-            fetch(&canon_dir, &recipe, logger)?;
+            fetch(&canon_dir, &recipe, update_tag, logger)?;
             fetch_make_symlink(&source_dir, &same_as)?;
         }
         Some(SourceRecipe::Path { path }) => {
@@ -147,7 +152,7 @@ pub fn fetch(recipe_dir: &Path, recipe: &Recipe, logger: &PtyOut) -> Result<Path
         }) => {
             //TODO: use libgit?
             let shallow_clone = *shallow_clone == Some(true);
-            if !source_dir.is_dir() {
+            let origin_commit = if !source_dir.is_dir() {
                 // Create source.tmp
                 let source_dir_tmp = recipe_dir.join("source.tmp");
                 create_dir_clean(&source_dir_tmp)?;
@@ -171,6 +176,8 @@ pub fn fetch(recipe_dir: &Path, recipe: &Recipe, logger: &PtyOut) -> Result<Path
 
                 // Move source.tmp to source atomically
                 rename(&source_dir_tmp, &source_dir)?;
+
+                None
             } else {
                 let source_git_dir = source_dir.join(".git");
                 if !source_git_dir.is_dir() {
@@ -191,7 +198,14 @@ pub fn fetch(recipe_dir: &Path, recipe: &Recipe, logger: &PtyOut) -> Result<Path
                 command.arg("-C").arg(&source_dir);
                 command.arg("fetch").arg("origin");
                 run_command(command, logger)?;
-            }
+
+                if update_tag.is_some() {
+                    Some(get_git_head_rev(&source_dir)?)
+                } else {
+                    // not needed
+                    None
+                }
+            };
 
             if let Some(_upstream) = upstream {
                 //TODO: set upstream URL
@@ -252,6 +266,17 @@ pub fn fetch(recipe_dir: &Path, recipe: &Recipe, logger: &PtyOut) -> Result<Path
                 command.arg("--filter=tree:0");
             }
             run_command(command, logger)?;
+
+            if let Some(update_tag) = update_tag {
+                if match origin_commit {
+                    Some(origin_commit) => origin_commit != get_git_head_rev(&source_dir)?,
+                    None => true,
+                } {
+                    let mut command = Command::new("touch");
+                    command.arg(&update_tag);
+                    run_command(command, logger)?;
+                };
+            }
 
             fetch_apply_patches(recipe_dir, patches, script, &source_dir, logger)?;
         }
