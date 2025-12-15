@@ -504,6 +504,7 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
     {
         let repo_binary = conf.general.repo_binary == Some(true);
         let mut last_rule = if repo_binary { "binary" } else { "source" };
+        let mut should_drop_host_packages = true;
         // Use rev() so recipes that don't listed in config is inherited from parent
         for recipe in recipes.iter_mut().rev() {
             if let Some(conf) = conf.packages.get(recipe.name.as_str()) {
@@ -516,11 +517,19 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
                             "source"
                         }
                     }
+                };
+                if should_drop_host_packages && (last_rule == "source" || last_rule == "local") {
+                    should_drop_host_packages = false;
                 }
             };
             recipe
                 .apply_filesystem_config(last_rule)
                 .map_err(|e| anyhow!(e))?;
+        }
+        // If there's no building from source, drop all host toolchain
+        // TODO: This is more of a hack to make CI passing
+        if should_drop_host_packages && config.with_package_deps {
+            recipes = recipes.into_iter().filter(|p| !p.name.is_host()).collect();
         }
     }
 

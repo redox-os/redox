@@ -42,6 +42,8 @@ REDOXFS_MKFS_FLAGS?=
 PODMAN_BUILD?=1
 ## Set to 1 to put filesystem tools inside podman, any other value will install it to host
 FSTOOLS_IN_PODMAN?=0
+## Set to 1 if FUSE is not available and we are running in a container
+FSTOOLS_NO_MOUNT?=0
 ## Enable sccache to speed up cargo builds
 ## only do this by default if this is inside podman
 SCCACHE_BUILD?=$(shell [ -f /run/.containerenv ] && echo 1 || echo 0)
@@ -151,6 +153,9 @@ COOKBOOK_OPTS="--filesystem=$(FILESYSTEM_CONFIG)"
 ifeq ($(REPO_BINARY),1)
 INSTALLER_OPTS+=--repo-binary
 COOKBOOK_OPTS+=--repo-binary
+endif
+ifeq ($(FSTOOLS_NO_MOUNT),1)
+INSTALLER_OPTS+=--no-mount
 endif
 
 REPO_TAG=$(BUILD)/repo.tag
