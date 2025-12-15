@@ -50,7 +50,6 @@ CONTAINERFILE?=podman/redox-base-containerfile
 
 # Per host variables
 export NPROC=nproc
-export REDOX_MAKE=make
 
 ifneq ($(PODMAN_BUILD),1)
 FSTOOLS_IN_PODMAN=0
@@ -102,7 +101,6 @@ ifeq ($(UNAME),Darwin)
 	VBM=/Applications/VirtualBox.app/Contents/MacOS/VBoxManage
 else ifeq ($(UNAME),FreeBSD)
 	FUMOUNT=sudo umount
-	export REDOX_MAKE=gmake
 	VB_AUDIO=pulse # To check, will probably be OSS on most setups
 	VBM=VBoxManage
 else
@@ -159,30 +157,10 @@ REPO_TAG=$(BUILD)/repo.tag
 FSTOOLS_TAG=build/fstools.tag
 export BOARD
 
-## Cross compiler variables
-AR=$(GNU_TARGET)-gcc-ar
-AS=$(GNU_TARGET)-as
-CC=$(GNU_TARGET)-gcc
-CXX=$(GNU_TARGET)-g++
-LD=$(GNU_TARGET)-ld
-NM=$(GNU_TARGET)-gcc-nm
-OBJCOPY=$(GNU_TARGET)-objcopy
-OBJDUMP=$(GNU_TARGET)-objdump
-RANLIB=$(GNU_TARGET)-gcc-ranlib
-READELF=$(GNU_TARGET)-readelf
-STRIP=$(GNU_TARGET)-strip
-
 ifeq ($(SCCACHE_BUILD),1)
 	export CC_WRAPPER:=sccache
 	export RUSTC_WRAPPER:=$(CC_WRAPPER)
-	CC=$(CC_WRAPPER) $(GNU_TARGET)-gcc
-	CXX=$(CC_WRAPPER) $(GNU_TARGET)-g++
 endif
-
-## Rust cross compile variables
-export AR_$(subst -,_,$(TARGET)):=$(AR)
-export CC_$(subst -,_,$(TARGET)):=$(CC)
-export CXX_$(subst -,_,$(TARGET)):=$(CXX)
 
 ## If Podman is being used, a container is required
 ifeq ($(PODMAN_BUILD),1)
