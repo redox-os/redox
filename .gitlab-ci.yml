@@ -60,9 +60,4 @@ img:
     - |
       export PATH="$HOME/.cargo/bin:$PATH" &&
       bash podman/rustinstall.sh &&
-      PODMAN_BUILD=0 REPO_BINARY=1 FSTOOLS_NO_MOUNT=1 COOKBOOK_VERBOSE=false make ci-img IMG_TAG=$CI_COMMIT_REF_NAME &&
-      ([ $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master" ] && rm -rf build/img/* || true)
-  artifacts:
-    paths:
-      - build/img/
-    expire_in: 1 week
+      PODMAN_BUILD=0 REPO_BINARY=1 FSTOOLS_NO_MOUNT=1 COOKBOOK_VERBOSE=false make ci-img IMG_TAG=$CI_COMMIT_REF_NAME
