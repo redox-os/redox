@@ -262,18 +262,7 @@ pub fn build(
         {
             for stage_dir in &stage_dirs {
                 log_to_pty!(logger, "DEBUG: updating '{}'", stage_dir.display());
-                if stage_dir.is_dir() {
-                    remove_all(&stage_dir)?;
-                }
-                // delete to let repo_builder know if this build fail later
-                let stage_file = stage_dir.with_added_extension("pkgar");
-                if stage_file.is_file() {
-                    remove_all(&stage_file)?;
-                }
-                let stage_meta = stage_dir.with_added_extension("toml");
-                if stage_meta.is_file() {
-                    remove_all(&stage_meta)?;
-                }
+                remove_stage_dir(stage_dir)?;
             }
         }
     }
@@ -424,7 +413,21 @@ pub fn build(
     Ok((stage_dirs, auto_deps))
 }
 
-fn get_stage_dirs(features: &Vec<OptionalPackageRecipe>, target_dir: &Path) -> Vec<PathBuf> {
+pub fn remove_stage_dir(stage_dir: &PathBuf) -> Result<(), String> {
+    if stage_dir.is_dir() {
+        remove_all(&stage_dir)?;
+    }
+    let stage_file = stage_dir.with_added_extension("pkgar");
+    if stage_file.is_file() {
+        remove_all(&stage_file)?;
+    }
+    let stage_meta = stage_dir.with_added_extension("toml");
+    Ok(if stage_meta.is_file() {
+        remove_all(&stage_meta)?;
+    })
+}
+
+pub fn get_stage_dirs(features: &Vec<OptionalPackageRecipe>, target_dir: &Path) -> Vec<PathBuf> {
     let mut v = Vec::new();
     for f in features {
         v.push(target_dir.join(format!("stage.{}", f.name)));

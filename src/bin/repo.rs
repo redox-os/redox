@@ -1,7 +1,7 @@
 use ansi_to_tui::IntoText;
 use anyhow::{Context, anyhow, bail};
 use cookbook::config::{CookConfig, get_config, init_config};
-use cookbook::cook::cook_build::build;
+use cookbook::cook::cook_build::{build, get_stage_dirs, remove_stage_dir};
 use cookbook::cook::fetch::{fetch, fetch_offline};
 use cookbook::cook::fs::{create_target_dir, run_command};
 use cookbook::cook::ident;
@@ -216,8 +216,13 @@ fn main_inner() -> anyhow::Result<()> {
                 }
             }
             Err(e) => {
-                if config.cook.nonstop && verbose {
-                    eprintln!("{:?}", e);
+                if config.cook.nonstop {
+                    if verbose {
+                        eprintln!("{:?}", e);
+                    }
+                    if let Err(e) = handle_nonstop_fail(recipe) {
+                        eprintln!("{:?}", e)
+                    };
                 }
                 print_failed(&command, &recipe.name);
                 if !config.cook.nonstop {
@@ -580,6 +585,17 @@ fn handle_cook(
     package(&recipe, &stage_dirs, &auto_deps, logger)
         .map_err(|err| anyhow!("failed to package: {:?}", err))?;
 
+    Ok(())
+}
+
+/// delete stage artifacts upon nonstop failure to let repo_builder know
+fn handle_nonstop_fail(recipe: &CookRecipe) -> anyhow::Result<()> {
+    let target_dir = recipe.target_dir();
+    let stage_dirs = get_stage_dirs(&recipe.recipe.optional_packages, &target_dir);
+    for stage_dir in stage_dirs {
+        remove_stage_dir(&stage_dir)
+            .map_err(|err| anyhow!("failed to remove stage dir: {:?}", err))?;
+    }
     Ok(())
 }
 
@@ -1039,6 +1055,8 @@ fn run_tui_cook(
                             if cooker_prompting.load(Ordering::SeqCst) == 4 {
                                 break 'done;
                             }
+                            // TODO: where to report error?
+                            let _ = handle_nonstop_fail(&recipe);
                             break;
                         }
                         while cooker_prompting.load(Ordering::SeqCst) != 0 {
@@ -1055,6 +1073,7 @@ fn run_tui_cook(
                                 } // retry
                                 3 => {
                                     cooker_prompting.swap(0, Ordering::SeqCst);
+                                    let _ = handle_nonstop_fail(&recipe);
                                     break 'again;
                                 } // skip
                                 4 => {
@@ -1145,6 +1164,7 @@ fn run_tui_cook(
                             if fetcher_prompting.load(Ordering::SeqCst) == 4 {
                                 break 'done;
                             }
+                            let _ = handle_nonstop_fail(&recipe);
                             break;
                         }
                         while fetcher_prompting.load(Ordering::SeqCst) != 0 {
@@ -1161,6 +1181,7 @@ fn run_tui_cook(
                                 } // retry
                                 3 => {
                                     fetcher_prompting.swap(0, Ordering::SeqCst);
+                                    let _ = handle_nonstop_fail(&recipe);
                                     break 'again;
                                 } // skip
                                 4 => {
