@@ -7,6 +7,7 @@ prompt = false
 
 # Package settings
 [packages]
+acid = {}
 base = {}
 base-initfs = {}
 bash = {}

@@ -4,3 +4,6 @@ blake3 = "da1cc8af8551c343de9f42af0ae53fd7dff3623487157623892b6cd7e3bb5692"
 
 [build]
 template = "configure"
+
+[package]
+dependencies = ["perl5"]
