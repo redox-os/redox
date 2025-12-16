@@ -7,10 +7,16 @@ template = "custom"
 script = """
 DYNAMIC_INIT
 
-rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+rsync -av "${COOKBOOK_SOURCE}/" ./
+OS=$(echo "${TARGET}" | cut -d - -f3)
+
+case "${OS}" in
+    linux)  SYS=Linux;;
+    redox)  SYS=Redox;;
+esac
 
 ${COOKBOOK_MAKE} -j ${COOKBOOK_MAKE_JOBS} install \
   PREFIX="${COOKBOOK_STAGE}" \
-  TARGET_SYS='Redox' \
-  CROSS="${TARGET}-"
+  TARGET_SYS="${SYS}" \
+  CROSS="${GNU_TARGET}-"
 """
