@@ -220,7 +220,9 @@ fn main_inner() -> anyhow::Result<()> {
                     if verbose {
                         eprintln!("{:?}", e);
                     }
-                    let _ = handle_nonstop_fail(recipe).map_err(|e| eprintln!("{:?}", e));
+                    if let Err(e) = handle_nonstop_fail(recipe) {
+                        eprintln!("{:?}", e)
+                    };
                 }
                 print_failed(&command, &recipe.name);
                 if !config.cook.nonstop {
@@ -1053,6 +1055,7 @@ fn run_tui_cook(
                             if cooker_prompting.load(Ordering::SeqCst) == 4 {
                                 break 'done;
                             }
+                            // TODO: where to report error?
                             let _ = handle_nonstop_fail(&recipe);
                             break;
                         }
