@@ -42,7 +42,7 @@ else
 endif # CONTAINER_TAG
 else
 ifneq ($(NOT_ON_PODMAN),1)
-	$(MAKE) c.--all
+	$(MAKE) repo_clean
 	-$(FUMOUNT) $(BUILD)/filesystem/ || true
 	-$(FUMOUNT) /tmp/redox_installer/ || true
 endif # NOT_ON_PODMAN
@@ -61,7 +61,7 @@ else
 endif # CONTAINER_TAG
 else
 ifneq ($(NOT_ON_PODMAN),1)
-	$(MAKE) u.--all
+	$(MAKE) fetch_clean
 endif # NOT_ON_PODMAN
 	$(MAKE) clean NOT_ON_PODMAN=1
 endif # PODMAN_BUILD
@@ -71,6 +71,10 @@ pull:
 	rm -f $(FSTOOLS_TAG)
 
 repo: $(BUILD)/repo.tag
+
+repo_clean: c.--all
+
+fetch_clean: u.--all
 
 # Podman build recipes and vars
 include mk/podman.mk
