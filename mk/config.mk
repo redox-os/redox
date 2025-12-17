@@ -120,6 +120,7 @@ endif
 # Automatic variables
 ROOT=$(CURDIR)
 export RUST_COMPILER_RT_ROOT=$(ROOT)/rust/src/llvm-project/compiler-rt
+export TESTBIN?=
 RUNNING_IN_PODMAN=$(shell [ -f /run/.containerenv ] && echo 1 || echo 0)
 ifeq ($(PODMAN_BUILD),1)
 ifeq ($(RUNNING_IN_PODMAN),1)
