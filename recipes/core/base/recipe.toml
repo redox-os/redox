@@ -26,6 +26,7 @@ BINS=(
     alxd
     e1000d
     ihdad
+    ihdgd
     ixgbed
     pcid
     pcid-spawner
