@@ -986,7 +986,7 @@ dependencies = [
 [[package]]
 name = "redoxer"
 version = "0.2.61"
-source = "git+https://gitlab.redox-os.org/redox-os/redoxer.git#f2541efeae0396907fb6febc06f95e19479609a7"
+source = "git+https://gitlab.redox-os.org/redox-os/redoxer.git#676bda4514e1e74b006816eca7b461a0721feea1"
 dependencies = [
  "anyhow",
  "dirs",
@@ -1321,7 +1321,7 @@ version = "1.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "97fee6b57c6a41524a810daee9286c02d7752c4253064d0b05472833a438f675"
 dependencies = [
- "cfg-if 1.0.4",
+ "cfg-if 0.1.10",
  "static_assertions",
 ]
 
