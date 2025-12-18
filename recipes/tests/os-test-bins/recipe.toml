@@ -1,0 +1,28 @@
+[source]
+same_as = "../os-test"
+
+[build]
+template = "custom"
+script = """
+DYNAMIC_INIT
+SRC=${COOKBOOK_SOURCE}
+DST=${COOKBOOK_STAGE}/root
+if [ -z "$TESTBIN" ]; then
+pushd ${SRC}
+for file in */*/*.c; do
+    filename="${file%.*}"
+    mkdir -p $(dirname $DST/$filename)
+    # adding "true" because compilation can fail
+    ${CC} ${CFLAGS} ${LDFLAGS} "$SRC/$file" -o "$DST/$filename" -Wall || true
+    echo "./$filename" >> $DST/run.sh
+done
+popd
+else
+    mkdir -p $(dirname $DST/$TESTBIN)
+    ${CC} ${CFLAGS} ${LDFLAGS} "$SRC/$TESTBIN.c" -o "$DST/$TESTBIN" -Wall
+fi
+
+if [ -n "TESTBIN" ]; then
+"${COOKBOOK_REDOXER}" write-exec "$DST/$TESTBIN"
+fi
+"""
