@@ -1,0 +1,45 @@
+[source]
+same_as = "../../core/relibc"
+
+[build]
+template = "custom"
+script = """
+PACKAGE_PATH="tests" cookbook_cargo
+
+DYNAMIC_INIT
+SRC=${COOKBOOK_SOURCE}/tests
+EXPECTSRC=${SRC}/expected/bins_dynamic
+DST=${COOKBOOK_STAGE}/root/relibc-tests
+CFLAGS+=" -I${SRC}"
+LDFLAGS+=" -Wl,-rpath=\\$ORIGIN"
+pushd ${SRC}
+if [ -z "$TESTBIN" ]; then
+for file in **/*.c; do
+    filename="${file%.*}"
+    mkdir -p $(dirname $DST/$filename)
+    # adding "true" because compilation can fail
+    ${CC} ${CFLAGS} ${LDFLAGS} "$SRC/$file" -o "$DST/$filename" -Wall || true
+    if [[ -f "${EXPECTSRC}/$filename.stdout" ]]; then
+        echo "relibc-tests ./$filename" >> $DST/run.sh
+    else
+        echo "relibc-tests -s./$filename" >> $DST/run.sh
+    fi
+done
+rsync -a ${EXPECTSRC} ${DST}/expected
+popd
+else
+    mkdir -p $(dirname $DST/$TESTBIN) $(dirname $DST/expected/$TESTBIN)
+    ${CC} ${CFLAGS} ${LDFLAGS} "$SRC/$TESTBIN.c" -o "$DST/$TESTBIN" -Wall
+    if [[ -f "${EXPECTSRC}/$TESTBIN.stdout" ]]; then
+        cp ${EXPECTSRC}/$TESTBIN.{stdout,stderr} $(dirname $DST/expected/$TESTBIN)
+    fi
+fi
+
+if [ -n "TESTBIN" ]; then
+if [[ -f "${EXPECTSRC}/$TESTBIN.stdout" ]]; then
+"${COOKBOOK_REDOXER}" write-exec sh -c "cd /root/relibc-tests; relibc-tests ./$TESTBIN"
+else
+"${COOKBOOK_REDOXER}" write-exec sh -c "cd /root/relibc-tests; relibc-tests -s./$TESTBIN"
+fi
+fi
+"""

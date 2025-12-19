@@ -6,7 +6,7 @@ template = "custom"
 script = """
 DYNAMIC_INIT
 SRC=${COOKBOOK_SOURCE}
-DST=${COOKBOOK_STAGE}/root
+DST=${COOKBOOK_STAGE}/root/os-test
 if [ -z "$TESTBIN" ]; then
 pushd ${SRC}
 for file in */*/*.c; do
