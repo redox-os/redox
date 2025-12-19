@@ -1,0 +1,18 @@
+# Must be run on host: "make r.host:os-test-result"
+[source]
+git = "https://gitlab.redox-os.org/redox-os/os-test-relibc"
+script = """
+# update automatically
+cd relibc && git pull origin master
+"""
+
+[build]
+template = "custom"
+script = """
+rsync -a --delete "${COOKBOOK_SOURCE}/" ./
+mkdir -p {COOKBOOK_STAGE}/share/os-test
+./linux.sh
+mv os-test/html ${COOKBOOK_STAGE}/share/os-test/html
+mv os-test/out ${COOKBOOK_STAGE}/share/os-test/out
+mv os-test/os-test.json ${COOKBOOK_STAGE}/share/os-test/os-test.json
+"""
