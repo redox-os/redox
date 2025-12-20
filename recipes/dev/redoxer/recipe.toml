@@ -1,0 +1,6 @@
+[source]
+git = "https://gitlab.redox-os.org/willnode/redoxer"
+branch = "artifact-opt"
+
+[build]
+template = "cargo"
