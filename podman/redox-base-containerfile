@@ -4,7 +4,6 @@ FROM docker.io/library/debian:trixie
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        ant \
         appstream \
         appstream-compose \
         autoconf \
