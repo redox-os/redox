@@ -229,9 +229,13 @@ pub fn fetch(recipe: &CookRecipe, logger: &PtyOut) -> Result<PathBuf, String> {
                         get_git_remote_tracking(&source_dir)?;
                     // TODO: how to get default branch and compare it here?
                     if remote_name == "origin" && &remote_url == chop_dot_git(git) {
-                        let fetch_rev =
-                            get_git_fetch_rev(&source_dir, &remote_url, &remote_branch)?;
-                        fetch_rev == head_rev
+                        match get_git_fetch_rev(&source_dir, &remote_url, &remote_branch) {
+                            Ok(fetch_rev) => fetch_rev == head_rev,
+                            Err(e) => {
+                                log_to_pty!(logger, "{}", e);
+                                false
+                            }
+                        }
                     } else {
                         false
                     }
