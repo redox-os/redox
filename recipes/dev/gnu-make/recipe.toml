@@ -10,9 +10,4 @@ autotools_recursive_regenerate
 """
 
 [build]
-template = "custom"
-script = """
-DYNAMIC_INIT
-rsync -av --delete "$COOKBOOK_SOURCE/." ./
-cookbook_configure
-"""
+template = "configure"

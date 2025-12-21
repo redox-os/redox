@@ -1,0 +1,101 @@
+[source]
+same_as = "../os-test"
+
+[build]
+template = "custom"
+dev-dependencies = [
+    "host:redoxer",
+# allows rebuilding relibc without updating prefix
+    "relibc",
+    "gnu-grep",
+    "libarchive",
+]
+script = """
+if [ "$TARGET" = "$COOKBOOK_HOST_TARGET" ]; then
+# TODO: libc conflict on toolchain
+export LD_LIBRARY_PATH="/lib/${GNU_TARGET}:${LD_LIBRARY_PATH}"
+fi
+
+rsync -a "${COOKBOOK_SOURCE}/" ./
+os=$(echo "${TARGET}" | cut -d - -f3)
+case "$os" in
+    linux)  OS=Linux;;
+    redox)  OS=Redox;;
+esac
+
+# allows linking to relibc instead of prefix/host libc
+export CC="env LIBRARY_PATH=${COOKBOOK_SYSROOT}/lib ${GNU_TARGET}-gcc"
+export CFLAGS="\
+-nostdinc \
+-nostdlib \
+-isystem ${COOKBOOK_SYSROOT}/include \
+-static \
+--sysroot ${COOKBOOK_SYSROOT} \
+${COOKBOOK_SYSROOT}/lib/crt0.o \
+${COOKBOOK_SYSROOT}/lib/crti.o \
+${COOKBOOK_SYSROOT}/lib/crtn.o \
+${COOKBOOK_SYSROOT}/lib/libc.a \
+"
+
+make OS=${OS} CC="${CC}" CFLAGS="${CFLAGS}" CPPFLAGS= \
+        LDFLAGS= EXTRA_LDFLAGS= \
+        CC_FOR_BUILD="${CC_WRAPPER} cc" CFLAGS_FOR_BUILD= CPPFLAGS_FOR_BUILD= \
+        LDFLAGS_FOR_BUILD= -j ${COOKBOOK_MAKE_JOBS} all
+
+skips=(
+    # Skip hanging tests on Linux/Redox with relibc
+    basic/stdio/putc_unlocked
+)
+
+if [ "$OS" = "Redox" ]; then
+skips+=(
+    # Skip hanging tests on Redox with relibc
+    # https://gitlab.redox-os.org/redox-os/redox/-/issues/1752
+    basic/sys_socket/accept
+    basic/sys_socket/recv
+    basic/sys_socket/send
+    basic/sys_socket/shutdown
+    signal/ppoll-block-close
+    signal/ppoll-block-close-raise
+    signal/ppoll-block-raise
+    signal/ppoll-block-sleep-raise-write
+    signal/ppoll-block-sleep-raise
+    signal/ppoll-block-sleep-write-raise
+)
+fi
+
+for skip in "${skips[@]}"
+do
+    mkdir -p out.known/${os}/"$(dirname "${skip}")"
+    echo "skipped" > out.known/${os}/"${skip}.out"
+done
+
+cp -t out -R out.known/${os}
+
+postinstall () {
+make OS=${OS} CC_FOR_BUILD="${CC_WRAPPER} cc" \
+        CFLAGS_FOR_BUILD= CPPFLAGS_FOR_BUILD= \
+        LDFLAGS_FOR_BUILD= html json jsonl
+
+    mkdir -p ${COOKBOOK_STAGE}/share/os-test
+    cp -a out ${COOKBOOK_STAGE}/share/os-test/out
+    cp -a html ${COOKBOOK_STAGE}/share/os-test/html
+    cp -a os-test.json ${COOKBOOK_STAGE}/share/os-test/os-test.json
+    cp -a os-test.jsonl ${COOKBOOK_STAGE}/share/os-test/os-test.jsonl
+}
+
+if [ "$TARGET" = "$COOKBOOK_HOST_TARGET" ]; then
+    make test
+    postinstall
+else
+    # bash: gnu-make crashes randomly but can continue
+    # issues with multi-core and make jobs
+    # https://gitlab.redox-os.org/redox-os/relibc/-/issues/240
+    # https://gitlab.redox-os.org/redox-os/redox/-/issues/1753
+    export REDOXER_QEMU_ARGS="-smp 1"
+    # make: jobs doesn't work yet
+    echo redoxer exec --folder . --folder "${COOKBOOK_SYSROOT}/usr/:/usr" --artifact out:/root/out \
+        bash -c "until make test; do echo retrying; done"
+    postinstall
+fi
+"""

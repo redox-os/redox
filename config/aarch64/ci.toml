@@ -34,6 +34,7 @@ gettext = {}
 git = {}
 # gdbserver = {} # wrong libc type
 # gnu-binutils = {} # bfd doesn't recognize redox
+gnu-make = {}
 hicolor-icon-theme = {}
 installer = {}
 installer-gui = {}

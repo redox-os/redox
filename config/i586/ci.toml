@@ -32,6 +32,7 @@ freefont = {}
 freetype2 = {}
 gettext = {}
 git = {}
+gnu-make = {}
 hicolor-icon-theme = {}
 installer = {}
 installer-gui = {}
