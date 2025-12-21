@@ -1,0 +1,6 @@
+[source]
+git = "https://gitlab.redox-os.org/redox-os/redoxer"
+branch = "master"
+
+[build]
+template = "cargo"
