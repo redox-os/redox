@@ -29,6 +29,11 @@ endif
 # so would break non-podman builds (not sure if they are still supported though).
 prefix: $(PREFIX)/sysroot
 
+# Update relibc used for compiling and clean all statically linked recipes
+prefix_clean: | $(FSTOOLS_TAG)
+	rm -rf $(PREFIX)/relibc $(PREFIX)/sysroot
+	$(MAKE) c.base,base-initfs,extrautils,kernel,ion,pkgutils,redoxfs,relibc
+
 PREFIX_STRIP=\
 	mkdir -p bin libexec "$(GCC_TARGET)/bin" && \
 	find bin libexec "$(GCC_TARGET)/bin" "$(GCC_TARGET)/lib" \
