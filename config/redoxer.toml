@@ -9,10 +9,12 @@ ca-certificates = {}
 coreutils = {}
 extrautils = {}
 findutils = {}
+gnu-make = {}
 ion = {}
 netdb = {}
 pkgutils = {}
 relibc = {}
+sed = {}
 
 # Override to not background dhcpd
 [[files]]
