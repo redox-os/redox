@@ -31,7 +31,7 @@ prefix: $(PREFIX)/sysroot
 
 # Update relibc used for compiling and clean all statically linked recipes
 prefix_clean: | $(FSTOOLS_TAG)
-	rm -rf $(PREFIX)/relibc $(PREFIX)/sysroot
+	rm -rf $(PREFIX)/relibc $(PREFIX)/sysroot $(REPO_TAG)
 	$(MAKE) c.base,base-initfs,extrautils,kernel,ion,pkgutils,redoxfs,relibc
 
 PREFIX_STRIP=\
