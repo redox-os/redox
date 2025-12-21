@@ -11,6 +11,11 @@ dev-dependencies = [
     "libarchive",
 ]
 script = """
+if [ "$TARGET" = "$COOKBOOK_HOST_TARGET" ]; then
+# TODO: libc conflict on toolchain
+export LD_LIBRARY_PATH="/lib/${GNU_TARGET}:${LD_LIBRARY_PATH}"
+fi
+
 rsync -a "${COOKBOOK_SOURCE}/" ./
 os=$(echo "${TARGET}" | cut -d - -f3)
 case "$os" in
@@ -31,14 +36,6 @@ ${COOKBOOK_SYSROOT}/lib/crti.o \
 ${COOKBOOK_SYSROOT}/lib/crtn.o \
 ${COOKBOOK_SYSROOT}/lib/libc.a \
 "
-
-# allow retest without restesting successful ones
-mkdir -p out
-for file in $(grep -rL "good" out); do
-  if [ -f "$file" ]; then
-    rm "$file"
-  fi
-done
 
 make OS=${OS} CC="${CC}" CFLAGS="${CFLAGS}" CPPFLAGS= \
         LDFLAGS= EXTRA_LDFLAGS= \
@@ -75,23 +72,30 @@ done
 
 cp -t out -R out.known/${os}
 
-if [ "$TARGET" = "$COOKBOOK_HOST_TARGET" ]; then
-    make test
-else
-    # bash: gnu-make crashes randomly but can continue
-    redoxer exec --folder . --folder "${COOKBOOK_SYSROOT}/usr/:/usr" --artifact out:/root/out \
-        bash -c "until make -j 4 test; do echo retrying; done"
-    # html won't generated without this, not sure why
-    sleep 2
-fi
-
+postinstall () {
 make OS=${OS} CC_FOR_BUILD="${CC_WRAPPER} cc" \
         CFLAGS_FOR_BUILD= CPPFLAGS_FOR_BUILD= \
         LDFLAGS_FOR_BUILD= html json jsonl
 
-mkdir -p ${COOKBOOK_STAGE}/share/os-test
-mv out ${COOKBOOK_STAGE}/share/os-test/out
-mv html ${COOKBOOK_STAGE}/share/os-test/html
-mv os-test.json ${COOKBOOK_STAGE}/share/os-test/os-test.json
-mv os-test.jsonl ${COOKBOOK_STAGE}/share/os-test/os-test.jsonl
+    mkdir -p ${COOKBOOK_STAGE}/share/os-test
+    cp -a out ${COOKBOOK_STAGE}/share/os-test/out
+    cp -a html ${COOKBOOK_STAGE}/share/os-test/html
+    cp -a os-test.json ${COOKBOOK_STAGE}/share/os-test/os-test.json
+    cp -a os-test.jsonl ${COOKBOOK_STAGE}/share/os-test/os-test.jsonl
+}
+
+if [ "$TARGET" = "$COOKBOOK_HOST_TARGET" ]; then
+    make test
+    postinstall
+else
+    # bash: gnu-make crashes randomly but can continue
+    # issues with multi-core and make jobs
+    # https://gitlab.redox-os.org/redox-os/relibc/-/issues/240
+    # https://gitlab.redox-os.org/redox-os/redox/-/issues/1753
+    export REDOXER_QEMU_ARGS="-smp 1"
+    # make: jobs doesn't work yet
+    echo redoxer exec --folder . --folder "${COOKBOOK_SYSROOT}/usr/:/usr" --artifact out:/root/out \
+        bash -c "until make test; do echo retrying; done"
+    postinstall
+fi
 """
