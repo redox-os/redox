@@ -34,5 +34,6 @@ mv "${COOKBOOK_STAGE}"/usr/bin/hnefatafl-client "${COOKBOOK_STAGE}"/usr/games/hn
 [package]
 dependencies = [
     "dejavu",
+    "freefont",
     "noto-color-emoji",
 ]
