@@ -1,0 +1,15 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/ospray/OSPRay#building-and-finding-ospray
+[source]
+git = "https://github.com/ospray/OSPRay"
+rev = "66fa8108485a8a92ff31ad2e06081bbaf391bc26"
+[build]
+template = "cmake"
+dependencies = [
+    "librkcommon",
+    "embree",
+    "ispc",
+    "onetbb",
+    "openvkl",
+    "open-image-denoise",
+]

@@ -1,0 +1,34 @@
+From 2444d71e7815c8b7f3bd4462b8418d9c7e8c5667 Mon Sep 17 00:00:00 2001
+From: Rafael Senties Martinelli <rafael@rsm92.fr>
+Date: Sun, 19 Oct 2025 19:42:46 +0200
+Subject: [PATCH 1/2] Ensure fixed-width integers and PIPE_BUF are defined for
+ Redox or minimal libc
+
+---
+ src/websocket.h | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/src/websocket.h b/src/websocket.h
+index 79d03dff..31847b10 100644
+--- a/src/websocket.h
++++ b/src/websocket.h
+@@ -45,8 +45,15 @@
+ #include <openssl/ssl.h>
+ #endif
+ 
+-#if defined(__linux__) || defined(__CYGWIN__)
++#if defined(__linux__) || defined(__CYGWIN__) || defined(__redox__)
+ #  include <endian.h>
++#if defined(__redox__)
++#  include <stdint.h>   /* for uint*_t types */
++#  include <limits.h>   /* for PIPE_BUF */
++#  ifndef PIPE_BUF
++#    define PIPE_BUF 4096
++#  endif
++#endif
+ #if ((__GLIBC__ == 2) && (__GLIBC_MINOR__ < 9))
+ #if defined(__BYTE_ORDER) && (__BYTE_ORDER == __LITTLE_ENDIAN)
+ #  include <arpa/inet.h>
+-- 
+2.51.1.dirty
+

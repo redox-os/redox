@@ -1,0 +1,8 @@
+#TODO maybe incomplete script, see the Makefile on the repository
+[source]
+git = "https://github.com/gbbirkisson/spis"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages spis-server
+"""

@@ -1,0 +1,5 @@
+#TODO missing headers
+[source]
+git = "https://github.com/nwrenger/omega"
+[build]
+template = "cargo"

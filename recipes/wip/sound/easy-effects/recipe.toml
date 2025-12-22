@@ -1,0 +1,15 @@
+#TODO missing dependencies - https://github.com/wwmm/easyeffects#effects-available
+#TODO build instructions - https://github.com/wwmm/easyeffects/wiki/Installation-from-Source
+[source]
+git = "https://github.com/wwmm/easyeffects"
+rev = "4c35ba8c385723fdefc81ad8fcb816eb965fe1d8"
+[build]
+template = "custom"
+dependencies = [
+    "libsamplerate",
+    "libsndfile",
+    "fftw",
+    "speexdsp",
+    "nohnmann-json",
+    "tbb",
+]

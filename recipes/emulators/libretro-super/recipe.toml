@@ -1,0 +1,24 @@
+[source]
+git = "https://github.com/jackpot51/libretro-super.git"
+
+[build]
+template = "custom"
+dependencies = [
+    "zlib",
+]
+script = """
+CORES=(
+    snes9x
+)
+
+pushd "${COOKBOOK_SOURCE}"
+./libretro-fetch.sh "${CORES[@]}"
+popd
+
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+
+export platform=Redox
+export STATIC_LINKING=1
+./libretro-build.sh "${CORES[@]}"
+./libretro-install.sh "${COOKBOOK_STAGE}/share/libretro"
+"""

@@ -1,0 +1,92 @@
+diff -ruwN source-old/gdk/wayland/gdkdevice-wayland.c source/gdk/wayland/gdkdevice-wayland.c
+--- source-old/gdk/wayland/gdkdevice-wayland.c	2024-07-10 11:03:14.000000000 -0600
++++ source/gdk/wayland/gdkdevice-wayland.c	2025-11-13 09:46:58.493081022 -0700
+@@ -44,6 +44,12 @@
+ #include <dev/evdev/input.h>
+ #elif defined(HAVE_LINUX_INPUT_H)
+ #include <linux/input.h>
++#else
++#define BTN_LEFT 0x110
++#define BTN_RIGHT 0x111
++#define BTN_MIDDLE 0x112
++#define BTN_STYLUS 0x14b
++#define BTN_STYLUS2 0x14c
+ #endif
+ 
+ #define BUTTON_BASE (BTN_LEFT - 1) /* Used to translate to 1-indexed buttons */
+diff -ruwN source-old/gdk/wayland/gdkdisplay-wayland.c source/gdk/wayland/gdkdisplay-wayland.c
+--- source-old/gdk/wayland/gdkdisplay-wayland.c	2024-07-10 11:03:14.000000000 -0600
++++ source/gdk/wayland/gdkdisplay-wayland.c	2025-11-13 09:44:55.926622693 -0700
+@@ -28,7 +28,9 @@
+ #endif
+ 
+ #include <sys/mman.h>
++#if defined (__NR_memfd_create)
+ #include <sys/syscall.h>
++#endif
+ 
+ #include <glib.h>
+ #include "gdkwayland.h"
+diff -ruwN source-old/gtk/a11y/gtkaccessibility.c source/gtk/a11y/gtkaccessibility.c
+--- source-old/gtk/a11y/gtkaccessibility.c	2024-07-10 11:03:14.000000000 -0600
++++ source/gtk/a11y/gtkaccessibility.c	2025-11-12 12:32:06.969908669 -0700
+@@ -37,7 +37,7 @@
+ #include <gtk/gtktogglebutton.h>
+ #include <gtk/gtkaccessible.h>
+ 
+-#ifdef GDK_WINDOWING_X11
++#if defined(GDK_WINDOWING_X11) && !defined(__redox__)
+ #include <atk-bridge.h>
+ #endif
+ 
+@@ -254,7 +254,7 @@
+         }
+     }
+ 
+-#ifdef GDK_WINDOWING_X11
++#if defined(GDK_WINDOWING_X11) && !defined(__redox__)
+   /*
+    * If the focus widget is a GtkSocket without a plug
+    * then ignore the focus notification as the embedded
+@@ -986,7 +986,7 @@
+   _gtk_accessibility_override_atk_util ();
+   do_window_event_initialization ();
+ 
+-#ifdef GDK_WINDOWING_X11
++#if defined(GDK_WINDOWING_X11) && !defined(__redox__)
+   atk_bridge_adaptor_init (NULL, NULL);
+ #endif
+ 
+diff -ruwN source-old/gtk/gtkmain.c source/gtk/gtkmain.c
+--- source-old/gtk/gtkmain.c	2024-07-10 11:03:14.000000000 -0600
++++ source/gtk/gtkmain.c	2025-11-12 12:32:06.970182803 -0700
+@@ -355,7 +355,7 @@
+ check_setugid (void)
+ {
+ /* this isn't at all relevant on MS Windows and doesn't compile ... --hb */
+-#ifndef G_OS_WIN32
++#if !defined(G_OS_WIN32) && !defined(__redox__)
+   uid_t ruid, euid, suid; /* Real, effective and saved user ID's */
+   gid_t rgid, egid, sgid; /* Real, effective and saved group ID's */
+   
+diff -ruwN source-old/meson.build source/meson.build
+--- source-old/meson.build	2024-07-10 11:03:14.000000000 -0600
++++ source/meson.build	2025-11-12 12:32:06.970463189 -0700
+@@ -565,7 +565,7 @@
+   xfixes_dep     = dependency('xfixes', required: false)
+   xcomposite_dep = dependency('xcomposite', required: false)
+   fontconfig_dep = dependency('fontconfig', fallback: ['fontconfig', 'fontconfig_dep'])
+-  atkbridge_dep  = dependency('atk-bridge-2.0', version: at_spi2_atk_req)
++  #TODO atkbridge_dep  = dependency('atk-bridge-2.0', version: at_spi2_atk_req)
+ 
+   backend_immodules += ['xim']
+ 
+@@ -584,7 +584,7 @@
+     x11_pkgs += ['xdamage']
+   endif
+ 
+-  atk_pkgs += ['atk-bridge-2.0']
++  #atk_pkgs += ['atk-bridge-2.0']
+ 
+   cdata.set('HAVE_XDAMAGE', xdamage_dep.found() ? 1 : false)
+   cdata.set('HAVE_XCURSOR', xcursor_dep.found() ? 1 : false)

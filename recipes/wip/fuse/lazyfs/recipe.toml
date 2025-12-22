@@ -1,0 +1,9 @@
+#TODO missing script for compilation: https://github.com/dsrhaslab/lazyfs#installation
+[source]
+git = "https://github.com/dsrhaslab/lazyfs"
+rev = "0.3.0"
+[build]
+template = "custom"
+dependencies = [
+    "libfuse3",
+]

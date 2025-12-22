@@ -70,8 +70,6 @@ install_freebsd_pkg()
 ##############################################################################
 osx()
 {
-    echo "Detected macOS!"
-
     if [ ! -z "$(which brew)" ]; then
         osx_homebrew $@
     elif [ ! -z "$(which port)" ]; then
@@ -364,7 +362,7 @@ archLinux()
     gdb"
 
     if [ "$1" == "qemu" ]; then
-        packages="$packages qemu"
+        packages="$packages qemu-system-x86 qemu-system-arm qemu-system-riscv"
     elif [ "$1" == "virtualbox" ]; then
         packages="$packages virtualbox"
     else
@@ -495,7 +493,8 @@ ubuntu()
         if [ -z "$(which qemu-system-x86_64)" ]; then
             echo "Installing QEMU..."
             sudo $install_command qemu-system-x86 qemu-kvm
-            sudo $install_command qemu-efi-arm qemu-system-arm
+            sudo $install_command qemu-system-arm qemu-efi-aarch64
+            sudo $install_command qemu-system-riscv
         else
             echo "QEMU already installed!"
         fi
@@ -545,6 +544,8 @@ fedora()
         if [ -z "$(which qemu-system-x86_64)" ]; then
             echo "Installing QEMU..."
             sudo $dnf_install qemu-system-x86 qemu-kvm
+            sudo $dnf_install qemu-system-arm edk2-aarch64
+            sudo $dnf_install qemu-system-riscv
         else
             echo "QEMU already installed!"
         fi
@@ -1013,7 +1014,7 @@ statusCheck()
 boot()
 {
     echo "Cloning gitlab repo..."
-    git clone https://gitlab.redox-os.org/redox-os/redox.git --origin upstream --recursive
+    git clone https://gitlab.redox-os.org/redox-os/redox.git --origin upstream
     echo "Creating .config with PODMAN_BUILD=0"
     echo 'PODMAN_BUILD?=0' > redox/.config
     echo "Cleaning up..."
@@ -1046,7 +1047,6 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
     usage
 elif [ "$1" == "-u" ]; then
     git pull upstream master
-    git submodule update --recursive --init
     exit
 elif [ "$1" == "-s" ]; then
     statusCheck
@@ -1076,13 +1076,21 @@ done
 
 banner
 
-rustInstall "$noninteractive"
+if [ "Darwin" == "$(uname -s)" ]; then
+    echo "Detected macOS!"
+
+    echo "WARNING: Building Redox OS on MacOS is not recommended, please use podman_bootstrap.sh instead."
+    echo "WARNING: Our toolchain is not designed to work on MacOS and it relies on FUSE which requires kernel extensions."
+    echo "WARNING: If you want to continue anyway, please wait for 3 seconds or cancel this script now!"
+    sleep 3
+fi
 
 if [ "$update" == "true" ]; then
     git pull upstream master
-    git submodule update --recursive --init
     exit
 fi
+
+rustInstall "$noninteractive"
 
 if [ "Darwin" == "$(uname -s)" ]; then
     osx "$emulator"
@@ -1116,7 +1124,6 @@ else
     fi
 fi
 
-cargoInstall cargo-config 0.1.1
 cargoInstall just 1.42.4
 cargoInstall cbindgen 0.29.0
 

@@ -1,0 +1,6 @@
+[source]
+tar = "https://lttng.org/files/urcu/userspace-rcu-0.14.0.tar.bz2"
+patches = ["0001-Fix-compilation-on-Redox-OS.patch"]
+
+[build]
+template = "configure"

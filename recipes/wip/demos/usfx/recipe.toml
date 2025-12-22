@@ -1,0 +1,12 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/tversteeg/usfx"
+[build]
+template = "custom"
+dependencies = [
+    "libalsa",
+    "sdl2",
+]
+script = """
+cookbook_cargo_examples cpal music sdl2
+"""

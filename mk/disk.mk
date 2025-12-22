@@ -1,6 +1,9 @@
 # Configuration file with the commands configuration of the Redox image
 
-$(BUILD)/harddrive.img: $(HOST_FSTOOLS) $(REPO_TAG)
+$(BUILD)/harddrive.img: $(FSTOOLS) $(REPO_TAG)
+ifeq ($(FSTOOLS_IN_PODMAN),1)
+	$(PODMAN_RUN) make $@
+else
 	mkdir -p $(BUILD)
 	rm -rf $@  $@.partial
 	-$(FUMOUNT) /tmp/redox_installer || true
@@ -11,8 +14,12 @@ $(BUILD)/harddrive.img: $(HOST_FSTOOLS) $(REPO_TAG)
 	truncate -s "$$FILESYSTEM_SIZE"m $@.partial
 	umask 002 && $(INSTALLER) $(INSTALLER_OPTS) -c $(FILESYSTEM_CONFIG) $@.partial
 	mv $@.partial $@
+endif
 
-$(BUILD)/redox-live.iso: $(HOST_FSTOOLS) $(REPO_TAG) redox.ipxe
+$(BUILD)/redox-live.iso: $(FSTOOLS) $(REPO_TAG) redox.ipxe
+ifeq ($(FSTOOLS_IN_PODMAN),1)
+	$(PODMAN_RUN) make $@
+else
 	mkdir -p $(BUILD)
 	rm -rf $@  $@.partial
 	-$(FUMOUNT) /tmp/redox_installer || true
@@ -24,8 +31,12 @@ $(BUILD)/redox-live.iso: $(HOST_FSTOOLS) $(REPO_TAG) redox.ipxe
 	umask 002 && $(INSTALLER) $(INSTALLER_OPTS) -c $(FILESYSTEM_CONFIG) --write-bootloader="$(BUILD)/bootloader-live.efi" --live $@.partial
 	mv $@.partial $@
 	cp redox.ipxe $(BUILD)/redox.ipxe
+endif
 
-$(BUILD)/filesystem.img: $(HOST_FSTOOLS) $(REPO_TAG)
+$(BUILD)/filesystem.img: $(FSTOOLS) $(REPO_TAG)
+ifeq ($(FSTOOLS_IN_PODMAN),1)
+	$(PODMAN_RUN) make $@
+else
 	mkdir -p $(BUILD)
 	-$(FUMOUNT) $(MOUNT_DIR) || true
 	rm -rf $@  $@.partial $(MOUNT_DIR)
@@ -45,27 +56,44 @@ $(BUILD)/filesystem.img: $(HOST_FSTOOLS) $(REPO_TAG)
 	-$(FUMOUNT) $(MOUNT_DIR) || true
 	rm -rf $(MOUNT_DIR)
 	mv $@.partial $@
+endif
 
-mount: $(HOST_FSTOOLS) FORCE
-	mkdir -p $(MOUNT_DIR)
+mount: $(FSTOOLS) FORCE
+ifeq ($(FSTOOLS_IN_PODMAN),1)
+	$(PODMAN_RUN) make $@
+else
+	@mkdir -p $(MOUNT_DIR)
 	$(REDOXFS) $(BUILD)/harddrive.img $(MOUNT_DIR)
-	sleep 2
-	pgrep redoxfs
+	@sleep 2
+	@pgrep redoxfs
+endif
 
-mount_extra: $(HOST_FSTOOLS) FORCE
-	mkdir -p $(MOUNT_DIR)
+mount_extra: $(FSTOOLS) FORCE
+ifeq ($(FSTOOLS_IN_PODMAN),1)
+	$(PODMAN_RUN) make $@
+else
+	@mkdir -p $(MOUNT_DIR)
 	$(REDOXFS) $(BUILD)/extra.img $(MOUNT_DIR)
-	sleep 2
-	pgrep redoxfs
+	@sleep 2
+	@pgrep redoxfs
+endif
 
-mount_live: $(HOST_FSTOOLS) FORCE
-	mkdir -p $(MOUNT_DIR)
+mount_live: $(FSTOOLS) FORCE
+ifeq ($(FSTOOLS_IN_PODMAN),1)
+	$(PODMAN_RUN) make $@
+else
+	@mkdir -p $(MOUNT_DIR)
 	$(REDOXFS) $(BUILD)/redox-live.iso $(MOUNT_DIR)
-	sleep 2
-	pgrep redoxfs
+	@sleep 2
+	@pgrep redoxfs
+endif
 
 unmount: FORCE
-	sync
-	-$(FUMOUNT) $(MOUNT_DIR) || true
-	rm -rf $(MOUNT_DIR)
-	-$(FUMOUNT) /tmp/redox_installer || true
+ifeq ($(FSTOOLS_IN_PODMAN),1)
+	$(PODMAN_RUN) make $@
+else
+	@sync
+	-$(FUMOUNT) $(MOUNT_DIR)
+	@rm -rf $(MOUNT_DIR)
+	@-$(FUMOUNT) /tmp/redox_installer 2>/dev/null || true
+endif

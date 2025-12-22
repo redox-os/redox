@@ -1,0 +1,11 @@
+[source]
+git = "https://github.com/rust-lang/crates.io-index.git"
+shallow_clone = true
+
+[build]
+template = "custom"
+script = """
+dir="${COOKBOOK_STAGE}/home/user/.cargo/registry/index/github.com-1ecc6299db9ec823"
+mkdir -pv "${dir}"
+cp -rv "${COOKBOOK_SOURCE}/.git" "${dir}"
+"""

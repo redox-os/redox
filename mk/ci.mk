@@ -9,12 +9,12 @@ IMG_DIR?=build/img/$(ARCH)
 ci-img: FORCE
 	rm -rf $(IMG_DIR)
 	mkdir -p $(IMG_DIR)
-	$(MAKE) minimal minimal-net server desktop demo
+	$(MAKE) server desktop demo
 	cd $(IMG_DIR) && zstd --rm *
 	cd $(IMG_DIR) && sha256sum -b * > SHA256SUM
 
 # The name of the target must match the name of the filesystem config file
-minimal minimal-net server desktop demo: FORCE
+server desktop demo: FORCE
 	rm -f "build/$(ARCH)/$@/harddrive.img" "build/$(ARCH)/$@/redox-live.iso"
 	$(MAKE) CONFIG_NAME=$@ build/$(ARCH)/$@/harddrive.img build/$(ARCH)/$@/redox-live.iso
 	mkdir -p $(IMG_DIR)
@@ -26,15 +26,9 @@ ci-pkg: prefix $(FSTOOLS_TAG) $(CONTAINER_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
-	$(HOST_CARGO) build --manifest-path cookbook/Cargo.toml --release
-	$(HOST_CARGO) build --manifest-path cookbook/pkgar/Cargo.toml --release
-	$(HOST_CARGO) build --manifest-path installer/Cargo.toml --release
-	export PATH="$(PREFIX_PATH):$$PATH" && \
-	export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
-	PACKAGES="$$($(LIST_PACKAGES) $(LIST_PACKAGES_OPTS) --short -c config/$(ARCH)/ci.toml)" && \
-	cd cookbook && \
-	./fetch.sh "$${PACKAGES}" && \
-	./repo.sh $(REPO_NONSTOP) "$${PACKAGES}"
+	$(HOST_CARGO) build --manifest-path Cargo.toml --release
+	export CI=1 COOKBOOK_LOGS=true PATH="$(PREFIX_PATH):$$PATH" COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
+	./target/release/repo cook --with-package-deps "--filesystem=config/$(ARCH)/ci.toml"
 endif
 
 # CI toolchain

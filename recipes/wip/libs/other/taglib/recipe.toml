@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/taglib/taglib/blob/master/INSTALL.md
+[source]
+tar = "https://taglib.org/releases/taglib-1.13.tar.gz"
+[build]
+template = "cmake"

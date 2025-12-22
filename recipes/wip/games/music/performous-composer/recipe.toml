@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+# build instructions - https://github.com/performous/performous/wiki/Composer
+[source]
+git = "https://github.com/performous/composer"
+[build]
+template = "cmake"
+dependencies = [
+    "qt5-base",
+    "ffmpeg6",
+]

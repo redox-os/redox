@@ -1,0 +1,8 @@
+#TODO glutin crate error
+[source]
+git = "https://github.com/emilk/egui"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages hello_world
+"""

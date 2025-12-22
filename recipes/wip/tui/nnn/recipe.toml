@@ -1,0 +1,10 @@
+#TODO write a script for cross-compilation
+# how to static link the libraries: https://github.com/jarun/nnn/wiki/Developer-guides#static-compilation
+[source]
+tar = "https://github.com/jarun/nnn/releases/download/v5.0/nnn-v5.0.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "ncursesw",
+    "readline",
+]

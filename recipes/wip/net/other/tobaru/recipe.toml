@@ -1,0 +1,5 @@
+#TODO compiled but not tested (after a patch on ring)
+[source]
+git = "https://github.com/cfal/tobaru"
+[build]
+template = "cargo"

@@ -1,0 +1,8 @@
+#TODO serde crate error (after cargo update)
+[source]
+git = "https://github.com/aswinnnn/pyscan"
+[build]
+template = "cargo"
+dependencies = [
+    "openssl1",
+]

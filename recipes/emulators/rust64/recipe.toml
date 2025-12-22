@@ -1,0 +1,8 @@
+[source]
+git = "https://gitlab.redox-os.org/redox-os/rust64.git"
+#git_upstream = "https://github.com/kondrak/rust64.git"
+[build]
+template = "cargo"
+dependencies = [
+    "orbital"
+]

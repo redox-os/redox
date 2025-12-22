@@ -1,0 +1,11 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/pytorch/pytorch/blob/main/docs/libtorch.rst#building-libtorch-using-cmake
+[source]
+git = "https://github.com/pytorch/pytorch"
+branch = "release/2.3"
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DPYTHON_EXECUTABLE=`which python3`",
+    "-DCMAKE_INSTALL_PREFIX=../pytorch-install ../pytorch",
+]

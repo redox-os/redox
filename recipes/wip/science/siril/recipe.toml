@@ -1,0 +1,14 @@
+#TODO missing cross-compilation script
+#TODO missing dependencies - https://gitlab.com/free-astro/siril#requirements
+# build instructions - https://gitlab.com/free-astro/siril#building-siril-for-gnulinux
+[source]
+tar = "https://free-astro.org/download/siril-1.2.4.tar.bz2"
+[build]
+template = "custom"
+dependencies = [
+    "glib",
+    "gtk3",
+    "liblcms",
+    "fftw",
+    "opencv4",
+]

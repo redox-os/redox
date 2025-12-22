@@ -1,0 +1,8 @@
+#TODO openssl error
+[source]
+git = "https://github.com/prefix-dev/rattler-build"
+[build]
+template = "cargo"
+dependencies = [
+    "openssl1",
+]

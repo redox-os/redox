@@ -1,0 +1,5 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/0l3d/ffetch"
+[build]
+template = "cargo"

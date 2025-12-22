@@ -1,0 +1,10 @@
+#TODO compiled but not tested
+[source]
+git = "https://github.com/giraffekey/xylo"
+[build]
+template = "custom"
+script = """
+cookbook_cargo
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/xylo"
+cp -rv "${COOKBOOK_SOURCE}/example.xylo" "${COOKBOOK_STAGE}/usr/share/xylo"
+"""

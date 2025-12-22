@@ -1,0 +1,26 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/TheTumultuousUnicornOfDarkness/CPU-X/wiki/manual-build#build-and-install-cpu-x
+[source]
+git = "https://github.com/TheTumultuousUnicornOfDarkness/CPU-X"
+rev = "41f5d1ac3b13e60aa30212f2b9f38de646fd2b07"
+[build]
+template = "custom"
+dependencies = [
+    #"gtk3mm",
+    "ncurses",
+    #"glfw3",
+    #"libvulkan",
+    "libstatgrab",
+    "libcpuid",
+    "pciutils",
+]
+script = """
+DYNAMIC_INIT
+export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include/ncurses"
+COOKBOOK_CMAKE_FLAGS+=(
+    "-DWITH_GTK=0",
+    "-DWITH_LIBGLFW=0",
+    "-DWITH_VULKAN=0",
+)
+cookbook_cmake
+"""

@@ -1,0 +1,5 @@
+#TODO quinn-udp crate error
+[source]
+git = "https://github.com/zesterer/teloren"
+[build]
+template = "cargo"

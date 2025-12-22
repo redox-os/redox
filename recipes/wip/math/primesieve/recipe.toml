@@ -1,0 +1,7 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/kimwalisch/primesieve/blob/master/doc/BUILD.md
+[source]
+git = "https://github.com/kimwalisch/primesieve"
+rev = "f3114488ddded8edf2c201e31ad308ed9e6a9f78"
+[build]
+template = "cmake"

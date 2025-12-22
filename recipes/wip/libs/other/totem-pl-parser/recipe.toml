@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+# lacking build instructions
+[source]
+tar = "https://download.gnome.org/sources/totem-pl-parser/3.26/totem-pl-parser-3.26.6.tar.xz"
+[build]
+template = "meson"
+dependencies = [
+    "libxml2",
+    "glib",
+]

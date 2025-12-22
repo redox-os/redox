@@ -1,0 +1,5 @@
+#TODO compiled but not tested
+[source]
+git = "https://github.com/0x61nas/aarty"
+[build]
+template = "cargo"

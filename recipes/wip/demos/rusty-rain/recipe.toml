@@ -1,0 +1,5 @@
+#TODO working but don't exit and hang the orbterm window
+[source]
+git = "https://github.com/cowboy8625/rusty-rain"
+[build]
+template = "cargo"

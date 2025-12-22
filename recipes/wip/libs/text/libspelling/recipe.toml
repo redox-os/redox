@@ -1,0 +1,12 @@
+#TODO not compiled or tested
+# lacking build instructions
+[source]
+tar = "https://download.gnome.org/sources/libspelling/0.4/libspelling-0.4.9.tar.xz"
+[build]
+template = "meson"
+mesonflags = [
+    "-Ddocs=false",
+    "-Dintrospection=false",
+    "-Dsysproof=false",
+    "-Dvapi=false",
+]

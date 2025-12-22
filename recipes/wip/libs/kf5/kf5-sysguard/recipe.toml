@@ -1,0 +1,5 @@
+#TODO missing script for building, lacking build instructions
+[source]
+tar = "https://invent.kde.org/plasma/libksysguard/-/archive/v5.27.10/libksysguard-v5.27.10.tar.bz2"
+[build]
+template = "custom"

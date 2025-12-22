@@ -1,0 +1,51 @@
+#!/usr/bin/env python3
+
+# This script wraps llvm-config that intended for cross compiling to Redox.
+# Because we can't run llvm-config compiled to Redox, we wrap it here.
+# Any recipes that calls this script must have "host:llvm.runtime" available.
+
+import os
+import sys
+import subprocess
+
+LLVM_CONFIG = "/usr/bin/llvm-config" 
+
+def main():
+    toolchain_path = os.environ.get("COOKBOOK_TOOLCHAIN")
+    sysroot_path = os.environ.get("COOKBOOK_SYSROOT")
+
+    if not toolchain_path or not sysroot_path:
+        print(f"Error: COOKBOOK_TOOLCHAIN or COOKBOOK_SYSROOT not set", file=sys.stderr)
+        sys.exit(1)
+
+    cmd = [toolchain_path + LLVM_CONFIG] + sys.argv[1:]
+
+    try:
+        result = subprocess.run(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=sys.stderr,
+            check=False,
+            text=True
+        )
+    except FileNotFoundError:
+        print(f"Error: Could not find executable '{LLVM_CONFIG}'", file=sys.stderr)
+        sys.exit(1)
+
+    if result.returncode != 0:
+        sys.exit(result.returncode)
+
+    output = result.stdout
+
+    if sys.argv[1] in ["--bindir"]:
+        output = toolchain_path + "/usr/bin"
+    else: #if sys.argv[1] in ["--cppflags", "--cxxflags", "--includedir", "--ldflags", "--libdir", "--libfiles"]
+        src = toolchain_path.rstrip(os.sep)
+        dst = sysroot_path.rstrip(os.sep)
+        
+        output = output.replace(src, dst)
+
+    print(output, end='')
+
+if __name__ == "__main__":
+    main()

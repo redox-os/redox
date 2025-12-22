@@ -1,0 +1,24 @@
+diff -rupNw source-original/include/cross.h source/include/cross.h
+--- source-original/include/cross.h	2010-05-10 19:43:54.000000000 +0200
++++ source/include/cross.h	2018-05-04 21:14:40.397157710 +0200
+@@ -64,7 +64,7 @@
+ //Solaris maybe others
+ #if defined (DB_HAVE_NO_POWF)
+ #include <math.h>
+-static inline float powf (float x, float y) { return (float) pow (x,y); }
++//static inline float powf (float x, float y) { return (float) pow (x,y); }
+ #endif
+ 
+ class Cross {
+diff -rupNw source-original/src/gui/sdlmain.cpp source/src/gui/sdlmain.cpp
+--- source-original/src/gui/sdlmain.cpp	2010-05-10 19:43:54.000000000 +0200
++++ source/src/gui/sdlmain.cpp	2018-05-04 21:15:31.937672555 +0200
+@@ -1518,7 +1518,7 @@ void Config_Add_SDL() {
+ 	Pstring = sdl_sec->Add_path("mapperfile",Property::Changeable::Always,MAPPERFILE);
+ 	Pstring->Set_help("File used to load/save the key/event mappings from. Resetmapper only works with the defaul value.");
+ 
+-	Pbool = sdl_sec->Add_bool("usescancodes",Property::Changeable::Always,true);
++	Pbool = sdl_sec->Add_bool("usescancodes",Property::Changeable::Always,false);
+ 	Pbool->Set_help("Avoid usage of symkeys, might not work on all operating systems.");
+ }
+ 

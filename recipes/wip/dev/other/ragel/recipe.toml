@@ -1,0 +1,14 @@
+#TODO missing colm directory on the GNU Autotools flag
+[source]
+tar = "https://www.colm.net/files/ragel/ragel-6.10.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "colm",
+]
+script = """
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --with-colm=
+)
+cookbook_configure
+"""

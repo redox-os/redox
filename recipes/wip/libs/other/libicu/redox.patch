@@ -1,0 +1,12 @@
+diff -ruwN icu/source/common/unicode/ptypes.h source/source/common/unicode/ptypes.h
+--- icu/source/common/unicode/ptypes.h	2025-03-13 12:31:23.000000000 -0600
++++ source/source/common/unicode/ptypes.h	2025-04-11 13:46:44.105116183 -0600
+@@ -56,7 +56,7 @@
+ // implementations (looking at you, Apple, spring 2024) actually do this, so
+ // ICU4C must detect and deal with that.
+ #if !defined(__cplusplus) && !defined(U_IN_DOXYGEN)
+-#   if U_HAVE_CHAR16_T
++#   if U_HAVE_CHAR16_T && !defined(__redox__)
+ #       include <uchar.h>
+ #   else
+         typedef uint16_t char16_t;

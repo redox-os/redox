@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+# build instructions: https://taskwarrior.org/download/#quick-setup
+[source]
+tar = "https://github.com/GothenburgBitFactory/taskwarrior/releases/download/v2.6.2/task-2.6.2.tar.gz"
+[build]
+template = "cmake"

@@ -1,0 +1,26 @@
+[source]
+same_as = "../ncurses"
+
+[build]
+template = "custom"
+script = """
+DYNAMIC_INIT
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --disable-db-install
+    --disable-ext-colors
+    --disable-stripping
+    --enable-widec
+    --without-ada
+    --without-manpages
+    --without-tests
+    --with-shared
+    cf_cv_func_mkstemp=yes
+    cf_cv_wint_t=yes
+)
+cookbook_configure
+"""
+
+[package]
+dependencies = [
+    "terminfo",
+]

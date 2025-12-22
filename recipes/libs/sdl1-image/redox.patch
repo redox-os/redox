@@ -1,0 +1,12 @@
+diff -rupNw source-original/config.sub source/config.sub
+--- source-original/config.sub	2012-01-19 07:30:05.000000000 +0100
++++ source/config.sub	2018-05-01 17:31:52.766229515 +0200
+@@ -1276,7 +1276,7 @@ case $os in
+ 	-gnu* | -bsd* | -mach* | -minix* | -genix* | -ultrix* | -irix* \
+ 	      | -*vms* | -sco* | -esix* | -isc* | -aix* | -cnk* | -sunos | -sunos[34]*\
+ 	      | -hpux* | -unos* | -osf* | -luna* | -dgux* | -solaris* | -sym* \
+-	      | -kopensolaris* \
++	      | -kopensolaris* | -redox* \
+ 	      | -amigaos* | -amigados* | -msdos* | -newsos* | -unicos* | -aof* \
+ 	      | -aos* | -aros* \
+ 	      | -nindy* | -vxsim* | -vxworks* | -ebmon* | -hms* | -mvs* \

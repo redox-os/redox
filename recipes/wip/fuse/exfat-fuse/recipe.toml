@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+[source]
+tar = "https://github.com/relan/exfat/releases/download/v1.4.0/fuse-exfat-1.4.0.tar.gz"
+[build]
+template = "configure"
+dependencies = [
+    "libfuse3",
+]

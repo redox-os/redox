@@ -28,35 +28,53 @@ rebuild:
 	rm -rf $(BUILD)/repo.tag $(BUILD)/harddrive.img $(BUILD)/redox-live.iso
 	$(MAKE) all
 
-clean: $(CONTAINER_TAG)
+# To tell that it's not safe
+# to execute the cookbook binary
+NOT_ON_PODMAN?=0
+
+clean:
 ifeq ($(PODMAN_BUILD),1)
+ifneq ("$(wildcard $(CONTAINER_TAG))","")
 	$(PODMAN_RUN) make $@
 else
-	cd cookbook && ./clean.sh
-	-rm -rf cookbook/repo
-	$(MAKE) fstools_clean
-	$(HOST_CARGO) clean --manifest-path relibc/Cargo.toml
-endif
+	$(info will not run cookbook clean as container is not built)
+	$(MAKE) clean PODMAN_BUILD=0 NOT_ON_PODMAN=1 SKIP_CHECK_TOOLS=1
+endif # CONTAINER_TAG
+else
+ifneq ($(NOT_ON_PODMAN),1)
+	$(MAKE) repo_clean
 	-$(FUMOUNT) $(BUILD)/filesystem/ || true
 	-$(FUMOUNT) /tmp/redox_installer/ || true
+endif # NOT_ON_PODMAN
+	rm -rf repo
 	rm -rf $(BUILD) $(PREFIX)
+	$(MAKE) fstools_clean
+endif # PODMAN_BUILD
 
-distclean: $(CONTAINER_TAG)
+distclean:
 ifeq ($(PODMAN_BUILD),1)
+ifneq ("$(wildcard $(CONTAINER_TAG))","")
 	$(PODMAN_RUN) make $@
 else
-	$(MAKE) clean
-	cd cookbook && ./unfetch.sh
-endif
+	$(info will not run cookbook unfetch as container is not built)
+	$(MAKE) distclean PODMAN_BUILD=0 NOT_ON_PODMAN=1 SKIP_CHECK_TOOLS=1
+endif # CONTAINER_TAG
+else
+ifneq ($(NOT_ON_PODMAN),1)
+	$(MAKE) fetch_clean
+endif # NOT_ON_PODMAN
+	$(MAKE) clean NOT_ON_PODMAN=1
+endif # PODMAN_BUILD
 
 pull:
 	git pull
-	git submodule sync --recursive
-	git submodule update --recursive --init
-
-fetch: $(BUILD)/fetch.tag
+	rm -f $(FSTOOLS_TAG)
 
 repo: $(BUILD)/repo.tag
+
+repo_clean: c.--all
+
+fetch_clean: u.--all
 
 # Podman build recipes and vars
 include mk/podman.mk
@@ -89,7 +107,7 @@ else
 endif
 
 export RUST_GDB=gdb-multiarch # Necessary when debugging for another architecture than the host
-GDB_KERNEL_FILE=cookbook/recipes/core/kernel/target/$(TARGET)/build/kernel.sym
+GDB_KERNEL_FILE=recipes/core/kernel/target/$(TARGET)/build/kernel.sym
 gdb: FORCE
 	rust-gdb $(GDB_KERNEL_FILE) --eval-command="target remote :1234"
 

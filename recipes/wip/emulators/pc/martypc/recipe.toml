@@ -1,0 +1,9 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/dbalsom/martypc/wiki/Building-MartyPC#building-for-linux
+[source]
+git = "https://github.com/dbalsom/martypc"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages martypc_eframe
+"""

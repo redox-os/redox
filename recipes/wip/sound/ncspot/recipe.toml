@@ -1,0 +1,13 @@
+#TODO ncurses crate error
+[source]
+git = "https://github.com/hrkfdn/ncspot"
+[build]
+template = "custom"
+dependencies = [
+    "openssl1",
+    "ncurses",
+]
+script = """
+export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include/ncurses"
+cookbook_cargo --features rodio_backend,pancurses_backend
+"""

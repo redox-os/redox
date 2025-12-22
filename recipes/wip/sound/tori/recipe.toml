@@ -1,0 +1,9 @@
+#TODO make dependencies work
+[source]
+git = "https://github.com/LeoRiether/tori"
+[build]
+template = "cargo"
+dependencies = [
+    "mpv",
+    "cava",
+]

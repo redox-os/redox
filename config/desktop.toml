@@ -10,20 +10,21 @@ filesystem_size = 650
 # Package settings
 [packages]
 cosmic-edit = {}
-cosmic-icons = {}
 cosmic-files = {}
+cosmic-icons = {}
 cosmic-term = {}
 dejavu = {}
+freefont = {}
 hicolor-icon-theme = {}
 installer-gui = {}
 netsurf = {}
 orbdata = {}
 orbital = {}
 orbutils = {}
+patchelf = {}
 pop-icon-theme = {}
 rustpython = {}
 shared-mime-info = {}
-patchelf = {}
 
 [[files]]
 path = "/usr/lib/init.d/20_orbital"
@@ -31,7 +32,7 @@ data = """
 audiod
 export BROWSER /bin/netsurf-fb
 export VT 3
-orbital orblogin launcher
+nowait orbital orblogin launcher
 unset BROWSER
 unset VT
 """
@@ -40,6 +41,6 @@ unset VT
 [[files]]
 path = "/usr/lib/init.d/30_console"
 data = """
-getty 2
-getty /scheme/debug/no-preserve -J
+nowait getty 2
+nowait getty /scheme/debug/no-preserve -J
 """

@@ -1,0 +1,5 @@
+#TODO Require LLVM 15
+[source]
+tar = "https://releases.inko-lang.org/0.11.0.tar.gz"
+[build]
+template = "cargo"

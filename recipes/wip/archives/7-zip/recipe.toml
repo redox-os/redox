@@ -1,0 +1,5 @@
+#TODO missing script for "make", see https://github.com/mcmilk/7-Zip/tree/master/DOC#readme
+[source]
+tar = "https://7-zip.org/a/7z2301-src.tar.xz"
+[build]
+template = "custom"

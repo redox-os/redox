@@ -1,0 +1,14 @@
+#TODO not compiled or tested
+#TODO maybe incomplete configuration
+# build instructions - https://github.com/johang/btfs#building-from-git-on-a-recent-debianubuntu
+[source]
+git = "https://github.com/johang/btfs"
+rev = "2b372f4596df3ff97e3b39d58b144a7cbfff012a"
+script = "autoreconf -i"
+[build]
+template = "configure"
+dependencies = [
+    "libfuse3",
+    "libtorrent",
+    "curl",
+]

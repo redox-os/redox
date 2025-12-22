@@ -1,0 +1,32 @@
+#TODO port to redox
+[source]
+tar = "https://ftp.gnu.org/gnu/gdb/gdb-15.1.tar.xz"
+[build]
+template = "custom"
+dependencies = [
+    "libgmp",
+    "libmpfr",
+    "ncurses",
+    "readline",
+]
+script = """
+DYNAMIC_INIT
+
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --disable-binutils
+    --disable-ld
+    --disable-gold
+    --disable-gas
+    --disable-sim
+    --disable-gprof
+    --disable-gprofng
+    --disable-intl
+    --with-system-readline
+    --with-gmp="${COOKBOOK_SYSROOT}"
+    --with-mpfr="${COOKBOOK_SYSROOT}"
+    --with-curses
+)
+
+"${COOKBOOK_CONFIGURE}" "${COOKBOOK_CONFIGURE_FLAGS[@]}"
+cookbook_configure
+"""

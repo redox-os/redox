@@ -1,0 +1,11 @@
+#TODO not compiled or tested
+# probably missing dependencies
+[source]
+git = "https://github.com/Nokse22/ascii-draw"
+rev = "v1.1.0"
+[build]
+template = "meson"
+dependencies = [
+    "gtk4",
+    "libadwaita",
+]

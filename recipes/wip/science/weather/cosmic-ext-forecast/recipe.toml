@@ -1,0 +1,15 @@
+#TODO not compiled or tested
+#TODO verify if the resource commands are correct
+[source]
+git = "https://github.com/cosmic-utils/forecast"
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}"/usr/share/applications
+mkdir -pv "${COOKBOOK_STAGE}"/usr/share/metainfo
+mkdir -pv "${COOKBOOK_STAGE}"/usr/share/icons
+cp -rv "${COOKBOOK_SOURCE}"/res/com.jwestall.Forecast.desktop "${COOKBOOK_STAGE}"/usr/share/applications
+cp -rv "${COOKBOOK_SOURCE}"/res/com.jwestall.Forecast.metainfo.xml "${COOKBOOK_STAGE}"/usr/share/metainfo
+cp -rv "${COOKBOOK_SOURCE}"/res/icons/hicolor "${COOKBOOK_STAGE}"/usr/share/icons
+cookbook_cargo
+"""

@@ -1,0 +1,6 @@
+[package]
+dependencies = [
+    "acid",
+    "resist",
+    "relibc-tests",
+]

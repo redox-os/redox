@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+# lacking build instructions
+[source]
+tar = "https://warsow.net/warsow_21_sdk.tar.gz"
+[build]
+template = "cmake"

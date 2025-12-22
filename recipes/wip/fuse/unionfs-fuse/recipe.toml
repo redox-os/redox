@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/rpodgorny/unionfs-fuse#how-to-build
+[source]
+git = "https://github.com/rpodgorny/unionfs-fuse"
+rev = "v3.7"
+[build]
+template = "cmake"
+dependencies = [
+    "libfuse3",
+]

@@ -1,0 +1,5 @@
+#TODO compiled but not tested
+[source]
+git = "https://github.com/Void-ux/pixelsort"
+[build]
+template = "cargo"

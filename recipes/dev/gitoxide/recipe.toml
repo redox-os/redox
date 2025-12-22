@@ -1,0 +1,14 @@
+[source]
+git = "https://github.com/Byron/gitoxide.git"
+
+[build]
+dependencies = [
+    "openssl1",
+]
+template = "custom"
+script = """
+export OPENSSL_DIR="${COOKBOOK_SYSROOT}"
+export OPENSSL_STATIC="true"
+cookbook_cargo
+"""
+

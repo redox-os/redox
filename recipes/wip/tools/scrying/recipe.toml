@@ -1,0 +1,8 @@
+#TODO compiled but not tested (after cargo update)
+[source]
+git = "https://github.com/nccgroup/scrying"
+[build]
+template = "cargo"
+dependencies = [
+    "openssl1",
+]

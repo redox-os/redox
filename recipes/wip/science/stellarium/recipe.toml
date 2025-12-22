@@ -1,0 +1,23 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/Stellarium/stellarium/blob/master/BUILDING.md#building
+#TODO missing dependencies: https://github.com/Stellarium/stellarium/blob/master/BUILDING.md#qt6
+[source]
+tar = "https://github.com/Stellarium/stellarium/releases/download/v25.3/stellarium-25.3.tar.xz"
+[build]
+template = "cmake"
+dependencies = [
+    "mesa",
+    "zlib",
+    "gstreamer",
+    "qt6-base",
+    "qt6-multimedia",
+    "qt6-webengine",
+    "qt6-positioning",
+    "qt6-charts",
+    "qt6-imageformats",
+    "qt6-translations",
+    "qt6-tools",
+    "libxkbcommon",
+    "gexiv2",
+    "libnlopt",
+]

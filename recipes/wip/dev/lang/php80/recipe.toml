@@ -1,0 +1,79 @@
+#TODO promote
+[source]
+tar = "https://www.php.net/distributions/php-8.0.30.tar.xz"
+patches = [
+    "redox.patch"
+]
+
+[build]
+template = "custom"
+dependencies = [
+    "bzip2",
+    "curl",
+    "gettext",
+    "libffi",
+    "libgmp",
+    "libavif",
+    "libicu",
+    "libjpeg",
+    "libedit",
+    "libonig",
+    "libpng",
+    "libsodium",
+    "libwebp",
+    "libxml2",
+    "libiconv",
+    "libzip",
+    "ncurses",
+    "nghttp2",
+    "openssl1",
+    "pcre",
+    "sqlite3",
+    "xz",
+    "zlib",
+]
+script = """
+DYNAMIC_INIT
+export SUFFIX="80"
+
+# extension stuff
+export CURL_LIBS="-lcurl -lnghttp2 -lssl -lcrypto"
+export CXXFLAGS="-std=c++17"
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --program-suffix=${SUFFIX}
+    --sysconfdir=/etc
+    --with-config-file-path=/etc/php/$SUFFIX
+    --with-config-file-scan-dir=/etc/php/$SUFFIX/conf.d
+    --with-iconv="${COOKBOOK_SYSROOT}/usr"
+    --disable-opcache
+    --enable-bcmath
+    --enable-calendar
+#    --enable-fpm  # need times function
+    --enable-gd
+    --enable-intl
+    --enable-mbstring
+    --with-curl
+    --with-gettext
+    --with-gmp
+    --with-jpeg
+    --with-webp
+    --with-avif
+    --with-ffi
+    --with-libedit
+    --with-openssl
+    --with-sodium
+    --with-zip
+)
+
+"${COOKBOOK_CONFIGURE}" "${COOKBOOK_CONFIGURE_FLAGS[@]}" "$@"
+"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}"
+"${COOKBOOK_MAKE}" install \
+    INSTALL_ROOT="${COOKBOOK_STAGE}" \
+    datarootdir=/usr/share localstatedir=/var
+
+for bin in "php-cgi" "php-config" "php" "phpdbg" "phpize"; do
+  ln -s "$bin$SUFFIX" ${COOKBOOK_STAGE}/usr/bin/$bin
+done
+mkdir -p ${COOKBOOK_STAGE}/etc/php/$SUFFIX/conf.d
+cp ${COOKBOOK_SOURCE}/php.ini* ${COOKBOOK_STAGE}/etc/php/$SUFFIX/
+"""

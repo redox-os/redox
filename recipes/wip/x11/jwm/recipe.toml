@@ -1,0 +1,45 @@
+[source]
+tar = "https://github.com/joewing/jwm/releases/download/v2.4.6/jwm-2.4.6.tar.xz"
+blake3 = "08d69eee4584ba9346d4f326581e8538247a37d6fe11dd8604de7a8a7adbdd51"
+
+[build]
+dependencies = [
+    "cairo",
+    "expat",
+    "fontconfig",
+    "freetype2",
+    "fribidi",
+    "gettext",
+    "glib",
+    "harfbuzz",
+    "libffi",
+    "libice",
+    "libiconv",
+    "libjpeg",
+    "libpng",
+    "libpthread-stubs",
+    #TODO for SVG support: "librsvg",
+    "libsm",
+    "libx11",
+    "libxau",
+    "libxcb",
+    "libxext",
+    "libxft",
+    "libxmu",
+    "libxpm",
+    "libxrender",
+    "libxt",
+    "pango",
+    "pcre2",
+    "pixman",
+    "x11proto",
+    "zlib",
+]
+template = "custom"
+script = """
+DYNAMIC_INIT
+export LIBS="-liconv -lintl"
+rsync -a --delete "${COOKBOOK_SOURCE}/" ./
+COOKBOOK_CONFIGURE="./configure"
+cookbook_configure
+"""

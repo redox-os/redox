@@ -1,0 +1,11 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/Aorimn/dislocker/blob/master/INSTALL.md
+[source]
+git = "https://github.com/Aorimn/dislocker"
+rev = "8b2aea09d431bd5497ae223c141ebaee7bdd481f"
+[build]
+template = "cmake"
+dependencies = [
+    "libfuse3",
+    "mbedtls",
+]

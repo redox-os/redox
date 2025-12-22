@@ -1,0 +1,11 @@
+#TODO missing script for building, see https://github.com/Dusk-Labs/dim#running-from-source
+#TODO probably missing dependencies
+[source]
+git = "https://github.com/Dusk-Labs/dim"
+[build]
+template = "custom"
+dependencies = [
+    "sqlite3",
+    "openssl1",
+    "ffmpeg6",
+]

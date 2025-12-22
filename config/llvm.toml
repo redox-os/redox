@@ -7,7 +7,7 @@ filesystem_size = 2048
 
 [packages]
 bash = {}
-llvm = {}
+llvm20 = {}
 
 [[files]]
 path = "/usr/lib/init.d/99_gen_llvm-config-generate"

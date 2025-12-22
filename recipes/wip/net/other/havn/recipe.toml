@@ -1,0 +1,5 @@
+#TODO scanning loop, broken Redox support
+[source]
+git = "https://github.com/mrjackwills/havn"
+[build]
+template = "cargo"

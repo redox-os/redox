@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/pando85/timer"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages timer_core
+"""

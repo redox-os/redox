@@ -1,0 +1,10 @@
+name=COSMIC Media Player
+binary=/usr/bin/cosmic-player
+icon=/ui/icons/apps/multimedia-photo-viewer.png
+author=Jeremy Soller
+description=COSMIC Media Player
+accept=*.avi
+accept=*.mkv
+accept=*.mov
+accept=*.mp4
+accept=*.ogv

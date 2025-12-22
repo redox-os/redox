@@ -1,0 +1,93 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/AndreRH/hangover/blob/master/docs/COMPILE.md
+[source]
+git = "https://github.com/AndreRH/hangover"
+rev = "hangover-10.18"
+shallow_clone = true
+[build]
+template = "custom"
+dependencies = [
+    "fontconfig",
+    "freetype2",
+    "gnutls3",
+    "gstreamer",
+    "sdl2",
+    "mesa-x11",
+    "libstdcxx",
+    "libx11",
+    "libxcomposite",
+    "libxcursor",
+    "libxi",
+    "libxfixes",
+    "libxrandr",
+    "libxrender",
+    "libxext",
+    "libxkbcommon",
+    #"libxkbregistry",
+]
+script = """
+DYNAMIC_INIT
+mkdir -p wine-tools
+pushd wine-tools
+#TODO: easier way to build for host?
+HOST_ENV=(
+    env
+    --unset=AR
+    --unset=AS
+    --unset=CC
+    --unset=CFLAGS
+    --unset=CPPFLAGS
+    --unset=CXX
+    --unset=GNU_TARGET
+    --unset=LD
+    --unset=LDFLAGS
+    --unset=NM
+    --unset=OBJCOPY
+    --unset=OBJDUMP
+    --unset=PKG_CONFIG
+    --unset=PKG_CONFIG_ALLOW_CROSS
+    --unset=PKG_CONFIG_FOR_BUILD
+    --unset=PKG_CONFIG_LIBDIR
+    --unset=PKG_CONFIG_PATH
+    --unset=PKG_CONFIG_SYSROOT_DIR
+    --unset=PREFIX_RUSTFLAGS
+    --unset=RANLIB
+    --unset=READELF
+    --unset=STRIP
+    --unset=TARGET
+)
+"${HOST_ENV[@]}" "${COOKBOOK_CONFIGURE}" --enable-win64
+"${HOST_ENV[@]}" "${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}" __tooldeps__
+popd
+
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --enable-win64
+	--enable-archs=x86_64,i386,arm
+	--disable-kerberos
+	--disable-tests
+	--without-capi
+	--without-coreaudio
+	--without-dbus
+	--without-gettext
+    --without-gettextpo
+	--without-gphoto
+	--without-gssapi
+	--without-inotify
+	--without-krb5
+	--without-netapi
+	--without-opencl
+	--without-osmesa
+	--without-pcap
+	--without-pcsclite
+	--with-pthread
+	--without-pulse
+	--without-sane
+	--with-sdl
+	--without-udev
+	--without-unwind
+	--without-usb
+	--with-mingw
+    --with-wine-tools=wine-tools
+)
+cookbook_configure
+"""

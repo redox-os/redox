@@ -1,0 +1,15 @@
+diff -ruwN source/src/guiengine/widgets/spinner_widget.cpp source-new/src/guiengine/widgets/spinner_widget.cpp
+--- source/src/guiengine/widgets/spinner_widget.cpp	2025-10-20 04:04:17.000000000 +0700
++++ source-new/src/guiengine/widgets/spinner_widget.cpp	2025-11-09 11:29:52.678400188 +0700
+@@ -493,10 +493,7 @@
+         }
+         else
+         {
+-            std::wstringstream ws;
+-            ws << (m_value*m_step);
+-            std::wstring text = ws.str();
+-            m_children[1].m_element->setText( text.c_str() );
++            m_children[1].m_element->setText( stringw(m_value*m_step).c_str() );
+         }
+     }
+ }

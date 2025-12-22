@@ -3,9 +3,10 @@
 QEMU=SDL_VIDEO_X11_DGAMOUSE=0 qemu-system-$(QEMU_ARCH)
 QEMUFLAGS=-d guest_errors -name "Redox OS $(ARCH)"
 netboot?=no
+redoxer?=no
 VGA_SUPPORTED=no
 
-ifeq ($(ARCH),i686)
+ifeq ($(ARCH),i586)
 	audio?=ac97
 	gpu?=vga
 	uefi=no
@@ -16,7 +17,7 @@ ifeq ($(ARCH),i686)
 	QEMU_SMP?=1
 	QEMU_MEM?=1024
 
-	# Default to using kvm when arch is i686 and host is x86_64
+	# Default to using kvm when arch is i586 and host is x86_64
 	ifeq ($(HOST_ARCH),x86_64)
 		kvm?=yes
 	endif
@@ -160,6 +161,17 @@ ifeq ($(serial),no)
 else
 	QEMUFLAGS+=-chardev stdio,id=debug,signal=off,mux=on,"$(if $(qemu_serial_logfile),logfile=$(qemu_serial_logfile))"
 	QEMUFLAGS+=-serial chardev:debug -mon chardev=debug
+endif
+
+# redoxer exit code: 51 => success, 53 => failure
+ifeq ($(redoxer),yes)
+ifeq ($(ARCH),x86_64)
+	QEMUFLAGS+=-device isa-debug-exit
+else ifeq ($(ARCH),i586)
+	QEMUFLAGS+=-device isa-debug-exit
+else ifeq ($(ARCH),aarch64)
+	QEMUFLAGS+=-semihosting-config enable=on,target=native,userspace=on
+endif
 endif
 
 ifeq ($(iommu),yes)

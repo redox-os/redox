@@ -1,0 +1,10 @@
+#TODO camino crate error
+#TODO Probably needs to be ported to Redox
+[source]
+git = "https://github.com/davidlattimore/cackle"
+[build]
+template = "cargo"
+#script = """
+#cookbook_cargo --features unsupported-os
+#"""
+# Uncomment the above lines if the Cargo template doesn't work.

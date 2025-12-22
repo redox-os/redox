@@ -1,0 +1,15 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/openjdk/jdk8u/blob/master/doc/building.md
+[source]
+git = "https://github.com/openjdk/jdk8u"
+rev = "jdk8u472-ga"
+shallow_clone = true
+script = "chmod a+x configure"
+[build]
+template = "configure"
+configureflags = [
+    "--enable-headless-only=yes",
+]
+dependencies = [
+    "freetype2",
+]

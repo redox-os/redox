@@ -1,0 +1,19 @@
+[source]
+git = "https://github.com/jackpot51/pixelcannon.git"
+
+[build]
+template = "custom"
+script = """
+cookbook_cargo
+
+mkdir -pv "${COOKBOOK_STAGE}/apps/pixelcannon"
+cp -Rv "${COOKBOOK_SOURCE}/assets" "${COOKBOOK_STAGE}/apps/pixelcannon"
+
+mkdir -pv "${COOKBOOK_STAGE}/ui/apps"
+cp -v "${COOKBOOK_SOURCE}/manifest" "${COOKBOOK_STAGE}/ui/apps/pixelcannon"
+"""
+
+[package]
+dependencies = [
+    "orbital",
+]

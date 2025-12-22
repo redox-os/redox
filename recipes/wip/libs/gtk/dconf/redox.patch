@@ -1,0 +1,12 @@
+diff -ruwN source-old/shm/dconf-shm.c source/shm/dconf-shm.c
+--- source-old/shm/dconf-shm.c	2025-09-15 09:53:57.000000000 -0600
++++ source/shm/dconf-shm.c	2025-11-15 08:08:47.412198178 -0700
+@@ -148,7 +148,7 @@
+ 
+       close (fd);
+ 
+-      unlink (filename);
++      //TODO: redoxfs bug: unlink (filename);
+     }
+ 
+   g_free (filename);

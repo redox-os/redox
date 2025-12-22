@@ -1,0 +1,175 @@
+diff --git a/apr-config.in b/apr-config.in
+index 626d3b0..b79d471 100644
+--- a/apr-config.in
++++ b/apr-config.in
+@@ -180,14 +180,14 @@ while test $# -gt 0; do
+     ;;
+     --includes)
+     if test "$location" = "installed"; then
+-        flags="$flags -I$includedir $EXTRA_INCLUDES"
++        flags="$flags $EXTRA_INCLUDES"
+     elif test "$location" = "crosscompile"; then
+-        flags="$flags -I$APR_TARGET_DIR/$includedir $EXTRA_INCLUDES"
++        flags="$flags $EXTRA_INCLUDES"
+     elif test "$location" = "source"; then
+-        flags="$flags -I$APR_SOURCE_DIR/include $EXTRA_INCLUDES"
++        flags="$flags $EXTRA_INCLUDES"
+     else
+         # this is for VPATH builds
+-        flags="$flags -I$APR_BUILD_DIR/include -I$APR_SOURCE_DIR/include $EXTRA_INCLUDES"
++        flags="$flags $EXTRA_INCLUDES"
+     fi
+     ;;
+     --srcdir)
+@@ -214,12 +214,12 @@ while test $# -gt 0; do
+     --link-ld)
+     if test "$location" = "installed"; then
+         ### avoid using -L if libdir is a "standard" location like /usr/lib
+-        flags="$flags -L$libdir -l${APR_LIBNAME}"
++        flags="$flags -l${APR_LIBNAME}"
+     elif test "$location" = "crosscompile"; then
+-        flags="$flags -L$APR_TARGET_DIR/$libdir -l${APR_LIBNAME}"
++        flags="$flags -l${APR_LIBNAME}"
+     else
+         ### this surely can't work since the library is in .libs?
+-        flags="$flags -L$APR_BUILD_DIR -l${APR_LIBNAME}"
++        flags="$flags -l${APR_LIBNAME}"
+     fi
+     ;;
+     --link-libtool)
+@@ -233,9 +233,9 @@ while test $# -gt 0; do
+         ### avoid using -L if libdir is a "standard" location like /usr/lib
+         # Since the user is specifying they are linking with libtool, we
+         # *know* that -R will be recognized by libtool.
+-        flags="$flags -L$libdir -R$libdir -l${APR_LIBNAME}"
++        flags="$flags -l${APR_LIBNAME}"
+     elif test "$location" = "crosscompile"; then
+-        flags="$flags  -L${APR_TARGET_DIR}/$libdir  -l${APR_LIBNAME}"
++        flags="$flags  -l${APR_LIBNAME}"
+     else
+         flags="$flags $LA_FILE"
+     fi
+diff --git a/file_io/unix/open.c b/file_io/unix/open.c
+index 49eb727..7b28aba 100644
+--- a/file_io/unix/open.c
++++ b/file_io/unix/open.c
+@@ -101,12 +101,15 @@ APR_DECLARE(apr_status_t) apr_file_open(apr_file_t **new,
+ #endif
+ 
+     if ((flag & APR_FOPEN_READ) && (flag & APR_FOPEN_WRITE)) {
++			fprintf(stderr, "afo flag RDRW\n");
+         oflags = O_RDWR;
+     }
+     else if (flag & APR_FOPEN_READ) {
++			fprintf(stderr, "afo flag RDONLY\n");
+         oflags = O_RDONLY;
+     }
+     else if (flag & APR_FOPEN_WRITE) {
++			fprintf(stderr, "afo flag WRONLY\n");
+         oflags = O_WRONLY;
+     }
+     else {
+@@ -114,8 +117,10 @@ APR_DECLARE(apr_status_t) apr_file_open(apr_file_t **new,
+     }
+ 
+     if (flag & APR_FOPEN_CREATE) {
++			fprintf(stderr, "afo flag CREAT\n");
+         oflags |= O_CREAT;
+         if (flag & APR_FOPEN_EXCL) {
++			fprintf(stderr, "afo flag EXCL\n");
+             oflags |= O_EXCL;
+         }
+     }
+@@ -124,19 +129,23 @@ APR_DECLARE(apr_status_t) apr_file_open(apr_file_t **new,
+     }   
+ 
+     if (flag & APR_FOPEN_APPEND) {
++			fprintf(stderr, "afo flag APPEND\n");
+         oflags |= O_APPEND;
+     }
+     if (flag & APR_FOPEN_TRUNCATE) {
++			fprintf(stderr, "afo flag TRUNC\n");
+         oflags |= O_TRUNC;
+     }
+ #ifdef O_BINARY
+     if (flag & APR_FOPEN_BINARY) {
++			fprintf(stderr, "afo flag BINARY\n");
+         oflags |= O_BINARY;
+     }
+ #endif
+ 
+     if (flag & APR_FOPEN_NONBLOCK) {
+ #ifdef O_NONBLOCK
++			fprintf(stderr, "afo flag NONBLOCK\n");
+         oflags |= O_NONBLOCK;
+ #else
+         return APR_ENOTIMPL;
+@@ -147,14 +156,17 @@ APR_DECLARE(apr_status_t) apr_file_open(apr_file_t **new,
+     /* Introduced in Linux 2.6.23. Silently ignored on earlier Linux kernels.
+      */
+     if (!(flag & APR_FOPEN_NOCLEANUP)) {
++			fprintf(stderr, "afo flag CLOEXEC\n");
+         oflags |= O_CLOEXEC;
+ }
+ #endif
+  
+ #if APR_HAS_LARGE_FILES && defined(_LARGEFILE64_SOURCE)
++			fprintf(stderr, "afo flag LARGEFILE\n");
+     oflags |= O_LARGEFILE;
+ #elif defined(O_LARGEFILE)
+     if (flag & APR_FOPEN_LARGEFILE) {
++			fprintf(stderr, "afo flag LARGEFILE\n");
+         oflags |= O_LARGEFILE;
+     }
+ #endif
+@@ -164,18 +176,22 @@ APR_DECLARE(apr_status_t) apr_file_open(apr_file_t **new,
+         rv = apr_thread_mutex_create(&thlock,
+                                      APR_THREAD_MUTEX_DEFAULT, pool);
+         if (rv) {
++			fprintf(stderr, "afo ret 1 %d\n", rv);
+             return rv;
+         }
+     }
+ #endif
+ 
+     if (perm == APR_OS_DEFAULT) {
++			fprintf(stderr, "open %d %s\n", oflags, fname);
+         fd = open(fname, oflags, 0666);
+     }
+     else {
++			fprintf(stderr, "open %s %d %d\n", fname, oflags, apr_unix_perms2mode(perm));
+         fd = open(fname, oflags, apr_unix_perms2mode(perm));
+     } 
+     if (fd < 0) {
++			fprintf(stderr, "afo ret 2 %d\n", errno);
+        return errno;
+     }
+     if (!(flag & APR_FOPEN_NOCLEANUP)) {
+@@ -188,12 +204,14 @@ APR_DECLARE(apr_status_t) apr_file_open(apr_file_t **new,
+ 
+             if ((flags = fcntl(fd, F_GETFD)) == -1) {
+                 close(fd);
++			fprintf(stderr, "afo ret 3 %d\n", errno);
+                 return errno;
+             }
+             if ((flags & FD_CLOEXEC) == 0) {
+                 flags |= FD_CLOEXEC;
+                 if (fcntl(fd, F_SETFD, flags) == -1) {
+                     close(fd);
++			fprintf(stderr, "afo ret 4 %d\n", errno);
+                     return errno;
+                 }
+             }
+diff --git a/network_io/unix/sockopt.c b/network_io/unix/sockopt.c
+index 6194e9b..a903f91 100644
+--- a/network_io/unix/sockopt.c
++++ b/network_io/unix/sockopt.c
+@@ -372,7 +372,7 @@ apr_status_t apr_socket_opt_get(apr_socket_t *sock,
+ 
+ apr_status_t apr_socket_atmark(apr_socket_t *sock, int *atmark)
+ {
+-#ifndef BEOS_R5
++#if !defined(BEOS_R5) && !defined(__redox__)
+     int oobmark;
+ 
+     if (ioctl(sock->socketdes, SIOCATMARK, (void*) &oobmark) < 0)

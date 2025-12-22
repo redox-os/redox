@@ -12,7 +12,6 @@ prompt = false
 base = {}
 base-initfs = {}
 bootloader = {}
-drivers = {}
 kernel = {}
 libgcc = {}
 libstdcxx = {}
@@ -25,12 +24,12 @@ uutils = {}
 path = "/usr/lib/init.d/00_base"
 data = """
 # clear and recreate tmpdir with 0o1777 permission
-rm -r /tmp
+rm -rf /tmp
 mkdir -m a=rwxt /tmp
 
 ipcd
 ptyd
-sudo --daemon
+nowait sudo --daemon
 """
 
 [[files]]

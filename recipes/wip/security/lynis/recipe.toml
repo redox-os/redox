@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/CISOfy/lynis"
+rev = "60afce6d8110ee9e88ac9e9d0e0346b1cf222b5e"
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}"/usr/share/lynis
+cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}"/usr/share/lynis
+"""

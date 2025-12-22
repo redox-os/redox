@@ -1,0 +1,8 @@
+#TODO make libxkbcommon work
+[source]
+git = "https://github.com/danyspin97/wpaperd"
+[build]
+template = "cargo"
+dependencies = [
+    "libxkbcommon",
+]

@@ -1,0 +1,6 @@
+#TODO build sdl2 opengl examples, see: https://github.com/ocornut/imgui/pull/3027
+[source]
+git = "https://github.com/Qix-/imgui"
+branch = "cmake"
+[build]
+template = "cmake"

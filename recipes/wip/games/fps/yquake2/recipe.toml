@@ -1,0 +1,11 @@
+#TODO missing script for "make", see https://github.com/yquake2/yquake2/blob/master/doc/020_installation.md#compiling-with-gcc-clang-or-mingw
+[source]
+tar = "https://deponie.yamagi.org/quake2/quake2-8.30.tar.xz"
+[build]
+template = "custom"
+dependencies = [
+    "mesa",
+    "openal",
+    "curl",
+    "sdl2",
+]

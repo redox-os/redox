@@ -1,0 +1,12 @@
+[source]
+git = "https://gitlab.redox-os.org/redox-os/freepats.git"
+
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}/share/freepats"
+cp -Rv "${COOKBOOK_SOURCE}/"* "${COOKBOOK_STAGE}/share/freepats"
+mkdir -pv "${COOKBOOK_STAGE}/etc/timidity"
+echo "dir /share/freepats" > "${COOKBOOK_STAGE}/etc/timidity/freepats.cfg"
+echo "source /share/freepats/freepats.cfg" >> "${COOKBOOK_STAGE}/etc/timidity/freepats.cfg"
+"""

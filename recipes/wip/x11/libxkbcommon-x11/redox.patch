@@ -1,0 +1,92 @@
+diff --color -ruwN source/meson.build source-new/meson.build
+--- source/meson.build	2024-03-24 04:23:43.000000000 +0700
++++ source-new/meson.build	2025-10-29 10:55:30.355297899 +0700
+@@ -637,8 +637,6 @@
+     libxkbcommon_x11_test_internal = static_library(
+         'xkbcommon-x11-internal',
+         libxkbcommon_x11_sources,
+-        'test/xvfb-wrapper.c',
+-        'test/xvfb-wrapper.h',
+         include_directories: include_directories('src', 'include'),
+         link_with: libxkbcommon_test_internal,
+         dependencies: [
+@@ -768,20 +766,6 @@
+         dependencies: test_dep),
+     env: test_env,
+ )
+-if get_option('enable-x11')
+-    test(
+-        'x11',
+-        executable('test-x11', 'test/x11.c', dependencies: x11_test_dep),
+-        env: test_env,
+-        is_parallel : false,
+-    )
+-    test(
+-        'x11comp',
+-        executable('test-x11comp', 'test/x11comp.c', dependencies: x11_test_dep),
+-        env: test_env,
+-        is_parallel : false,
+-    )
+-endif
+ if get_option('enable-xkbregistry')
+     test(
+         'registry',
+diff --color -ruwN source/src/x11/util.c source-new/src/x11/util.c
+--- source/src/x11/util.c	2024-03-24 04:23:43.000000000 +0700
++++ source-new/src/x11/util.c	2025-10-29 15:03:58.879274347 +0700
+@@ -39,7 +39,7 @@
+     uint16_t server_major, server_minor;
+ 
+     if (flags & ~(XKB_X11_SETUP_XKB_EXTENSION_NO_FLAGS)) {
+-        /* log_err_func(ctx, "unrecognized flags: %#x\n", flags); */
++        printf("unrecognized flags: %#x\n", flags);
+         return 0;
+     }
+ 
+@@ -47,12 +47,12 @@
+         const xcb_query_extension_reply_t *reply =
+             xcb_get_extension_data(conn, &xcb_xkb_id);
+         if (!reply) {
+-            /* log_err_func(ctx, "failed to query for XKB extension\n"); */
++            printf("failed to query for XKB extension\n");
+             return 0;
+         }
+ 
+         if (!reply->present) {
+-            /* log_err_func(ctx, "failed to start using XKB extension: not available in server\n"); */
++            printf("failed to start using XKB extension: not available in server\n");
+             return 0;
+         }
+ 
+@@ -68,20 +68,21 @@
+             xcb_xkb_use_extension_reply(conn, cookie, &error);
+ 
+         if (!reply) {
+-            /* log_err_func(ctx, */
+-            /*              "failed to start using XKB extension: error code %d\n", */
+-            /*              error ? error->error_code : -1); */
++             printf(
++                          "failed to start using XKB extension: error code %d\n", 
++                          error ? error->error_code : -1); 
+             free(error);
+             return 0;
+         }
+ 
+-        if (!reply->supported) {
+-            /* log_err_func(ctx, */
+-            /*              "failed to start using XKB extension: server doesn't support version %d.%d\n", */
+-            /*              major_xkb_version, minor_xkb_version); */
+-            free(reply);
+-            return 0;
+-        }
++        // FIXME: Figure out why winit/servo throwing this
++        // if (!reply->supported) {
++        //      printf(
++        //                   "failed to start using XKB extension: server doesn't support version %d.%d\n",
++        //                   major_xkb_version, minor_xkb_version);
++        //     free(reply);
++        //     return 0;
++        // }
+ 
+         server_major = reply->serverMajor;
+         server_minor = reply->serverMinor;

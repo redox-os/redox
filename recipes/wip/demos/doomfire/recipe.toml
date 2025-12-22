@@ -1,0 +1,8 @@
+#TODO discover how to build the "doomfire-minifb" example
+[source]
+git = "https://github.com/r-marques/doomfire"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_examples doomfire-minifb
+"""

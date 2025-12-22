@@ -1,0 +1,11 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/pjd/pjdfstest"
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}/home/user/pjdfstest"
+cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}/home/user/pjdfstest"
+"""
+[package]
+dependencies = ["perl5"]

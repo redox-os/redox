@@ -1,0 +1,10 @@
+#TODO v8 crate error
+#TODO lacking librusty_v8 crate binaries for redox
+[source]
+git = "https://github.com/denoland/deno"
+shallow_clone = true
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages deno
+"""

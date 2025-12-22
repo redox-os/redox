@@ -1,0 +1,12 @@
+#TODO not compiled or tested
+#TODO discover minimum dependencies from cmake log
+# build instructions: https://invent.kde.org/multimedia/k3b/-/blob/master/INSTALL.txt?ref_type=heads
+[source]
+git = "https://invent.kde.org/multimedia/k3b"
+branch = "release/25.08"
+shallow_clone = true
+[build]
+template = "cmake"
+dependencies = [
+    "libcdio-paranoia",
+]

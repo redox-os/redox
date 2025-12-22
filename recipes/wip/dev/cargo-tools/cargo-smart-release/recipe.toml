@@ -1,0 +1,8 @@
+#TODO camino crate error
+[source]
+git = "https://github.com/Byron/cargo-smart-release"
+[build]
+template = "cargo"
+dependencies = [
+    "openssl1",
+]

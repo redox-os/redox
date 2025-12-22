@@ -1,0 +1,14 @@
+#TODO not compiled or tested
+[source]
+tar = "https://download.gnome.org/sources/gnome-text-editor/49/gnome-text-editor-49.0.tar.xz"
+[build]
+template = "meson"
+mesonflags = [
+    "-Deditorconfig=false"
+]
+dependencies = [
+    "gtk4",
+    "gtksourceview",
+    "libadwaita",
+    "libspelling",
+]

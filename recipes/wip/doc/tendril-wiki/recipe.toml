@@ -1,0 +1,8 @@
+#TODO require a patch to update the ring crate
+[source]
+git = "https://github.com/jamestthompson3/tendril-wiki"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages tendril@1.0.10
+"""

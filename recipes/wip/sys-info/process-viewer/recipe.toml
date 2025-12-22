@@ -1,0 +1,8 @@
+#TODO make GTK4 work
+[source]
+git = "https://github.com/GuillaumeGomez/process-viewer"
+[build]
+template = "cargo"
+dependencies = [
+    "gtk4",
+]

@@ -1,0 +1,29 @@
+diff -ruwN source-old/protocol/meson.build source/protocol/meson.build
+--- source-old/protocol/meson.build	2023-11-21 09:06:13.000000000 -0700
++++ source/protocol/meson.build	2025-10-30 17:22:43.903323248 -0600
+@@ -5,9 +5,8 @@
+ )
+ wl_protocol_dir = wayland_protos.get_variable('pkgdatadir')
+ 
+-wayland_scanner_dep = dependency('wayland-scanner', native: true)
+ wayland_scanner = find_program(
+-	wayland_scanner_dep.get_variable('wayland_scanner'),
++	'wayland-scanner',
+ 	native: true,
+ )
+ 
+diff -ruwN source-old/render/dmabuf.c source/render/dmabuf.c
+--- source-old/render/dmabuf.c	2023-11-21 09:06:13.000000000 -0700
++++ source/render/dmabuf.c	2025-10-30 17:33:46.223683923 -0600
+@@ -5,6 +5,11 @@
+ #include <wlr/util/log.h>
+ #include "render/dmabuf.h"
+ 
++#if defined(__redox__)
++//TODO: F_DUPFD_CLOEXEC needed for atomic close on exec
++#define F_DUPFD_CLOEXEC F_DUPFD
++#endif
++
+ void wlr_dmabuf_attributes_finish(struct wlr_dmabuf_attributes *attribs) {
+ 	for (int i = 0; i < attribs->n_planes; ++i) {
+ 		close(attribs->fd[i]);

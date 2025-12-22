@@ -1,0 +1,110 @@
+diff '--color=auto' -rupwN source/Makefile source-new/Makefile
+--- source/Makefile	2024-10-15 21:21:14.824589882 -0400
++++ source-new/Makefile	2024-10-16 00:42:27.651948743 -0400
+@@ -4,28 +4,34 @@
+ # "make SDL_CONFIG=/path/to/sdl-config" for unusual SDL installations.
+ # "make DO_USERDIRS=1" to enable user directories support
+ 
++# Base install directory
++DESTDIR ?= "/"
++INSTALLDIR = "${DESTDIR}/usr/games/"
++DATADIR = "${DESTDIR}/usr/share/games/quake1/id1/"
++ICODIR = "${DESTDIR}/ui/icons/apps/"
++
+ # Enable/Disable user directories support
+-DO_USERDIRS=0
++DO_USERDIRS ?= 0
+ 
+ ### Enable/Disable SDL2
+-USE_SDL2=0
++USE_SDL2 ?= 0
+ 
+ ### Enable/Disable codecs for streaming music support
+-USE_CODEC_WAVE=1
+-USE_CODEC_FLAC=0
+-USE_CODEC_MP3=1
+-USE_CODEC_VORBIS=1
+-USE_CODEC_OPUS=0
++USE_CODEC_WAVE ?= 1
++USE_CODEC_FLAC ?= 0
++USE_CODEC_MP3 ?= 1
++USE_CODEC_VORBIS ?= 1
++USE_CODEC_OPUS ?= 0
+ # either xmp or mikmod (or modplug)
+-USE_CODEC_MIKMOD=0
+-USE_CODEC_XMP=0
+-USE_CODEC_MODPLUG=0
+-USE_CODEC_UMX=0
++USE_CODEC_MIKMOD ?= 0
++USE_CODEC_XMP ?= 0
++USE_CODEC_MODPLUG ?= 0
++USE_CODEC_UMX ?= 0
+ 
+ # which library to use for mp3 decoding: mad or mpg123
+-MP3LIB=mad
++MP3LIB ?= mad
+ # which library to use for ogg decoding: vorbis or tremor
+-VORBISLIB=vorbis
++VORBISLIB ?= vorbis
+ 
+ # ---------------------------
+ # Helper functions
+@@ -35,7 +41,7 @@ check_gcc = $(shell if echo | $(CC) $(1)
+ 
+ # ---------------------------
+ 
+-HOST_OS = $(shell uname|sed -e s/_.*//|tr '[:upper:]' '[:lower:]')
++HOST_OS ?= $(shell uname|sed -e s/_.*//|tr '[:upper:]' '[:lower:]')
+ 
+ DEBUG ?= 0
+ 
+@@ -49,7 +55,7 @@ LINKER = $(CC)
+ STRIP ?= strip
+ PKG_CONFIG ?= pkg-config
+ 
+-CPUFLAGS=
++CPUFLAGS ?=
+ LDFLAGS?=
+ DFLAGS ?=
+ CFLAGS ?= -Wall -Wno-trigraphs -MMD
+@@ -81,11 +87,19 @@ endif
+ 
+ ifeq ($(USE_SDL2),1)
+ SDL_CONFIG ?= sdl2-config
++SDL_VERSION = sdl2
+ else
+ SDL_CONFIG ?= sdl-config
++SDL_VERSION = sdl
+ endif
++
++ifeq ($(HOST_OS),redox)
++SDL_CFLAGS = $(shell $(PKG_CONFIG) --cflags $(SDL_VERSION))
++SDL_LIBS = $(shell $(PKG_CONFIG) --libs $(SDL_VERSION))
++else
+ SDL_CFLAGS = $(shell $(SDL_CONFIG) --cflags)
+ SDL_LIBS   = $(shell $(SDL_CONFIG) --libs)
++endif
+ 
+ NET_LIBS   =
+ ifeq ($(HOST_OS),sunos)
+@@ -164,6 +178,8 @@ endif
+ 
+ ifeq ($(HOST_OS),haiku)
+ COMMON_LIBS= -lGL
++else ifeq ($(HOST_OS),redox)
++COMMON_LIBS= -lorbital $(shell $(PKG_CONFIG) --libs osmesa zlib)
+ else
+ COMMON_LIBS= -lGL -lm
+ endif
+@@ -290,7 +306,10 @@ install:	quakespasm
+ 	cp quakespasm.pak $(QS_APP_DIR)
+ else
+ install:	quakespasm
+-	cp quakespasm /usr/local/games/quake
++	mkdir -p "${INSTALLDIR}" "${DATADIR}" "${ICODIR}"
++	cp quakespasm "${INSTALLDIR}/quakespasm"
++	# xxx Probably requires resizing
++	cp Misc/QuakeSpasm_512.png "${ICODIR}/quakespasm.png"
+ endif
+ 
+ sinclude $(OBJS:.o=.d)

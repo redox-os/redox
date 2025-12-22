@@ -1,0 +1,9 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/sheep-farm/merkato"
+rev = "0.2.0.1"
+[build]
+template = "meson"
+dependencies = [
+    "gtk4",
+]

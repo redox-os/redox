@@ -1,0 +1,13 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/AmmarAbouZor/tui-journal"
+[build]
+template = "custom"
+dependencies = [
+    "openssl3",
+    "sqlite3",
+]
+script = """
+DYNAMIC_INIT
+cookbook_cargo
+"""

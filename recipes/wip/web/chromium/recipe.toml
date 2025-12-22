@@ -1,0 +1,44 @@
+#TODO missing script for building: https://chromium.googlesource.com/chromium/src/+/main/docs/linux/build_instructions.md
+#TODO determine minimum dependencies
+# dependencies reference:
+# https://chromium.googlesource.com/chromium/src/+/main/build/install-build-deps.py#214
+# https://chromium.googlesource.com/chromium/src/+/main/build/install-build-deps.py#355
+[source]
+tar = "https://commondatastorage.googleapis.com/chromium-browser-official/chromium-119.0.6045.123.tar.xz"
+[build]
+template = "custom"
+# dependencies = [
+#     "gtk3",
+#     "nss",
+#     "nspr",
+#     "xdg-utils",
+#     "libgcrypt",
+#     "dbus",
+#     "libva",
+#     "libffi",
+#     "fontconfig",
+#     "libjpeg",
+#     "libflac",
+#     "libxml2",
+#     "ffmpeg6",
+#     "libwebp",
+#     "opus",
+#     "harfbuzz",
+#     "libpng",
+#     "freetype2",
+#     "bzip2",
+#     "expat",
+#     "glib",
+#     "cairo",
+#     "atk",
+#     "libcap",
+#     "pango",
+#     "java21",
+#     "libpulse",
+#     "libx11",
+#     "libxtst",
+#     "libxkbcommon",
+# ]
+script = """
+DYNAMIC_INIT
+"""

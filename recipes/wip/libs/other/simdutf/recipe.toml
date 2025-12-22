@@ -1,0 +1,9 @@
+[source]
+git = "https://github.com/simdutf/simdutf"
+rev = "df8bfed3256cf5ca29969a9dd1db677e835b2c6c" # 7.3.5
+[build]
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_cmake
+"""

@@ -1,0 +1,5 @@
+#TODO the webbrowser crate needs to be ported
+[source]
+git = "https://github.com/RIP-Comm/clementine"
+[build]
+template = "cargo"

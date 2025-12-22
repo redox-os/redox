@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+# build instructions: https://gitlab.com/sane-project/backends/-/blob/master/README?ref_type=heads
+[source]
+tar = "https://gitlab.com/-/project/429008/uploads/843c156420e211859e974f78f64c3ea3/sane-backends-1.4.0.tar.gz"
+[build]
+template = "configure"
+dependencies = [
+    "libusb",
+    "libjpeg",
+]

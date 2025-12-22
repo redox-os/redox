@@ -1,0 +1,5 @@
+#TODO open crate error (after cargo update)
+[source]
+git = "https://github.com/sloganking/codevis"
+[build]
+template = "cargo"

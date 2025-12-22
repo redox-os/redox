@@ -1,0 +1,8 @@
+#TODO region crate error
+[source]
+git = "https://github.com/wasmerio/wasmer"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages wasmer-cli
+"""

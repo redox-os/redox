@@ -1,0 +1,5 @@
+#TODO compiled but not tested
+[source]
+tar = "http://pyyaml.org/download/libyaml/yaml-0.2.5.tar.gz"
+[build]
+template = "configure"

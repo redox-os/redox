@@ -1,0 +1,6 @@
+#TODO Needs to determine the script
+[source]
+git = "https://github.com/g-truc/glm"
+rev = "bf71a834948186f4097caa076cd2663c69a10e1e"
+[build]
+template = "custom"

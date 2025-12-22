@@ -37,17 +37,14 @@ Some of the key repositories on the Redox GitLab:
 | Essential Repositories                                                               | Maintainer
 |-------------------------------------------------------------------------------------------------------------|---------------------------
 | [Kernel](https://gitlab.redox-os.org/redox-os/kernel)                                                       | **@jackpot51**
-| [Base (essential system components)](https://gitlab.redox-os.org/redox-os/base)                             | **@jackpot51**
+| [Base (essential system components and drivers)](https://gitlab.redox-os.org/redox-os/base)                             | **@jackpot51**
 | [RedoxFS (default filesystem)](https://gitlab.redox-os.org/redox-os/redoxfs)                                | **@jackpot51**
-| [Drivers](https://gitlab.redox-os.org/redox-os/drivers)                                                     | **@jackpot51**
 | [relibc (C POSIX library written in Rust)](https://gitlab.redox-os.org/redox-os/relibc)                     | **@jackpot51**
 | [Ion (defauilt shell)](https://gitlab.redox-os.org/redox-os/ion)                                            | **@jackpot51**
 | [Termion (terminal library)](https://gitlab.redox-os.org/redox-os/termion)                                  | **@jackpot51**
-| [netstack (network stack)](https://gitlab.redox-os.org/redox-os/netstack)                                   | **@jackpot51**
 | [pkgutils (current package manager)](https://gitlab.redox-os.org/redox-os/pkgutils)                         | **@jackpot51**
 | [Orbital (display server and window manager)](https://gitlab.redox-os.org/redox-os/orbital)                 | **@jackpot51**
-| This repo - the root of the Build System                                                                    | **@jackpot51**
-| [Cookbook (build system for system components and programs)](https://gitlab.redox-os.org/redox-os/cookbook) | **@jackpot51** **@hatred_45**
+| This repo - the root of the Build System                                                                    | **@jackpot51** **@hatred_45**
 | [Redoxer (tool for easy Redox development on Linux)](https://gitlab.redox-os.org/redox-os/redoxer)          | **@jackpot51**
 | [The Redox Book](https://gitlab.redox-os.org/redox-os/book)                                                 | **@jackpot51** **@hatred_45**
 | [Website](https://gitlab.redox-os.org/redox-os/website)                                                     | **@jackpot51** **@hatred_45**

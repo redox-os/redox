@@ -1,0 +1,11 @@
+#TODO write a script to copy the data files, see: https://github.com/luleyleo/clapgrep/blob/main/makefile
+[source]
+git = "https://github.com/luleyleo/clapgrep"
+[build]
+template = "custom"
+dependencies = [
+    "gtk4",
+]
+script = """
+cookbook_cargo_packages clapgrep-gnome
+"""

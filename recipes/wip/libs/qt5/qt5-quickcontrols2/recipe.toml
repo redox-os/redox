@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://download.qt.io/official_releases/qt/5.15/5.15.11/submodules/qtquickcontrols2-everywhere-opensource-src-5.15.11.tar.xz"
+[build]
+template = "configure"

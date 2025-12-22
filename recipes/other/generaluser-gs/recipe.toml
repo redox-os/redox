@@ -1,0 +1,9 @@
+[source]
+git = "https://gitlab.redox-os.org/redox-os/generaluser-gs.git"
+
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/generaluser-gs"
+cp -Rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}/usr/share/generaluser-gs"
+"""

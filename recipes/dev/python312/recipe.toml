@@ -1,0 +1,65 @@
+[source]
+tar = "https://www.python.org/ftp/python/3.12.12/Python-3.12.12.tar.xz"
+blake3 = "29636fdae3e0ee8d0fe585e528c9376fe43876f5f3f0f7892140567946fd907b"
+patches = [
+    "redox.patch"
+]
+
+[build]
+template = "custom"
+dependencies = [
+    "bzip2",
+    "libffi",
+    "libuuid",
+    "openssl3",
+    "ncursesw",
+    "readline",
+    "sqlite3",
+    "zlib",
+    "xz",
+    "zstd",
+]
+dev-dependencies = [
+    "host:python312"
+]
+script = """
+DYNAMIC_INIT
+
+export PYTHONDONTWRITEBYTECODE=1
+ARCH="${TARGET%%-*}"
+OS=$(echo "${TARGET}" | cut -d - -f3-4)
+
+if [ "$TARGET" != "$COOKBOOK_HOST_TARGET" ]; then
+    COOKBOOK_CONFIGURE_FLAGS=(
+        --prefix=/usr
+        --disable-ipv6
+        --host=${GNU_TARGET}
+        --build="$ARCH"
+        --with-build-python="${COOKBOOK_TOOLCHAIN}/usr/bin/python3.12"
+        --with-ensurepip=install
+        --disable-test-modules
+        ac_cv_file__dev_ptmx=no
+        ac_cv_file__dev_ptc=no
+    )
+else
+    COOKBOOK_CONFIGURE_FLAGS=(--prefix=/usr)
+fi
+
+if [ "${COOKBOOK_DYNAMIC}" != "1" ]; then
+    export MODULE_BUILDTYPE=static
+    COOKBOOK_CONFIGURE_FLAGS+=( --enable-shared )
+fi
+
+cookbook_configure
+
+# A same file to save 60MB
+(cd "${COOKBOOK_STAGE}/usr/lib/python3.12/config-3.12-$ARCH-$OS" && \
+    rm -f libpython3.12.a && ln -s ../../libpython3.12.a)
+"""
+
+[[optional-packages]]
+name = "dev"
+files = [
+    "usr/lib/python3.12/config-*/**",
+    "usr/lib/libpython*.a"
+]

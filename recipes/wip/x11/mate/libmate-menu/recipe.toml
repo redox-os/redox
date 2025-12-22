@@ -1,0 +1,12 @@
+[source]
+tar = "https://github.com/mate-desktop/mate-menus/archive/refs/tags/v1.28.0.tar.gz"
+blake3 = "90b5540ec82bd9a6188d9eaf36bf1f489258aed4d35de53f3958346f892c0d7c"
+
+[build]
+dependencies = [
+    "glib",
+]
+template = "meson"
+mesonflags = [
+    "-Dintrospection=false",
+]

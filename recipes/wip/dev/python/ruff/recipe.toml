@@ -1,0 +1,8 @@
+#TODO tikv-jemalloc-sys crate error
+[source]
+git = "https://github.com/charliermarsh/ruff"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages ruff_cli
+"""

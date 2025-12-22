@@ -1,0 +1,11 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/sahlberg/fuse-nfs"
+rev = "75827244f1615be20da880cbc68665416131088d"
+script = "./setup.sh"
+[build]
+template = "configure"
+dependencies = [
+    "libfuse3",
+    "libnfs",
+]

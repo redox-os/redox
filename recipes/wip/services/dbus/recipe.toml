@@ -1,0 +1,23 @@
+[source]
+tar = "https://dbus.freedesktop.org/releases/dbus/dbus-1.16.2.tar.xz"
+blake3 = "b1d1f22858a8f04665e5dca29d194f892620f00fd3e3f4e89dd208e78868436e"
+patches = [
+    "redox.patch",
+]
+
+[build]
+dependencies = [
+    "expat",
+    "libpthread-stubs",
+    "libx11",
+    "libxau",
+    "libxcb",
+    "x11proto",
+]
+template = "meson"
+mesonflags = [
+    #TODO: why does this require Linux?
+    "-Depoll=enabled",
+    "-Dx11_autolaunch=enabled",
+    "-Dverbose_mode=true",
+]

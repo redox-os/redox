@@ -1,0 +1,11 @@
+#TODO make the xdotool dependency work
+[source]
+git = "https://github.com/RastislavKish/clipshare"
+[build]
+template = "custom"
+dependencies = [
+    "xdotool",
+]
+script = """
+cookbook_cargo_packages desktop_client
+"""

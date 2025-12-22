@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+# build instructions: https://gitlab.gnome.org/GNOME/babl/-/blob/master/INSTALL.in?ref_type=heads
+[source]
+tar = "https://download.gimp.org/pub/babl/0.1/babl-0.1.106.tar.xz"
+[build]
+template = "meson"

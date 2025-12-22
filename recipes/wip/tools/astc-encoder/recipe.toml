@@ -1,0 +1,7 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/ARM-software/astc-encoder/blob/main/Docs/Building.md#macos-and-linux-using-make
+[source]
+git = "https://github.com/ARM-software/astc-encoder"
+rev = "aeece2f609db959d1c5e43e4f00bd177ea130575"
+[build]
+template = "cmake"

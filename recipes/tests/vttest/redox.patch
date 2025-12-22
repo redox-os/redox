@@ -1,0 +1,80 @@
+diff -u source_original/main.c source/main.c
+--- source_original/main.c	2014-01-16 22:15:19.000000000 +0100
++++ source/main.c	2017-10-30 18:31:22.365280877 +0100
+@@ -1295,8 +1295,8 @@
+ void
+ initterminal(int pn)
+ {
+-  init_ttymodes(pn);
+-  setup_terminal("");
++  //init_ttymodes(pn);
++  //setup_terminal("");
+ }
+
+   /* Set up my personal prejudices      */
+Common subdirectories: source_original/package and source/package
+diff -u source_original/unix_io.c source/unix_io.c
+--- source_original/unix_io.c	2014-01-16 23:11:39.000000000 +0100
++++ source/unix_io.c	2017-10-30 18:48:13.927899071 +0100
+@@ -40,17 +40,17 @@
+   lval = last_char;
+   brkrd = FALSE;
+   reading = TRUE;
+-#ifdef HAVE_ALARM
+-  signal(SIGALRM, give_up);
+-  alarm(60);    /* timeout after 1 minute, in case user's keyboard is hung */
+-#endif
++//#ifdef HAVE_ALARM
++//  signal(SIGALRM, give_up);
++//  alarm(60);    /* timeout after 1 minute, in case user's keyboard is hung */
++//#endif
+   if (read(0, &one_byte, (size_t) 1) < 0)
+     ch = EOF;
+   else
+     ch = (int) one_byte;
+-#ifdef HAVE_ALARM
+-  alarm(0);
+-#endif
++//#ifdef HAVE_ALARM
++//  alarm(0);
++//#endif
+   reading = FALSE;
+ #ifdef DEBUG
+   {
+@@ -178,21 +178,21 @@
+ void
+ inflush(void)
+ {
+-  int val;
+-
+-#ifdef HAVE_RDCHK
+-  while (rdchk(0))
+-    read(0, &val, 1);
+-#else
+-#if USE_FIONREAD
+-  int l1;
+-  ioctl(0, FIONREAD, &l1);
+-  while (l1-- > 0L)
+-    read(0, &val, (size_t) 1);
+-#else
+-  while (read(2, &val, (size_t) 1) > 0) ;
+-#endif
+-#endif
++//  int val;
++//
++//#ifdef HAVE_RDCHK
++//  while (rdchk(0))
++//    read(0, &val, 1);
++//#else
++//#if USE_FIONREAD
++//  int l1;
++//  ioctl(0, FIONREAD, &l1);
++//  while (l1-- > 0L)
++//    read(0, &val, (size_t) 1);
++//#else
++//  while (read(2, &val, (size_t) 1) > 0) ;
++//#endif
++//#endif
+ }
+
+ void

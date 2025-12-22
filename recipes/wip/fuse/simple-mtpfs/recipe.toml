@@ -1,0 +1,12 @@
+#TODO not compiled or tested
+# build instructions - https://github.com/phatina/simple-mtpfs/blob/master/INSTALL
+[source]
+git = "https://github.com/phatina/simple-mtpfs"
+rev = "19e7bb9b608b0c0dce2ee6f56fac75901bc69529"
+script = "./autogen.sh"
+[build]
+template = "configure"
+dependencies = [
+    "libfuse3",
+    "libmtp",
+]

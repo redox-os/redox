@@ -1,0 +1,11 @@
+#TODO can't find FreeType dependency
+[source]
+tar = "https://hpjansson.org/chafa/releases/chafa-1.12.4.tar.xz"
+[build]
+template = "configure"
+dependencies = [
+    "glib",
+    "imagemagick",
+    "pcre",
+    "freetype2",
+]

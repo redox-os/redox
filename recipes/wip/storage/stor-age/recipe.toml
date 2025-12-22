@@ -1,0 +1,5 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/idiv-biodiversity/stor-age"
+[build]
+template = "cargo"

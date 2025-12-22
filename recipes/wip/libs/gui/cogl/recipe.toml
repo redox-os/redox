@@ -1,0 +1,13 @@
+#TODO not compiled or tested
+[source]
+tar = "https://download.gnome.org/sources/cogl/1.22/cogl-1.22.8.tar.xz"
+[build]
+template = "configure"
+dependencies = [
+    "mesa-x11",
+    "libxcomposite",
+    "libxdamage",
+    "libxext",
+    "libxfixes",
+    #"libwayland",
+]

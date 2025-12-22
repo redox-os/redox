@@ -1,0 +1,9 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/Linus-Mussmaecher/rucola"
+[build]
+template = "cargo"
+[package]
+dependencies = [
+    "nerd-fonts",
+]

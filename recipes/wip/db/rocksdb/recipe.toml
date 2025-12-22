@@ -1,0 +1,15 @@
+#TODO missing script for gnu make: https://github.com/facebook/rocksdb/blob/main/INSTALL.md
+[source]
+git = "https://github.com/facebook/rocksdb"
+rev = "v10.7.5"
+shallow_clone = true
+[build]
+template = "custom"
+dependencies = [
+    "zlib",
+    "lz4",
+    "bzip2",
+    "zstd",
+    "snappy",
+    "gflags",
+]

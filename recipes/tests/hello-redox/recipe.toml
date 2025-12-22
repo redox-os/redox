@@ -1,0 +1,6 @@
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}/home/user/hello-redox"
+cp -rv "${COOKBOOK_RECIPE}"/files/* "${COOKBOOK_STAGE}/home/user/hello-redox"
+"""

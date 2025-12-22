@@ -1,0 +1,19 @@
+#TODO not compiled or tested
+# build instructions:
+# https://mariadb.com/kb/en/generic-build-instructions/
+# https://mariadb.com/kb/en/cross-compiling-mariadb/
+[source]
+tar = "https://dlm.mariadb.com/4509471/MariaDB/mariadb-12.1.2/source/mariadb-12.1.2.tar.gz"
+[build]
+template = "cmake"
+dependencies = [
+    "ncurses",
+    "zlib",
+    "libevent",
+    "openssl3",
+    "curl",
+    "libxml2",
+    "boost",
+    "libaio",
+]
+

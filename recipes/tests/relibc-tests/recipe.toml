@@ -1,0 +1,9 @@
+[source]
+same_as = "../../core/relibc"
+
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}/share/relibc"
+cp -rv "${COOKBOOK_SOURCE}/tests" "${COOKBOOK_STAGE}/share/relibc-tests"
+"""

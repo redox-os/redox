@@ -1,0 +1,99 @@
+diff --color -ruwN source/configure source-new/configure
+--- source/configure	2025-01-05 00:16:30.000000000 +0700
++++ source-new/configure	2025-09-18 06:50:23.667443238 +0700
+@@ -6384,7 +6384,7 @@
+   ;;
+ 
+ # This must be glibc/ELF.
+-linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu*)
++linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu* | redox*)
+   lt_cv_deplibs_check_method=pass_all
+   ;;
+ 
+@@ -7715,7 +7715,7 @@
+   ;;
+ 
+ x86_64-*kfreebsd*-gnu|x86_64-*linux*|powerpc*-*linux*| \
+-s390*-*linux*|s390*-*tpf*|sparc*-*linux*|x86_64-gnu*)
++s390*-*linux*|s390*-*tpf*|sparc*-*linux*|x86_64-gnu**|x86_64-redox*)
+   # Find out what ABI is being produced by ac_compile, and set linker
+   # options accordingly.  Note that the listed cases only cover the
+   # situations where additional linker options are needed (such as when
+@@ -7734,7 +7734,7 @@
+ 	  x86_64-*kfreebsd*-gnu)
+ 	    LD="${LD-ld} -m elf_i386_fbsd"
+ 	    ;;
+-	  x86_64-*linux*|x86_64-gnu*)
++	  x86_64-*linux*|x86_64-gnu*|x86_64-redox*)
+ 	    case `$FILECMD conftest.o` in
+ 	      *x86-64*)
+ 		LD="${LD-ld} -m elf32_x86_64"
+@@ -7763,7 +7763,7 @@
+ 	  x86_64-*kfreebsd*-gnu)
+ 	    LD="${LD-ld} -m elf_x86_64_fbsd"
+ 	    ;;
+-	  x86_64-*linux*|x86_64-gnu*)
++	  x86_64-*linux*|x86_64-gnu*|x86_64-*redox*)
+ 	    LD="${LD-ld} -m elf_x86_64"
+ 	    ;;
+ 	  powerpcle-*linux*)
+@@ -12168,7 +12168,7 @@
+   ;;
+ 
+ # This must be glibc/ELF.
+-linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu*)
++linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu* | redox*)
+   version_type=linux # correct to gnu/linux during the next big refactor
+   need_lib_prefix=no
+   need_version=no
+diff --color -ruwN source/src/chartype.h source-new/src/chartype.h
+--- source/src/chartype.h	2022-06-11 14:57:59.000000000 +0700
++++ source-new/src/chartype.h	2025-09-18 06:38:37.401509690 +0700
+@@ -39,7 +39,8 @@
+ 	!(defined(__APPLE__) && defined(__MACH__)) && \
+ 	!defined(__OpenBSD__) && \
+ 	!defined(__FreeBSD__) && \
+-	!defined(__DragonFly__)
++	!defined(__DragonFly__) && \
++	!defined(__redox__)
+ #ifndef __STDC_ISO_10646__
+ /* In many places it is assumed that the first 127 code points are ASCII
+  * compatible, so ensure wchar_t indeed does ISO 10646 and not some other
+diff --color -ruwN source/src/editline/readline.h source-new/src/editline/readline.h
+--- source/src/editline/readline.h	2023-08-27 14:25:53.000000000 +0700
++++ source-new/src/editline/readline.h	2025-09-18 06:41:15.169232816 +0700
+@@ -78,7 +78,7 @@
+ 
+ #ifndef CTRL
+ #include <sys/ioctl.h>
+-#if !defined(__sun) && !defined(__hpux) && !defined(_AIX)
++#if !defined(__sun) && !defined(__hpux) && !defined(_AIX) && !defined(__redox__)
+ #include <sys/ttydefaults.h>
+ #endif
+ #ifndef CTRL
+diff --color -ruwN source/src/sys.h source-new/src/sys.h
+--- source/src/sys.h	2024-08-09 01:03:34.000000000 +0700
++++ source-new/src/sys.h	2025-09-18 06:40:02.388537017 +0700
+@@ -116,10 +116,6 @@
+ typedef unsigned int	u_int32_t;
+ #endif
+ 
+-#ifndef HAVE_SIZE_MAX
+-#define SIZE_MAX	((size_t)-1)
+-#endif
+-
+ #define	REGEX		/* Use POSIX.2 regular expression functions */
+ #undef	REGEXP		/* Use UNIX V8 regular expression functions */
+ 
+diff --color -ruwN source/src/wcsdup.c source-new/src/wcsdup.c
+--- source/src/wcsdup.c	2022-06-11 14:57:59.000000000 +0700
++++ source-new/src/wcsdup.c	2025-09-18 06:44:01.365917599 +0700
+@@ -11,7 +11,7 @@
+  * code is also granted without any restrictions.
+  */
+ 
+-#ifndef HAVE_WCSDUP
++#if !defined(HAVE_WCSDUP) && !defined(__redox__)
+ 
+ #include "config.h"
+ 

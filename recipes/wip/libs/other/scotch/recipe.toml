@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+# build instructions: https://gitlab.inria.fr/scotch/scotch#installation
+#TODO probably missing dependencies
+[source]
+git = "https://gitlab.inria.fr/scotch/scotch"
+rev = "82ec87f558f4acb7ccb69a079f531be380504c92"
+[build]
+template = "cmake"

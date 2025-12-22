@@ -1,0 +1,8 @@
+#TODO xdg-home crate error (after a patch on ring)
+[source]
+git = "https://github.com/soywod/himalaya"
+[build]
+template = "cargo"
+dependencies = [
+    "openssl1",
+]

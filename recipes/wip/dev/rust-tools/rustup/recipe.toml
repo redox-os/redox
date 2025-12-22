@@ -1,0 +1,13 @@
+#TODO serde crate error
+[source]
+git = "https://github.com/rust-lang/rustup"
+shallow_clone = true
+[build]
+template = "custom"
+dependencies = [
+    "openssl3",
+]
+script = """
+DYNAMIC_INIT
+cookbook_cargo
+"""

@@ -1,0 +1,8 @@
+#TODO libmalloc-sys crate error
+[source]
+git = "https://github.com/lhvy/pipes-rs"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages pipes-rs
+"""

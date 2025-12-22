@@ -1,0 +1,6 @@
+#TODO missing script for "make", see https://github.com/krpors/hx#compiling-and-running
+[source]
+git = "https://github.com/krpors/hx"
+rev = "c124b40586f701e47b35628fde286d20bf9988ca"
+[build]
+template = "custom"

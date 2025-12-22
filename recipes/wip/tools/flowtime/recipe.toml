@@ -1,0 +1,12 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/Diego-Ivan/Flowtime#building-from-source
+[source]
+git = "https://github.com/Diego-Ivan/Flowtime"
+rev = "2cb1160f7f61ec0a6add292deca38a3150336f03"
+[build]
+template = "meson"
+dependencies = [
+    "gtk4",
+    "libxml2",
+    "libadwaita",
+]

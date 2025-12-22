@@ -1,0 +1,6 @@
+#TODO missing script for GNU Make, see https://www.busybox.net/FAQ.html#configure
+#TODO cross-compilation - https://www.busybox.net/FAQ.html#build
+[source]
+tar = "https://www.busybox.net/downloads/busybox-1.36.1.tar.bz2"
+[build]
+template = "custom"

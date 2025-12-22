@@ -5,7 +5,7 @@
 HOST_ARCH?=$(shell uname -m)
 
 # Configuration
-## Architecture to build Redox for (aarch64, i686, or x86_64). Defaults to a host one
+## Architecture to build Redox for (aarch64, i586, or x86_64). Defaults to a host one
 ARCH?=$(HOST_ARCH)
 ## Sub-device type for aarch64 if needed
 BOARD?=
@@ -17,12 +17,18 @@ EXPERIMENTAL_PREFIX_USE_UPSTREAM_RUST_COMPILER?=0
 REPO_BINARY?=0
 ## Name of the configuration to include in the image name e.g. desktop or server
 CONFIG_NAME?=desktop
+## Build appstream data for repo
+REPO_APPSTREAM?=0
 ## Ignore errors when building the repo, attempt to build every package
 REPO_NONSTOP?=0
 ## Do not update source repos, attempt to build in offline condition
 REPO_OFFLINE?=0
 ## Do not strip debug info for local build
 REPO_DEBUG?=0
+## Old config value that need to be corrected
+ifeq ($(ARCH),i686)
+	ARCH=i586
+endif
 ## Select filesystem config
 ifeq ($(BOARD),)
 FILESYSTEM_CONFIG?=config/$(ARCH)/$(CONFIG_NAME).toml
@@ -31,11 +37,15 @@ FILESYSTEM_CONFIG?=config/$(ARCH)/$(BOARD)/$(CONFIG_NAME).toml
 endif
 HOST_CARGO=env -u RUSTUP_TOOLCHAIN -u CC -u TARGET cargo
 ## Filesystem size in MB (default comes from filesystem_size in the FILESYSTEM_CONFIG)
-## FILESYSTEM_SIZE?=$(shell $(HOST_CARGO) run --release --manifest-path installer/Cargo.toml -- --filesystem-size -c $(FILESYSTEM_CONFIG))
+## FILESYSTEM_SIZE?=$(shell $(INSTALLER) --filesystem-size -c $(FILESYSTEM_CONFIG))
 ## Flags to pass to redoxfs-mkfs. Add --encrypt to set up disk encryption
 REDOXFS_MKFS_FLAGS?=
 ## Set to 1 to enable Podman build, any other value will disable it
 PODMAN_BUILD?=1
+## Set to 1 to put filesystem tools inside podman, any other value will install it to host
+FSTOOLS_IN_PODMAN?=0
+## Set to 1 if FUSE is not available and we are running in a container
+FSTOOLS_NO_MOUNT?=0
 ## Enable sccache to speed up cargo builds
 ## only do this by default if this is inside podman
 SCCACHE_BUILD?=$(shell [ -f /run/.containerenv ] && echo 1 || echo 0)
@@ -44,21 +54,23 @@ CONTAINERFILE?=podman/redox-base-containerfile
 
 # Per host variables
 export NPROC=nproc
-export REDOX_MAKE=make
 
+ifneq ($(PODMAN_BUILD),1)
+FSTOOLS_IN_PODMAN=0
 HOST_TARGET := $(shell env -u RUSTUP_TOOLCHAIN rustc -vV | grep host | cut -d: -f2 | tr -d " ")
 # x86_64 linux hosts have all toolchains
 ifneq ($(HOST_TARGET),x86_64-unknown-linux-gnu)
 	ifeq ($(ARCH),aarch64)
 		# aarch64 linux hosts have aarch64 toolchain
 		ifneq ($(HOST_TARGET),aarch64-unknown-linux-gnu)
-			$(info The $(ARCH) binary prefix is only built for x86_64 and aarch64 Linux hosts)
+            $(info The $(ARCH) binary prefix is only built for x86_64 and aarch64 Linux hosts)
 			PREFIX_BINARY=0
 		endif
 	else
-		$(info The $(ARCH) binary prefix is only built for x86_64 Linux hosts)
+        $(info The $(ARCH) binary prefix is only built for x86_64 Linux hosts)
 		PREFIX_BINARY=0
 	endif
+endif
 endif
 
 ifeq ($(SCCACHE_BUILD),1)
@@ -68,15 +80,14 @@ ifeq (,$(shell command -v sccache))
 endif
 endif
 
+ifeq ($(REPO_APPSTREAM),1)
+	export COOKBOOK_APPSTREAM=true
+endif
 ifeq ($(REPO_NONSTOP),1)
-	REPO_NONSTOP=--nonstop
-else ifeq ($(REPO_NONSTOP),0)
-	REPO_NONSTOP=
+	export COOKBOOK_NONSTOP=true
 endif
 ifeq ($(REPO_OFFLINE),1)
-	REPO_OFFLINE=--offline
-else ifeq ($(REPO_OFFLINE),0)
-	REPO_OFFLINE=
+	export COOKBOOK_OFFLINE=true
 endif
 ifeq ($(REPO_DEBUG),1)
 	export COOKBOOK_NOSTRIP=true
@@ -94,7 +105,6 @@ ifeq ($(UNAME),Darwin)
 	VBM=/Applications/VirtualBox.app/Contents/MacOS/VBoxManage
 else ifeq ($(UNAME),FreeBSD)
 	FUMOUNT=sudo umount
-	export REDOX_MAKE=gmake
 	VB_AUDIO=pulse # To check, will probably be OSS on most setups
 	VBM=VBoxManage
 else
@@ -112,58 +122,53 @@ endif
 # Automatic variables
 ROOT=$(CURDIR)
 export RUST_COMPILER_RT_ROOT=$(ROOT)/rust/src/llvm-project/compiler-rt
+export TESTBIN?=
+RUNNING_IN_PODMAN=$(shell [ -f /run/.containerenv ] && echo 1 || echo 0)
+ifeq ($(PODMAN_BUILD),1)
+ifeq ($(RUNNING_IN_PODMAN),1)
+$(info Please unset PODMAN_BUILD=1 in .config!)
+endif
+endif
+
+ALLOW_FSTOOLS?=0
+ifeq ($(FSTOOLS_IN_PODMAN),0)
+ifeq ($(RUNNING_IN_PODMAN),0)
+ALLOW_FSTOOLS=1
+endif
+endif
 
 ## Userspace variables
-export TARGET=$(ARCH)-unknown-redox
 ifeq ($(ARCH),riscv64gc)
+	export TARGET=riscv64gc-unknown-redox
 	export GNU_TARGET=riscv64-unknown-redox
 else
-	export GNU_TARGET=$(TARGET)
+	export TARGET=$(ARCH)-unknown-redox
+	export GNU_TARGET=$(ARCH)-unknown-redox
 endif
 BUILD=build/$(ARCH)/$(CONFIG_NAME)
 MOUNT_DIR=$(BUILD)/filesystem
-HOST_FSTOOLS=build/fstools
-INSTALLER=$(HOST_FSTOOLS)/bin/redox_installer
-INSTALLER_OPTS=
-LIST_PACKAGES=installer/target/release/list_packages
-LIST_PACKAGES_OPTS=
-REDOXFS=$(HOST_FSTOOLS)/bin/redoxfs
-REDOXFS_MKFS=$(HOST_FSTOOLS)/bin/redoxfs-mkfs
-ifeq ($(REPO_BINARY),0)
-INSTALLER_OPTS+=--cookbook=cookbook
-else
-INSTALLER_OPTS+=--cookbook=cookbook --repo-binary
-LIST_PACKAGES_OPTS+=--repo-binary
+FSTOOLS=build/fstools
+INSTALLER=$(FSTOOLS)/bin/redox_installer
+REDOXFS=$(FSTOOLS)/bin/redoxfs
+REDOXFS_MKFS=$(FSTOOLS)/bin/redoxfs-mkfs
+INSTALLER_OPTS=--cookbook=.
+COOKBOOK_OPTS="--filesystem=$(FILESYSTEM_CONFIG)"
+ifeq ($(REPO_BINARY),1)
+INSTALLER_OPTS+=--repo-binary
+COOKBOOK_OPTS+=--repo-binary
+endif
+ifeq ($(FSTOOLS_NO_MOUNT),1)
+INSTALLER_OPTS+=--no-mount
 endif
 
 REPO_TAG=$(BUILD)/repo.tag
 FSTOOLS_TAG=build/fstools.tag
 export BOARD
 
-## Cross compiler variables
-AR=$(GNU_TARGET)-gcc-ar
-AS=$(GNU_TARGET)-as
-CC=$(GNU_TARGET)-gcc
-CXX=$(GNU_TARGET)-g++
-LD=$(GNU_TARGET)-ld
-NM=$(GNU_TARGET)-gcc-nm
-OBJCOPY=$(GNU_TARGET)-objcopy
-OBJDUMP=$(GNU_TARGET)-objdump
-RANLIB=$(GNU_TARGET)-gcc-ranlib
-READELF=$(GNU_TARGET)-readelf
-STRIP=$(GNU_TARGET)-strip
-
 ifeq ($(SCCACHE_BUILD),1)
 	export CC_WRAPPER:=sccache
 	export RUSTC_WRAPPER:=$(CC_WRAPPER)
-	CC=$(CC_WRAPPER) $(GNU_TARGET)-gcc
-	CXX=$(CC_WRAPPER) $(GNU_TARGET)-g++
 endif
-
-## Rust cross compile variables
-export AR_$(subst -,_,$(TARGET)):=$(AR)
-export CC_$(subst -,_,$(TARGET)):=$(CC)
-export CXX_$(subst -,_,$(TARGET)):=$(CXX)
 
 ## If Podman is being used, a container is required
 ifeq ($(PODMAN_BUILD),1)

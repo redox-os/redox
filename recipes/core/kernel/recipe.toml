@@ -1,0 +1,10 @@
+[source]
+git = "https://gitlab.redox-os.org/redox-os/kernel.git"
+
+[build]
+template = "custom"
+script = """
+make -f ${COOKBOOK_SOURCE}/Makefile
+mkdir -v "${COOKBOOK_STAGE}/boot"
+cp -v kernel "${COOKBOOK_STAGE}/boot"
+"""

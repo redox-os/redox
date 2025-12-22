@@ -1,0 +1,8 @@
+#TODO file-owner crate error
+[source]
+git = "https://github.com/pkolaczk/fclones"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages fclones
+"""

@@ -4,6 +4,7 @@ PREFIX=prefix/$(TARGET)
 
 PREFIX_INSTALL=$(PREFIX)/sysroot/
 PREFIX_PATH=$(ROOT)/$(PREFIX_INSTALL)/bin
+RELIBC_SOURCE=recipes/core/relibc/source
 
 GNU_HOST=$(HOST_ARCH)-unknown-linux-gnu
 BINUTILS_BRANCH=redox-2.43.1
@@ -30,6 +31,11 @@ endif
 # so would break non-podman builds (not sure if they are still supported though).
 prefix: $(PREFIX)/sysroot
 
+# Update relibc used for compiling and clean all statically linked recipes
+prefix_clean: | $(FSTOOLS_TAG)
+	rm -rf $(PREFIX)/relibc $(PREFIX)/sysroot
+	$(MAKE) c.base,base-initfs,extrautils,kernel,ion,pkgutils,redoxfs,relibc
+
 PREFIX_STRIP=\
 	mkdir -p bin libexec "$(GCC_TARGET)/bin" && \
 	find bin libexec "$(GCC_TARGET)/bin" "$(GCC_TARGET)/lib" \
@@ -37,10 +43,18 @@ PREFIX_STRIP=\
 		-exec strip --strip-unneeded {} ';' \
 		2> /dev/null
 
-$(PREFIX)/relibc: $(ROOT)/relibc
+$(RELIBC_SOURCE): | $(FSTOOLS_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
+	./target/release/repo fetch relibc
+	touch $(RELIBC_SOURCE)
+endif
+
+$(PREFIX)/relibc: | $(RELIBC_SOURCE)
 	mkdir -p "$(@D)"
 	rm -rf "$@.partial" "$@"
-	cp -r "$^" "$@.partial"
+	cp -r "$(RELIBC_SOURCE)" "$@.partial"
 	touch "$@.partial"
 	mv "$@.partial" "$@"
 
@@ -72,7 +86,10 @@ $(PREFIX)/relibc-install.tar.gz: $(PREFIX)/relibc-install
 		--directory="$<" \
 		.
 
-$(PREFIX)/libtool:
+$(PREFIX)/libtool: | $(CONTAINER_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
 	rm -rf "$@.partial" "$@"
 	mkdir -p "$@.partial"
 
@@ -87,8 +104,9 @@ $(PREFIX)/libtool:
 	touch "$@.partial"
 	echo $(LIBTOOL_VERSION) > $@.partial/.tarball-version
 	mv "$@.partial" "$@"
+endif
 
-$(PREFIX)/libtool-build: $(PREFIX)/libtool $(PREFIX)/rust-install
+$(PREFIX)/libtool-build: $(PREFIX)/libtool $(PREFIX)/rust-install $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
@@ -102,7 +120,7 @@ else
 			--gnulib-srcdir=./gnulib
 	PATH="$(ROOT)/$(PREFIX)/rust-install/bin:$$PATH" && \
 	cd "$@.partial" && \
-		cp -rp $(abspath $<)/. ./ && \
+		cp -r $(abspath $<)/. ./ && \
 		"$(ROOT)/$</configure" \
 			--target="$(TARGET)" \
 			--prefix=$(abspath $(PREFIX)/sysroot) && \
@@ -173,23 +191,32 @@ $(PREFIX)/rust-install: $(PREFIX)/gcc-install.tar.gz $(PREFIX)/rustc-install.tar
 # ---------------------------------------------------
 else ifeq ($(PREFIX_BINARY),1)
 
-$(PREFIX)/rust-install.tar.gz:
+$(PREFIX)/rust-install.tar.gz: | $(CONTAINER_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
 	mkdir -p "$(@D)"
 	#TODO: figure out why rust-install.tar.gz is missing /lib/rustlib/$(HOST_TARGET)/lib
 	wget -O $@.partial "https://static.redox-os.org/toolchain/$(HOST_TARGET)/$(TARGET)/relibc-install.tar.gz"
 	mv $@.partial $@
+endif
 
-$(PREFIX)/rust-install: $(PREFIX)/rust-install.tar.gz
+$(PREFIX)/rust-install: $(PREFIX)/rust-install.tar.gz $(CONTAINER_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
 	rm -rf "$@.partial" "$@"
 	mkdir -p "$@.partial"
-	tar --extract --file "$<" --directory "$@.partial" --strip-components=1
+	tar --extract --file "$<" --directory "$@.partial" --no-same-owner --strip-components=1
 	touch "$@.partial"
 	mv "$@.partial" "$@"
+endif
 
 # ---------------------------------------------------
 else
 
 $(ROOT)/rust/configure:
+	git submodule sync --recursive
 	git submodule update --progress --init --recursive --checkout rust
 
 PREFIX_FREESTANDING_INSTALL=$(PREFIX)/gcc-freestanding-install
@@ -202,11 +229,15 @@ $(PREFIX)/binutils-$(BINUTILS_BRANCH).tar.bz2:
 	mv $@.partial $@
 
 $(PREFIX)/binutils: $(PREFIX)/binutils-$(BINUTILS_BRANCH).tar.bz2
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
 	rm -rf "$@.partial" "$@"
 	mkdir -p "$@.partial"
-	tar --extract --file "$<" --directory "$@.partial" --strip-components=1
+	tar --extract --file "$<" --directory "$@.partial" --no-same-owner --strip-components=1
 	touch "$@.partial"
 	mv "$@.partial" "$@"
+endif
 
 $(PREFIX)/binutils-install: $(PREFIX)/binutils $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
@@ -238,11 +269,15 @@ $(PREFIX)/gcc-$(GCC_BRANCH).tar.bz2:
 	mv "$@.partial" "$@"
 
 $(PREFIX)/gcc: $(PREFIX)/gcc-$(GCC_BRANCH).tar.bz2
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
 	mkdir -p "$@.partial"
-	tar --extract --file "$<" --directory "$@.partial" --strip-components=1
+	tar --extract --file "$<" --directory "$@.partial" --no-same-owner --strip-components=1
 	cd "$@.partial" && ./contrib/download_prerequisites
 	touch "$@.partial"
 	mv "$@.partial" "$@"
+endif
 
 $(PREFIX)/gcc-freestanding-install: $(PREFIX)/gcc | $(PREFIX)/binutils-install $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
@@ -272,10 +307,10 @@ else
 	mv "$@.partial" "$@"
 endif
 
-$(PREFIX)/relibc-freestanding: $(ROOT)/relibc
+$(PREFIX)/relibc-freestanding: | $(RELIBC_SOURCE)
 	mkdir -p "$(@D)"
 	rm -rf "$@.partial" "$@"
-	cp -r "$^" "$@.partial"
+	cp -r "$(RELIBC_SOURCE)" "$@.partial"
 	touch "$@.partial"
 	mv "$@.partial" "$@"
 
@@ -290,7 +325,6 @@ else
 	export PATH="$(PREFIX_FREESTANDING_PATH):$$PATH" && \
 	export CARGO="env -u CARGO -u RUSTUP_TOOLCHAIN cargo" && \
 	export CC_$(subst -,_,$(TARGET))="$(GNU_TARGET)-gcc -isystem $(ROOT)/$@.partial/$(GNU_TARGET)/include" && \
-	export RUST_TARGET_PATH="$(ROOT)/targets" && \
 	$(MAKE) clean && \
 	$(MAKE) -j 1 all && \
 	$(MAKE) -j 1 install DESTDIR="$(ROOT)/$@.partial/$(GNU_TARGET)"

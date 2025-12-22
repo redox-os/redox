@@ -1,0 +1,6 @@
+#TODO port to redox
+# required host dependencies - https://github.com/cloud-hypervisor/cloud-hypervisor/blob/main/docs/building.md#install-prerequisites
+[source]
+git = "https://github.com/cloud-hypervisor/cloud-hypervisor"
+[build]
+template = "cargo"

@@ -1,0 +1,7 @@
+#TODO not compiled or tested 
+# build instructions: https://github.com/ninja-build/ninja#building-ninja-itself
+[source]
+git = "https://github.com/ninja-build/ninja"
+rev = "v1.13.1"
+[build]
+template = "cmake"

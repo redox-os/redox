@@ -1,0 +1,8 @@
+#TODO not compiled or tested 
+# build instructions: https://github.com/unicorn-engine/unicorn/blob/master/docs/COMPILE.md
+[source]
+git = "https://github.com/unicorn-engine/unicorn"
+rev = "2.1.4"
+shallow_clone = true
+[build]
+template = "cmake"

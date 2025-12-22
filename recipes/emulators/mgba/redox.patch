@@ -1,0 +1,12 @@
+diff -ruwN mgba-0.10.5/src/third-party/zlib/contrib/minizip/ioapi.h source/src/third-party/zlib/contrib/minizip/ioapi.h
+--- mgba-0.10.5/src/third-party/zlib/contrib/minizip/ioapi.h	2025-03-08 20:09:26.000000000 -0700
++++ source/src/third-party/zlib/contrib/minizip/ioapi.h	2025-06-13 13:07:13.489517096 -0600
+@@ -50,7 +50,7 @@
+ #define ftello64 ftell
+ #define fseeko64 fseek
+ #else
+-#ifdef __FreeBSD__
++#if defined(__FreeBSD__) || defined(__redox__)
+ #define fopen64 fopen
+ #define ftello64 ftello
+ #define fseeko64 fseeko

@@ -1,0 +1,6 @@
+#TODO missing script for GNU Make, see https://github.com/danstiner/rust-u2f#building
+#TODO missing service for Redox
+[source]
+git = "https://github.com/danstiner/rust-u2f"
+[build]
+template = "custom"

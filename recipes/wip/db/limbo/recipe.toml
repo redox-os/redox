@@ -1,0 +1,8 @@
+#TODO compilation error on the sqlite3 parser
+[source]
+git = "https://github.com/tursodatabase/limbo"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages limbo_cli
+"""

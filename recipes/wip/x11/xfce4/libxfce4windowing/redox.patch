@@ -1,0 +1,41 @@
+diff -ruwN source-old/libxfce4windowing/xfw-monitor-x11.c source/libxfce4windowing/xfw-monitor-x11.c
+--- source-old/libxfce4windowing/xfw-monitor-x11.c	2025-08-14 01:01:54.000000000 -0600
++++ source/libxfce4windowing/xfw-monitor-x11.c	2025-10-30 15:06:17.333924750 -0600
+@@ -28,7 +28,9 @@
+ #include <X11/extensions/randr.h>
+ #include <X11/extensions/render.h>
+ #include <gdk/gdkx.h>
++#if !defined(__redox__)
+ #include <libdisplay-info/info.h>
++#endif
+ #include <stdlib.h>
+ 
+ #include "xfw-monitor-private.h"
+@@ -429,6 +431,7 @@
+                              &edid_data);
+ 
+         if (gdk_x11_display_error_trap_pop(display) == 0 && edid_data != NULL && nbytes > 0) {
++#if !defined(__redox__)
+             struct di_info *edid_info = di_info_parse_edid(edid_data, nbytes);
+             if (edid_info != NULL) {
+                 char *make = di_info_get_make(edid_info);
+@@ -451,6 +454,7 @@
+ 
+                 di_info_destroy(edid_info);
+             }
++#endif
+         }
+         if (edid_data != NULL) {
+             XFree(edid_data);
+diff -ruwN source-old/meson.build source/meson.build
+--- source-old/meson.build	2025-08-14 01:05:11.000000000 -0600
++++ source/meson.build	2025-10-30 15:05:30.092853306 -0600
+@@ -44,7 +44,7 @@
+ 
+ # Feature: 'x11'
+ x11_deps = []
+-x11_deps += dependency('libdisplay-info', version: dependency_versions['display-info'], required: get_option('x11'))
++#x11_deps += dependency('libdisplay-info', version: dependency_versions['display-info'], required: get_option('x11'))
+ x11_deps += dependency('x11', version: dependency_versions['libx11'], required: get_option('x11'))
+ x11_deps += dependency('gdk-x11-3.0', version: dependency_versions['gtk'], required: get_option('x11'))
+ x11_deps += dependency('libwnck-3.0', version: dependency_versions['wnck'], required: get_option('x11'))

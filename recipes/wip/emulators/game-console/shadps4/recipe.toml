@@ -1,0 +1,23 @@
+#TODO not compiled or tested
+#TODO missing dependencies
+# build instructions - https://github.com/shadps4-emu/shadPS4/blob/main/documents/building-linux.md
+[source]
+git = "https://github.com/shadps4-emu/shadPS4"
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DENABLE_QT_GUI=ON"
+]
+dependencies = [
+    "pulseaudio",
+    "openal",
+    "openssl3",
+    "libedit",
+    "eudev",
+    "libevdev",
+    "sdl2",
+    "sndio",
+    "qt6-base",
+    "qt6-multimedia",
+    "libvulkan",
+]

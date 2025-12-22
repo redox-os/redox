@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/ebiggers/libdeflate#building
+[source]
+tar = "https://github.com/ebiggers/libdeflate/releases/download/v1.19/libdeflate-1.19.tar.gz"
+[build]
+template = "cmake"

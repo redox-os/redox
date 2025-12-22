@@ -1,0 +1,25 @@
+--- libXfont2-2.0.7/Makefile.am	2024-08-01 17:38:40.000000000 -0600
++++ source/Makefile.am	2025-05-02 10:49:08.392987853 -0600
+@@ -159,14 +159,14 @@
+ EXTRA_DIST = src/builtins/buildfont README.md
+ 
+ # Test utilities
+-EXTRA_DIST += test/utils/README
+-
+-TEST_UTIL_SRCS = test/utils/font-test-utils.c test/utils/font-test-utils.h
+-
+-noinst_PROGRAMS = lsfontdir
+-
+-lsfontdir_SOURCES = test/utils/lsfontdir.c $(TEST_UTIL_SRCS)
+-lsfontdir_LDADD = libXfont2.la $(LTLIBOBJS)
++#EXTRA_DIST += test/utils/README
++#
++#TEST_UTIL_SRCS = test/utils/font-test-utils.c test/utils/font-test-utils.h
++#
++#noinst_PROGRAMS = lsfontdir
++#
++#lsfontdir_SOURCES = test/utils/lsfontdir.c $(TEST_UTIL_SRCS)
++#lsfontdir_LDADD = libXfont2.la $(LTLIBOBJS)
+ 
+ 
+ MAINTAINERCLEANFILES = ChangeLog INSTALL

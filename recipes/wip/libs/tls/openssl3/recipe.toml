@@ -1,0 +1,36 @@
+[source]
+tar = "https://github.com/openssl/openssl/releases/download/openssl-3.5.3/openssl-3.5.3.tar.gz"
+patches = [ "redox.patch" ]
+
+[build]
+template = "custom"
+dependencies = [
+    "zlib",
+    "zstd"
+]
+script = """
+DYNAMIC_INIT
+ARCH="${TARGET%%-*}"
+OS=$(echo "${TARGET}" | cut -d - -f3)
+export ARFLAGS=cr
+COOKBOOK_CONFIGURE="${COOKBOOK_SOURCE}/Configure"
+COOKBOOK_CONFIGURE_FLAGS=(
+    no-tests
+    no-unit-test
+    zlib
+    enable-zstd
+    "${OS}-${ARCH}"
+    --prefix="/usr"
+)
+
+if [ "${COOKBOOK_DYNAMIC}" = "1" ]; then
+    COOKBOOK_CONFIGURE_FLAGS+=(shared)
+else
+    COOKBOOK_CONFIGURE_FLAGS+=(no-shared)
+fi
+
+"${COOKBOOK_CONFIGURE}" "${COOKBOOK_CONFIGURE_FLAGS[@]}"
+"${COOKBOOK_MAKE}" -j1 # bug in make/ar
+"${COOKBOOK_MAKE}" install_sw install_ssldirs DESTDIR="${COOKBOOK_STAGE}"
+rm -rfv "${COOKBOOK_STAGE}/"{share,ssl}
+"""

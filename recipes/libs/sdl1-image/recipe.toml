@@ -1,0 +1,26 @@
+[source]
+tar = "https://www.libsdl.org/projects/SDL_image/release/SDL_image-1.2.12.tar.gz"
+blake3 = "731a6f8cad9fff22c82394bd1c0c34ce4aa60fa8923f3755a3e3239f1e269389"
+patches = ["redox.patch"]
+script = """
+./autogen.sh
+"""
+
+[build]
+template = "custom"
+dependencies = [
+    "sdl1",
+    "liborbital",
+    "libiconv",
+    "libjpeg",
+    "libpng",
+    "zlib"
+]
+script = """
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --disable-sdltest
+    --enable-png
+    --enable-jpg
+)
+cookbook_configure
+"""

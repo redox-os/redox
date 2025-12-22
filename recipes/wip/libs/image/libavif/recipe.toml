@@ -1,0 +1,7 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/AOMediaCodec/libavif#build-notes
+[source]
+git = "https://github.com/AOMediaCodec/libavif"
+rev = "ecf2dfc1ef2908e0f4ddb0fdc03dd8db831d8ae7"
+[build]
+template = "cmake"

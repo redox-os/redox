@@ -1,0 +1,37 @@
+[source]
+git = "https://github.com/pop-os/cosmic-reader.git"
+branch = "master"
+
+[build]
+template = "custom"
+dependencies = [
+    "expat",
+    "fontconfig",
+    "freetype2",
+    "libpng",
+    "zlib",
+]
+script = """
+DYNAMIC_INIT
+export BINDGEN_EXTRA_CLANG_ARGS="--sysroot=${COOKBOOK_HOST_SYSROOT}/${GNU_TARGET} -I${COOKBOOK_HOST_SYSROOT}/${GNU_TARGET}/include"
+"${COOKBOOK_CARGO}" rustc \
+    --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
+    --release \
+    --bin cosmic-reader \
+    --no-default-features \
+    --features mupdf \
+    -- \
+    -C link-args="-lpng -lexpat"
+mkdir -pv "${COOKBOOK_STAGE}/usr/bin/"
+cp -v "target/${TARGET}/release/cosmic-reader" "${COOKBOOK_STAGE}/usr/bin/"
+mkdir -pv "${COOKBOOK_STAGE}/ui/apps"
+cp -v "${COOKBOOK_RECIPE}/manifest" "${COOKBOOK_STAGE}/ui/apps/40_cosmic-reader"
+#TODO: install with just?
+APPID="com.system76.CosmicReader"
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/applications/"
+cp -v "${COOKBOOK_SOURCE}/res/${APPID}.desktop" "${COOKBOOK_STAGE}/usr/share/applications/"
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/thumbnailers/"
+cp -v "${COOKBOOK_SOURCE}/res/${APPID}.thumbnailer" "${COOKBOOK_STAGE}/usr/share/thumbnailers/"
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/icons/"
+cp -rv "${COOKBOOK_SOURCE}/res/icons/hicolor/" "${COOKBOOK_STAGE}/usr/share/icons/"
+"""

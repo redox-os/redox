@@ -1,0 +1,15 @@
+[source]
+git = "https://gitlab.redox-os.org/njskalski/aws-lc-rs.git"
+branch = "redox_mods"
+[build]
+template = "custom"
+
+script = """
+    # we need HOST != TARGET, because otherwise we get this error: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=95189
+    # by this line https://gitlab.redox-os.org/njskalski/aws-lc-rs/-/blob/main/aws-lc-sys/builder/cc_builder.rs#L493
+    export HOST=x86_64-linux-gnu
+
+    rsync -a --delete "${COOKBOOK_SOURCE}/" ./
+    cargo build -p aws-lc-sys --target ${TARGET} --release
+    cargo build -p aws-lc-rs --target ${TARGET} --release
+"""

@@ -42,7 +42,7 @@ then
     exit 1
 fi
 
-BOOTLOADER="cookbook/recipes/core/bootloader/target/${ARCH}-unknown-redox/stage/boot/bootloader.efi"
+BOOTLOADER="recipes/core/bootloader/target/${ARCH}-unknown-redox/stage/boot/bootloader.efi"
 set -x
 sudo mkdir -pv "${ESP}/EFI" "${ESP}/loader/entries"
 sudo cp -v "${BOOTLOADER}" "${ESP}/EFI/redox.efi"
@@ -55,3 +55,6 @@ set +x
 sync
 
 echo "Finished installing Redox OS dual boot"
+echo ""
+echo "To mount the RedoxFS partition, run:"
+echo "  ./scripts/mount-redoxfs.sh ${DISK}"

@@ -1,0 +1,5 @@
+#TODO sys-info crate error
+[source]
+git = "https://github.com/pythops/tenere"
+[build]
+template = "cargo"

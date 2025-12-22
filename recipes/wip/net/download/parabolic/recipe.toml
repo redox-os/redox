@@ -1,0 +1,7 @@
+#TODO not compiled or tested
+#TODO it uses vcpkg for dependency management, see: https://github.com/NickvisionApps/parabolic#building-manually
+[source]
+git = "https://github.com/NickvisionApps/Parabolic"
+rev = "7309661a25948c56f25383c464a1b284bdeb00e7"
+[build]
+template = "cmake"

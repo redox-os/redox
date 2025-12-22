@@ -1,0 +1,14 @@
+#TODO mm-common-prepare: not found
+[source]
+tar = "https://www.cairographics.org/releases/cairomm-1.18.0.tar.xz"
+script = "./autogen.sh"
+[build]
+template = "custom"
+dependencies = [
+    "cairo",
+]
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+COOKBOOK_CONFIGURE="./configure"
+cookbook_configure
+"""

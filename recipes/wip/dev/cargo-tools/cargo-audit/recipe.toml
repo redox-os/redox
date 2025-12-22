@@ -1,0 +1,14 @@
+#TODO camino crate error (after a patch on the ring crate)
+[source]
+git = "https://github.com/rustsec/rustsec"
+[build]
+template = "custom"
+dependencies = [
+    "openssl1",
+    "libssh2",
+]
+script = """
+export OPENSSL_DIR="${COOKBOOK_SYSROOT}"
+export OPENSSL_STATIC="true"
+cookbook_cargo_packages cargo-audit
+"""

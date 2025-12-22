@@ -1,0 +1,8 @@
+#TODO missing script for Python, see https://wiki.wxpython.org/How%20to%20install%20wxPython#Installing_wxPython_from_source
+[source]
+tar = "https://files.pythonhosted.org/packages/aa/64/d749e767a8ce7bdc3d533334e03bb1106fc4e4803d16f931fada9007ee13/wxPython-4.2.1.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "wxwidgets-gtk3",
+]

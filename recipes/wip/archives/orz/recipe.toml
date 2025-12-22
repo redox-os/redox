@@ -1,0 +1,5 @@
+#TODO don't run
+[source]
+git = "https://github.com/richox/orz"
+[build]
+template = "cargo"

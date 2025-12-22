@@ -1,0 +1,11 @@
+#TODO mac_address crate error
+[source]
+git = "https://github.com/martinvonz/jj"
+[build]
+template = "custom"
+dependencies = [
+    "openssl1",
+]
+script = """
+cookbook_cargo_packages jj-cli
+"""

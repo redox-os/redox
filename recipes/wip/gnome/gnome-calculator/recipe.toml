@@ -1,0 +1,16 @@
+#TODO not compiled or tested
+#TODO determine minimum dependencies from meson log
+[source]
+tar = "https://download.gnome.org/sources/gnome-calculator/49/gnome-calculator-49.1.1.tar.xz"
+[build]
+template = "meson"
+mesonflags = [
+    "-Ddisable-introspection=true",
+    "-Ddoc=false",
+]
+#dependencies = [
+#    "glib",
+#    "libsoup",
+#    "mpc",
+#    "mpfr",
+#]

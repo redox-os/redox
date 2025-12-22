@@ -1,0 +1,12 @@
+#TODO not compiled or tested
+#TODO missing dependencies
+[source]
+tar = "https://download.gnome.org/sources/gnome-sudoku/49/gnome-sudoku-49.2.tar.xz"
+[build]
+template = "meson"
+dependencies = [
+    "glib",
+    "gtk4",
+    "libadwaita",
+    "json-glib",
+]

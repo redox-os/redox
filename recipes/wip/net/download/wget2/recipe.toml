@@ -1,0 +1,15 @@
+#TODO make dependencies work
+[source]
+tar = "https://ftp.gnu.org/gnu/wget/wget2-2.0.1.tar.gz"
+[build]
+template = "configure"
+dependencies = [
+    "gettext",
+    "libiconv",
+    "zlib",
+    "pcre",
+    "gnutls",
+    "bzip2",
+    "xz",
+    "zstd",
+]

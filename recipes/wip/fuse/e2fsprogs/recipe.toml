@@ -1,0 +1,6 @@
+#TODO maybe wrong template
+# build instructions - https://git.kernel.org/pub/scm/fs/ext2/e2fsprogs.git/tree/INSTALL
+[source]
+tar = "http://prdownloads.sourceforge.net/e2fsprogs/e2fsprogs-1.47.1.tar.gz"
+[build]
+template = "configure"

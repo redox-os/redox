@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/ritiek/piano-rs"
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}"/usr/share/piano-rs
+cp -rv "${COOKBOOK_SOURCE}"/assets "${COOKBOOK_STAGE}"/usr/share/piano-rs
+cookbook_cargo
+"""

@@ -1,0 +1,5 @@
+#TODO ahash crate error
+[source]
+git = "https://github.com/arjunkomath/rustyink"
+[build]
+template = "cargo"

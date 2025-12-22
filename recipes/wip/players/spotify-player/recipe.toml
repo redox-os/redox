@@ -1,0 +1,21 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/aome510/spotify-player"
+[build]
+template = "custom"
+dependencies = [
+    "openssl1",
+]
+script = """
+package=spotify_player
+"${COOKBOOK_CARGO}" build \
+            --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
+            --package "${package}" \
+            --release
+            --no-default-features
+            --rodio-backend
+        mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
+        cp -v \
+            "target/${TARGET}/release/${package}" \
+            "${COOKBOOK_STAGE}/usr/bin/${package}"
+"""

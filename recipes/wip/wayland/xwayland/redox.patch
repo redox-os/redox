@@ -1,0 +1,158 @@
+diff -ruwN source/hw/xwayland/meson.build source-new/hw/xwayland/meson.build
+--- source/hw/xwayland/meson.build	2024-01-16 16:38:49.000000000 +0700
++++ source-new/hw/xwayland/meson.build	2025-10-01 07:51:14.456575515 +0700
+@@ -30,8 +30,7 @@
+     '../../mi/miinitext.h',
+ ]
+ 
+-scanner_dep = dependency('wayland-scanner', native: true)
+-scanner = find_program(scanner_dep.get_pkgconfig_variable('wayland_scanner'))
++scanner =  find_program('wayland-scanner', native: true)
+ 
+ protocols_dep = dependency('wayland-protocols', version: wayland_protocols_req)
+ protodir = protocols_dep.get_pkgconfig_variable('pkgdatadir')
+@@ -55,11 +54,7 @@
+     arguments : ['client-header', '@INPUT@', '@OUTPUT@']
+ )
+ 
+-if scanner_dep.version().version_compare('>= 1.14.91')
+     scanner_argument = 'private-code'
+-else
+-    scanner_argument = 'code'
+-endif
+ 
+ code = generator(scanner,
+     output : '@BASENAME@-protocol.c',
+diff -ruwN source/hw/xwayland/xwayland-glamor.h source-new/hw/xwayland/xwayland-glamor.h
+--- source/hw/xwayland/xwayland-glamor.h	2024-01-16 16:38:49.000000000 +0700
++++ source-new/hw/xwayland/xwayland-glamor.h	2025-10-01 08:01:01.409102814 +0700
+@@ -31,7 +31,7 @@
+ #include <sys/types.h>
+ 
+ #include <wayland-client.h>
+-#include <xf86drm.h>
++// #include <xf86drm.h>
+ 
+ #include "xwayland-types.h"
+ 
+@@ -103,7 +103,7 @@
+     /* Called to get the DRM device of the primary GPU that this backend
+      * is set up on.
+      */
+-    drmDevice *(*get_main_device)(struct xwl_screen *xwl_screen);
++    // drmDevice *(*get_main_device)(struct xwl_screen *xwl_screen);
+ 
+     /* Direct hook to create the backing pixmap for a window */
+     PixmapPtr (*create_pixmap_for_window)(struct xwl_window *xwl_window);
+diff -ruwN source/hw/xwayland/xwayland-input.c source-new/hw/xwayland/xwayland-input.c
+--- source/hw/xwayland/xwayland-input.c	2024-01-16 16:38:49.000000000 +0700
++++ source-new/hw/xwayland/xwayland-input.c	2025-10-01 08:02:59.681082380 +0700
+@@ -26,7 +26,7 @@
+ 
+ #include <xwayland-config.h>
+ 
+-#include <linux/input.h>
++// #include <linux/input.h>
+ #include <sys/mman.h>
+ 
+ #include <inputstr.h>
+@@ -758,6 +758,7 @@
+     xwl_seat->xwl_screen->serial = serial;
+ 
+     switch (button) {
++/*
+     case BTN_LEFT:
+         index = 1;
+         break;
+@@ -768,10 +769,9 @@
+         index = 3;
+         break;
+     default:
+-        /* Skip indexes 4-7: they are used for vertical and horizontal scroll.
+-           The rest of the buttons go in order: BTN_SIDE becomes 8, etc. */
+         index = 8 + button - BTN_SIDE;
+         break;
++*/
+     }
+ 
+     valuator_mask_zero(&mask);
+@@ -1057,7 +1057,7 @@
+ 
+     state_rec = xwl_seat->keyboard->key->xkbInfo->state;
+     xkb_state = (XkbStateFieldFromRec(&state_rec) & 0xff);
+-
++    /*
+     if (((key == KEY_LEFTSHIFT || key == KEY_RIGHTSHIFT) && (xkb_state & ControlMask)) ||
+         ((key == KEY_LEFTCTRL || key == KEY_RIGHTCTRL) && (xkb_state & ShiftMask))) {
+ 
+@@ -1072,6 +1072,7 @@
+         if (xwl_window)
+             xwl_window_rootful_update_title(xwl_window);
+     }
++    */
+ }
+ 
+ static void
+diff -ruwN source/hw/xwayland/xwayland-window.c source-new/hw/xwayland/xwayland-window.c
+--- source/hw/xwayland/xwayland-window.c	2024-01-16 16:38:49.000000000 +0700
++++ source-new/hw/xwayland/xwayland-window.c	2025-10-01 08:00:07.858324820 +0700
+@@ -1102,7 +1102,7 @@
+     for (int j = 0; j < dev_formats->num_formats; j++)
+         free(dev_formats->formats[j].modifiers);
+     free(dev_formats->formats);
+-    drmFreeDevice(&dev_formats->drm_dev);
++    // drmFreeDevice(&dev_formats->drm_dev);
+ }
+ 
+ void
+diff -ruwN source/hw/xwayland/xwayland-window.h source-new/hw/xwayland/xwayland-window.h
+--- source/hw/xwayland/xwayland-window.h	2024-01-16 16:38:49.000000000 +0700
++++ source-new/hw/xwayland/xwayland-window.h	2025-10-01 08:00:40.464798537 +0700
+@@ -38,7 +38,7 @@
+ #include <propertyst.h>
+ #include <validate.h>
+ #include <wayland-util.h>
+-#include <xf86drm.h>
++// #include <xf86drm.h>
+ 
+ #include "xwayland-types.h"
+ 
+@@ -55,7 +55,7 @@
+ };
+ 
+ struct xwl_device_formats {
+-    drmDevice *drm_dev;
++    // drmDevice *drm_dev;
+     int supports_scanout;
+     uint32_t num_formats;
+     struct xwl_format *formats;
+@@ -75,7 +75,7 @@
+ struct xwl_dmabuf_feedback {
+     struct zwp_linux_dmabuf_feedback_v1 *dmabuf_feedback;
+     struct xwl_format_table format_table;
+-    drmDevice *main_dev;
++    // drmDevice *main_dev;
+     /*
+      * This will be filled in during wl events and copied to
+      * dev_formats on dmabuf_feedback.tranche_done
+diff -ruwN source/os/access.c source-new/os/access.c
+--- source/os/access.c	2024-01-16 16:38:49.000000000 +0700
++++ source-new/os/access.c	2025-10-01 07:22:43.931644468 +0700
+@@ -446,7 +446,7 @@
+     int family;
+     register HOST *host;
+ 
+-#ifndef WIN32
++#if !defined(WIN32) && !defined(__redox__)
+     struct utsname name;
+ #else
+     struct {
+@@ -477,7 +477,7 @@
+      * uname() lets me access to the whole string (it smashes release, you
+      * see), whereas gethostname() kindly truncates it for me.
+      */
+-#ifndef WIN32
++#if !defined(WIN32) && !defined(__redox__)
+     uname(&name);
+ #else
+     gethostname(name.nodename, sizeof(name.nodename));

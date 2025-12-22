@@ -1,0 +1,5 @@
+#TODO missing script for building, see https://github.com/jedisct1/Blogbench#readme
+[source]
+tar = "https://github.com/jedisct1/Blogbench/releases/download/1.2/blogbench-1.2.tar.bz2"
+[build]
+template = "custom"

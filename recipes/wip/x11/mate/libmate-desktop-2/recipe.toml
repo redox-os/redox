@@ -1,0 +1,11 @@
+[source]
+tar = "https://github.com/mate-desktop/mate-desktop/releases/download/v1.28.2/mate-desktop-1.28.2.tar.xz"
+blake3 = "b5897e91e0ad542dc3331209bb260124c8e14d654fcdb2d9a738e9fc23d4d3fa"
+
+[build]
+dependencies = [
+    "dconf",
+    "iso-codes",
+    "gtk3",
+]
+template = "meson"

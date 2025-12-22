@@ -1,0 +1,127 @@
+[source]
+same_as = "../base"
+
+[build]
+template = "custom"
+dependencies = [
+  "redoxfs",
+]
+script = """
+BINS=(
+    init
+    logd
+    ramfs
+    randd
+    zerod
+
+    acpid
+    fbbootlogd
+    fbcond
+    hwd
+    inputd
+    lived
+    nvmed
+    pcid
+    pcid-spawner
+    rtcd
+    vesad
+)
+
+virt_bins()
+{
+    BINS+=(virtio-blkd virtio-gpud)
+}
+
+x86_common_bins()
+{
+    BINS+=(ahcid ided ps2d vesad)
+    virt_bins
+}
+
+aarch64_bins()
+{
+    case "${BOARD}" in
+        raspi3b*)
+            BINS+=(bcm2835-sdhcid)
+        ;;
+        *)
+        #qemu-virt
+            virt_bins
+        ;;
+    esac
+}
+
+case "${TARGET}" in
+    i586-unknown-redox | i686-unknown-redox)
+        x86_common_bins
+        ;;
+    x86_64-unknown-redox)
+        x86_common_bins
+        ;;
+    aarch64-unknown-redox)
+        aarch64_bins
+        ;;
+    *)
+        ;;
+esac
+
+rm -rf "${COOKBOOK_BUILD}/initfs"
+mkdir -p "${COOKBOOK_BUILD}/initfs/etc"
+
+cp "${COOKBOOK_SOURCE}/init.rc" "${COOKBOOK_BUILD}/initfs/etc/init.rc"
+cp "${COOKBOOK_SOURCE}/init_drivers.rc" "${COOKBOOK_BUILD}/initfs/etc/init_drivers.rc"
+if [ -e ${COOKBOOK_SOURCE}/${TARGET}/init_drivers.rc.${BOARD} ]; then
+    cp "${COOKBOOK_SOURCE}/${TARGET}/init_drivers.rc.${BOARD}" "${COOKBOOK_BUILD}/initfs/etc/init_drivers.rc"
+elif [ -e ${COOKBOOK_SOURCE}/${TARGET}/init_drivers.rc ]; then
+    cp "${COOKBOOK_SOURCE}/${TARGET}/init_drivers.rc" "${COOKBOOK_BUILD}/initfs/etc/init_drivers.rc"
+fi
+
+mkdir -pv "${COOKBOOK_BUILD}/initfs/etc/pcid"
+cp -v "${COOKBOOK_SOURCE}/drivers/initfs.toml" "${COOKBOOK_BUILD}/initfs/etc/pcid/initfs.toml"
+
+export CARGO_PROFILE_RELEASE_OPT_LEVEL=s
+export CARGO_PROFILE_RELEASE_PANIC=abort
+"${COOKBOOK_CARGO}" build ${build_flags} \
+    --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
+    $(for bin in "${BINS[@]}"; do echo "-p" "${bin}"; done)
+
+mkdir -pv "${COOKBOOK_BUILD}/initfs/bin" "${COOKBOOK_BUILD}/initfs/lib/drivers"
+for bin in "${BINS[@]}"
+do
+    case "${bin}" in
+      init | logd | ramfs | randd | zerod | pcid | pcid-spawner | fbbootlogd | fbcond | inputd | vesad | lived | ps2d | acpid | bcm2835-sdhcid | rtcd | hwd)
+        cp -v "target/${TARGET}/${build_type}/${bin}" "${COOKBOOK_BUILD}/initfs/bin"
+        ;;
+      *)
+        cp -v "target/${TARGET}/${build_type}/${bin}" "${COOKBOOK_BUILD}/initfs/lib/drivers"
+        ;;
+    esac
+done
+
+# TODO: symlinks aren't supported by redox-initfs
+#ln -sv zerod "${COOKBOOK_BUILD}/initfs/bin/nulld"
+
+cp "${COOKBOOK_BUILD}/initfs/bin/zerod" "${COOKBOOK_BUILD}/initfs/bin/nulld"
+
+cp "${COOKBOOK_SYSROOT}/usr/bin/redoxfs" "${COOKBOOK_BUILD}/initfs/bin"
+
+ARCH="$(echo "${GNU_TARGET}" | cut -d - -f1)"
+RUSTFLAGS="$RUSTFLAGS -Ctarget-feature=+crt-static" cargo \
+    -Zbuild-std=core,alloc,compiler_builtins \
+    -Zbuild-std-features=compiler-builtins-mem build \
+    --target "${TARGET}" \
+    --manifest-path "${COOKBOOK_SOURCE}/bootstrap/Cargo.toml" \
+    --release \
+    --target-dir "${COOKBOOK_BUILD}"
+"${GNU_TARGET}-ld" \
+    -o "${COOKBOOK_BUILD}/bootstrap" \
+    --gc-sections \
+    -T "${COOKBOOK_SOURCE}/bootstrap/src/${ARCH}.ld" \
+    -z max-page-size=4096 \
+    "${COOKBOOK_BUILD}/${TARGET}/release/libbootstrap.a"
+
+env -u CARGO cargo run --manifest-path "${COOKBOOK_SOURCE}/initfs/tools/Cargo.toml" --bin redox-initfs-ar -- "${COOKBOOK_BUILD}/initfs" "${COOKBOOK_BUILD}/bootstrap" -o "${COOKBOOK_BUILD}/initfs.img"
+
+mkdir -v "${COOKBOOK_STAGE}/boot"
+cp "${COOKBOOK_BUILD}/initfs.img" "${COOKBOOK_STAGE}/boot/initfs"
+"""

@@ -1,0 +1,13 @@
+#TODO not compiled or tested
+# build instructions: https://clickhouse.com/docs/en/development/build#how-to-build-clickhouse-on-any-linux
+[source]
+git = "https://github.com/ClickHouse/ClickHouse"
+rev = "v25.10.2.65-stable"
+shallow_clone = true
+[build]
+template = "cmake"
+dependencies = [
+    "curl",
+    "openssl3",
+    "xz",
+]

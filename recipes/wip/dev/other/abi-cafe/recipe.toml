@@ -1,0 +1,5 @@
+#TODO compiled but not tested (after an update on the libc crate)
+[source]
+git = "https://github.com/Gankra/abi-cafe"
+[build]
+template = "cargo"

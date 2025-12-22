@@ -1,0 +1,13 @@
+#TODO compiled but not tested (after cargo update)
+[source]
+git = "https://github.com/Y2Z/monolith"
+[build]
+template = "custom"
+dependencies = [
+    "openssl1",
+]
+script = """
+export OPENSSL_DIR="${COOKBOOK_SYSROOT}"
+export OPENSSL_STATIC="true"
+cookbook_cargo
+"""

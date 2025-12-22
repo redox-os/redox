@@ -1,0 +1,27 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/mixxxdj/mixxx/wiki/Compiling%20on%20Linux
+#TODO missing dependencies: https://github.com/mixxxdj/mixxx/blob/main/tools/debian_buildenv.sh
+[source]
+git = "https://github.com/mixxxdj/mixxx"
+branch = "2.5"
+[build]
+template = "cmake"
+dependencies = [
+    "fftw",
+    "libflac",
+    "mesa",
+    "libhidapi",
+    "libmad",
+    "libopus",
+    "libopusfile",
+    "protobuf",
+    "qt6-base",
+    "qt6-svg",
+    "qt6-declarative",
+    "qt6-3d",
+    "librubberband",
+    "libsndfile",
+    "sqlite3",
+    "openssl1",
+    "portaudio",
+]

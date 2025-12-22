@@ -1,0 +1,5 @@
+#TODO async-io and rustix crate errors (after cargo update)
+[source]
+git = "https://github.com/bvaisvil/zenith"
+[build]
+template = "cargo"

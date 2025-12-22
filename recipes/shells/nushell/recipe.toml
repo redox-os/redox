@@ -1,0 +1,20 @@
+#TODO: build fails to link, we need the following in relibc
+# - getgrgid_r
+# - getgrouplist
+# Additionally, openssl fails to link fprintf and sscanf
+
+[source]
+git = "https://github.com/jackpot51/nushell.git"
+branch = "redox"
+
+[build]
+dependencies = [
+  "openssl1"
+]
+template = "custom"
+script = """
+export OPENSSL_DIR="${COOKBOOK_SYSROOT}"
+export OPENSSL_STATIC="true"
+cookbook_cargo
+"""
+

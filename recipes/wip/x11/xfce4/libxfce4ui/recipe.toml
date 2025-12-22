@@ -1,0 +1,47 @@
+[source]
+tar = "https://archive.xfce.org/src/xfce/libxfce4ui/4.21/libxfce4ui-4.21.2.tar.xz"
+blake3 = "027adb15e74b6df534bc526ec0e1056fede33cf2e69ce802391fb1f714350015"
+
+[build]
+dependencies = [
+    "atk",
+    "cairo",
+    "expat",
+    "fontconfig",
+    "freetype2",
+    "fribidi",
+    "gdk-pixbuf",
+    "gettext",
+    "glib",
+    "gtk3",
+    "harfbuzz",
+    "libepoxy",
+    "libffi",
+    "libiconv",
+    "libjpeg",
+    "libpng",
+    "libpthread-stubs",
+    "libx11",
+    "libxau",
+    "libxcb",
+    "libxext",
+    "libxfce4util",
+    "libxfixes",
+    "libxft",
+    "libxi",
+    "libxrandr",
+    "libxrender",
+    "libxxf86vm",
+    "mesa-x11",
+    "pango",
+    "pcre2",
+    "pixman",
+    "shared-mime-info",
+    "x11proto",
+    "xfconf",
+    "zlib",
+]
+template = "meson"
+mesonflags = [
+    "-Dintrospection=false",
+]

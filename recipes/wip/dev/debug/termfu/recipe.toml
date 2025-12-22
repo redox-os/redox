@@ -1,0 +1,15 @@
+#TODO missing script for gnu make
+# build instructions: https://github.com/jvalcher/termfu#installation
+[source]
+git = "https://github.com/jvalcher/termfu"
+rev = "v0.2.2"
+[build]
+template = "custom"
+dependencies = [
+    "ncurses",
+]
+[package]
+dependencies = [
+    "gdb",
+    "python312",
+]

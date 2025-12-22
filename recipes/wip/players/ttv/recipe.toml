@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/nik-rev/ttv"
+[build]
+template = "cargo"
+dependencies = [
+    "ffmpeg6",
+]

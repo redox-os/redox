@@ -1,0 +1,5 @@
+#TODO network-interface crate error (after cargo update)
+[source]
+git = "https://github.com/ducaale/xh"
+[build]
+template = "cargo"

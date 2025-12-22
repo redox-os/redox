@@ -1,0 +1,12 @@
+#TODO missing script for gnu make: https://github.com/wolfpld/tracy/releases/latest/download/tracy.pdf
+[source]
+git = "https://github.com/wolfpld/tracy"
+rev = "v0.13.0"
+[build]
+template = "custom"
+dependencies = [
+    "glfw3",
+    "freetype2",
+    "dbus",
+    "capstone",
+]

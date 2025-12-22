@@ -1,0 +1,5 @@
+#TODO missing script for "make", see https://github.com/copy/v86#how-to-build-run-and-embed
+[source]
+git = "https://github.com/copy/v86"
+[build]
+template = "custom"

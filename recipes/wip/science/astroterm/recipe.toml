@@ -1,0 +1,5 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/da-luce/astroterm"
+[build]
+template = "cargo"

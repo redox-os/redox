@@ -1,0 +1,11 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/czerwonk/hakanai"
+[build]
+template = "custom"
+dependencies = [
+    "openssl3"
+]
+script = """
+cookbook_cargo_packages hakanai hakanai-server
+"""

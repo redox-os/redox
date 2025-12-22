@@ -16,13 +16,13 @@ findutils = {}
 ion = {}
 netdb = {}
 pkgutils = {}
-smith = {}
+kibi = {}
 
 [[files]]
 path = "/usr/lib/init.d/30_console"
 data = """
 inputd -A 2
-getty 2
-getty /scheme/debug -J
+nowait getty 2
+nowait getty /scheme/debug -J
 """
 

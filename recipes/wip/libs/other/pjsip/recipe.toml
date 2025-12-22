@@ -1,0 +1,12 @@
+#TODO make libvpx work
+# customization - https://docs.pjsip.org/en/latest/get-started/posix/build_instructions.html
+[source]
+git = "https://github.com/pjsip/pjproject"
+rev = "08578e86eea120c5ab2ab1af5a18b7840120d87b"
+[build]
+template = "configure"
+dependencies = [
+    "openssl1",
+    "ffmpeg6",
+    "libvpx",
+]

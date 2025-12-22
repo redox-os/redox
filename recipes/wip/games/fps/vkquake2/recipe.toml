@@ -1,0 +1,10 @@
+#TODO missing script for gnu make
+# build instructions: https://github.com/kondrak/vkQuake2#linux
+[source]
+git = "https://github.com/kondrak/vkQuake2"
+rev = "bdd39b142fbadf581fd9d904968a83fb9b4a929a"
+[build]
+template = "custom"
+dependencies = [
+    "mesa-x11",
+]

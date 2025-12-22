@@ -1,0 +1,11 @@
+#TODO missing script for "make", see https://github.com/tramhao/termusic#from-source
+[source]
+git = "https://github.com/tramhao/termusic"
+rev = "109405465bd5873567b5387c20e9b149e477b176"
+[build]
+template = "custom"
+dependencies = [
+    "gstreamer",
+    "dbus",
+    "mpv",
+]

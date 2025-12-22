@@ -1,0 +1,9 @@
+#TODO program source code error (after cargo update)
+#TODO require NodeJS and NPM
+[source]
+git = "https://github.com/ekzhang/sshx"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages sshx
+"""

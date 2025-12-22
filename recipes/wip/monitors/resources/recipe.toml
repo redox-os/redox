@@ -1,0 +1,13 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/nokyan/resources"
+[build]
+template = "meson"
+mesonflags = [
+    "-Dprofile=default",
+]
+dependencies = [
+    "glib",
+    "gtk4",
+    "libadwaita",
+]

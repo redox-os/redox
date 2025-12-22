@@ -1,0 +1,5 @@
+#TODO compilation error
+[source]
+tar = "https://sourceforge.net/projects/smartmontools/files/smartmontools/7.3/smartmontools-7.3.tar.gz/download"
+[build]
+template = "configure"

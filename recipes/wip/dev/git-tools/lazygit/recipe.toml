@@ -1,0 +1,23 @@
+#TODO: Incomplete std/syscall porting, or vendor patches
+[source]
+git = "https://github.com/jesseduffield/lazygit"
+
+[build]
+template = "custom"
+dev-dependencies = [
+    "host:go"
+]
+script = """
+export GOTOOLCHAIN=local
+case "${TARGET}" in
+    x86_64-unknown-linux-gnu)  export GOARCH=amd64 GOOS=linux;;
+    aarch64-unknown-linux-gnu) export GOARCH=arm64 GOOS=linux;;
+    i586-unknown-redox)     export GOARCH=386 GOOS=redox;;
+    x86_64-unknown-redox)  export GOARCH=amd64 GOOS=redox;;
+    aarch64-unknown-redox) export GOARCH=arm64 GOOS=redox;;
+    riscv64gc-unknown-redox) export GOARCH=riscv64 GOOS=redox;;
+esac
+
+mkdir -p $COOKBOOK_STAGE/usr/bin
+go build -C ${COOKBOOK_SOURCE} -o $COOKBOOK_STAGE/usr/bin/lazygit
+"""

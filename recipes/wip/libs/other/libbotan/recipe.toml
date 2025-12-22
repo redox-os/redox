@@ -1,0 +1,5 @@
+#TODO missing script for building
+[source]
+tar = "https://botan.randombit.net/releases/Botan-3.2.0.tar.xz"
+[build]
+template = "custom"

@@ -1,0 +1,5 @@
+#TODO program source code error
+[source]
+git = "https://github.com/solidiquis/erdtree"
+[build]
+template = "cargo"

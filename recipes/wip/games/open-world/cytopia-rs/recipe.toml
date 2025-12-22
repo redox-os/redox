@@ -1,0 +1,5 @@
+#TODO compilation error
+[source]
+git = "https://codeberg.org/Esther1024/pia-fork"
+[build]
+template = "cargo"

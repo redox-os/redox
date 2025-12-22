@@ -1,0 +1,5 @@
+#TODO update the redox_syscall crate version (after cargo update)
+[source]
+git = "https://github.com/LectureCut/CLI"
+[build]
+template = "cargo"

@@ -1,0 +1,88 @@
+diff -ruw source/lib/cmpbuf.c source-new/lib/cmpbuf.c
+--- source/lib/cmpbuf.c	2017-01-01 04:22:36.000000000 -0700
++++ source-new/lib/cmpbuf.c	2018-12-29 07:31:43.920193561 -0700
+@@ -71,8 +71,8 @@
+ 	     ancient AIX hosts that set errno to EINTR after uncaught
+ 	     SIGCONT.  See <news:1r77ojINN85n@ftp.UU.NET>
+ 	     (1993-04-22).  */
+-	  if (! SA_RESTART && errno == EINTR)
+-	    continue;
++	  //if (! SA_RESTART && errno == EINTR)
++	  //  continue;
+ 
+ 	  return SIZE_MAX;
+ 	}
+diff -ruw source/lib/getdtablesize.c source-new/lib/getdtablesize.c
+--- source/lib/getdtablesize.c	2017-05-18 10:23:32.000000000 -0600
++++ source-new/lib/getdtablesize.c	2018-12-29 07:32:31.709586573 -0700
+@@ -109,6 +109,7 @@
+ int
+ getdtablesize (void)
+ {
++#if !defined(__redox__)
+   struct rlimit lim;
+ 
+   if (getrlimit (RLIMIT_NOFILE, &lim) == 0
+@@ -117,6 +118,7 @@
+       && lim.rlim_cur != RLIM_SAVED_CUR
+       && lim.rlim_cur != RLIM_SAVED_MAX)
+     return lim.rlim_cur;
++#endif
+ 
+   return INT_MAX;
+ }
+diff -ruw source/lib/getprogname.c source-new/lib/getprogname.c
+--- source/lib/getprogname.c	2017-01-31 11:36:50.000000000 -0700
++++ source-new/lib/getprogname.c	2018-12-29 07:34:15.432575388 -0700
+@@ -51,6 +51,14 @@
+ # include <sys/procfs.h>
+ #endif
+ 
++#if defined(__redox__)
++# include <string.h>
++# include <unistd.h>
++# include <stdio.h>
++# include <fcntl.h>
++# include <limits.h>
++#endif
++
+ #include "dirname.h"
+ 
+ #ifndef HAVE_GETPROGNAME             /* not Mac OS X, FreeBSD, NetBSD, OpenBSD >= 5.4, Cygwin */
+@@ -177,6 +185,17 @@
+         }
+     }
+   return NULL;
++# elif defined(__redox__)
++  char filename[PATH_MAX];
++  int fd = open ("sys:exe", O_RDONLY);
++  if (fd > 0) {
++    int len = read(fd, filename, PATH_MAX-1);
++    if (len > 0) {
++       filename[len] = '\0';
++       return strdup(filename);
++    }
++  }
++  return NULL;
+ # else
+ #  error "getprogname module not ported to this OS"
+ # endif
+diff -ruw source/lib/sigprocmask.c source-new/lib/sigprocmask.c
+--- source/lib/sigprocmask.c	2017-05-18 10:23:32.000000000 -0600
++++ source-new/lib/sigprocmask.c	2018-12-29 07:45:02.610557142 -0700
+@@ -126,6 +126,7 @@
+     return 0;
+ }
+ 
++#if !defined(__redox__)
+ int
+ sigemptyset (sigset_t *set)
+ {
+@@ -180,6 +181,7 @@
+   *set = ((2U << (NSIG - 1)) - 1) & ~ SIGABRT_COMPAT_MASK;
+   return 0;
+ }
++#endif
+ 
+ /* Set of currently blocked signals.  */
+ static volatile sigset_t blocked_set /* = 0 */;

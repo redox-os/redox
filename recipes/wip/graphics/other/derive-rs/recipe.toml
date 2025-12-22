@@ -1,0 +1,5 @@
+#TODO very outdated crates
+[source]
+git = "https://github.com/erik/derive.rs"
+[build]
+template = "cargo"

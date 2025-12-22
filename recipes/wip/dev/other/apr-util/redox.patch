@@ -1,0 +1,41 @@
+diff --git a/apu-config.in b/apu-config.in
+index 82109e5..2d005c9 100644
+--- a/apu-config.in
++++ b/apu-config.in
+@@ -140,12 +140,12 @@ while test $# -gt 0; do
+     ;;
+     --includes)
+     if test "$location" = "installed"; then
+-        flags="$flags -I$includedir $INCLUDES"
++        flags="$flags $INCLUDES"
+     elif test "$location" = "source"; then
+-        flags="$flags -I$APU_SOURCE_DIR/include $INCLUDES"
++        flags="$flags $INCLUDES"
+     else
+         # this is for VPATH builds
+-        flags="$flags -I$APU_BUILD_DIR/include -I$APU_SOURCE_DIR/include $INCLUDES"
++        flags="$flags $INCLUDES"
+     fi
+     ;;
+     --ldflags)
+@@ -162,9 +162,9 @@ while test $# -gt 0; do
+     --link-ld)
+     if test "$location" = "installed"; then
+         ### avoid using -L if libdir is a "standard" location like /usr/lib
+-        flags="$flags -L$libdir -l$APRUTIL_LIBNAME"
++        flags="$flags -l$APRUTIL_LIBNAME"
+     else
+-        flags="$flags -L$APU_BUILD_DIR -l$APRUTIL_LIBNAME"
++        flags="$flags -l$APRUTIL_LIBNAME"
+     fi
+     ;;
+     --link-libtool)
+@@ -178,7 +178,7 @@ while test $# -gt 0; do
+         ### avoid using -L if libdir is a "standard" location like /usr/lib
+         # Since the user is specifying they are linking with libtool, we
+         # *know* that -R will be recognized by libtool.
+-        flags="$flags -L$libdir -R$libdir -l$APRUTIL_LIBNAME"
++        flags="$flags -l$APRUTIL_LIBNAME"
+     else
+         flags="$flags $LA_FILE"
+     fi

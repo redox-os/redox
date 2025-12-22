@@ -1,0 +1,5 @@
+#TODO working but don't draw the size bars
+[source]
+git = "https://github.com/bootandy/dust"
+[build]
+template = "cargo"

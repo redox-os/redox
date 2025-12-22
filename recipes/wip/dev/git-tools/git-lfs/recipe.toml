@@ -1,0 +1,5 @@
+#TODO missing script for GNU Make, see https://github.com/git-lfs/git-lfs?tab=readme-ov-file#from-source
+[source]
+tar = "https://github.com/git-lfs/git-lfs/releases/download/v3.5.1/git-lfs-v3.5.1.tar.gz"
+[build]
+template = "custom"

@@ -1,0 +1,87 @@
+# The Redox build server configuration
+
+# General settings
+[general]
+# Do not prompt if settings are not defined
+prompt = false
+
+# Package settings
+[packages]
+acid = {}
+base = {}
+base-initfs = {}
+bash = {}
+bootloader = {}
+bottom = {}
+ca-certificates = {}
+contain = {}
+coreutils = {}
+cosmic-edit = {}
+cosmic-files = {}
+cosmic-icons = {}
+cosmic-term = {}
+cosmic-text = {}
+curl = {}
+dash = {}
+dejavu = {}
+diffutils = {}
+expat = {}
+extrautils = {}
+findutils = {}
+freefont = {}
+freetype2 = {}
+gettext = {}
+git = {}
+gnu-make = {}
+hicolor-icon-theme = {}
+installer = {}
+installer-gui = {}
+ion = {}
+kernel = {}
+kibi = {}
+libffi = {}
+libgcc = {}
+libiconv = {}
+libjpeg = {}
+libogg = {}
+liborbital = {}
+libpng = {}
+libstdcxx = {}
+libvorbis = {}
+libxkbcommon = {}
+libxml2 = {}
+nano = {}
+nasm = {}
+ncurses = {}
+netdb = {}
+netsurf = {}
+netutils = {}
+nghttp2 = {}
+openssl1 = {}
+orbdata = {}
+orbital = {}
+orbterm = {}
+orbutils = {}
+orbutils-background = {}
+orbutils-launcher = {}
+orbutils-orblogin = {}
+patch = {}
+pcre = {}
+patchelf = {}
+pop-icon-theme = {}
+pkgutils = {}
+redoxfs = {}
+relibc = {}
+resist = {}
+ripgrep = {}
+rustpython = {}
+sdl1 = {}
+sed = {}
+shared-mime-info = {}
+smith = {}
+terminfo = {}
+userutils = {}
+uutils = {}
+xz = {}
+#vim = {} # conflicting types
+zlib = {}

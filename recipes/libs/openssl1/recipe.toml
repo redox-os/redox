@@ -1,0 +1,30 @@
+[source]
+git = "https://gitlab.redox-os.org/redox-os/openssl.git"
+branch = "redox-v1"
+shallow_clone = true
+[build]
+template = "custom"
+script = """
+DYNAMIC_INIT
+ARCH="${TARGET%%-*}"
+OS=$(echo "${TARGET}" | cut -d - -f3)
+COOKBOOK_CONFIGURE="${COOKBOOK_SOURCE}/Configure"
+COOKBOOK_CONFIGURE_FLAGS=(
+    threads
+    no-dgram
+    "${OS}-${ARCH}"
+    --prefix="/"
+)
+
+if [ "${COOKBOOK_DYNAMIC}" = "1" ]; then
+    COOKBOOK_CONFIGURE_FLAGS+=(shared)
+else
+    COOKBOOK_CONFIGURE_FLAGS+=(no-shared)
+fi
+
+export CC="${CC_WRAPPER} ${GNU_TARGET}-gcc"
+"${COOKBOOK_CONFIGURE}" "${COOKBOOK_CONFIGURE_FLAGS[@]}"
+"${COOKBOOK_MAKE}" -j"${COOKBOOK_MAKE_JOBS}"
+"${COOKBOOK_MAKE}" install_sw install_ssldirs DESTDIR="${COOKBOOK_STAGE}"
+rm -rfv "${COOKBOOK_STAGE}/"{share,ssl}
+"""

@@ -1,0 +1,13 @@
+#TODO download game data - https://sourceforge.net/projects/sc2/files/UQM/0.8/uqm-0.8.0-content.uqm/download
+#TODO missing script, read the INSTALL file inside the tarball
+[source]
+tar = "https://sourceforge.net/projects/sc2/files/UQM/0.8/uqm-0.8.0-src.tgz/download"
+[build]
+template = "custom"
+dependencies = [
+    "sdl2",
+    "libpng",
+    "libogg",
+    "libvorbis",
+    "zlib",
+]

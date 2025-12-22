@@ -1,0 +1,28 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/H-M-H/Weylus#building
+[source]
+git = "https://github.com/H-M-H/Weylus"
+[build]
+template = "custom"
+dependencies = [
+    "pango",
+    "gstreamer",
+    "dbus",
+    "libx11",
+    "libxext",
+    "libxft",
+    "libxinerama",
+    "libxcursor",
+    "libxfixes",
+    "libxtst",
+    "libxrandr",
+    "libxcomposite",
+    "libxv",
+    "libxi",
+    "libxrender",
+    "libdrm",
+]
+script = """
+DYNAMIC_INIT
+cookbook_cargo_packages weylus
+"""

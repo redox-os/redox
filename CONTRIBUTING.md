@@ -97,23 +97,20 @@ Please follow [our process](https://doc.redox-os.org/book/creating-proper-pull-r
 
 Before starting to contribute, we recommend reading the [Website FAQ](https://www.redox-os.org/faq/) and the [Redox Book](https://doc.redox-os.org/book/).
 
-You can contribute to the Redox documentation and code on the following repositories (non-exhaustive, easiest first):
+You can contribute to the Redox documentation and code on the following repositories (non-exhaustive, easiest-to-hardest order):
 
 - [Website](https://gitlab.redox-os.org/redox-os/website)
 - [Book](https://gitlab.redox-os.org/redox-os/book) - High-level documentation
 - [Build System Configuration](https://gitlab.redox-os.org/redox-os/redox) - Our main repository
-- [Cookbook](https://gitlab.redox-os.org/redox-os/cookbook) - Software Ports System
 - [Orbital](https://gitlab.redox-os.org/redox-os/orbital) - Display Server and Window Manager
 - [pkgutils](https://gitlab.redox-os.org/redox-os/pkgutils) - Package Manager
 - [resist](https://gitlab.redox-os.org/redox-os/resist) - Redox System Interface Specifications and Tests (also has POSIX tests)
 - [acid](https://gitlab.redox-os.org/redox-os/acid) - Redox Test Suite
 - [relibc](https://gitlab.redox-os.org/redox-os/relibc) - Redox C Library
 - [libredox](https://gitlab.redox-os.org/redox-os/libredox) - Redox System Library
-- [netstack](https://gitlab.redox-os.org/redox-os/netstack) - Network Stack
 - [Bootloader](https://gitlab.redox-os.org/redox-os/bootloader)
 - [RedoxFS](https://gitlab.redox-os.org/redox-os/redoxfs) - Default filesystem
-- [Drivers](https://gitlab.redox-os.org/redox-os/drivers) - Device Drivers
-- [Base](https://gitlab.redox-os.org/redox-os/base) - Essential system daemons
+- [Base](https://gitlab.redox-os.org/redox-os/base) - Essential system components and drivers
 - [Kernel](https://gitlab.redox-os.org/redox-os/kernel)
 
 To see all Redox repositories open the [redox-os group](https://gitlab.redox-os.org/redox-os).
@@ -132,7 +129,7 @@ If you don't know how to code in Rust but know other programming languages:
 
 - Web development on the website (we only accept minimal JavaScript code to preserve performance)
 - Write unit tests (may require minimal knowledge of Rust)
-- Port C/C++ programs to Redox (read the `TODO`s of the recipes on the [WIP category](https://gitlab.redox-os.org/redox-os/cookbook/-/tree/master/recipes/wip))
+- Port C/C++ programs to Redox (read the `TODO`s of the recipes on the [WIP category](https://gitlab.redox-os.org/redox-os/redox/-/tree/master/recipes/wip))
 - Port programs to Redox
 
 If you know how to code in Rust but don't know operating system development:
@@ -215,7 +212,9 @@ You can see the most common questions and problems on the [Developer FAQ](https:
 
 ## Porting Software
 
-You can read how to use the Cookbook recipe system to port applications on the [Porting Applications using Recipes](https://doc.redox-os.org/book/porting-applications.html) page.
+You can read how to use the Cookbook recipe system to port applications on the [Application Porting](https://doc.redox-os.org/book/porting-applications.html) page.
+
+**Always verify if a recipe for your program or library already exist before porting to not break the build system with a recipe duplication or waste time.**
 
 ## Libraries and APIs
 

@@ -1,0 +1,16 @@
+#TODO not compiled or tested
+# build instructions: https://wiki.scribus.net/canvas/Official:Compile_with_CMake
+[source]
+tar = "https://sourceforge.net/projects/scribus/files/scribus/1.6.4/scribus-1.6.4.tar.xz/download"
+[build]
+template = "custom"
+dependencies = [
+    "qt4",
+    "cairo",
+    "freetype2",
+    "libxml2",
+    "liblcms",
+    "libtiff",
+    "libjpeg",
+    "fontconfig",
+]

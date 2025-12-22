@@ -1,0 +1,20 @@
+#TODO: Requires sys/signalfd.h SFD_CLOEXEC, sys/timerfd.h TFD_CLOEXEC
+#TODO: F_DUPFD_CLOEXEC, MSG_CMSG_CLOEXEC, MSG_NOSIGNAL TFD_TIMER_ABSTIME
+[source]
+tar = "https://gitlab.freedesktop.org/wayland/wayland/-/releases/1.24.0/downloads/wayland-1.24.0.tar.xz"
+patches = [
+    #FIXME: This patch is just a shim. Remove this patch
+    "redox.patch"
+]
+[build]
+template = "meson"
+dependencies = [
+    "libffi",
+    "expat",
+    "libxml2",
+]
+mesonflags = [
+    "-Ddocumentation=false",
+    "-Dtests=false",
+    "-Ddtd_validation=false",
+]

@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/awslabs/flowgger/wiki/Installation
+[source]
+git = "https://github.com/awslabs/flowgger"
+[build]
+template = "cargo"

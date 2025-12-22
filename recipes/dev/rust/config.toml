@@ -1,0 +1,37 @@
+#TODO: use sed to replace hardcoded paths into env
+[llvm]
+download-ci-llvm = false
+static-libstdcpp = false
+targets = "X86"
+experimental-targets = ""
+
+[build]
+host = ["x86_64-unknown-redox"]
+target = ["x86_64-unknown-redox"]
+docs = false
+submodules = false
+tools = ["src"]
+verbose = 1
+
+[install]
+prefix = "install"
+sysconfdir = "etc"
+
+[rust]
+backtrace = false
+codegen-tests = false
+
+[target.x86_64-unknown-redox]
+cc = "x86_64-unknown-redox-gcc"
+cxx = "x86_64-unknown-redox-g++"
+ar = "x86_64-unknown-redox-ar"
+linker = "x86_64-unknown-redox-gcc"
+rpath = false
+crt-static = false
+llvm-config = "/mnt/redox/recipes/dev/rust/target/x86_64-unknown-redox/sysroot/bin/llvm-config"
+
+[target.aarch64-unknown-linux-gnu]
+llvm-config = "/mnt/redox/recipes/dev/rust/target/x86_64-unknown-redox/toolchain/bin/llvm-config"
+
+[target.x86_64-unknown-linux-gnu]
+llvm-config = "/mnt/redox/recipes/dev/rust/target/x86_64-unknown-redox/toolchain/bin/llvm-config"

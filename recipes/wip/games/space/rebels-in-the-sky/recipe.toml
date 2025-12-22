@@ -1,0 +1,5 @@
+#TODO async-io and rustix crate error
+[source]
+git = "https://github.com/ricott1/rebels-in-the-sky"
+[build]
+template = "cargo"

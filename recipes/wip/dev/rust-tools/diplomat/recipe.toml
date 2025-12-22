@@ -1,0 +1,8 @@
+#TODO missing script to properly move the binary
+[source]
+git = "https://github.com/rust-diplomat/diplomat"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages diplomat
+"""

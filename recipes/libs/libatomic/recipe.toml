@@ -1,0 +1,16 @@
+[source]
+same_as = "../../dev/gcc13"
+
+[build]
+template = "custom"
+dependencies = [
+    "libgmp",
+    "libmpfr",
+    "mpc",
+    "zlib"
+]
+script = """
+DYNAMIC_INIT
+COOKBOOK_CONFIGURE="${COOKBOOK_SOURCE}/libatomic/configure"
+cookbook_configure
+"""

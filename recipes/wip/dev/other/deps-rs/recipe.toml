@@ -1,0 +1,8 @@
+#TODO camino crate error
+[source]
+git = "https://github.com/deps-rs/deps.rs"
+[build]
+template = "cargo"
+dependencies = [
+    "openssl1",
+]

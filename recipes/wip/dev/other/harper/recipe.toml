@@ -1,0 +1,8 @@
+#TODO linking error
+[source]
+git = "https://github.com/Automattic/harper"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages harper-ls
+"""

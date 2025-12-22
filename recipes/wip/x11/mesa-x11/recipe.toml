@@ -1,0 +1,34 @@
+[source]
+same_as = "../../../libs/mesa"
+
+[build]
+template = "custom"
+dependencies = [
+    "expat",
+    "libdrm",
+    "libx11",
+    "libxcb",
+    "libxext",
+    "libxfixes",
+    "libxrandr",
+    "libxshmfence",
+    "libxxf86vm",
+    "llvm21",
+    "zlib",
+]
+dev-dependencies = [
+    "llvm21.dev",
+    "host:llvm21.dev",
+    "host:llvm21.runtime",
+]
+
+script = """
+DYNAMIC_INIT
+cookbook_meson \
+    -Ddri-drivers-path=/usr/lib/dri \
+    -Degl=enabled \
+    -Dglx=dri \
+    -Dllvm=enabled \
+    -Dplatforms=x11 \
+    -Dshader-cache=disabled
+"""

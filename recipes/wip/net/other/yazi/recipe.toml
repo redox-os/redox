@@ -1,0 +1,8 @@
+#TODO trash and mlua-sys crate errors
+[source]
+git = "https://github.com/sxyazi/yazi"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages yazi-fm
+"""

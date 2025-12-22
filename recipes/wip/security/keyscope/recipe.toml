@@ -1,0 +1,11 @@
+#TODO compiled but not tested
+[source]
+git = "https://github.com/SpectralOps/keyscope"
+[build]
+template = "custom"
+dependencies = [
+    "openssl1",
+]
+script = """
+cookbook_cargo_packages keyscope
+"""

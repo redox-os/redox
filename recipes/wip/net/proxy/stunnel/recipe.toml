@@ -1,0 +1,5 @@
+#TODO not compiled or tested
+[source]
+tar = "https://www.stunnel.org/downloads/stunnel-5.76.tar.gz"
+[build]
+template = "configure"

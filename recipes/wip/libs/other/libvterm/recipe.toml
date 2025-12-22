@@ -1,0 +1,13 @@
+#TODO missing script for "make"
+[source]
+tar = "https://launchpad.net/libvterm/trunk/v0.3/+download/libvterm-0.3.3.tar.gz"
+[build]
+template = "custom"
+script = """
+DYNAMIC_INIT
+
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+
+${COOKBOOK_MAKE} -j ${COOKBOOK_MAKE_JOBS} install \
+  PREFIX="${COOKBOOK_STAGE}"
+"""

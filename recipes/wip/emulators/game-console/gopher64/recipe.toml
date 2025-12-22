@@ -1,0 +1,12 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/gopher64/gopher64"
+[build]
+template = "custom"
+dependencies = [
+    "sdl2",
+]
+script = """
+DYNAMIC_INIT
+cookbook_cargo
+"""

@@ -1,0 +1,100 @@
+#TODO not compiled or tested
+[source]
+tar = "https://webkitgtk.org/releases/webkitgtk-2.49.1.tar.xz"
+blake3 = "7f04acb2f909ad334fc623afb297ebca1d5a5005bda1682946fb37e044e45ecb"
+#patches = ["redox.patch"]
+
+[build]
+template = "custom"
+dependencies = [
+    "atk",
+    "cairo",
+    "expat",
+    "fontconfig",
+    "freetype2",
+    "fribidi",
+    "gdk-pixbuf",
+    "gettext",
+    "glib",
+    #TODO "gstreamer",
+    "gtk4",
+    "harfbuzz",
+    "libepoxy",
+    "libatomic",
+    "libffi",
+    "libgcrypt",
+    "libgpg-error",
+    "libiconv",
+    "libicu",
+    "libjpeg",
+    "libpng",
+    "libpsl",
+    "libpthread-stubs",
+    "libsoup",
+    "libtasn1",
+    "libwebp",
+    "libx11",
+    "libxau",
+    "libxcb",
+    "libxext",
+    "libxfixes",
+    "libxi",
+    "libxml2",
+    "libxrandr",
+    "libxrender",
+    "libxslt",
+    "libxxf86vm",
+    "mesa-x11",
+    "nghttp2",
+    "pango",
+    "pcre2",
+    "pixman",
+    "shared-mime-info",
+    "sqlite3",
+    "x11proto",
+    "xextproto",
+    "xz",
+    "zlib",
+]
+script = """
+DYNAMIC_INIT
+export WEBKIT_USE_SCCACHE=1
+export PYTHONDONTWRITEBYTECODE=1
+#TODO: enable more features
+COOKBOOK_CMAKE_FLAGS+=(
+    -DENABLE_ASSERTS=ON
+    -DENABLE_GAMEPAD=OFF
+    -DENABLE_INTROSPECTION=OFF
+    -DENABLE_MEDIA_STREAM=OFF
+    -DENABLE_JOURNALD_LOG=OFF
+    -DENABLE_RELEASE_LOG=ON
+    -DENABLE_SPEECH_SYNTHESIS=OFF
+    -DENABLE_SPELLCHECK=OFF
+    -DENABLE_WEB_AUDIO=OFF
+    -DENABLE_WEB_CODECS=OFF
+    -DENABLE_VIDEO=OFF
+    -DPORT=GTK
+    -DUNIX=1
+    -DUSE_AVIF=OFF
+    -DUSE_GSTREAMER_GL=OFF
+    -DUSE_GTK4=ON
+    -DUSE_JPEGXL=OFF
+    -DUSE_LCMS=OFF
+    -DUSE_LIBBACKTRACE=OFF
+    -DUSE_LIBDRM=OFF
+    -DUSE_LIBHYPHEN=OFF
+    -DUSE_LIBSECRET=OFF
+    -DUSE_SKIA=OFF
+    -DUSE_SYSPROF_CAPTURE=OFF
+    -DUSE_SYSTEM_MALLOC=OFF
+    -DUSE_SYSTEM_SYSPROF_CAPTURE=OFF
+    -DUSE_WOFF2=OFF
+)
+
+cookbook_cmake
+
+patchelf --replace-needed "${COOKBOOK_SYSROOT}/usr/lib/libsqlite3.so" "libsqlite3.so" "${COOKBOOK_STAGE}/usr/lib/libwebkit2gtk-4.1.so"
+patchelf --replace-needed "${COOKBOOK_SYSROOT}/usr/lib/libsqlite3.so" "libsqlite3.so" "${COOKBOOK_STAGE}/usr/libexec/webkit2gtk-4.1/MiniBrowser"
+mkdir -p "${COOKBOOK_STAGE}/usr/bin"
+ln -sr "${COOKBOOK_STAGE}/usr/libexec/webkit2gtk-4.1/MiniBrowser" "${COOKBOOK_STAGE}/usr/bin/MiniBrowser"
+"""

@@ -1,0 +1,15 @@
+#TODO not compiled or tested
+[source]
+tar = "https://gitlab.com/jazztickets/uploads/-/raw/main/emptyclip-2.0.3-0d97724f-src.tar.gz"
+[build]
+template = "cmake"
+dependencies = [
+    "sdl3",
+    "libwebp",
+    "sqlite3",
+    "freetype2",
+    "openal",
+    "libvorbis",
+    "libogg",
+    "zlib",
+]

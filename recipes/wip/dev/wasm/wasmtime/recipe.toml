@@ -1,0 +1,9 @@
+#TODO requires *at functions in fcntl.h
+#TODO (willnode) push changes upstream
+[source]
+git = "https://github.com/willnode/wasmtime"
+branch = "v36-redox"
+shallow_clone = true
+
+[build]
+template = "cargo"

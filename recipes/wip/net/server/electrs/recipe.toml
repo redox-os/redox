@@ -1,0 +1,5 @@
+#TODO missing runtime dependencies, see https://github.com/romanz/electrs/blob/master/doc/install.md#build-dependencies
+[source]
+git = "https://github.com/romanz/electrs"
+[build]
+template = "cargo"

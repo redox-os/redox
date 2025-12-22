@@ -1,0 +1,5 @@
+#TODO not compiled or tested
+[source]
+tar = "https://download.gnome.org/sources/xdg-user-dirs-gtk/0.14/xdg-user-dirs-gtk-0.14.tar.xz"
+[build]
+template = "meson"

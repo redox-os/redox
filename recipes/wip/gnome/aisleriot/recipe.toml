@@ -1,0 +1,17 @@
+#TODO not compiled or tested
+[source]
+tar = "https://download.gnome.org/sources/aisleriot/3.22/aisleriot-3.22.35.tar.xz"
+[build]
+template = "meson"
+mesonflags = [
+    "-Ddocs=false",
+    "-Dsound=false",
+]
+dependencies = [
+    "glib",
+    "gtk3",
+    "cairo",
+    "libcanberra",
+    "qt5-svg",
+    "librsvg",
+]

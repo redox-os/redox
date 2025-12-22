@@ -1,0 +1,8 @@
+[source]
+git = "https://github.com/pop-os/wallpapers"
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}"/usr/share/wallpapers
+cp -rv "${COOKBOOK_SOURCE}"/original/* "${COOKBOOK_STAGE}"/usr/share/wallpapers
+"""

@@ -1,0 +1,5 @@
+#TODO promote
+[source]
+git = "https://git.sr.ht/~f9/gyr"
+[build]
+template = "cargo"

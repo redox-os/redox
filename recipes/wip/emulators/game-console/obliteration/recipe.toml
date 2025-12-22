@@ -1,0 +1,6 @@
+#TODO missing script: https://github.com/obhq/obliteration/blob/main/docs/building.md
+[source]
+git = "https://github.com/obhq/obliteration"
+shallow_clone = true
+[build]
+template = "custom"

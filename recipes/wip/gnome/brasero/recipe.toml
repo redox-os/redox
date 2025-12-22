@@ -1,0 +1,13 @@
+#TODO not compiled or tested
+#TODO missing dependencies: https://gitlab.gnome.org/GNOME/brasero/-/blob/master/README?ref_type=heads&plain=1#L64
+[source]
+tar = "https://download.gnome.org/sources/brasero/3.12/brasero-3.12.3.tar.xz"
+[build]
+template = "configure"
+dependencies = [
+    "gtk3",
+    "gstreamer",
+    "libxml2",
+    "cairo",
+    "libcanberra",
+]

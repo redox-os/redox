@@ -1,0 +1,5 @@
+#TODO fs2 crate error
+[source]
+git = "https://github.com/gcarq/rusty-blockparser"
+[build]
+template = "cargo"
