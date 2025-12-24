@@ -9,6 +9,7 @@ RELIBC_SOURCE=recipes/core/relibc/source
 BINUTILS_BRANCH=redox-2.43.1
 GCC_BRANCH=redox-13.2.0
 LIBTOOL_VERSION=2.5.4
+UPSTREAM_RUSTC_VERSION="2025-10-03"
 
 export PREFIX_RUSTFLAGS=-L $(ROOT)/$(PREFIX_INSTALL)/$(TARGET)/lib
 export RUSTUP_TOOLCHAIN=$(ROOT)/$(PREFIX_INSTALL)
@@ -141,6 +142,7 @@ else
 	touch "$@"
 endif
 
+# PREFIX_BINARY ---------------------------------------------------
 ifeq ($(PREFIX_BINARY),1)
 
 $(PREFIX)/rust-install.tar.gz: | $(CONTAINER_TAG)
@@ -166,10 +168,7 @@ endif
 
 else
 
-$(ROOT)/rust/configure:
-	git submodule sync --recursive
-	git submodule update --progress --init --recursive --checkout rust
-
+# BUILD GCC ---------------------------------------------------
 PREFIX_FREESTANDING_INSTALL=$(PREFIX)/gcc-freestanding-install
 PREFIX_FREESTANDING_PATH=$(ROOT)/$(PREFIX_FREESTANDING_INSTALL)/bin
 
@@ -326,6 +325,59 @@ $(PREFIX)/gcc-install.tar.gz: $(PREFIX)/gcc-install
 		--directory="$<" \
 		.
 
+# RUST FROM UPSTREAM COMPILER ---------------------------------------------------
+ifeq ($(PREFIX_USE_UPSTREAM_RUST_COMPILER),1)
+
+$(PREFIX)/rustc-install.tar.xz:
+	mkdir -p "$(@D)"
+	wget -O $@.partial "https://static.rust-lang.org/dist/$(UPSTREAM_RUSTC_VERSION)/rustc-nightly-$(HOST_TARGET).tar.xz"
+	mv $@.partial $@
+
+$(PREFIX)/cargo-install.tar.xz:
+	mkdir -p "$(@D)"
+	wget -O $@.partial "https://static.rust-lang.org/dist/$(UPSTREAM_RUSTC_VERSION)/cargo-nightly-$(HOST_TARGET).tar.xz"
+	mv $@.partial $@
+
+$(PREFIX)/rust-std-host-install.tar.xz:
+	mkdir -p "$(@D)"
+	wget -O $@.partial "https://static.rust-lang.org/dist/$(UPSTREAM_RUSTC_VERSION)/rust-std-nightly-$(HOST_TARGET).tar.xz"
+	mv $@.partial $@
+
+$(PREFIX)/rust-std-target-install.tar.xz:
+	mkdir -p "$(@D)"
+ifeq ($(TARGET),x86_64-unknown-redox)
+	wget -O $@.partial "https://static.rust-lang.org/dist/$(UPSTREAM_RUSTC_VERSION)/rust-std-nightly-$(TARGET).tar.xz"
+	mv $@.partial $@
+else
+	touch $@
+endif
+
+$(PREFIX)/rust-src-install.tar.xz:
+	mkdir -p "$(@D)"
+	wget -O $@.partial "https://static.rust-lang.org/dist/$(UPSTREAM_RUSTC_VERSION)/rust-src-nightly.tar.xz"
+	mv $@.partial $@
+
+$(PREFIX)/rust-install: $(PREFIX)/gcc-install $(PREFIX)/rustc-install.tar.xz $(PREFIX)/cargo-install.tar.xz $(PREFIX)/rust-std-host-install.tar.xz $(PREFIX)/rust-std-target-install.tar.xz $(PREFIX)/rust-src-install.tar.xz
+	rm -rf "$@.partial" "$@"
+	mkdir -p "$@.partial"
+	cp -r "$(PREFIX)/gcc-install/". "$@.partial"
+	tar --extract --file "$(PREFIX)/rustc-install.tar.xz" -C "$@.partial" rustc-nightly-$(HOST_TARGET)/rustc/ --strip-components=2
+	tar --extract --file "$(PREFIX)/cargo-install.tar.xz" --directory "$@.partial" cargo-nightly-$(HOST_TARGET)/cargo/ --strip-components=2
+	tar --extract --file "$(PREFIX)/rust-std-host-install.tar.xz" --directory "$@.partial" rust-std-nightly-$(HOST_TARGET)/rust-std-$(HOST_TARGET)/ --strip-components=2
+	tar --extract --file "$(PREFIX)/rust-src-install.tar.xz" --directory "$@.partial" rust-src-nightly/rust-src/ --strip-components=2
+ifeq ($(TARGET),x86_64-unknown-redox)
+	tar --extract --file "$(PREFIX)/rust-std-target-install.tar.xz" --directory "$@.partial" rust-std-nightly-$(TARGET)/rust-std-$(TARGET)/ --strip-components=2
+endif
+	touch "$@.partial"
+	mv "$@.partial" "$@"
+
+# BUILD RUST ---------------------------------------------------
+else 
+
+$(ROOT)/rust/configure:
+	git submodule sync --recursive
+	git submodule update --progress --init --recursive --checkout rust
+
 $(PREFIX)/rust-install: $(ROOT)/rust/configure | $(PREFIX)/gcc-install $(PREFIX)/relibc-freestanding-install $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
@@ -357,6 +409,8 @@ else
 	cd "$@.partial" && find . -name *.old -exec rm {} ';' && $(PREFIX_STRIP)
 	touch "$@.partial"
 	mv "$@.partial" "$@"
+endif
+
 endif
 
 $(PREFIX)/rust-install.tar.gz: $(PREFIX)/rust-install
