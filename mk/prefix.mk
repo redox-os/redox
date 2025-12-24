@@ -325,8 +325,8 @@ $(PREFIX)/gcc-install.tar.gz: $(PREFIX)/gcc-install
 		--directory="$<" \
 		.
 
-# RUST VIA RUSTUP ---------------------------------------------------
-ifeq ($(EXPERIMENTAL_PREFIX_USE_UPSTREAM_RUST_COMPILER),1)
+# RUST FROM UPSTREAM COMPILER ---------------------------------------------------
+ifeq ($(PREFIX_USE_UPSTREAM_RUST_COMPILER),1)
 
 $(PREFIX)/rustc-install.tar.xz:
 	mkdir -p "$(@D)"
@@ -357,10 +357,10 @@ $(PREFIX)/rust-src-install.tar.xz:
 	wget -O $@.partial "https://static.rust-lang.org/dist/$(UPSTREAM_RUSTC_VERSION)/rust-src-nightly.tar.xz"
 	mv $@.partial $@
 
-$(PREFIX)/rust-install: $(PREFIX)/gcc-install.tar.gz $(PREFIX)/rustc-install.tar.xz $(PREFIX)/cargo-install.tar.xz $(PREFIX)/rust-std-host-install.tar.xz $(PREFIX)/rust-std-target-install.tar.xz $(PREFIX)/rust-src-install.tar.xz
+$(PREFIX)/rust-install: $(PREFIX)/gcc-install $(PREFIX)/rustc-install.tar.xz $(PREFIX)/cargo-install.tar.xz $(PREFIX)/rust-std-host-install.tar.xz $(PREFIX)/rust-std-target-install.tar.xz $(PREFIX)/rust-src-install.tar.xz
 	rm -rf "$@.partial" "$@"
 	mkdir -p "$@.partial"
-	tar --extract --file "$(PREFIX)/gcc-install.tar.gz" -C "$@.partial" || true
+	cp -r "$(PREFIX)/gcc-install/". "$@.partial"
 	tar --extract --file "$(PREFIX)/rustc-install.tar.xz" -C "$@.partial" rustc-nightly-$(HOST_TARGET)/rustc/ --strip-components=2
 	tar --extract --file "$(PREFIX)/cargo-install.tar.xz" --directory "$@.partial" cargo-nightly-$(HOST_TARGET)/cargo/ --strip-components=2
 	tar --extract --file "$(PREFIX)/rust-std-host-install.tar.xz" --directory "$@.partial" rust-std-nightly-$(HOST_TARGET)/rust-std-$(HOST_TARGET)/ --strip-components=2
