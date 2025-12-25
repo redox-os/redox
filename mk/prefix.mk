@@ -25,7 +25,7 @@ prefix_clean: | $(FSTOOLS_TAG)
 	rm -rf $(PREFIX)/relibc-install $(PREFIX)/sysroot $(REPO_TAG)
 	$(MAKE) c.base,base-initfs,extrautils,kernel,ion,pkgutils,redoxfs,relibc
 
-$(PREFIX)/relibc-install: $(PREFIX)/rust-install | $(CONTAINER_TAG)
+$(PREFIX)/relibc-install: $(PREFIX)/rust-install | $(FSTOOLS_TAG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
