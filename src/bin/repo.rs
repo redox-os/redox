@@ -370,6 +370,26 @@ fn publish_packages(recipe_names: &Vec<CookRecipe>, repo_path: &PathBuf) -> anyh
     run_command(command, &None).map_err(|e| anyhow!(e))
 }
 
+fn add_dependencies_recursive(recipe: &cookbook::recipe::Recipe, force_source: &mut HashSet<PackageName>) {
+    for dep in &recipe.build.dependencies {
+        if !force_source.contains(dep) {
+            force_source.insert(dep.clone());
+            if let Ok(dep_recipe) = CookRecipe::from_name(dep.clone()) {
+                add_dependencies_recursive(&dep_recipe.recipe, force_source);
+            }
+        }
+    }
+    
+    for dep in &recipe.build.dev_dependencies {
+        if !force_source.contains(dep) {
+            force_source.insert(dep.clone());
+            if let Ok(dep_recipe) = CookRecipe::from_name(dep.clone()) {
+                add_dependencies_recursive(&dep_recipe.recipe, force_source);
+            }
+        }
+    }
+}
+
 fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<CookRecipe>)> {
     let mut config = CliConfig::new()?;
     let mut command: Option<String> = None;
@@ -512,11 +532,50 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
         && !command.is_cleaning()
     {
         let repo_binary = conf.general.repo_binary == Some(true);
+        
+        // Collect recipes and their dependencies that need special treatment
+        let mut force_source_recipes: std::collections::HashSet<PackageName> = std::collections::HashSet::new();
+        let mut force_binary_recipes: std::collections::HashSet<PackageName> = std::collections::HashSet::new();
+        
+        // When repo_binary=1, collect "source" recipes and their dependencies
+        if repo_binary {
+            for recipe in recipes.iter() {
+                if let Some(conf) = conf.packages.get(recipe.name.as_str()) {
+                    let rule = match conf {
+                        PackageConfig::Build(rule) => rule.as_str(),
+                        _ => "binary",
+                    };
+                    if rule == "source" {
+                        force_source_recipes.insert(recipe.name.clone());
+                        add_dependencies_recursive(&recipe.recipe, &mut force_source_recipes);
+                    }
+                }
+            }
+        } else {
+            // When repo_binary=0 (default source), collect "binary" recipes and their dependencies
+            for recipe in recipes.iter() {
+                if let Some(conf) = conf.packages.get(recipe.name.as_str()) {
+                    let rule = match conf {
+                        PackageConfig::Build(rule) => rule.as_str(),
+                        _ => "source",
+                    };
+                    if rule == "binary" {
+                        force_binary_recipes.insert(recipe.name.clone());
+                        add_dependencies_recursive(&recipe.recipe, &mut force_binary_recipes);
+                    }
+                }
+            }
+        }
+        
         let mut last_rule = if repo_binary { "binary" } else { "source" };
         let mut should_drop_host_packages = true;
         // Use rev() so recipes that don't listed in config is inherited from parent
         for recipe in recipes.iter_mut().rev() {
-            if let Some(conf) = conf.packages.get(recipe.name.as_str()) {
+            if force_source_recipes.contains(&recipe.name) {
+                last_rule = "source";
+            } else if force_binary_recipes.contains(&recipe.name) {
+                last_rule = "binary";
+            } else if let Some(conf) = conf.packages.get(recipe.name.as_str()) {
                 last_rule = match conf {
                     PackageConfig::Build(rule) => &rule,
                     _ => {
