@@ -4,7 +4,7 @@ same_as = "../../dev/gcc13"
 [build]
 template = "custom"
 script = """
-DYNAMIC_INIT
+DYNAMIC_STATIC_INIT
 
 # this results C++ missing nice stuff like mutex
 # our prefix workaround this by compiling twice
