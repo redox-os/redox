@@ -1,5 +1,5 @@
-# [source]
-# git = "https://gitlab.redox-os.org/redox-os/relibc.git"
+[source]
+git = "https://gitlab.redox-os.org/redox-os/relibc.git"
 
 [build]
 template = "custom"

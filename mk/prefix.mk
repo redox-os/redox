@@ -72,7 +72,7 @@ ifeq ($(PODMAN_BUILD),1)
 else
 	rm -rf "$@"
 	cp -r "$(PREFIX)/relibc-install/" "$@"
-	cp -r "$(PREFIX)/libtool-install/". "$@.partial"
+	cp -r "$(PREFIX)/libtool-install/". "$@"
 # adapt path for libtoolize
 	$(SED) -i 's|/usr/share|$(ROOT)/$@/share|g' "$@/bin/libtoolize"
 	touch "$@"
@@ -124,7 +124,7 @@ ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
 	@echo "\033[1;36;49mBuilding gcc-freestanding-install\033[0m"
-	rm -rf "$@.partial" "$@" $(PREFIX)/relibc-freestanding-install  $(PREFIX)/sysroot
+	rm -rf "$@.partial" "$@" $(PREFIX)/relibc-freestanding-install $(PREFIX)/sysroot
 	mkdir -p "$@.partial" $(PREFIX)/relibc-freestanding-install/$(TARGET)/include
 	export CI=1 PATH="$(ROOT)/$(PREFIX)/binutils-install/bin:$$PATH" \
 		COOKBOOK_CLEAN_BUILD=true COOKBOOK_CROSS_TARGET=$(TARGET) COOKBOOK_CROSS_GNU_TARGET=$(GNU_TARGET) \
@@ -132,12 +132,13 @@ else
 	./target/release/repo cook host:gcc13
 	cp -r "$(GCC_TARGET)/stage/usr/". "$@.partial"
 	cp -r "$(GCC_TARGET)/stage.cxx/usr/". "$@.partial"
+	cp -r "$(PREFIX)/binutils-install/". "$@.partial"
 	rm -rf $(PREFIX)/relibc-freestanding-install
 	touch "$@.partial"
 	mv "$@.partial" "$@"
 endif
 
-$(PREFIX)/relibc-freestanding-install: $(PREFIX)/gcc-freestanding-install $(PREFIX)/binutils-install | $(FSTOOLS_TAG) $(CONTAINER_TAG)
+$(PREFIX)/relibc-freestanding-install: $(PREFIX)/gcc-freestanding-install | $(FSTOOLS_TAG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
@@ -145,8 +146,8 @@ else
 	rm -rf "$@.partial" "$@"
 	mkdir -p "$@.partial/$(TARGET)"
 	export CARGO="env -u CARGO -u RUSTUP_TOOLCHAIN cargo" && \
-	export PATH="$(ROOT)/$(PREFIX)/gcc-freestanding-install/bin:$(ROOT)/$(PREFIX)/binutils-install/bin:$$PATH" && \
-	export CC_$(subst -,_,$(TARGET))="$(GNU_TARGET)-gcc -isystem $(ROOT)/$@.partial/$(GNU_TARGET)/include" && \
+	export PATH="$(ROOT)/$(PREFIX)/gcc-freestanding-install/bin:$$PATH" && \
+	export CC_$(subst -,_,$(TARGET))="$(GNU_TARGET)-gcc -isystem $(ROOT)/$@.partial/$(GNU_TARGET)/include" LINKFLAGS="" && \
 	export CI=1 COOKBOOK_CLEAN_BUILD=true COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_TARGET=$(HOST_TARGET) && \
 	./target/release/repo cook relibc
 	cp -r "$(RELIBC_FREESTANDING_TARGET)/stage/usr/". "$@.partial/$(TARGET)"
@@ -154,7 +155,7 @@ else
 	mv "$@.partial" "$@"
 endif
 
-$(PREFIX)/gcc-install: $(PREFIX)/relibc-freestanding-install $(PREFIX)/binutils-install $(PREFIX)/libtool-install | $(FSTOOLS_TAG) $(CONTAINER_TAG)
+$(PREFIX)/gcc-install: $(PREFIX)/relibc-freestanding-install $(PREFIX)/libtool-install | $(FSTOOLS_TAG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
@@ -167,8 +168,9 @@ else
 	mkdir -p "$@.partial" "$@-build.partial"
 	cp -r "$(PREFIX)/gcc-freestanding-install/". "$@.partial"
 	cp -r "$(PREFIX)/relibc-freestanding-install/". "$@.partial"
-	cp -r "$(PREFIX)/binutils-install/". "$@.partial"
 	cp -r "$(PREFIX)/libtool-install/". "$@.partial"
+	@#TODO: how to make this not conflict with libc?
+	rm -f "$@.partial/lib/gcc/$(GNU_TARGET)/13.2.0/include/limits.h"
 # libgcc
 	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
 	$(MAKE) -C "$(ROOT)/$(GCC_TARGET)/build" all-target-libgcc && \
