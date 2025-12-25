@@ -8,6 +8,10 @@ shallow_clone = true
 template = "custom"
 script = """
 DYNAMIC_INIT
+
+# libtool saves absolute path to sysroot which contains nothing
+unset CFLAGS
+
 rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 ./bootstrap \
     --skip-po \

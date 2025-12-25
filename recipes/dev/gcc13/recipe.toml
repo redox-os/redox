@@ -1,5 +1,7 @@
 [source]
-tar = "https://gitlab.redox-os.org/redox-os/gcc/-/archive/redox-13.2.0/gcc-redox-13.2.0.tar.gz"
+git = "https://gitlab.redox-os.org/redox-os/gcc"
+branch = "redox-13.2.0"
+shallow_clone = true
 script = """
 DYNAMIC_INIT
 COOKBOOK_AUTORECONF=autoreconf2.69 autotools_recursive_regenerate -I"$(realpath ./config)"
@@ -16,29 +18,61 @@ dependencies = [
 ]
 script = """
 DYNAMIC_INIT
+CROSS_GNU_TARGET=${COOKBOOK_CROSS_GNU_TARGET:-$GNU_TARGET}
 
-mkdir -p "${COOKBOOK_SYSROOT}/usr"
-ln -sf "${COOKBOOK_SYSROOT}/include" "${COOKBOOK_SYSROOT}/usr/include"
-ln -sf "${COOKBOOK_SYSROOT}/lib" "${COOKBOOK_SYSROOT}/usr/lib"
+if [ "${COOKBOOK_HOST_SYSROOT}" = "/usr" ]; then
+# not specifying --enable-shared as it will link shared deps
+COOKBOOK_STAGE+="/usr"
+COOKBOOK_CONFIGURE_FLAGS=(
+    --prefix=""
+    --host="${GNU_TARGET}"
+    --program-prefix="${CROSS_GNU_TARGET}-"
+    --with-sysroot
+)
+else
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --with-sysroot=/usr
+    --prefix="/usr"
+)
+fi
+
+if [ "${CROSS_GNU_TARGET}" = "riscv64gc-unknown-redox" ]; then
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --with-arch=rv64gc
+    --with-abi=lp64d
+)
+fi
 
 COOKBOOK_CONFIGURE_FLAGS+=(
-    --target="${GNU_TARGET}"
-    --with-sysroot=/
-    --with-build-sysroot="${COOKBOOK_SYSROOT}"
+    --target="${CROSS_GNU_TARGET}"
+    --with-build-sysroot="${COOKBOOK_CROSS_SYSROOT:-$COOKBOOK_SYSROOT}"
+    --with-native-system-header-dir="/include"
+    --with-linker-hash-style=gnu
     --enable-languages=c,c++,lto
     --enable-initfini-array
+    --disable-nls
     --disable-multilib
     --with-system-zlib
     --enable-host-shared
+    --enable-threads=posix
+    --enable-frame-pointer
     --with-bugurl="https://gitlab.redox-os.org/redox-os/gcc/-/issues"
 )
 
 "${COOKBOOK_CONFIGURE}" "${COOKBOOK_CONFIGURE_FLAGS[@]}"
-"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}" all-gcc all-target-libgcc all-target-libstdc++-v3
-"${COOKBOOK_MAKE}" install-gcc install-target-libgcc install-target-libstdc++-v3 DESTDIR="${COOKBOOK_STAGE}"
+"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}" all-gcc
+"${COOKBOOK_MAKE}" install-gcc DESTDIR="${COOKBOOK_STAGE}"
+
+# requires relibc which is not available on bootstrapping
+if [ "${COOKBOOK_HOST_SYSROOT}" != "/usr" ]; then
+
+"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}" all-target-libgcc all-target-libstdc++-v3
+"${COOKBOOK_MAKE}" install-target-libgcc install-target-libstdc++-v3 DESTDIR="${COOKBOOK_STAGE}"
 ln -s "gcc" "${COOKBOOK_STAGE}/usr/bin/cc"
 # Avoid conflict with libgcc & libstdcxx
 rm -f "${COOKBOOK_STAGE}"/usr/lib/libgcc_s.so* "${COOKBOOK_STAGE}"/usr/lib/libstdc++.so*
+
+fi
 """
 
 [package]
