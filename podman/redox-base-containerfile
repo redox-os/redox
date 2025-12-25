@@ -44,6 +44,7 @@ RUN apt-get update \
         libgmp-dev \
         libhtml-parser-perl \
         libjpeg-dev \
+        libmpc-dev \
         libmpfr-dev \
         libparse-yapp-perl \
         libpng-dev \
