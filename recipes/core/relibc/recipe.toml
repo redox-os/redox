@@ -1,13 +1,13 @@
-[source]
-git = "https://gitlab.redox-os.org/redox-os/relibc.git"
+# [source]
+# git = "https://gitlab.redox-os.org/redox-os/relibc.git"
 
 [build]
 template = "custom"
 script = """
+export CARGO=${CARGO:-env -u CARGO cargo}
 "${COOKBOOK_MAKE}" \
     -C "${COOKBOOK_SOURCE}" \
     -j"$($NPROC)" \
-    CARGO="env -u CARGO cargo" \
-    DESTDIR="${COOKBOOK_STAGE}" \
+    DESTDIR="${COOKBOOK_STAGE}/usr" \
     install
 """

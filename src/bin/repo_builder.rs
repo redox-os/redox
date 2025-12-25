@@ -59,21 +59,29 @@ fn publish_packages(config: &CliConfig) -> anyhow::Result<()> {
         fs::create_dir_all(repo_path)?;
     }
 
+    // Don't publish host packages
+    let target_packages = &config
+        .recipe_list
+        .iter()
+        .map(PackageName::new)
+        .filter(|pkg| pkg.as_ref().is_ok_and(|p| !p.is_host()))
+        .collect::<Result<Vec<_>, _>>()?;
+
+    if target_packages.len() == 0 {
+        return Ok(());
+    }
+
+    // TODO: publish cross target builds?
+    if std::env::var("COOKBOOK_CROSS_TARGET").is_ok_and(|x| !x.is_empty()) {
+        return Ok(());
+    }
+
     // Runtime dependencies include both `[package.dependencies]` and dynamically
     // linked packages discovered by auto_deps.
     //
     // The following adds the package dependencies of the recipes to the repo as
     // well.
-    let (recipe_list, recipe_map) = Package::new_recursive_nonstop(
-        &config
-            .recipe_list
-            .iter()
-            .map(PackageName::new)
-            // Don't publish host packages
-            .filter(|pkg| pkg.as_ref().is_ok_and(|p| !p.is_host()))
-            .collect::<Result<Vec<_>, _>>()?,
-        WALK_DEPTH,
-    );
+    let (recipe_list, recipe_map) = Package::new_recursive_nonstop(target_packages, WALK_DEPTH);
 
     if recipe_list.len() == 0 {
         // Fail-Safe

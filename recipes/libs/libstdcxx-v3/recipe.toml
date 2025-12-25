@@ -11,6 +11,18 @@ dependencies = [
 ]
 script = """
 DYNAMIC_INIT
+
+# this results C++ missing nice stuff like mutex
+# our prefix workaround this by compiling twice
+if [ ! -z "${COOKBOOK_CROSS_GNU_TARGET}" ]; then
+COOKBOOK_STAGE+="/usr"
+COOKBOOK_CONFIGURE_FLAGS=(
+    --prefix=""
+    --host="${GNU_TARGET}"
+    --disable-hosted-libstdcxx
+)
+fi
+
 CPPINCLUDE="${COOKBOOK_HOST_SYSROOT}/$TARGET/include/c++/13.2.0"
 export CPPFLAGS+=" -I${CPPINCLUDE} -I${CPPINCLUDE}/$TARGET/bits"
 COOKBOOK_CONFIGURE="${COOKBOOK_SOURCE}/libstdc++-v3/configure"
