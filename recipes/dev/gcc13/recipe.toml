@@ -17,7 +17,7 @@ dependencies = [
     "zlib"
 ]
 script = """
-DYNAMIC_INIT
+DYNAMIC_STATIC_INIT
 CROSS_GNU_TARGET=${COOKBOOK_CROSS_GNU_TARGET:-$GNU_TARGET}
 
 if [ "${COOKBOOK_HOST_SYSROOT}" = "/usr" ]; then
@@ -27,12 +27,12 @@ COOKBOOK_CONFIGURE_FLAGS=(
     --prefix=""
     --host="${GNU_TARGET}"
     --program-prefix="${CROSS_GNU_TARGET}-"
+    --with-native-system-header-dir="/include"
     --with-sysroot
 )
 else
 COOKBOOK_CONFIGURE_FLAGS+=(
-    --with-sysroot=/usr
-    --prefix="/usr"
+    --with-sysroot=/
 )
 fi
 
@@ -46,7 +46,6 @@ fi
 COOKBOOK_CONFIGURE_FLAGS+=(
     --target="${CROSS_GNU_TARGET}"
     --with-build-sysroot="${COOKBOOK_CROSS_SYSROOT:-$COOKBOOK_SYSROOT}"
-    --with-native-system-header-dir="/include"
     --with-linker-hash-style=gnu
     --enable-languages=c,c++,lto
     --enable-initfini-array
