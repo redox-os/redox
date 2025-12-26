@@ -6,18 +6,6 @@ template = "custom"
 script = """
 DYNAMIC_STATIC_INIT
 
-# this results C++ missing nice stuff like mutex
-# our prefix workaround this by compiling twice
-if [[ -n "$COOKBOOK_CROSS_GNU_TARGET" ]]; then
-COOKBOOK_STAGE+="/usr"
-COOKBOOK_CONFIGURE_FLAGS=(
-    --prefix=""
-    --host="${GNU_TARGET}"
-    --disable-hosted-libstdcxx
-    --with-cross-host="${COOKBOOK_CROSS_GNU_TARGET}"
-)
-fi
-
 COOKBOOK_CONFIGURE_FLAGS+=(
     --enable-threads=posix
     --enable-libstdcxx-threads

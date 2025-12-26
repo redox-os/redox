@@ -28,6 +28,7 @@ COOKBOOK_CONFIGURE_FLAGS=(
     --host="${GNU_TARGET}"
     --program-prefix="${CROSS_GNU_TARGET}-"
     --with-native-system-header-dir="/include"
+    --disable-hosted-libstdcxx
     --with-sysroot
 )
 else
@@ -55,6 +56,7 @@ COOKBOOK_CONFIGURE_FLAGS+=(
     --enable-host-shared
     --enable-threads=posix
     --enable-frame-pointer
+    --enable-libstdcxx-threads
     --with-bugurl="https://gitlab.redox-os.org/redox-os/gcc/-/issues"
 )
 

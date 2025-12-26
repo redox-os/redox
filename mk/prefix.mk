@@ -125,10 +125,10 @@ ifeq ($(PODMAN_BUILD),1)
 else
 	@echo "\033[1;36;49mBuilding gcc-freestanding-install\033[0m"
 	rm -rf "$@.partial" "$@" $(PREFIX)/relibc-freestanding-install $(PREFIX)/sysroot
-	mkdir -p "$@.partial" $(PREFIX)/relibc-freestanding-install/$(TARGET)/include
+	mkdir -p "$@.partial" $(PREFIX)/relibc-freestanding-install/$(GNU_TARGET)/include
 	export CI=1 PATH="$(ROOT)/$(PREFIX)/binutils-install/bin:$$PATH" \
 		COOKBOOK_CLEAN_BUILD=true COOKBOOK_CROSS_TARGET=$(TARGET) COOKBOOK_CROSS_GNU_TARGET=$(GNU_TARGET) \
-		COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_SYSROOT=$(ROOT)/$(PREFIX)/relibc-freestanding-install/$(TARGET) && \
+		COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_SYSROOT=$(ROOT)/$(PREFIX)/relibc-freestanding-install/$(GNU_TARGET) && \
 	./target/release/repo cook host:gcc13
 	cp -r "$(GCC_TARGET)/stage/usr/". "$@.partial"
 	cp -r "$(GCC_TARGET)/stage.cxx/usr/". "$@.partial"
@@ -144,13 +144,13 @@ ifeq ($(PODMAN_BUILD),1)
 else
 	@echo "\033[1;36;49mBuilding relibc-freestanding-install\033[0m"
 	rm -rf "$@.partial" "$@"
-	mkdir -p "$@.partial/$(TARGET)"
+	mkdir -p "$@.partial"
 	export CARGO="env -u CARGO -u RUSTUP_TOOLCHAIN cargo" && \
 	export PATH="$(ROOT)/$(PREFIX)/gcc-freestanding-install/bin:$$PATH" && \
 	export CC_$(subst -,_,$(TARGET))="$(GNU_TARGET)-gcc -isystem $(ROOT)/$@.partial/$(GNU_TARGET)/include" LINKFLAGS="" && \
 	export CI=1 COOKBOOK_CLEAN_BUILD=true COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_TARGET=$(HOST_TARGET) && \
 	./target/release/repo cook relibc
-	cp -r "$(RELIBC_FREESTANDING_TARGET)/stage/usr/". "$@.partial/$(TARGET)"
+	cp -r "$(RELIBC_FREESTANDING_TARGET)/stage/usr/". "$@.partial/$(GNU_TARGET)"
 	touch "$@.partial"
 	mv "$@.partial" "$@"
 endif
@@ -171,25 +171,27 @@ else
 	cp -r "$(PREFIX)/libtool-install/". "$@.partial"
 	@#TODO: how to make this not conflict with libc?
 	rm -f "$@.partial/lib/gcc/$(GNU_TARGET)/13.2.0/include/limits.h"
-# libgcc
+# libgcc and bare features of libstdcxx
 	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
-	$(MAKE) -C "$(ROOT)/$(GCC_TARGET)/build" all-target-libgcc && \
-	$(MAKE) -C "$(ROOT)/$(GCC_TARGET)/build" install-target-libgcc DESTDIR="$(ROOT)/$@-build.partial/usr"
+	$(MAKE) -C "$(ROOT)/$(GCC_TARGET)/build" all-target-libgcc all-target-libstdc++-v3 && \
+	$(MAKE) -C "$(ROOT)/$(GCC_TARGET)/build" install-target-libgcc install-target-libstdc++-v3 DESTDIR="$(ROOT)/$@-build.partial/usr"
 	cp -r "$@-build.partial/usr/". "$@.partial"
-# libstdcxx, bare features
-	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
-	export CI=1 COOKBOOK_CLEAN_BUILD=true "COOKBOOK_HOST_SYSROOT=$(ROOT)/$@.partial" COOKBOOK_CROSS_TARGET=$(HOST_TARGET) COOKBOOK_CROSS_GNU_TARGET=$(HOST_GNU_TARGET) && \
-	./target/release/repo cook libstdcxx-v3
-	cp -r "$(LIBSTDCXX_TARGET)/stage/usr/". "$@.partial"
-# libstdcxx, full features
+	@#TODO: in riscv64gc libgcc_s.so is a GNU ld script
+	rm -f "$@.partial"/$(GNU_TARGET)/lib/libgcc_s.so
+	ln -s libgcc_s.so.1 "$@.partial"/$(GNU_TARGET)/lib/libgcc_s.so
+# fully featured libstdcxx, not supported for targets only supporting static linking
+ifneq ($(TARGET),riscv64gc-unknown-redox)
+ifneq ($(TARGET),i586-unknown-redox)
 	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
 	export CI=1 COOKBOOK_CLEAN_BUILD=true "COOKBOOK_HOST_SYSROOT=$(ROOT)/$@.partial" COOKBOOK_CROSS_TARGET=$(HOST_TARGET) && \
 	rm -rf "$(LIBSTDCXX_TARGET)/stage" && ./target/release/repo cook libstdcxx-v3
 	cp -r "$(LIBSTDCXX_TARGET)/stage/usr/". "$@.partial/$(GNU_TARGET)"
+endif
+endif
 	rm -rf "$@-build.partial"
 	touch "$@.partial"
 	mv "$@.partial" "$@"
-# no longer needed, delete to save disk space
+# no longer needed, delete build files to save disk space
 	rm -rf $(BINUTILS_TARGET) $(LIBTOOL_TARGET) $(GCC_TARGET) $(LIBSTDCXX_TARGET) $(RELIBC_FREESTANDING_TARGET)
 endif
 
