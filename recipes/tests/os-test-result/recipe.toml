@@ -94,7 +94,7 @@ else
     # https://gitlab.redox-os.org/redox-os/redox/-/issues/1753
     export REDOXER_QEMU_ARGS="-smp 1"
     # make: jobs doesn't work yet
-    echo redoxer exec --folder . --folder "${COOKBOOK_SYSROOT}/usr/:/usr" --artifact out:/root/out \
+    redoxer exec --folder . --folder "${COOKBOOK_SYSROOT}/usr/:/usr" --artifact out:/root/out \
         bash -c "until make test; do echo retrying; done"
     postinstall
 fi
