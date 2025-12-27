@@ -69,6 +69,7 @@ const REPO_HELP_STR: &str = r#"
                                         ignored when command "fetch" is used
         COOKBOOK_NONSTOP=false     pkeep running even a recipe build failed
         COOKBOOK_VERBOSE=true      print success/error on each recipe
+        COOKBOOK_CLEAN_BUILD=false remove build directory before building
         COOKBOOK_MAKE_JOBS=        override build jobs count from nproc
 "#;
 
@@ -577,6 +578,7 @@ fn handle_cook(
         &recipe.name,
         &recipe.recipe,
         config.cook.offline,
+        config.cook.clean_build,
         !is_deps,
         logger,
     )

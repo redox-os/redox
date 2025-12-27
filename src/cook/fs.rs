@@ -33,7 +33,8 @@ pub fn create_dir_clean(dir: &Path) -> Result<(), String> {
     if dir.is_dir() {
         remove_all(dir)?;
     }
-    create_dir(dir)
+    fs::create_dir_all(dir)
+        .map_err(|err| format!("failed to create '{}': {}\n{:?}", dir.display(), err, err))
 }
 
 pub fn create_target_dir(recipe_dir: &Path, target: &'static str) -> Result<PathBuf, String> {
@@ -292,9 +293,14 @@ pub fn get_git_head_rev(dir: &PathBuf) -> Result<(String, bool), String> {
     let head_str = fs::read_to_string(&git_head)
         .map_err(|e| format!("unable to read {path}: {e}", path = git_head.display()))?;
     if head_str.starts_with("ref: ") {
-        let git_ref = dir.join(".git").join(head_str["ref: ".len()..].trim_end());
-        let ref_str = fs::read_to_string(&git_ref)
-            .map_err(|e| format!("unable to read {path}: {e}", path = git_ref.display()))?;
+        let entry = head_str["ref: ".len()..].trim_end();
+        let git_ref = dir.join(".git").join(entry);
+        let ref_str = if git_ref.is_file() {
+            fs::read_to_string(&git_ref)
+                .map_err(|e| format!("unable to read {path}: {e}", path = git_ref.display()))?
+        } else {
+            get_git_ref_entry(dir, entry)?
+        };
         Ok((ref_str.trim().to_string(), false))
     } else {
         Ok((head_str.trim().to_string(), true))
@@ -306,12 +312,14 @@ pub fn get_git_tag_rev(dir: &PathBuf, tag: &str) -> Result<String, String> {
     if tag.len() == 40 && tag.chars().all(|f| f.is_ascii_hexdigit()) {
         return Ok(tag.to_string());
     }
+    get_git_ref_entry(dir, &format!("refs/tags/{tag}"))
+}
+pub fn get_git_ref_entry(dir: &PathBuf, entry: &str) -> Result<String, String> {
     let git_refs = dir.join(".git/packed-refs");
     let refs_str = fs::read_to_string(&git_refs)
         .map_err(|e| format!("unable to read {path}: {e}", path = git_refs.display()))?;
-    let expected_comment_part = format!("refs/tags/{tag}");
     for line in refs_str.lines() {
-        if line.contains(&expected_comment_part) {
+        if line.contains(entry) {
             let sha = line
                 .split_whitespace()
                 .next()
@@ -321,10 +329,7 @@ pub fn get_git_tag_rev(dir: &PathBuf, tag: &str) -> Result<String, String> {
         }
     }
 
-    Err(format!(
-        "Could not find a rev tag for {}",
-        expected_comment_part
-    ))
+    Err(format!("Could not find a rev for {}", entry))
 }
 
 /// get commit rev after fetch

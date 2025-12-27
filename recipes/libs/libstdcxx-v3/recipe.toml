@@ -3,14 +3,14 @@ same_as = "../../dev/gcc13"
 
 [build]
 template = "custom"
-dependencies = [
-    "libgmp",
-    "libmpfr",
-    "mpc",
-    "zlib"
-]
 script = """
-DYNAMIC_INIT
+DYNAMIC_STATIC_INIT
+
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --enable-threads=posix
+    --enable-libstdcxx-threads
+)
+
 CPPINCLUDE="${COOKBOOK_HOST_SYSROOT}/$TARGET/include/c++/13.2.0"
 export CPPFLAGS+=" -I${CPPINCLUDE} -I${CPPINCLUDE}/$TARGET/bits"
 COOKBOOK_CONFIGURE="${COOKBOOK_SOURCE}/libstdc++-v3/configure"
