@@ -9,7 +9,8 @@ RELIBC_SOURCE=recipes/core/relibc/source
 BINUTILS_BRANCH=redox-2.43.1
 GCC_BRANCH=redox-13.2.0
 LIBTOOL_VERSION=2.5.4
-UPSTREAM_RUSTC_VERSION="2025-10-03"
+# official RISC-V support introduced in newer version
+UPSTREAM_RUSTC_VERSION="2025-11-15"
 
 export PREFIX_RUSTFLAGS=-L $(ROOT)/$(PREFIX_INSTALL)/$(TARGET)/lib
 export RUSTUP_TOOLCHAIN=$(ROOT)/$(PREFIX_INSTALL)
@@ -328,22 +329,33 @@ $(PREFIX)/gcc-install.tar.gz: $(PREFIX)/gcc-install
 # RUST FROM UPSTREAM COMPILER ---------------------------------------------------
 ifeq ($(PREFIX_USE_UPSTREAM_RUST_COMPILER),1)
 
-$(PREFIX)/rustc-install.tar.xz:
+PREFIX_RUST_VERSION_TAG=$(PREFIX)/rustc-version-tag-$(UPSTREAM_RUSTC_VERSION)
+
+$(PREFIX_RUST_VERSION_TAG):
+	rm -f "$(PREFIX)"/rustc-version-tag-*
+	rm -f "$(PREFIX)"/rustc-install.tar.xz
+	rm -f "$(PREFIX)"/cargo-install.tar.xz
+	rm -f "$(PREFIX)"/rust-std-host-install.tar.xz
+	rm -f "$(PREFIX)"/rust-std-target-install.tar.xz
+	rm -f "$(PREFIX)"/rust-src-install.tar.xz:
+	touch $@
+
+$(PREFIX)/rustc-install.tar.xz: | $(PREFIX_RUST_VERSION_TAG)
 	mkdir -p "$(@D)"
 	wget -O $@.partial "https://static.rust-lang.org/dist/$(UPSTREAM_RUSTC_VERSION)/rustc-nightly-$(HOST_TARGET).tar.xz"
 	mv $@.partial $@
 
-$(PREFIX)/cargo-install.tar.xz:
+$(PREFIX)/cargo-install.tar.xz: | $(PREFIX_RUST_VERSION_TAG)
 	mkdir -p "$(@D)"
 	wget -O $@.partial "https://static.rust-lang.org/dist/$(UPSTREAM_RUSTC_VERSION)/cargo-nightly-$(HOST_TARGET).tar.xz"
 	mv $@.partial $@
 
-$(PREFIX)/rust-std-host-install.tar.xz:
+$(PREFIX)/rust-std-host-install.tar.xz: | $(PREFIX_RUST_VERSION_TAG)
 	mkdir -p "$(@D)"
 	wget -O $@.partial "https://static.rust-lang.org/dist/$(UPSTREAM_RUSTC_VERSION)/rust-std-nightly-$(HOST_TARGET).tar.xz"
 	mv $@.partial $@
 
-$(PREFIX)/rust-std-target-install.tar.xz:
+$(PREFIX)/rust-std-target-install.tar.xz: | $(PREFIX_RUST_VERSION_TAG)
 	mkdir -p "$(@D)"
 ifeq ($(TARGET),x86_64-unknown-redox)
 	wget -O $@.partial "https://static.rust-lang.org/dist/$(UPSTREAM_RUSTC_VERSION)/rust-std-nightly-$(TARGET).tar.xz"
@@ -352,7 +364,7 @@ else
 	touch $@
 endif
 
-$(PREFIX)/rust-src-install.tar.xz:
+$(PREFIX)/rust-src-install.tar.xz: | $(PREFIX_RUST_VERSION_TAG)
 	mkdir -p "$(@D)"
 	wget -O $@.partial "https://static.rust-lang.org/dist/$(UPSTREAM_RUSTC_VERSION)/rust-src-nightly.tar.xz"
 	mv $@.partial $@
@@ -368,6 +380,7 @@ $(PREFIX)/rust-install: $(PREFIX)/gcc-install $(PREFIX)/rustc-install.tar.xz $(P
 ifeq ($(TARGET),x86_64-unknown-redox)
 	tar --extract --file "$(PREFIX)/rust-std-target-install.tar.xz" --directory "$@.partial" rust-std-nightly-$(TARGET)/rust-std-$(TARGET)/ --strip-components=2
 endif
+	rm -f "$@.partial/manifest.in"
 	touch "$@.partial"
 	mv "$@.partial" "$@"
 
