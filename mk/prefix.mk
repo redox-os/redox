@@ -179,6 +179,9 @@ else
 	@#TODO: in riscv64gc libgcc_s.so is a GNU ld script
 	rm -f "$@.partial"/$(GNU_TARGET)/lib/libgcc_s.so
 	ln -s libgcc_s.so.1 "$@.partial"/$(GNU_TARGET)/lib/libgcc_s.so
+	@#TODO: generates wrong lib path for libtool
+	rm -f "$@.partial"/$(GNU_TARGET)/lib/libstdc++.la
+	rm -f "$@.partial"/$(GNU_TARGET)/lib/libsupc++.la
 # fully featured libstdcxx, not supported for targets only supporting static linking
 ifneq ($(TARGET),riscv64gc-unknown-redox)
 ifneq ($(TARGET),i586-unknown-redox)
