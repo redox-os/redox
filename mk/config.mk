@@ -60,7 +60,6 @@ SED=sed
 ifneq ($(PODMAN_BUILD),1)
 FSTOOLS_IN_PODMAN=0
 HOST_TARGET := $(shell env -u RUSTUP_TOOLCHAIN rustc -vV | grep host | cut -d: -f2 | tr -d " ")
-HOST_GNU_TARGET := $(shell gcc -dumpmachine)
 # x86_64 linux hosts have all toolchains
 ifneq ($(HOST_TARGET),x86_64-unknown-linux-gnu)
 	ifeq ($(ARCH),aarch64)
