@@ -1,0 +1,17 @@
+#TODO: does not compile
+[source]
+git = "https://github.com/jackpot51/cosmic-comp"
+branch = "redox"
+
+[build]
+template = "custom"
+dependencies = [
+    "libffi",
+    "libwayland",
+    "libxkbcommon",
+]
+script = """
+DYNAMIC_INIT
+export RUSTFLAGS="${RUSTFLAGS}"
+cookbook_cargo --no-default-features
+"""
