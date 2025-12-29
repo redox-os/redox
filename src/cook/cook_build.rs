@@ -194,7 +194,7 @@ pub fn build(
         &recipe.build.dev_dependencies[..],
     ]
     .concat();
-    let build_deps = CookRecipe::get_build_deps_recursive(&build_deps, false, false)
+    let build_deps = CookRecipe::get_build_deps_recursive(&build_deps, false, false, false)
         .map_err(|e| format!("{:?}", e))?;
     for dependency in build_deps.iter() {
         let (_, pkgar, _) = dependency.stage_paths();
