@@ -1,22 +1,59 @@
 #TODO compiling, not tested further
 [source]
 git = "https://github.com/willnode/zig"
-branch = "zig-0.15-redox"
+branch = "zig-0.15.2-redox"
 
 [build]
 template = "custom"
+dependencies = [
+  "llvm21",
+  "zstd"
+]
+
+dev-dependencies = [
+  "llvm21.dev",
+  "llvm21.runtime",
+  "llvm21.clang",
+  "llvm21.clang-dev",
+  "llvm21.lld-dev",
+  "llvm21.lld",
+  "host:libarchive",
+  "host:zig",
+]
+
 script = """
 DYNAMIC_INIT
-rsync -av --delete "${COOKBOOK_SOURCE}"/* ./
+export PATH="${COOKBOOK_BUILD}:${PATH}"
 
-export ZIG_HOST_TARGET_CFLAGS="$CFLAGS"
-export ZIG_HOST_TARGET_LDFLAGS="$LDFLAGS"
-export ZIG_HOST_TARGET_CC="${TARGET}-gcc"
-export ZIG_HOST_TARGET_TRIPLE="${TARGET%%-*}-redox"
-unset AR AS CC CXX LD LDFLAGS NM OBJCOPY OBJDUMP RANLIB READELF RUSTFLAGS STRIP
-cc bootstrap.c -o ./bootstrap
-./bootstrap
+mkdir -p "${COOKBOOK_STAGE}"/usr/lib/zig  "${COOKBOOK_STAGE}"/usr/bin
+ln -s "../lib/zig/bin/zig" "${COOKBOOK_STAGE}"/usr/bin/zig
 
-mkdir -p "${COOKBOOK_STAGE}"/usr/bin
-cp ./zig2 "${COOKBOOK_STAGE}"/usr/bin/zig
+if [ "$TARGET" != "$COOKBOOK_HOST_TARGET" ]; then
+
+ARCH="${GNU_TARGET%%-*}"
+OS=$(echo "${TARGET}" | cut -d - -f3-4)
+rsync -a "${COOKBOOK_SOURCE}"/* ./
+
+zig build \
+  --prefix "${COOKBOOK_STAGE}/usr/lib/zig" \
+  --search-prefix "${COOKBOOK_SYSROOT}/usr" \
+  -Dflat \
+  -Dstatic-llvm \
+  -Doptimize=ReleaseFast \
+  -Dstrip \
+  -Dforce-link-libc \
+  -Dtarget="$ARCH-$OS" \
+  -Dcpu="baseline" \
+  -Dversion-string="0.15.2" \
+  -Duse-zig-libcxx \
+  -Dno-langref \
+  -Dno-test
+
+else 
+
+COOKBOOK_SOURCE="${COOKBOOK_BUILD}"
+COOKBOOK_STAGE="${COOKBOOK_STAGE}/usr/lib/zig"
+cookbook_cmake -DCMAKE_INSTALL_PREFIX=/ -DZIG_NO_TEST=On
+
+fi
 """
