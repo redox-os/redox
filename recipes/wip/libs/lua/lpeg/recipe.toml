@@ -1,5 +1,6 @@
 [source]
 tar = "https://www.inf.puc-rio.br/~roberto/lpeg/lpeg-1.1.0.tar.gz"
+blake3 = "69fc6eaa1a1749937b7216e3d655cf47a7802ffe407f8f857664e999a7b7377b"
 
 [build]
 template = "custom"
