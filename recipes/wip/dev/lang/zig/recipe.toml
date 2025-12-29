@@ -23,7 +23,6 @@ dev-dependencies = [
 
 script = """
 DYNAMIC_INIT
-rsync -a "${COOKBOOK_SOURCE}"/* ./
 export PATH="${COOKBOOK_BUILD}:${PATH}"
 
 mkdir -p "${COOKBOOK_STAGE}"/usr/lib/zig  "${COOKBOOK_STAGE}"/usr/bin
@@ -33,6 +32,7 @@ if [ "$TARGET" != "$COOKBOOK_HOST_TARGET" ]; then
 
 ARCH="${GNU_TARGET%%-*}"
 OS=$(echo "${TARGET}" | cut -d - -f3-4)
+rsync -a "${COOKBOOK_SOURCE}"/* ./
 
 zig build \
   --prefix "${COOKBOOK_STAGE}/usr/lib/zig" \
@@ -46,13 +46,14 @@ zig build \
   -Dcpu="baseline" \
   -Dversion-string="0.15.2" \
   -Duse-zig-libcxx \
-  -Dno-langref
+  -Dno-langref \
+  -Dno-test
 
 else 
 
 COOKBOOK_SOURCE="${COOKBOOK_BUILD}"
 COOKBOOK_STAGE="${COOKBOOK_STAGE}/usr/lib/zig"
-cookbook_cmake -DCMAKE_INSTALL_PREFIX=/
+cookbook_cmake -DCMAKE_INSTALL_PREFIX=/ -DZIG_NO_TEST=On
 
 fi
 """
