@@ -297,6 +297,7 @@ impl CookRecipe {
         }
 
         let mut recipes = Vec::new();
+        let mut recipes_set = BTreeSet::new();
         for name in names {
             let recipe = Self::from_name(name.clone())?;
 
@@ -317,7 +318,8 @@ impl CookRecipe {
                 })?;
 
                 for dependency in dependencies {
-                    if !recipes.contains(&dependency) {
+                    if !recipes_set.contains(&dependency.name) {
+                        recipes_set.insert(dependency.name.clone());
                         recipes.push(dependency);
                     }
                 }
@@ -340,7 +342,8 @@ impl CookRecipe {
                 })?;
 
                 for dependency in dependencies {
-                    if !recipes.contains(&dependency) {
+                    if !recipes_set.contains(&dependency.name) {
+                        recipes_set.insert(dependency.name.clone());
                         recipes.push(dependency);
                     }
                 }
@@ -363,13 +366,15 @@ impl CookRecipe {
                 })?;
 
                 for dependency in dependencies {
-                    if !recipes.contains(&dependency) {
+                    if !recipes_set.contains(&dependency.name) {
+                        recipes_set.insert(dependency.name.clone());
                         recipes.push(dependency);
                     }
                 }
             }
 
-            if collect_self && !recipes.contains(&recipe) {
+            if collect_self && !recipes_set.contains(&recipe.name) {
+                recipes_set.insert(recipe.name.clone());
                 recipes.push(recipe);
             }
         }
@@ -381,6 +386,7 @@ impl CookRecipe {
         names: &[PackageName],
         include_dev: bool,
         mark_is_deps: bool,
+        flatten_opt_package: bool,
     ) -> Result<Vec<Self>, PackageError> {
         let mut packages = Self::new_recursive(
             names,
@@ -396,6 +402,24 @@ impl CookRecipe {
         if mark_is_deps {
             for package in packages.iter_mut() {
                 package.is_deps = !names.contains(&package.name);
+            }
+        }
+
+        if flatten_opt_package {
+            let old_packages = packages;
+            packages = Vec::new();
+            let mut packages_set = BTreeSet::new();
+            for mut package in old_packages {
+                let is_host = package.name.is_host();
+                let mut name = package.name.with_suffix(None);
+                if is_host {
+                    name = name.with_host();
+                }
+                if !packages_set.contains(name.as_str()) {
+                    packages_set.insert(name.to_string());
+                    package.name = name;
+                    packages.push(package);
+                }
             }
         }
 

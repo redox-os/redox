@@ -497,6 +497,7 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
                 !command.is_pushing(),
                 // In CliCommand::Cook, is_deps==true will make it skip checking source
                 command.is_pushing() || !config.with_package_deps,
+                true,
             )?
         } else {
             recipe_names
