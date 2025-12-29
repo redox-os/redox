@@ -1,6 +1,8 @@
 #TODO mostly work, kinda slow, can't quit (signal issues?)
 [source]
-tar = "https://github.com/neovim/neovim/archive/refs/tags/v0.11.3.tar.gz"
+git = "https://github.com/neovim/neovim"
+rev = "v0.11.5"
+shallow_clone = true
 patches = [
   "redox.patch"
 ]
@@ -8,7 +10,6 @@ patches = [
 [build]
 template = "custom"
 dependencies = [
-    "luajit",
     "libiconv",
     "libuv",
     "luv",
@@ -18,10 +19,32 @@ dependencies = [
     "unibilium",
     "utf8proc",
 ]
+dev-dependencies = [
+  "host:luajit",
+  "host:neovim",
+]
 script = """
 DYNAMIC_INIT
-cookbook_cmake \
-  -DLUA_GEN_PRG=luajit
+
+# the only official way to cross compile in future is via zig
+# https://github.com/neovim/neovim/issues/19579
+# the code path below is very hacky, and our zig support is poor yet
+
+COOKBOOK_CMAKE_FLAGS+=(-DLUA_GEN_PRG=luajit)
+export DEPS_BUILD_DIR=$COOKBOOK_SYSROOT/usr
+if [ "$TARGET" = "$COOKBOOK_HOST_TARGET" ]; then
+cookbook_cmake
+
+# needed to workaround bootstrapping process
+cp ./lib/libnlua0.so ${COOKBOOK_STAGE}/usr/lib/nvim/
+
+else
+
+# this is a very ugly workaround
+cookbook_cmake || true
+cp ${COOKBOOK_TOOLCHAIN}/usr/lib/nvim/libnlua0.so ./lib/libnlua0.so
+cookbook_cmake
+fi
 
 # Lpeg is absolute path https://github.com/neovim/neovim/issues/23395
 patchelf --replace-needed \

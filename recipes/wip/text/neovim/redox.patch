@@ -67,33 +67,6 @@ diff -ruwN source/runtime/CMakeLists.txt source-new/runtime/CMakeLists.txt
    FILES ${GENERATED_SYN_VIM}
    DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/nvim/runtime/syntax/vim)
  
-diff -ruwN source/src/nvim/channel.c source-new/src/nvim/channel.c
---- source/src/nvim/channel.c	2025-07-13 01:34:12.000000000 +0700
-+++ source-new/src/nvim/channel.c	2025-09-16 13:41:27.109978099 +0700
-@@ -547,8 +547,23 @@
-     // Redirect stdout/stdin (the UI channel) to stderr. Use fnctl(F_DUPFD_CLOEXEC) instead of dup()
-     // to prevent child processes from inheriting the file descriptors, which are used by UIs to
-     // detect when Nvim exits.
-+    #ifdef __redox__
-+    int new_stdin_fd = dup(STDIN_FILENO);
-+    if (new_stdin_fd >= 0) {
-+      fcntl(new_stdin_fd, F_SETFD, FD_CLOEXEC);
-+    }
-+    stdin_dup_fd = new_stdin_fd;
-+
-+    // 2. Duplicate STDOUT and set CLOEXEC flag
-+    int new_stdout_fd = dup(STDOUT_FILENO);
-+    if (new_stdout_fd >= 0) {
-+      fcntl(new_stdout_fd, F_SETFD, FD_CLOEXEC);
-+    }
-+    stdout_dup_fd = new_stdout_fd;
-+    #else
-     stdin_dup_fd = fcntl(STDIN_FILENO, F_DUPFD_CLOEXEC, STDERR_FILENO + 1);
-     stdout_dup_fd = fcntl(STDOUT_FILENO, F_DUPFD_CLOEXEC, STDERR_FILENO + 1);
-+    #endif // __redox__
-     dup2(STDERR_FILENO, STDOUT_FILENO);
-     dup2(STDERR_FILENO, STDIN_FILENO);
-   }
 diff -ruwN source/src/nvim/CMakeLists.txt source-new/src/nvim/CMakeLists.txt
 --- source/src/nvim/CMakeLists.txt	2025-07-13 01:34:12.000000000 +0700
 +++ source-new/src/nvim/CMakeLists.txt	2025-09-16 16:07:40.327319085 +0700
