@@ -21,14 +21,27 @@ saved_settings=$(stty -g)
 
 # Restore terminal on exit
 cleanup() {
-    stty "$saved_settings"
+    stty "$saved_settings" 2>/dev/null || true
     echo ""
     echo "Disconnected from Redox VM"
 }
 trap cleanup EXIT INT TERM
 
 # Set raw terminal mode for proper interaction
-stty raw -echo
+# -echo: don't echo input (VM does this)
+# -icanon: disable canonical mode (no line buffering)
+# -isig: disable interrupt signals
+# min 1: read at least 1 character
+# time 0: no timeout
+stty raw -echo -icanon -isig min 1 time 0 2>/dev/null
+
+# Set terminal size for proper display
+if command -v resize >/dev/null 2>&1; then
+    eval "$(resize)"
+fi
+
+# Export TERM for better compatibility
+export TERM=vt100
 
 # Use nc to connect to UNIX socket
 # This provides bidirectional communication with the VM serial console

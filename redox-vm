@@ -206,8 +206,9 @@ cmd_launch() {
         -drive "file=$vm_disk,format=raw"
         -device qemu-xhci -device usb-kbd -device usb-tablet
         -device e1000,netdev=net0
-        -netdev user,id=net0,hostfwd=tcp::8022-:22
+        -netdev user,id=net0,hostfwd=tcp::8022-:22,hostfwd=tcp::8080-:80
         -vga none -device ramfb
+        -display none
         -serial "unix:${pty_master},server,nowait"
         -monitor "unix:${monitor_socket},server,nowait"
         -name "Redox OS $name"
@@ -263,20 +264,24 @@ cmd_shell() {
     log_info "Press Ctrl-C to exit"
     log_info ""
 
-    # Use our custom shell wrapper for better terminal handling
-    local shell_wrapper="${REDOX_ROOT}/redox-shell"
-
-    if [[ -x "$shell_wrapper" ]]; then
-        "$shell_wrapper" "$pty_socket"
+    # Use socat for best terminal experience
+    if command -v socat >/dev/null 2>&1; then
+        # socat provides excellent terminal handling
+        # raw: pass through all characters
+        # echo=0: disable local echo (VM handles it)
+        # escape=0x03: Ctrl-C exits
+        socat -,raw,echo=0,escape=0x03 "UNIX-CONNECT:$pty_socket"
+    elif [[ -x "${REDOX_ROOT}/redox-shell" ]]; then
+        # Use our custom shell wrapper
+        "${REDOX_ROOT}/redox-shell" "$pty_socket"
     elif command -v nc >/dev/null 2>&1; then
         # Fallback to plain nc
         stty raw -echo 2>/dev/null || true
         nc -U "$pty_socket"
         stty sane 2>/dev/null || true
     else
-        log_error "netcat (nc) not found. Cannot connect to serial console."
-        log_info "Install netcat or socat:"
-        log_info "  brew install netcat"
+        log_error "No terminal connector found."
+        log_info "Install socat for best experience:"
         log_info "  brew install socat"
         return 1
     fi

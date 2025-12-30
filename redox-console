@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# Enhanced Redox VM console with better terminal support
+
+pty_socket="$1"
+
+if [[ -z "$pty_socket" ]]; then
+    echo "Usage: $0 <pty-socket-path>"
+    exit 1
+fi
+
+if [[ ! -S "$pty_socket" ]]; then
+    echo "Error: Socket not found: $pty_socket"
+    exit 1
+fi
+
+# Check if socat is available (better than nc)
+if command -v socat >/dev/null 2>&1; then
+    echo "Connecting with socat (enhanced mode)..."
+    echo "Press Ctrl-C to exit"
+    echo ""
+
+    # socat provides better terminal handling
+    # raw: pass through all characters
+    # echo=0: disable local echo
+    # escape=0x03: use Ctrl-C to exit
+    exec socat -,raw,echo=0,escape=0x03 "UNIX-CONNECT:$pty_socket"
+else
+    # Fallback to nc
+    echo "Connecting with netcat (basic mode)..."
+    echo "Consider installing socat for better experience: brew install socat"
+    echo "Press Ctrl-C to exit"
+    echo ""
+
+    saved_settings=$(stty -g)
+
+    cleanup() {
+        stty "$saved_settings" 2>/dev/null || true
+        echo ""
+        echo "Disconnected"
+    }
+    trap cleanup EXIT INT TERM
+
+    # Set terminal to raw mode
+    stty raw -echo -icanon -isig 2>/dev/null
+
+    exec nc -U "$pty_socket"
+fi
