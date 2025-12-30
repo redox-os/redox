@@ -194,7 +194,14 @@ pub fn package_stage_paths(
     package: Option<&OptionalPackageRecipe>,
     target_dir: &Path,
 ) -> (PathBuf, PathBuf, PathBuf) {
-    package_name_paths(package, target_dir, "stage")
+    let mut target_dir = target_dir.to_path_buf();
+    if let Some(cross_target) = std::env::var("COOKBOOK_CROSS_TARGET").ok() {
+        if cross_target != "" {
+            // TODO: automatically pass COOKBOOK_CROSS_GNU_TARGET?
+            target_dir = target_dir.join(cross_target)
+        }
+    }
+    package_name_paths(package, &target_dir, "stage")
 }
 
 pub fn package_source_paths(

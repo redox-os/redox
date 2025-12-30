@@ -173,6 +173,7 @@ pub fn build(
     name: &PackageName,
     recipe: &Recipe,
     offline_mode: bool,
+    clean_build: bool,
     check_source: bool,
     logger: &PtyOut,
 ) -> Result<(Vec<PathBuf>, BTreeSet<PackageName>), String> {
@@ -276,9 +277,8 @@ pub fn build(
         create_dir_clean(&stage_dir_tmp)?;
 
         // Create build, if it does not exist
-        //TODO: flag for clean builds where build is wiped out
-        let build_dir = target_dir.join("build");
-        if !build_dir.is_dir() {
+        let build_dir = get_build_dir(target_dir);
+        if clean_build || !build_dir.is_dir() {
             create_dir_clean(&build_dir)?;
         }
 
@@ -428,13 +428,31 @@ pub fn remove_stage_dir(stage_dir: &PathBuf) -> Result<(), String> {
 }
 
 pub fn get_stage_dirs(features: &Vec<OptionalPackageRecipe>, target_dir: &Path) -> Vec<PathBuf> {
+    let mut target_dir = target_dir.to_path_buf();
+    if let Some(cross_target) = std::env::var("COOKBOOK_CROSS_TARGET").ok() {
+        if cross_target != "" {
+            // TODO: automatically pass COOKBOOK_CROSS_GNU_TARGET?
+            target_dir = target_dir.join(cross_target)
+        }
+    }
     let mut v = Vec::new();
     for f in features {
         v.push(target_dir.join(format!("stage.{}", f.name)));
     }
     // intentionally added last as it contains leftover files from package features
-    v.push(target_dir.join(format!("stage")));
+    v.push(target_dir.join("stage"));
     v
+}
+
+pub fn get_build_dir(target_dir: &Path) -> PathBuf {
+    let mut target_dir = target_dir.to_path_buf();
+    if let Some(cross_target) = std::env::var("COOKBOOK_CROSS_TARGET").ok() {
+        if cross_target != "" {
+            // TODO: automatically pass COOKBOOK_CROSS_GNU_TARGET?
+            target_dir = target_dir.join(cross_target)
+        }
+    }
+    target_dir.join("build")
 }
 
 fn build_deps_dir(

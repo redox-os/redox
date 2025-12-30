@@ -54,7 +54,8 @@ SCCACHE_BUILD?=$(shell [ -f /run/.containerenv ] && echo 1 || echo 0)
 CONTAINERFILE?=podman/redox-base-containerfile
 
 # Per host variables
-export NPROC=nproc
+NPROC=nproc
+SED=sed
 
 ifneq ($(PODMAN_BUILD),1)
 FSTOOLS_IN_PODMAN=0
@@ -101,7 +102,8 @@ endif
 UNAME := $(shell uname)
 ifeq ($(UNAME),Darwin)
 	FUMOUNT=umount
-	export NPROC=sysctl -n hw.ncpu
+	NPROC=sysctl -n hw.ncpu
+	SED=gsed
 	VB_AUDIO=coreaudio
 	VBM=/Applications/VirtualBox.app/Contents/MacOS/VBoxManage
 else ifeq ($(UNAME),FreeBSD)
