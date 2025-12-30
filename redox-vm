@@ -103,7 +103,11 @@ ensure_image() {
     log_info "Building Redox OS ${arch} ${config} image..."
     log_info "This may take a while (30+ minutes on first build)..."
     cd "${REDOX_ROOT}"
-    make ARCH="${arch}" CONFIG_NAME="${config}" all
+
+    # Use native build on macOS (Podman not needed)
+    # Add GNU coreutils to PATH (required on macOS)
+    export PATH="/opt/homebrew/opt/coreutils/libexec/gnubin:$PATH"
+    make ARCH="${arch}" CONFIG_NAME="${config}" PODMAN_BUILD=0 PREFIX_BINARY=0 all
 
     if [[ -f "$image" ]]; then
         echo "$image"
