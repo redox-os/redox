@@ -48,12 +48,14 @@ save_vm_info() {
     local mem="$2"
     local mount="$3"
     local pid="$4"
+    local pty="$5"
 
     cat > "$(vm_info_file "$name")" <<EOF
 NAME=$name
 MEM=$mem
 MOUNT=$mount
 PID=$pid
+PTY=$pty
 ARCH=$ARCH
 CONFIG=$CONFIG_NAME
 CREATED=$(date +%s)
@@ -153,8 +155,13 @@ cmd_launch() {
     fi
 
     if vm_exists "$name"; then
-        log_error "VM '$name' already exists"
-        return 1
+        if vm_is_running "$name"; then
+            log_error "VM '$name' is already running"
+            return 1
+        fi
+        log_warn "VM '$name' already exists, restarting it..."
+        # Don't copy image again if it exists
+        local skip_copy=true
     fi
 
     # Convert memory to MB
@@ -167,8 +174,13 @@ cmd_launch() {
 
     # Create VM-specific disk image copy
     local vm_disk="${REDOX_VMS_DIR}/${name}.img"
-    log_info "Creating VM disk image..."
-    cp "$image" "$vm_disk"
+
+    if [[ "$skip_copy" != "true" ]]; then
+        log_info "Creating VM disk image..."
+        cp "$image" "$vm_disk"
+    else
+        log_info "Using existing VM disk image..."
+    fi
 
     log_info "Launching VM '$name' with ${mem} memory..."
 
@@ -181,6 +193,10 @@ cmd_launch() {
         return 1
     fi
 
+    # Create PTY for serial console
+    local pty_master="${REDOX_VMS_DIR}/${name}.pty"
+    local monitor_socket="${REDOX_VMS_DIR}/${name}.monitor"
+
     # Build QEMU command
     local qemu_cmd=(
         qemu-system-aarch64
@@ -190,9 +206,10 @@ cmd_launch() {
         -drive "file=$vm_disk,format=raw"
         -device qemu-xhci -device usb-kbd -device usb-tablet
         -device e1000,netdev=net0
-        -netdev user,id=net0
+        -netdev user,id=net0,hostfwd=tcp::8022-:22
         -vga none -device ramfb
-        -serial stdio
+        -serial "unix:${pty_master},server,nowait"
+        -monitor "unix:${monitor_socket},server,nowait"
         -name "Redox OS $name"
     )
 
@@ -200,7 +217,7 @@ cmd_launch() {
     nohup "${qemu_cmd[@]}" > "${REDOX_VMS_DIR}/${name}.log" 2>&1 &
 
     local pid=$!
-    sleep 2  # Give QEMU time to start
+    sleep 2  # Give QEMU time to start and create socket
 
     # Check if QEMU actually started
     if ! kill -0 "$pid" 2>/dev/null; then
@@ -209,12 +226,11 @@ cmd_launch() {
     fi
 
     # Save VM info
-    save_vm_info "$name" "$mem" "$mount" "$pid"
+    save_vm_info "$name" "$mem" "$mount" "$pid" "$pty_master"
 
     log_info "VM '$name' launched (PID: $pid)"
+    log_info "Connect to shell: redox-vm shell $name"
     log_info "View logs: tail -f ${REDOX_VMS_DIR}/${name}.log"
-    log_info ""
-    log_info "To view the VM graphically, you may need to connect to the display"
 }
 
 # Shell into a VM
@@ -231,9 +247,39 @@ cmd_shell() {
         return 1
     fi
 
-    log_warn "Interactive shell not yet supported for Redox VMs"
-    log_info "Connect via serial console or wait for SSH support"
-    log_info "View logs: tail -f ${REDOX_VMS_DIR}/${name}.log"
+    load_vm_info "$name" || return 1
+
+    local pty_socket="${REDOX_VMS_DIR}/${name}.pty"
+
+    # Check if PTY socket exists
+    if [[ ! -S "$pty_socket" ]]; then
+        log_error "Serial console socket not found: $pty_socket"
+        log_info "VM may have been started with old configuration"
+        log_info "Try: redox-vm stop $name && redox-vm launch --name $name --mem $MEM"
+        return 1
+    fi
+
+    log_info "Connecting to $name serial console..."
+    log_info "Press Ctrl-C to exit"
+    log_info ""
+
+    # Use our custom shell wrapper for better terminal handling
+    local shell_wrapper="${REDOX_ROOT}/redox-shell"
+
+    if [[ -x "$shell_wrapper" ]]; then
+        "$shell_wrapper" "$pty_socket"
+    elif command -v nc >/dev/null 2>&1; then
+        # Fallback to plain nc
+        stty raw -echo 2>/dev/null || true
+        nc -U "$pty_socket"
+        stty sane 2>/dev/null || true
+    else
+        log_error "netcat (nc) not found. Cannot connect to serial console."
+        log_info "Install netcat or socat:"
+        log_info "  brew install netcat"
+        log_info "  brew install socat"
+        return 1
+    fi
 }
 
 # List VMs

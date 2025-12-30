@@ -65,7 +65,10 @@ Shows all VMs with their status, memory, architecture, and configuration.
 redox-vm shell <name>
 ```
 
-⚠️ **Note**: Interactive shell not yet fully supported. Access via serial console in logs for now.
+✅ **Connects to the VM serial console** for interactive access.
+- Press Ctrl-C to disconnect
+- Full terminal support (keyboard input, colors, etc.)
+- Direct serial console access via UNIX socket
 
 ### Stop a VM
 
@@ -122,7 +125,7 @@ make ARCH=aarch64 CONFIG_NAME=desktop all
 | List VMs | ✅ | Working |
 | Stop VMs | ✅ | Working |
 | Delete VMs | ✅ | Working |
-| Shell access | ⚠️ | Via serial console in logs |
+| Shell access | ✅ | Interactive serial console |
 | Directory mounting | ❌ | Planned |
 | Multiple architectures | ✅ | aarch64, x86_64, i586, riscv64gc |
 | Custom configs | ✅ | desktop, minimal, server, dev |
