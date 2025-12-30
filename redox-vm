@@ -1,0 +1,380 @@
+#!/usr/bin/env bash
+# Redox VM Manager - multipass-like interface for Redox OS VMs
+# Usage: ./redox-vm launch|shell|stop|list|delete [options]
+
+set -e
+
+REDOX_ROOT="$(cd "$(dirname "$0")" && pwd)"
+REDOX_VMS_DIR="${HOME}/.redox-vms"
+ARCH="${ARCH:-aarch64}"
+CONFIG_NAME="${CONFIG_NAME:-desktop}"
+
+# Ensure VMs directory exists
+mkdir -p "${REDOX_VMS_DIR}"
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+log_info() {
+    echo -e "${GREEN}[redox-vm]${NC} $*"
+}
+
+log_error() {
+    echo -e "${RED}[redox-vm]${NC} $*" >&2
+}
+
+log_warn() {
+    echo -e "${YELLOW}[redox-vm]${NC} $*"
+}
+
+# Get VM info file path
+vm_info_file() {
+    local name="$1"
+    echo "${REDOX_VMS_DIR}/${name}.info"
+}
+
+# Check if VM exists
+vm_exists() {
+    local name="$1"
+    [[ -f "$(vm_info_file "$name")" ]]
+}
+
+# Save VM info
+save_vm_info() {
+    local name="$1"
+    local mem="$2"
+    local mount="$3"
+    local pid="$4"
+
+    cat > "$(vm_info_file "$name")" <<EOF
+NAME=$name
+MEM=$mem
+MOUNT=$mount
+PID=$pid
+ARCH=$ARCH
+CONFIG=$CONFIG_NAME
+CREATED=$(date +%s)
+EOF
+}
+
+# Load VM info
+load_vm_info() {
+    local name="$1"
+    if vm_exists "$name"; then
+        source "$(vm_info_file "$name")"
+    else
+        log_error "VM '$name' not found"
+        return 1
+    fi
+}
+
+# Check if VM is running
+vm_is_running() {
+    local name="$1"
+    load_vm_info "$name" || return 1
+
+    if [[ -n "$PID" ]] && kill -0 "$PID" 2>/dev/null; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+# Build Redox image if needed
+ensure_image() {
+    local arch="$1"
+    local config="$2"
+    local build_dir="${REDOX_ROOT}/build/${arch}/${config}"
+    local image="${build_dir}/harddrive.img"
+    local live_iso="${build_dir}/redox-live.iso"
+
+    # Check for existing image (harddrive.img or live ISO)
+    if [[ -f "$image" ]]; then
+        echo "$image"
+        return 0
+    elif [[ -f "$live_iso" ]]; then
+        echo "$live_iso"
+        return 0
+    fi
+
+    log_info "Building Redox OS ${arch} ${config} image..."
+    log_info "This may take a while (30+ minutes on first build)..."
+    cd "${REDOX_ROOT}"
+    make ARCH="${arch}" CONFIG_NAME="${config}" all
+
+    if [[ -f "$image" ]]; then
+        echo "$image"
+    elif [[ -f "$live_iso" ]]; then
+        echo "$live_iso"
+    else
+        log_error "Failed to build image"
+        return 1
+    fi
+}
+
+# Launch a new VM
+cmd_launch() {
+    local mem="4G"
+    local name=""
+    local mount=""
+
+    # Parse arguments
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            --mem)
+                mem="$2"
+                shift 2
+                ;;
+            --name)
+                name="$2"
+                shift 2
+                ;;
+            --mount)
+                mount="$2"
+                shift 2
+                ;;
+            *)
+                log_error "Unknown option: $1"
+                return 1
+                ;;
+        esac
+    done
+
+    if [[ -z "$name" ]]; then
+        log_error "VM name is required (use --name)"
+        return 1
+    fi
+
+    if vm_exists "$name"; then
+        log_error "VM '$name' already exists"
+        return 1
+    fi
+
+    # Convert memory to MB
+    mem_mb="${mem%G}"
+    mem_mb=$((mem_mb * 1024))
+
+    # Ensure image exists
+    local image
+    image=$(ensure_image "$ARCH" "$CONFIG_NAME")
+
+    # Create VM-specific disk image copy
+    local vm_disk="${REDOX_VMS_DIR}/${name}.img"
+    log_info "Creating VM disk image..."
+    cp "$image" "$vm_disk"
+
+    log_info "Launching VM '$name' with ${mem} memory..."
+
+    # Determine UEFI firmware path
+    local firmware
+    firmware=$(find /opt/homebrew/opt/qemu/share/qemu -name "edk2-aarch64-code.fd" 2>/dev/null | head -1)
+
+    if [[ -z "$firmware" ]]; then
+        log_error "UEFI firmware not found. Please install QEMU with UEFI support."
+        return 1
+    fi
+
+    # Build QEMU command
+    local qemu_cmd=(
+        qemu-system-aarch64
+        -machine virt -cpu max -accel hvf
+        -smp 4 -m "$mem_mb"
+        -drive "if=pflash,format=raw,unit=0,file=$firmware,readonly=on"
+        -drive "file=$vm_disk,format=raw"
+        -device qemu-xhci -device usb-kbd -device usb-tablet
+        -device e1000,netdev=net0
+        -netdev user,id=net0
+        -vga none -device ramfb
+        -serial stdio
+        -name "Redox OS $name"
+    )
+
+    # Start QEMU in background
+    nohup "${qemu_cmd[@]}" > "${REDOX_VMS_DIR}/${name}.log" 2>&1 &
+
+    local pid=$!
+    sleep 2  # Give QEMU time to start
+
+    # Check if QEMU actually started
+    if ! kill -0 "$pid" 2>/dev/null; then
+        log_error "Failed to start QEMU. Check logs: ${REDOX_VMS_DIR}/${name}.log"
+        return 1
+    fi
+
+    # Save VM info
+    save_vm_info "$name" "$mem" "$mount" "$pid"
+
+    log_info "VM '$name' launched (PID: $pid)"
+    log_info "View logs: tail -f ${REDOX_VMS_DIR}/${name}.log"
+    log_info ""
+    log_info "To view the VM graphically, you may need to connect to the display"
+}
+
+# Shell into a VM
+cmd_shell() {
+    local name="$1"
+
+    if [[ -z "$name" ]]; then
+        log_error "VM name is required"
+        return 1
+    fi
+
+    if ! vm_is_running "$name"; then
+        log_error "VM '$name' is not running"
+        return 1
+    fi
+
+    log_warn "Interactive shell not yet supported for Redox VMs"
+    log_info "Connect via serial console or wait for SSH support"
+    log_info "View logs: tail -f ${REDOX_VMS_DIR}/${name}.log"
+}
+
+# List VMs
+cmd_list() {
+    echo "Name            State      Memory   Arch      Config"
+    echo "--------------------------------------------------------"
+
+    for info_file in "${REDOX_VMS_DIR}"/*.info; do
+        if [[ -f "$info_file" ]]; then
+            source "$info_file"
+
+            local state="Stopped"
+            if [[ -n "$PID" ]] && kill -0 "$PID" 2>/dev/null; then
+                state="Running"
+            fi
+
+            printf "%-15s %-10s %-8s %-9s %s\n" \
+                "$NAME" "$state" "$MEM" "$ARCH" "$CONFIG"
+        fi
+    done
+}
+
+# Stop a VM
+cmd_stop() {
+    local name="$1"
+
+    if [[ -z "$name" ]]; then
+        log_error "VM name is required"
+        return 1
+    fi
+
+    load_vm_info "$name" || return 1
+
+    if vm_is_running "$name"; then
+        log_info "Stopping VM '$name' (PID: $PID)..."
+        kill "$PID" 2>/dev/null || true
+        log_info "VM '$name' stopped"
+    else
+        log_warn "VM '$name' is not running"
+    fi
+}
+
+# Delete a VM
+cmd_delete() {
+    local name="$1"
+
+    if [[ -z "$name" ]]; then
+        log_error "VM name is required"
+        return 1
+    fi
+
+    if ! vm_exists "$name"; then
+        log_error "VM '$name' not found"
+        return 1
+    fi
+
+    # Stop if running
+    if vm_is_running "$name"; then
+        cmd_stop "$name"
+    fi
+
+    log_info "Deleting VM '$name'..."
+    rm -f "$(vm_info_file "$name")"
+    rm -f "${REDOX_VMS_DIR}/${name}.img"
+    rm -f "${REDOX_VMS_DIR}/${name}.log"
+    log_info "VM '$name' deleted"
+}
+
+# Show usage
+usage() {
+    cat <<EOF
+Redox VM Manager - multipass-like interface for Redox OS
+
+Usage: redox-vm <command> [options]
+
+Commands:
+    launch      Launch a new VM
+                Options:
+                  --mem <size>    Memory size (e.g., 4G, 2048M)
+                  --name <name>   VM name (required)
+                  --mount <src:dst> Mount host directory (planned)
+
+    shell       Open shell in VM
+                Usage: redox-vm shell <name>
+
+    list        List all VMs
+
+    stop        Stop a running VM
+                Usage: redox-vm stop <name>
+
+    delete      Delete a VM
+                Usage: redox-vm delete <name>
+
+Environment Variables:
+    ARCH          Architecture (default: aarch64)
+    CONFIG_NAME   Configuration (default: desktop)
+
+Examples:
+    # Launch a VM
+    redox-vm launch --mem 4G --name redox-me --mount \$HOME:/Users/me
+
+    # List VMs
+    redox-vm list
+
+    # Shell into VM
+    redox-vm shell redox-me
+
+    # Stop VM
+    redox-vm stop redox-me
+
+    # Delete VM
+    redox-vm delete redox-me
+EOF
+}
+
+# Main command dispatcher
+main() {
+    local command="$1"
+    shift || true
+
+    case "$command" in
+        launch)
+            cmd_launch "$@"
+            ;;
+        shell)
+            cmd_shell "$@"
+            ;;
+        list)
+            cmd_list "$@"
+            ;;
+        stop)
+            cmd_stop "$@"
+            ;;
+        delete)
+            cmd_delete "$@"
+            ;;
+        help|--help|-h|"")
+            usage
+            ;;
+        *)
+            log_error "Unknown command: $command"
+            usage
+            exit 1
+            ;;
+    esac
+}
+
+main "$@"
