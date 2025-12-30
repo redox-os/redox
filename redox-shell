@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# Redox VM Serial Console Connector
+# Provides interactive serial console access to Redox VMs
+
+set -e
+
+pty_socket="$1"
+
+if [[ -z "$pty_socket" ]]; then
+    echo "Usage: $0 <pty-socket-path>"
+    exit 1
+fi
+
+if [[ ! -S "$pty_socket" ]]; then
+    echo "Error: Socket not found: $pty_socket"
+    exit 1
+fi
+
+# Save terminal settings
+saved_settings=$(stty -g)
+
+# Restore terminal on exit
+cleanup() {
+    stty "$saved_settings"
+    echo ""
+    echo "Disconnected from Redox VM"
+}
+trap cleanup EXIT INT TERM
+
+# Set raw terminal mode for proper interaction
+stty raw -echo
+
+# Use nc to connect to UNIX socket
+# This provides bidirectional communication with the VM serial console
+nc -U "$pty_socket"

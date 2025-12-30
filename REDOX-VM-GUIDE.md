@@ -133,7 +133,7 @@ ARCH=x86_64 ./redox-vm launch --name redox-x64 --mem 4G
 | Feature | Multipass | Redox VM | Status |
 |---------|-----------|----------|--------|
 | Launch VMs | ✅ | ✅ | Working |
-| Shell access | ✅ | ⚠️ | Serial console only |
+| Shell access | ✅ | ✅ | Working (serial console) |
 | Directory mounting | ✅ | ❌ | Planned |
 | List VMs | ✅ | ✅ | Working |
 | Stop/Delete VMs | ✅ | ✅ | Working |
