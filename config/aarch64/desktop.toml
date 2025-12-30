@@ -12,3 +12,20 @@ include = ["../desktop.toml"]
 # Package settings
 [packages]
 # example = {}
+
+# Add Ion configuration to fix prompt and localization errors
+[[files]]
+path = "/home/user/.config/ion/ionrc"
+data = """
+export PROMPT = "redox> "
+export LC_ALL = "C"
+export LANG = "C"
+export TERM = "vt100"
+"""
+
+# Add user to sudoers for debugging
+[[files]]
+path = "/etc/sudoers.d/user"
+data = """
+user ALL=(ALL) NOPASSWD: ALL
+"""
