@@ -1,0 +1,57 @@
+#!/usr/bin/expect -f
+# Connect to Redox VM and display environment
+
+set timeout 60
+set vm_name "test"
+set pty_socket "/Users/me/.redox-vms/${vm_name}.pty"
+
+# Wait for boot and login
+sleep 15
+
+spawn socat -,raw,echo=0 "UNIX-CONNECT:${pty_socket}"
+
+# Wait for login prompt
+expect {
+    "login:" {
+        send "user\r"
+    }
+    timeout {
+        puts "\nWaiting for boot to complete..."
+        sleep 10
+        send "\r"
+        exp_continue
+    }
+}
+
+# Wait for password prompt (empty for user)
+expect "password:"
+send "\r"
+
+# Wait for shell prompt
+expect {
+    -re "\\\$" {
+        puts "\n\n========== ENVIRONMENT VARIABLES =========="
+        send "env\r"
+    }
+}
+
+# Wait for env output to complete
+sleep 2
+
+# Run ls command
+expect -re "\\\$"
+puts "\n\n========== HOME DIRECTORY LISTING =========="
+send "ls -la ~\r"
+sleep 2
+
+# Run pwd
+expect -re "\\\$"
+puts "\n\n========== CURRENT DIRECTORY =========="
+send "pwd\r"
+sleep 1
+
+expect -re "\\\$"
+puts "\n\n========== SESSION COMPLETE =========="
+send "exit\r"
+
+sleep 1
