@@ -260,6 +260,43 @@ cmd_shell() {
         return 1
     fi
 
+    # Check if this is first connection and auto-apply fixes
+    local first_run_marker="${REDOX_VMS_DIR}/${name}.configured"
+    local apply_fixes=false
+
+    if [[ ! -f "$first_run_marker" ]]; then
+        apply_fixes=true
+        log_info "First connection - auto-configuring Ion shell..."
+        sleep 2
+
+        # Send configuration commands
+        {
+            sleep 1
+            printf '\r\n'
+            sleep 1
+            printf 'export PROMPT="redox> "\r\n'
+            sleep 0.5
+            printf 'export LC_ALL="C"\r\n'
+            sleep 0.5
+            printf 'export LANG="C"\r\n'
+            sleep 0.5
+            printf 'mkdir -p /home/user/.config/ion 2>/dev/null\r\n'
+            sleep 0.5
+            printf 'cat > /home/user/.config/ion/ionrc << '\''EOF'\''\r\n'
+            printf 'export PROMPT = "redox> "\r\n'
+            printf 'export LC_ALL = "C"\r\n'
+            printf 'export LANG = "C"\r\n'
+            printf 'export TERM = "vt100"\r\n'
+            printf 'EOF\r\n'
+            sleep 1
+            printf 'clear\r\n'
+            sleep 0.5
+        } | nc -U "$pty_socket" -w 1 2>/dev/null
+
+        touch "$first_run_marker"
+        sleep 2
+    fi
+
     log_info "Connecting to $name serial console..."
     log_info "Press Ctrl-C to exit"
     log_info ""
