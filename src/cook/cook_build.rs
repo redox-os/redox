@@ -173,8 +173,8 @@ pub fn build(
     name: &PackageName,
     recipe: &Recipe,
     offline_mode: bool,
-    check_source: bool,
     clean_build: bool,
+    check_source: bool,
     logger: &PtyOut,
 ) -> Result<(Vec<PathBuf>, BTreeSet<PackageName>), String> {
     let sysroot_dir = target_dir.join("sysroot");
