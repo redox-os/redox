@@ -237,7 +237,7 @@ fn main_inner() -> anyhow::Result<()> {
         return publish_packages(&recipe_names, &config.repo_dir);
     }
 
-    if verbose {
+    if verbose && recipe_names.len() > 1 {
         println!(
             "\nCommand '{}' completed for {} recipes.",
             command.to_string(),
