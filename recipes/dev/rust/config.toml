@@ -1,4 +1,3 @@
-# Note: this file is not tracked by cookbook, run `make c.rust` after change.
 [llvm]
 download-ci-llvm = false
 static-libstdcpp = false
