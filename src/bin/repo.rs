@@ -10,7 +10,7 @@ use cookbook::cook::pty::{PtyOut, UnixSlavePty, flush_pty, setup_pty};
 use cookbook::cook::script::KILL_ALL_PID;
 use cookbook::cook::tree::{WalkTreeEntry, display_tree_entry, format_size, walk_tree_entry};
 use cookbook::log_to_pty;
-use cookbook::recipe::CookRecipe;
+use cookbook::recipe::{CookRecipe, recipes_flatten_package_names, recipes_mark_as_deps};
 use pkg::PackageName;
 use pkg::package::PackageError;
 use ratatui::Terminal;
@@ -492,13 +492,14 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
                 recipe_names = CookRecipe::get_package_deps_recursive(&recipe_names, true)
                     .context("failed get package deps")?;
             }
-            CookRecipe::get_build_deps_recursive(
-                &recipe_names,
-                !command.is_pushing(),
+            let mut packages =
+                CookRecipe::get_build_deps_recursive(&recipe_names, !command.is_pushing())?;
+            if command.is_pushing() || !config.with_package_deps {
                 // In CliCommand::Cook, is_deps==true will make it skip checking source
-                command.is_pushing() || !config.with_package_deps,
-                true,
-            )?
+                recipes_mark_as_deps(&recipe_names, &mut packages);
+            }
+            packages = recipes_flatten_package_names(packages);
+            packages
         } else {
             recipe_names
                 .iter()
