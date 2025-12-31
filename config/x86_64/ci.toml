@@ -33,7 +33,6 @@ ca-certificates = {}
 cairo = {}
 #cairodemo = {} # linking errors
 #calculator = {}
-cargo = {}
 cleye = {}
 #cmatrix = {} # needs ncursesw now
 composer = {}

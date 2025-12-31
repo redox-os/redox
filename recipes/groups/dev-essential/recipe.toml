@@ -2,7 +2,6 @@
 dependencies = [
     "autoconf",
     "automake",
-    "cargo",
     "gcc13",
     "gcc13.cxx",
     "llvm21",
