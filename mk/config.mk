@@ -61,6 +61,7 @@ ifneq ($(PODMAN_BUILD),1)
 FSTOOLS_IN_PODMAN=0
 HOST_TARGET := $(shell env -u RUSTUP_TOOLCHAIN rustc -vV | grep host | cut -d: -f2 | tr -d " ")
 # x86_64 linux hosts have all toolchains
+ifeq ($(PREFIX_BINARY),1)
 ifneq ($(HOST_TARGET),x86_64-unknown-linux-gnu)
 	ifeq ($(ARCH),aarch64)
 		# aarch64 linux hosts have aarch64 toolchain
@@ -72,6 +73,7 @@ ifneq ($(HOST_TARGET),x86_64-unknown-linux-gnu)
         $(info The $(ARCH) binary prefix is only built for x86_64 Linux hosts)
 		PREFIX_BINARY=0
 	endif
+endif
 endif
 endif
 
