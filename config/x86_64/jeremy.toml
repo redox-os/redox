@@ -55,7 +55,6 @@ winit = {}
 # dev
 autoconf = {}
 automake = {}
-cargo = {}
 cookbook = {}
 gcc13 = {}
 gnu-binutils = {}
