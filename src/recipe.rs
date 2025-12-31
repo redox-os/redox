@@ -282,7 +282,7 @@ impl CookRecipe {
         Self::new(name, dir.to_path_buf(), recipe)
     }
 
-    pub fn new_recursive(
+    fn new_recursive(
         names: &[PackageName],
         recurse_build_deps: bool,
         recurse_dev_build_deps: bool,
@@ -385,10 +385,8 @@ impl CookRecipe {
     pub fn get_build_deps_recursive(
         names: &[PackageName],
         include_dev: bool,
-        mark_is_deps: bool,
-        flatten_opt_package: bool,
     ) -> Result<Vec<Self>, PackageError> {
-        let mut packages = Self::new_recursive(
+        let packages = Self::new_recursive(
             names,
             true,
             include_dev,
@@ -398,30 +396,6 @@ impl CookRecipe {
             true,
             WALK_DEPTH,
         )?;
-
-        if mark_is_deps {
-            for package in packages.iter_mut() {
-                package.is_deps = !names.contains(&package.name);
-            }
-        }
-
-        if flatten_opt_package {
-            let old_packages = packages;
-            packages = Vec::new();
-            let mut packages_set = BTreeSet::new();
-            for mut package in old_packages {
-                let is_host = package.name.is_host();
-                let mut name = package.name.with_suffix(None);
-                if is_host {
-                    name = name.with_host();
-                }
-                if !packages_set.contains(name.as_str()) {
-                    packages_set.insert(name.to_string());
-                    package.name = name;
-                    packages.push(package);
-                }
-            }
-        }
 
         Ok(packages)
     }
@@ -495,6 +469,32 @@ impl CookRecipe {
 
         Ok(())
     }
+}
+
+// TODO: Wrap these vectors in a struct
+
+pub fn recipes_mark_as_deps(names: &[PackageName], packages: &mut Vec<CookRecipe>) {
+    for package in packages.iter_mut() {
+        package.is_deps = !names.contains(&package.name);
+    }
+}
+
+pub fn recipes_flatten_package_names(packages: Vec<CookRecipe>) -> Vec<CookRecipe> {
+    let mut new_packages = Vec::new();
+    let mut packages_set = BTreeSet::new();
+    for mut package in packages {
+        let is_host = package.name.is_host();
+        let mut name = package.name.with_suffix(None);
+        if is_host {
+            name = name.with_host();
+        }
+        if !packages_set.contains(name.as_str()) {
+            packages_set.insert(name.to_string());
+            package.name = name;
+            new_packages.push(package);
+        }
+    }
+    new_packages
 }
 
 #[derive(Serialize, Deserialize)]
