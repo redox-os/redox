@@ -22,8 +22,8 @@ prefix: $(PREFIX)/sysroot
 
 # Update relibc used for compiling and clean all statically linked recipes
 prefix_clean: | $(FSTOOLS_TAG)
-	rm -rf $(PREFIX)/relibc-install $(PREFIX)/sysroot $(REPO_TAG)
-	$(MAKE) c.base,base-initfs,extrautils,kernel,ion,pkgutils,redoxfs,relibc
+	$(MAKE) c.relibc
+	$(MAKE) c.base,base-initfs,extrautils,kernel,ion,pkgutils,redoxfs
 
 $(PREFIX)/relibc-install: $(PREFIX)/rust-install | $(FSTOOLS_TAG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
