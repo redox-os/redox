@@ -39,12 +39,9 @@ export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_RUSTFLAGS="${RUSTFLAGS_BOOTSTRAP}"
 # Don't poison the stage1 compiler (host -> host)
 unset AR AS CC CXX LD LDFLAGS NM OBJCOPY OBJDUMP RANLIB READELF RUSTFLAGS STRIP
 
-# modify config.toml to correct path, only do this once as it trigger full rebuild
-if [ ! -f config.toml ]; then
-    cat ${COOKBOOK_RECIPE}/config.toml > config.toml
-    sed -i "s|COOKBOOK_SYSROOT|${COOKBOOK_SYSROOT}|g" config.toml
-    sed -i "s|COOKBOOK_TOOLCHAIN|${COOKBOOK_TOOLCHAIN}|g" config.toml
-fi
+cat ${COOKBOOK_RECIPE}/config.toml > config.toml
+sed -i "s|COOKBOOK_SYSROOT|${COOKBOOK_SYSROOT}|g" config.toml
+sed -i "s|COOKBOOK_TOOLCHAIN|${COOKBOOK_TOOLCHAIN}|g" config.toml
 
 python3 "${COOKBOOK_SOURCE}/x.py" install \
     --config config.toml \
@@ -54,12 +51,6 @@ mkdir -p "${COOKBOOK_STAGE}"/usr
 rsync -av --delete "${COOKBOOK_BUILD}"/install/* "${COOKBOOK_STAGE}"/usr/
 rm -rf "${COOKBOOK_STAGE}"/usr/lib/rustlib/*.log
 """
- 
-[package]
-# TODO: Not implemented
-# version_script = """
-# printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
-# """
 
 [[optional-packages]]
 name = "doc"
