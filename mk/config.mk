@@ -157,6 +157,8 @@ INSTALLER=$(FSTOOLS)/bin/redox_installer
 REDOXFS=$(FSTOOLS)/bin/redoxfs
 REDOXFS_MKFS=$(FSTOOLS)/bin/redoxfs-mkfs
 INSTALLER_OPTS=--cookbook=.
+INSTALLER_FEATURES=
+REDOXFS_FEATURES=
 COOKBOOK_OPTS="--filesystem=$(FILESYSTEM_CONFIG)"
 ifeq ($(REPO_BINARY),1)
 INSTALLER_OPTS+=--repo-binary
@@ -164,6 +166,8 @@ COOKBOOK_OPTS+=--repo-binary
 endif
 ifeq ($(FSTOOLS_NO_MOUNT),1)
 INSTALLER_OPTS+=--no-mount
+INSTALLER_FEATURES=--no-default-features --features installer
+REDOXFS_FEATURES= --no-default-features --features std,log
 endif
 
 REPO_TAG=$(BUILD)/repo.tag
