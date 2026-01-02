@@ -14,7 +14,8 @@ dependencies = [
     "libgmp",
     "libmpfr",
     "mpc",
-    "zlib"
+# TODO: this zlib get linked when boostrapping gcc
+#    "zlib"
 ]
 script = """
 DYNAMIC_STATIC_INIT
@@ -52,7 +53,7 @@ COOKBOOK_CONFIGURE_FLAGS+=(
     --enable-initfini-array
     --disable-nls
     --disable-multilib
-    --with-system-zlib
+#   --with-system-zlib
     --enable-host-shared
     --enable-threads=posix
     --enable-frame-pointer

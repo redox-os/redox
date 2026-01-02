@@ -17,8 +17,16 @@ UPSTREAM_RUSTC_VERSION=2025-11-15
 export PREFIX_RUSTFLAGS=-L $(ROOT)/$(PREFIX_INSTALL)/$(TARGET)/lib
 export RUSTUP_TOOLCHAIN=$(ROOT)/$(PREFIX_INSTALL)
 export REDOXER_TOOLCHAIN=$(RUSTUP_TOOLCHAIN)
+PREFIX_CONFIG=CI=1 COOKBOOK_CLEAN_BUILD=true COOKBOOK_VERBOSE=true COOKBOOK_NONSTOP=false
 
 prefix: $(PREFIX)/sysroot
+
+PREFIX_STRIP=\
+	mkdir -p bin libexec "$(TARGET)/bin" && \
+	find bin libexec "$(TARGET)/bin" "$(TARGET)/lib" \
+		-type f \
+		-exec strip --strip-unneeded {} ';' \
+		2> /dev/null
 
 # Update relibc used for compiling and clean all statically linked recipes
 prefix_clean: | $(FSTOOLS_TAG)
@@ -36,7 +44,7 @@ else
 	cp -r "$(PREFIX)/rust-install/$(GNU_TARGET)/include/c++" "$@.partial/$(GNU_TARGET)/include/c++"
 	cp -r "$(PREFIX)/rust-install/lib/rustlib/$(HOST_TARGET)/lib/" "$@.partial/lib/rustlib/$(HOST_TARGET)/"
 	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
-	export CARGO="env -u CARGO cargo" CI=1 && \
+	export CARGO="env -u CARGO cargo" $(PREFIX_CONFIG) && \
 	./target/release/repo cook relibc
 	cp -r "$(RELIBC_TARGET)/stage/usr/". "$@.partial/$(GNU_TARGET)"
 	touch "$@.partial"
@@ -59,7 +67,7 @@ else
 	@echo "\033[1;36;49mBuilding libtool-install\033[0m"
 	rm -rf "$@.partial" "$@"
 	mkdir -p "$@.partial"
-	export CI=1 COOKBOOK_CLEAN_BUILD=true COOKBOOK_HOST_SYSROOT=/usr && \
+	export $(PREFIX_CONFIG) COOKBOOK_HOST_SYSROOT=/usr && \
 	./target/release/repo cook host:libtool
 	cp -r "$(LIBTOOL_TARGET)/stage/usr/". "$@.partial"
 	touch "$@.partial"
@@ -112,7 +120,7 @@ else
 	@echo "\033[1;36;49mBuilding binutils-install\033[0m"
 	rm -rf "$@.partial" "$@"
 	mkdir -p "$@.partial"
-	export CI=1 COOKBOOK_CLEAN_BUILD=true COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_TARGET=$(TARGET) COOKBOOK_CROSS_GNU_TARGET=$(GNU_TARGET) && \
+	export CI=1 $(PREFIX_CONFIG) COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_TARGET=$(TARGET) COOKBOOK_CROSS_GNU_TARGET=$(GNU_TARGET) && \
 	./target/release/repo cook host:binutils-gdb 
 	cp -r "$(BINUTILS_TARGET)/stage/usr/". "$@.partial"
 	touch "$@.partial"
@@ -126,8 +134,8 @@ else
 	@echo "\033[1;36;49mBuilding gcc-freestanding-install\033[0m"
 	rm -rf "$@.partial" "$@" $(PREFIX)/relibc-freestanding-install $(PREFIX)/sysroot
 	mkdir -p "$@.partial" $(PREFIX)/relibc-freestanding-install/$(GNU_TARGET)/include
-	export CI=1 PATH="$(ROOT)/$(PREFIX)/binutils-install/bin:$$PATH" \
-		COOKBOOK_CLEAN_BUILD=true COOKBOOK_CROSS_TARGET=$(TARGET) COOKBOOK_CROSS_GNU_TARGET=$(GNU_TARGET) \
+	export $(PREFIX_CONFIG) PATH="$(ROOT)/$(PREFIX)/binutils-install/bin:$$PATH" \
+		COOKBOOK_CROSS_TARGET=$(TARGET) COOKBOOK_CROSS_GNU_TARGET=$(GNU_TARGET) \
 		COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_SYSROOT=$(ROOT)/$(PREFIX)/relibc-freestanding-install/$(GNU_TARGET) && \
 	./target/release/repo cook host:gcc13
 	cp -r "$(GCC_TARGET)/stage/usr/". "$@.partial"
@@ -148,7 +156,7 @@ else
 	export CARGO="env -u CARGO -u RUSTUP_TOOLCHAIN cargo" && \
 	export PATH="$(ROOT)/$(PREFIX)/gcc-freestanding-install/bin:$$PATH" && \
 	export CC_$(subst -,_,$(TARGET))="$(GNU_TARGET)-gcc -isystem $(ROOT)/$@.partial/$(GNU_TARGET)/include" LINKFLAGS="" && \
-	export CI=1 COOKBOOK_CLEAN_BUILD=true COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_TARGET=$(HOST_TARGET) && \
+	export $(PREFIX_CONFIG) COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_TARGET=$(HOST_TARGET) && \
 	./target/release/repo cook relibc
 	cp -r "$(RELIBC_FREESTANDING_TARGET)/stage/usr/". "$@.partial/$(GNU_TARGET)"
 	touch "$@.partial"
@@ -186,7 +194,7 @@ else
 ifneq ($(TARGET),riscv64gc-unknown-redox)
 ifneq ($(TARGET),i586-unknown-redox)
 	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
-	export CI=1 COOKBOOK_CLEAN_BUILD=true "COOKBOOK_HOST_SYSROOT=$(ROOT)/$@.partial" COOKBOOK_CROSS_TARGET=$(HOST_TARGET) && \
+	export $(PREFIX_CONFIG) "COOKBOOK_HOST_SYSROOT=$(ROOT)/$@.partial" COOKBOOK_CROSS_TARGET=$(HOST_TARGET) && \
 	rm -rf "$(LIBSTDCXX_TARGET)/stage" && ./target/release/repo cook libstdcxx-v3
 	cp -r "$(LIBSTDCXX_TARGET)/stage/usr/". "$@.partial/$(GNU_TARGET)"
 endif
@@ -221,21 +229,36 @@ $(PREFIX_RUST_VERSION_TAG):
 	touch $@
 
 $(PREFIX)/rustc-install.tar.xz: | $(PREFIX_RUST_VERSION_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
 	mkdir -p "$(@D)"
 	wget -O $@.partial "https://static.rust-lang.org/dist/$(UPSTREAM_RUSTC_VERSION)/rustc-nightly-$(HOST_TARGET).tar.xz"
 	mv $@.partial $@
+endif
 
 $(PREFIX)/cargo-install.tar.xz: | $(PREFIX_RUST_VERSION_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
 	mkdir -p "$(@D)"
 	wget -O $@.partial "https://static.rust-lang.org/dist/$(UPSTREAM_RUSTC_VERSION)/cargo-nightly-$(HOST_TARGET).tar.xz"
 	mv $@.partial $@
+endif
 
 $(PREFIX)/rust-std-host-install.tar.xz: | $(PREFIX_RUST_VERSION_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
 	mkdir -p "$(@D)"
 	wget -O $@.partial "https://static.rust-lang.org/dist/$(UPSTREAM_RUSTC_VERSION)/rust-std-nightly-$(HOST_TARGET).tar.xz"
 	mv $@.partial $@
+endif
 
 $(PREFIX)/rust-std-target-install.tar.xz: | $(PREFIX_RUST_VERSION_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
 	mkdir -p "$(@D)"
 ifeq ($(TARGET),x86_64-unknown-redox)
 	wget -O $@.partial "https://static.rust-lang.org/dist/$(UPSTREAM_RUSTC_VERSION)/rust-std-nightly-$(TARGET).tar.xz"
@@ -243,13 +266,21 @@ ifeq ($(TARGET),x86_64-unknown-redox)
 else
 	touch $@
 endif
+endif
 
 $(PREFIX)/rust-src-install.tar.xz: | $(PREFIX_RUST_VERSION_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
 	mkdir -p "$(@D)"
 	wget -O $@.partial "https://static.rust-lang.org/dist/$(UPSTREAM_RUSTC_VERSION)/rust-src-nightly.tar.xz"
 	mv $@.partial $@
+endif
 
 $(PREFIX)/rust-install: $(PREFIX)/gcc-install $(PREFIX)/rustc-install.tar.xz $(PREFIX)/cargo-install.tar.xz $(PREFIX)/rust-std-host-install.tar.xz $(PREFIX)/rust-std-target-install.tar.xz $(PREFIX)/rust-src-install.tar.xz
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
 	@echo "\033[1;36;49mBuilding rust-install\033[0m"
 	rm -rf "$@.partial" "$@"
 	mkdir -p "$@.partial"
@@ -264,6 +295,7 @@ endif
 	rm -f "$@.partial/manifest.in"
 	touch "$@.partial"
 	mv "$@.partial" "$@"
+endif
 
 # BUILD RUST ---------------------------------------------------
 else 
