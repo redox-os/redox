@@ -10,7 +10,7 @@ COOKBOOK_MAKE_JOBS="$(( ${COOKBOOK_MAKE_JOBS} > 8 ? 8 : ${COOKBOOK_MAKE_JOBS} ))
 export CARGO=${CARGO:-env -u CARGO cargo}
 "${COOKBOOK_MAKE}" \
     -C "${COOKBOOK_SOURCE}" \
-    -j"$($NPROC)" \
+    -j"${COOKBOOK_MAKE_JOBS}" \
     DESTDIR="${COOKBOOK_STAGE}/usr" \
     install
 """
