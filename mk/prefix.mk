@@ -70,6 +70,10 @@ else
 	export $(PREFIX_CONFIG) COOKBOOK_HOST_SYSROOT=/usr && \
 	./target/release/repo cook host:libtool
 	cp -r "$(LIBTOOL_TARGET)/stage/usr/". "$@.partial"
+	mv "$@.partial/bin/libtoolize" "$@.partial/bin/libtoolize.orig"
+# adapt path for libtoolize
+	sed 's|/usr/share|$(ROOT)/$@/share|g' "$@.partial/bin/libtoolize.orig" > "$@.partial/bin/libtoolize"
+	chmod 0755 "$@.partial/bin/libtoolize"
 	touch "$@.partial"
 	mv "$@.partial" "$@"
 endif
@@ -82,7 +86,8 @@ else
 	cp -r "$(PREFIX)/relibc-install/" "$@"
 	cp -r "$(PREFIX)/libtool-install/". "$@"
 # adapt path for libtoolize
-	$(SED) -i 's|/usr/share|$(ROOT)/$@/share|g' "$@/bin/libtoolize"
+	sed 's|/usr/share|$(ROOT)/$@/share|g' "$@/bin/libtoolize.orig" > "$@/bin/libtoolize"
+	chmod 0755 "$@/bin/libtoolize"
 	touch "$@"
 endif
 
@@ -127,15 +132,15 @@ else
 	mv "$@.partial" "$@"
 endif
 
-$(PREFIX)/gcc-freestanding-install: $(PREFIX)/binutils-install | $(FSTOOLS_TAG) $(CONTAINER_TAG)
+$(PREFIX)/gcc-freestanding-install: $(PREFIX)/libtool-install $(PREFIX)/binutils-install | $(FSTOOLS_TAG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
 	@echo "\033[1;36;49mBuilding gcc-freestanding-install\033[0m"
 	rm -rf "$@.partial" "$@" $(PREFIX)/relibc-freestanding-install $(PREFIX)/sysroot
 	mkdir -p "$@.partial" $(PREFIX)/relibc-freestanding-install/$(GNU_TARGET)/include
-	export $(PREFIX_CONFIG) PATH="$(ROOT)/$(PREFIX)/binutils-install/bin:$$PATH" \
-		COOKBOOK_CROSS_TARGET=$(TARGET) COOKBOOK_CROSS_GNU_TARGET=$(GNU_TARGET) \
+	export $(PREFIX_CONFIG) PATH="$(ROOT)/$(PREFIX)/libtool-install/bin:$(ROOT)/$(PREFIX)/binutils-install/bin:$$PATH" \
+		COOKBOOK_LIBTOOL_DIR=$(ROOT)/$(PREFIX)/libtool-install COOKBOOK_CROSS_TARGET=$(TARGET) COOKBOOK_CROSS_GNU_TARGET=$(GNU_TARGET) \
 		COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_SYSROOT=$(ROOT)/$(PREFIX)/relibc-freestanding-install/$(GNU_TARGET) && \
 	./target/release/repo cook host:gcc13
 	cp -r "$(GCC_TARGET)/stage/usr/". "$@.partial"
