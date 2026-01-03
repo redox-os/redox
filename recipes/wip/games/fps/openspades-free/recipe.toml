@@ -2,6 +2,7 @@
 # build instructions: https://github.com/yvt/openspades#on-unixes-from-source
 [source]
 git = "https://github.com/yvt/openspades"
+shallow_clone = true
 [build]
 template = "custom"
 dependencies = [

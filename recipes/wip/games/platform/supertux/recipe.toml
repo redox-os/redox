@@ -1,7 +1,24 @@
 #TODO not compiled or tested
-#TODO determine minimum dependencies from cmake log
 # build instructions: https://github.com/SuperTux/supertux/blob/master/INSTALL.md#compiling
 [source]
 tar = "https://github.com/SuperTux/supertux/releases/download/v0.7.0-beta.1/SuperTux-v0.7.0-beta.1-Source.tar.gz"
 [build]
 template = "cmake"
+cmakeflags = [
+    "-DENABLE_OPENGL=OFF",
+    "-DUSE_SYSTEM_SDL2_TTF=ON",
+]
+dependencies = [
+    "sdl2",
+    "sdl2-image",
+    "sdl2-ttf",
+    "zlib",
+    "libpng",
+    "freetype2",
+    "libfmt",
+    "libcurl",
+    "openal",
+    "libogg",
+    "libvorbis",
+    "physicsfs",
+]

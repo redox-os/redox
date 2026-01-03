@@ -6,9 +6,16 @@ rev = "16e56d7824e15657be26e30030394d0668493635"
 shallow_clone = true
 [build]
 template = "cmake"
+cmakeflags = [
+    "-DENABLE_OPENGL=OFF",
+    "-DENABLE_VULKAN=OFF",
+    "-DENABLE_WAYLAND=OFF",
+    "-DBUILD_QT_FRONTEND=OFF",
+    "-DBUILD_MINI_FRONTEND=ON",
+]
 dependencies = [
-    "sdl2",
-    "qt6-base",
-    "qt6-svg",
+    #"sdl2",
+    #"qt6-base",
+    #"qt6-svg",
     #"qt6-tools",
 ]

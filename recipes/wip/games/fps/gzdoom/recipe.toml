@@ -1,13 +1,19 @@
-#TODO maybe incomplete script, see https://zdoom.org/wiki/Compile_GZDoom_on_Linux
+#TODO not compiled or tested
+# build instructions: https://zdoom.org/wiki/Compile_GZDoom_on_Linux
 [source]
 git = "https://github.com/ZDoom/gzdoom"
-rev = "6ce809efe2902e43ceaa7031b875225d3a0367de"
+branch = "4.14.2"
+shallow_clone = true
 [build]
 template = "cmake"
+cmakeflags = [
+    "-DHAVE_VULKAN=OFF",
+    "-DHAVE_GLES2=OFF",
+]
 dependencies = [
     "sdl2",
-    "mesa",
-    "mesa-glu",
+    #"mesa",
+    #"mesa-glu",
     "openal",
     "zmusic",
 ]
