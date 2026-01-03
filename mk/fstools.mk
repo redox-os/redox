@@ -33,7 +33,7 @@ else
 	./target/release/repo fetch installer redoxfs
 endif
 
-$(FSTOOLS_TAG):
+$(FSTOOLS_TAG): $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
