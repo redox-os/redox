@@ -1,6 +1,6 @@
 #TODO not compiled or tested
 [source]
 git = "https://github.com/stoolap/stoolap"
-shallow_clone = "true"
+shallow_clone = true
 [build]
 template = "cargo"
