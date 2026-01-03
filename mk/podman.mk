@@ -57,12 +57,11 @@ container_kill: FORCE
 ## Must match the value of CONTAINER_TAG in config.mk
 build/container.tag: $(CONTAINERFILE)
 ifeq ($(PODMAN_BUILD),1)
-	rm -f build/container.tag
+	rm -f $@ $(FSTOOLS_TAG)
 	-podman image rm --force $(IMAGE_TAG) || true
 	mkdir -p $(PODMAN_HOME)
 	@echo "Building Podman image. This may take some time."
 	cat $(CONTAINERFILE) | podman build --file - $(PODMAN_VOLUMES) --tag $(IMAGE_TAG)
-	@echo "Mapping Podman user space. Please wait."
 	$(PODMAN_RUN) bash -e podman/rustinstall.sh
 	mkdir -p build
 	touch $@
