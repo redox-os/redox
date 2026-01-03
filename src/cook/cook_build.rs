@@ -207,6 +207,9 @@ pub fn build(
 
     if !check_source && stage_dirs.iter().all(|dir| dir.exists()) {
         let auto_deps = build_auto_deps(recipe, target_dir, &stage_dirs, dep_pkgars, logger)?;
+        if cli_verbose {
+            log_to_pty!(logger, "DEBUG: using cached build, not checking source");
+        }
         return Ok((stage_dirs, auto_deps));
     }
 
@@ -229,7 +232,7 @@ pub fn build(
 
     // Rebuild sysroot if source is newer
     if recipe.build.kind != BuildKind::Remote {
-        build_deps_dir(
+        let updated = build_deps_dir(
             logger,
             &sysroot_dir,
             target_dir.join("sysroot.tmp"),
@@ -241,9 +244,12 @@ pub fn build(
             source_modified,
             deps_modified,
         )?;
+        if cli_verbose && !updated {
+            log_to_pty!(logger, "DEBUG: using cached sysroot");
+        }
     }
     if recipe.build.kind != BuildKind::Remote && !name.is_host() && dep_host_pkgars.len() > 0 {
-        build_deps_dir(
+        let updated = build_deps_dir(
             logger,
             &toolchain_dir,
             target_dir.join("toolchain.tmp"),
@@ -251,6 +257,9 @@ pub fn build(
             source_modified,
             deps_host_modified,
         )?;
+        if cli_verbose && !updated {
+            log_to_pty!(logger, "DEBUG: using cached toolchain");
+        }
     }
 
     // Rebuild stage if source is newer
@@ -264,6 +273,10 @@ pub fn build(
             for stage_dir in &stage_dirs {
                 log_to_pty!(logger, "DEBUG: updating '{}'", stage_dir.display());
                 remove_stage_dir(stage_dir)?;
+            }
+        } else {
+            if cli_verbose {
+                log_to_pty!(logger, "DEBUG: using cached build");
             }
         }
     }
@@ -462,7 +475,7 @@ fn build_deps_dir(
     dep_pkgars: &BTreeSet<(PackageName, PathBuf)>,
     source_modified: SystemTime,
     deps_modified: SystemTime,
-) -> Result<(), String> {
+) -> Result<bool, String> {
     if deps_dir.is_dir() {
         let tags_dir = deps_dir.join(".tags");
         let sysroot_modified = modified_dir(&tags_dir).unwrap_or(SystemTime::UNIX_EPOCH);
@@ -511,9 +524,11 @@ fn build_deps_dir(
 
         // Move sysroot.tmp to sysroot atomically
         rename(&deps_dir_tmp, deps_dir)?;
+
+        return Ok(true);
     }
 
-    Ok(())
+    Ok(false)
 }
 
 /// Calculate automatic dependencies
