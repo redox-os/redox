@@ -1,11 +1,13 @@
 #TODO libsky crate error
 [source]
 git = "https://github.com/skytable/skytable"
+shallow_clone = true
 [build]
 template = "custom"
 dependencies = [
     "openssl1",
 ]
 script = """
+DYNAMIC_INIT
 cookbook_cargo_packages skysh skyd
 """

@@ -12,6 +12,5 @@ configureflags = [
     "--with-template=redox",
 ]
 dependencies = [
-    "readline",
     "zlib",
 ]

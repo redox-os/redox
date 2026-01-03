@@ -1,5 +1,6 @@
 #TODO update mio to 0.8 (after cargo update and patch on ring)
 [source]
 git = "https://github.com/TaKO8Ki/gobang"
+shallow_clone = true
 [build]
 template = "cargo"
