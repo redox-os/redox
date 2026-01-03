@@ -10,15 +10,7 @@ function DYNAMIC_INIT {
     }
 
     case "${TARGET}" in
-        "x86_64-unknown-redox")
-            ;;
-        "aarch64-unknown-redox")
-            ;;
-        "x86_64-unknown-linux-gnu")
-            ;;
-        "aarch64-unknown-linux-gnu")
-            ;;
-        *)
+        "i586-unknown-redox" | "riscv64gc-unknown-redox")
             [ -z "${COOKBOOK_VERBOSE}" ] || echo "WARN: ${TARGET} does not support dynamic linking." >&2
             return
             ;;
