@@ -251,6 +251,7 @@ cmd_shell() {
     load_vm_info "$name" || return 1
 
     local pty_socket="${REDOX_VMS_DIR}/${name}.pty"
+    local config_flag="${REDOX_VMS_DIR}/${name}.configured"
 
     # Check if PTY socket exists
     if [[ ! -S "$pty_socket" ]]; then
@@ -258,6 +259,58 @@ cmd_shell() {
         log_info "VM may have been started with old configuration"
         log_info "Try: redox-vm stop $name && redox-vm launch --name $name --mem $MEM"
         return 1
+    fi
+
+    # Auto-configure Ion on first connection
+    if [[ ! -f "$config_flag" ]]; then
+        log_info "First connection - configuring Ion shell..."
+        log_info "Waiting for login prompt (this may take 30-60 seconds on first boot)..."
+
+        # Wait for and handle login
+        {
+            # Wait for login prompt (up to 60 seconds)
+            for i in {1..60}; do
+                sleep 1
+                printf "\r\n"
+            done
+
+            # Log in as user
+            sleep 2
+            printf "user\r\n"
+            sleep 5
+
+            # Create directory
+            printf "mkdir -p ~/.config/ion\r\n"
+            sleep 2
+
+            # Create ionrc using echo (more reliable than heredoc)
+            printf "echo 'export PROMPT = \"redox> \"' > ~/.config/ion/ionrc\r\n"
+            sleep 1
+            printf "echo 'export LC_ALL = \"C\"' >> ~/.config/ion/ionrc\r\n"
+            sleep 1
+            printf "echo 'export LANG = \"C\"' >> ~/.config/ion/ionrc\r\n"
+            sleep 1
+            printf "echo 'export TERM = \"vt100\"' >> ~/.config/ion/ionrc\r\n"
+            sleep 2
+
+            # Source it in current shell
+            printf "export PROMPT='redox> '\r\n"
+            sleep 1
+            printf "export LC_ALL='C'\r\n"
+            sleep 1
+            printf "export LANG='C'\r\n"
+            sleep 1
+            printf "export TERM='vt100'\r\n"
+            sleep 2
+        } | nc -U "$pty_socket" >/dev/null 2>&1 &
+
+        local nc_pid=$!
+        sleep 80
+        kill $nc_pid 2>/dev/null || true
+
+        touch "$config_flag"
+        log_info "Configuration complete!"
+        sleep 2
     fi
 
     log_info "Connecting to $name serial console..."
