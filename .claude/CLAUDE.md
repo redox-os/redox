@@ -63,6 +63,21 @@ Error: `Defining variadic functions is not yet supported by Cranelift`
 
 VaList API was updated for nightly-2026-01-02 (commit f339c31f in relibc source).
 
+### Mac (aarch64) Testing
+
+Cranelift works excellently on Mac for normal Rust code:
+
+| Feature | Status |
+|---------|--------|
+| std library | ✅ |
+| Inline asm | ✅ |
+| global_asm + sym | ✅ |
+| Threading, Arc, Mutex | ✅ |
+| Serde + serde_json | ✅ |
+| Tokio async runtime | ✅ |
+
+The only blocker is *defining* variadic functions (relibc needs this).
+
 ### Next Steps
 
 - Monitor Cranelift variadic function support
