@@ -21,3 +21,7 @@ source.tar
 source.tar.tmp
 target
 wget-log
+
+.claude/CLAUDE.md
+
+.claude/
