@@ -50,9 +50,22 @@ cd /opt/other/rustc_codegen_cranelift
 ./y.sh build --sysroot clif
 ```
 
+### relibc Status
+
+**Blocker:** Cranelift doesn't support variadic functions yet.
+
+relibc defines many variadic C functions (`printf`, `scanf`, `syslog`, etc.):
+```rust
+pub unsafe extern "C" fn syslog(priority: c_int, message: *const c_char, mut __valist: ...) {
+```
+
+Error: `Defining variadic functions is not yet supported by Cranelift`
+
+VaList API was updated for nightly-2026-01-02 (commit f339c31f in relibc source).
+
 ### Next Steps
 
-- Try building relibc with the fixed Cranelift
+- Monitor Cranelift variadic function support
 - Test kernel functionality in QEMU
 - Contribute `sym` operand support upstream
 
