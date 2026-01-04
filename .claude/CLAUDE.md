@@ -120,3 +120,29 @@ Without the linker script, the kernel had no .text section and entry point was 0
 - QEMU x86_64 with UEFI (edk2-x86_64-code.fd)
 - 2GB RAM, 2 CPUs, Q35 machine
 - Disk: Pre-built Redox server image with kernel replaced
+
+### relibc Compiled with Cranelift - SUCCESS! 🎉
+
+On 2026-01-04, relibc (Redox's C library) was compiled using Cranelift.
+
+**Key Change:** Your commit `a86211e4` added variadic function support!
+
+**Build Command:**
+```bash
+cd recipes/core/relibc/source
+
+DYLD_LIBRARY_PATH=~/.rustup/toolchains/nightly-2026-01-02-aarch64-apple-darwin/lib \
+RUSTFLAGS="-Zcodegen-backend=/opt/other/rustc_codegen_cranelift/dist/lib/librustc_codegen_cranelift.dylib" \
+cargo +nightly-2026-01-02 build \
+  --target x86_64-unknown-redox \
+  --release \
+  -Z build-std=core,alloc \
+  -Zbuild-std-features=compiler_builtins/no-f16-f128
+```
+
+**Result:**
+```
+librelibc.a: 16 MB
+```
+
+This means both the kernel AND the C library can now be compiled with a pure Rust toolchain!
