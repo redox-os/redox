@@ -192,8 +192,33 @@ Array sum = 000000000000000f (15)
 === All tests passed! ===
 ```
 
+### relibc aarch64 Build - SUCCESS! 🎉
+
+On 2026-01-04, relibc was compiled for aarch64 using Cranelift!
+
+**Custom Target:** Created `aarch64-unknown-redox-clif.json` with `max-atomic-width: 64`
+
+**Build Command:**
+```bash
+cd recipes/core/relibc/source
+
+DYLD_LIBRARY_PATH=~/.rustup/toolchains/nightly-2026-01-02-aarch64-apple-darwin/lib \
+RUSTFLAGS="-Zcodegen-backend=/opt/other/rustc_codegen_cranelift/dist/lib/librustc_codegen_cranelift.dylib" \
+cargo +nightly-2026-01-02 build \
+  --target aarch64-unknown-redox-clif.json \
+  --release \
+  -Z build-std=core,alloc \
+  -Zbuild-std-features=compiler_builtins/no-f16-f128
+```
+
+**Result:**
+```
+librelibc.a: 16.6 MB
+ELF 64-bit LSB relocatable, ARM aarch64
+```
+
 **Current Status:**
 | Architecture | Kernel | relibc | QEMU Boot |
 |--------------|--------|--------|-----------|
 | x86_64 | ✅ | ✅ | ✅ |
-| aarch64 | ✅ | ❓ | 🔧 (needs bootloader) |
+| aarch64 | ✅ | ✅ | 🔧 (needs bootloader) |
