@@ -90,3 +90,33 @@ Initial blockers (now resolved):
 - `sym` operands in inline asm - **FIXED** in fork
 - `int $3` vs `int 3` syntax - **FIXED** in kernel
 - Duplicate wrapper symbols - **FIXED** in fork
+
+### QEMU Boot Test - SUCCESS! 🎉
+
+On 2026-01-04, the Cranelift-compiled kernel was successfully booted in QEMU.
+
+**Boot Log Highlights:**
+```
+kernel: 8/8 MiB (loaded Cranelift kernel)
+kernel::arch::x86_shared::start:INFO -- Redox OS starting...
+kernel::startup::memory:INFO -- Memory: 1979 MB
+Framebuffer 1280x800 stride 1280 at 80000000
+vesad: 1280x800 stride 1280 at 0x80000000
+ahcid: SATA QEMU HARDDISK 512 MB detected
+redox login: (reached login prompt!)
+```
+
+**Critical Fix for Boot:**
+The linker script must be explicitly passed via RUSTFLAGS:
+```bash
+RUSTFLAGS="-Zcodegen-backend=.../librustc_codegen_cranelift.dylib \
+           -C relocation-model=static \
+           -C link-arg=-Tlinkers/x86_64.ld"
+```
+
+Without the linker script, the kernel had no .text section and entry point was 0x0.
+
+**Tested Configuration:**
+- QEMU x86_64 with UEFI (edk2-x86_64-code.fd)
+- 2GB RAM, 2 CPUs, Q35 machine
+- Disk: Pre-built Redox server image with kernel replaced
