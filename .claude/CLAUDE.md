@@ -146,3 +146,54 @@ librelibc.a: 16 MB
 ```
 
 This means both the kernel AND the C library can now be compiled with a pure Rust toolchain!
+
+### aarch64 Kernel Build - SUCCESS! 🎉
+
+On 2026-01-04, the Redox kernel was compiled for aarch64 using Cranelift!
+
+**Key Fix:** Added ELF binary format detection for freestanding targets (commit b0aaea74 in Cranelift fork).
+
+The `aarch64-unknown-none` target doesn't specify a binary format in the target triple.
+Fixed by detecting "m:e" in data-layout string → ELF format.
+
+**Custom Target Required:**
+Created `aarch64-redox-none.json` with `max-atomic-width: 64` (Cranelift doesn't support 128-bit atomics on aarch64 yet).
+
+**Build Command:**
+```bash
+cd recipes/core/kernel/source
+
+DYLD_LIBRARY_PATH=~/.rustup/toolchains/nightly-2026-01-02-aarch64-apple-darwin/lib \
+RUSTFLAGS="-Zcodegen-backend=/opt/other/rustc_codegen_cranelift/dist/lib/librustc_codegen_cranelift.dylib" \
+cargo +nightly-2026-01-02 build \
+  --target aarch64-redox-none.json \
+  --release \
+  -Z build-std=core,alloc \
+  -Zbuild-std-features=compiler-builtins-mem,compiler_builtins/no-f16-f128
+```
+
+**Result:**
+```
+kernel: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV)
+Size: 4.5 MB
+```
+
+**QEMU aarch64 Testing:**
+Created minimal test binary to verify Cranelift aarch64 codegen:
+- Arithmetic operations ✅
+- Recursive function calls (Fibonacci) ✅
+- Stack arrays and iteration ✅
+
+```
+=== aarch64 Cranelift Test ===
+Arithmetic: 42 + 100 = 000000000000008e
+Fibonacci(10) = 0000000000000037 (55)
+Array sum = 000000000000000f (15)
+=== All tests passed! ===
+```
+
+**Current Status:**
+| Architecture | Kernel | relibc | QEMU Boot |
+|--------------|--------|--------|-----------|
+| x86_64 | ✅ | ✅ | ✅ |
+| aarch64 | ✅ | ❓ | 🔧 (needs bootloader) |
