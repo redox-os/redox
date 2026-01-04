@@ -54,12 +54,14 @@ SCCACHE_BUILD?=$(shell [ -f /run/.containerenv ] && echo 1 || echo 0)
 CONTAINERFILE?=podman/redox-base-containerfile
 
 # Per host variables
-export NPROC=nproc
+NPROC=nproc
+SED=sed
 
 ifneq ($(PODMAN_BUILD),1)
 FSTOOLS_IN_PODMAN=0
 HOST_TARGET := $(shell env -u RUSTUP_TOOLCHAIN rustc -vV | grep host | cut -d: -f2 | tr -d " ")
 # x86_64 linux hosts have all toolchains
+ifeq ($(PREFIX_BINARY),1)
 ifneq ($(HOST_TARGET),x86_64-unknown-linux-gnu)
 	ifeq ($(ARCH),aarch64)
 		# aarch64 linux hosts have aarch64 toolchain
@@ -71,6 +73,7 @@ ifneq ($(HOST_TARGET),x86_64-unknown-linux-gnu)
         $(info The $(ARCH) binary prefix is only built for x86_64 Linux hosts)
 		PREFIX_BINARY=0
 	endif
+endif
 endif
 endif
 
@@ -101,7 +104,8 @@ endif
 UNAME := $(shell uname)
 ifeq ($(UNAME),Darwin)
 	FUMOUNT=umount
-	export NPROC=sysctl -n hw.ncpu
+	NPROC=sysctl -n hw.ncpu
+	SED=gsed
 	VB_AUDIO=coreaudio
 	VBM=/Applications/VirtualBox.app/Contents/MacOS/VBoxManage
 else ifeq ($(UNAME),FreeBSD)
@@ -153,6 +157,8 @@ INSTALLER=$(FSTOOLS)/bin/redox_installer
 REDOXFS=$(FSTOOLS)/bin/redoxfs
 REDOXFS_MKFS=$(FSTOOLS)/bin/redoxfs-mkfs
 INSTALLER_OPTS=--cookbook=.
+INSTALLER_FEATURES=
+REDOXFS_FEATURES=
 COOKBOOK_OPTS="--filesystem=$(FILESYSTEM_CONFIG)"
 ifeq ($(REPO_BINARY),1)
 INSTALLER_OPTS+=--repo-binary
@@ -160,6 +166,8 @@ COOKBOOK_OPTS+=--repo-binary
 endif
 ifeq ($(FSTOOLS_NO_MOUNT),1)
 INSTALLER_OPTS+=--no-mount
+INSTALLER_FEATURES=--no-default-features --features installer
+REDOXFS_FEATURES= --no-default-features --features std,log
 endif
 
 REPO_TAG=$(BUILD)/repo.tag

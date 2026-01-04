@@ -173,6 +173,7 @@ pub fn build(
     name: &PackageName,
     recipe: &Recipe,
     offline_mode: bool,
+    clean_build: bool,
     check_source: bool,
     logger: &PtyOut,
 ) -> Result<(Vec<PathBuf>, BTreeSet<PackageName>), String> {
@@ -193,8 +194,8 @@ pub fn build(
         &recipe.build.dev_dependencies[..],
     ]
     .concat();
-    let build_deps = CookRecipe::get_build_deps_recursive(&build_deps, false, false)
-        .map_err(|e| format!("{:?}", e))?;
+    let build_deps =
+        CookRecipe::get_build_deps_recursive(&build_deps, false).map_err(|e| format!("{:?}", e))?;
     for dependency in build_deps.iter() {
         let (_, pkgar, _) = dependency.stage_paths();
         if dependency.name.is_host() {
@@ -206,6 +207,9 @@ pub fn build(
 
     if !check_source && stage_dirs.iter().all(|dir| dir.exists()) {
         let auto_deps = build_auto_deps(recipe, target_dir, &stage_dirs, dep_pkgars, logger)?;
+        if cli_verbose {
+            log_to_pty!(logger, "DEBUG: using cached build, not checking source");
+        }
         return Ok((stage_dirs, auto_deps));
     }
 
@@ -228,7 +232,7 @@ pub fn build(
 
     // Rebuild sysroot if source is newer
     if recipe.build.kind != BuildKind::Remote {
-        build_deps_dir(
+        let updated = build_deps_dir(
             logger,
             &sysroot_dir,
             target_dir.join("sysroot.tmp"),
@@ -240,9 +244,12 @@ pub fn build(
             source_modified,
             deps_modified,
         )?;
+        if cli_verbose && !updated {
+            log_to_pty!(logger, "DEBUG: using cached sysroot");
+        }
     }
     if recipe.build.kind != BuildKind::Remote && !name.is_host() && dep_host_pkgars.len() > 0 {
-        build_deps_dir(
+        let updated = build_deps_dir(
             logger,
             &toolchain_dir,
             target_dir.join("toolchain.tmp"),
@@ -250,6 +257,9 @@ pub fn build(
             source_modified,
             deps_host_modified,
         )?;
+        if cli_verbose && !updated {
+            log_to_pty!(logger, "DEBUG: using cached toolchain");
+        }
     }
 
     // Rebuild stage if source is newer
@@ -264,6 +274,10 @@ pub fn build(
                 log_to_pty!(logger, "DEBUG: updating '{}'", stage_dir.display());
                 remove_stage_dir(stage_dir)?;
             }
+        } else {
+            if cli_verbose {
+                log_to_pty!(logger, "DEBUG: using cached build");
+            }
         }
     }
 
@@ -276,9 +290,8 @@ pub fn build(
         create_dir_clean(&stage_dir_tmp)?;
 
         // Create build, if it does not exist
-        //TODO: flag for clean builds where build is wiped out
-        let build_dir = target_dir.join("build");
-        if !build_dir.is_dir() {
+        let build_dir = get_build_dir(target_dir);
+        if clean_build || !build_dir.is_dir() {
             create_dir_clean(&build_dir)?;
         }
 
@@ -428,13 +441,31 @@ pub fn remove_stage_dir(stage_dir: &PathBuf) -> Result<(), String> {
 }
 
 pub fn get_stage_dirs(features: &Vec<OptionalPackageRecipe>, target_dir: &Path) -> Vec<PathBuf> {
+    let mut target_dir = target_dir.to_path_buf();
+    if let Some(cross_target) = std::env::var("COOKBOOK_CROSS_TARGET").ok() {
+        if cross_target != "" {
+            // TODO: automatically pass COOKBOOK_CROSS_GNU_TARGET?
+            target_dir = target_dir.join(cross_target)
+        }
+    }
     let mut v = Vec::new();
     for f in features {
         v.push(target_dir.join(format!("stage.{}", f.name)));
     }
     // intentionally added last as it contains leftover files from package features
-    v.push(target_dir.join(format!("stage")));
+    v.push(target_dir.join("stage"));
     v
+}
+
+pub fn get_build_dir(target_dir: &Path) -> PathBuf {
+    let mut target_dir = target_dir.to_path_buf();
+    if let Some(cross_target) = std::env::var("COOKBOOK_CROSS_TARGET").ok() {
+        if cross_target != "" {
+            // TODO: automatically pass COOKBOOK_CROSS_GNU_TARGET?
+            target_dir = target_dir.join(cross_target)
+        }
+    }
+    target_dir.join("build")
 }
 
 fn build_deps_dir(
@@ -444,7 +475,7 @@ fn build_deps_dir(
     dep_pkgars: &BTreeSet<(PackageName, PathBuf)>,
     source_modified: SystemTime,
     deps_modified: SystemTime,
-) -> Result<(), String> {
+) -> Result<bool, String> {
     if deps_dir.is_dir() {
         let tags_dir = deps_dir.join(".tags");
         let sysroot_modified = modified_dir(&tags_dir).unwrap_or(SystemTime::UNIX_EPOCH);
@@ -493,9 +524,11 @@ fn build_deps_dir(
 
         // Move sysroot.tmp to sysroot atomically
         rename(&deps_dir_tmp, deps_dir)?;
+
+        return Ok(true);
     }
 
-    Ok(())
+    Ok(false)
 }
 
 /// Calculate automatic dependencies

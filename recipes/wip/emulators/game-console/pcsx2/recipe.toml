@@ -1,4 +1,5 @@
 #TODO not compiled or tested
+#TODO need to be built with clang for best performance
 # build instructions: https://pcsx2.net/docs/advanced/building#building-on-linux
 [source]
 git = "https://github.com/PCSX2/pcsx2"
@@ -9,6 +10,12 @@ template = "cmake"
 cmakeflags = [
     "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
     "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON",
+    "-DENABLE_TESTS=OFF",
+    "-DLTO_PCSX2_CORE=ON",
+    "-DPACKAGE_MODE=ON",
+    "-DUSE_VULKAN=OFF",
+    "-DWAYLAND_API=OFF",
+    "-DUSE_BACKTRACE=OFF",
 ]
 # dependencies = [
 #     "sdl2",

@@ -4,7 +4,6 @@ FROM docker.io/library/debian:trixie
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        ant \
         appstream \
         appstream-compose \
         autoconf \
@@ -44,6 +43,7 @@ RUN apt-get update \
         libgmp-dev \
         libhtml-parser-perl \
         libjpeg-dev \
+        libmpc-dev \
         libmpfr-dev \
         libparse-yapp-perl \
         libpng-dev \

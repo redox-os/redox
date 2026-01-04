@@ -1,0 +1,29 @@
+[source]
+git = "https://gitlab.redox-os.org/redox-os/binutils-gdb"
+branch = "redox-2.43.1"
+
+[build]
+template = "custom"
+dependencies = [
+#   "libgmp",
+#   "libmpfr",
+# TODO: this zlib get linked when boostrapping binutils
+#    "zlib"
+]
+script = """
+DYNAMIC_INIT
+
+if [ "${COOKBOOK_HOST_SYSROOT}" = "/usr" ]; then
+# not specifying --enable-shared as it will link shared deps
+COOKBOOK_CONFIGURE_FLAGS=( --prefix=/usr --host="${GNU_TARGET}" --program-prefix="${COOKBOOK_CROSS_GNU_TARGET:-$GNU_TARGET}-" )
+fi
+
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --target="${COOKBOOK_CROSS_GNU_TARGET:-$GNU_TARGET}"
+    --enable-default-hash-style=gnu
+    --disable-werror
+#   --with-system-zlib
+)
+
+cookbook_configure
+"""

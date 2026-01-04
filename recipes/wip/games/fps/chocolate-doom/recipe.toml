@@ -2,13 +2,9 @@
 [source]
 tar = "https://www.chocolate-doom.org/downloads/3.0.1/chocolate-doom-3.0.1.tar.gz"
 [build]
-template = "custom"
+template = "configure"
 dependencies = [
     "sdl2",
     "sdl2-mixer",
     "sdl2-net",
 ]
-script = """
-DYNAMIC_INIT
-cookbook_configure
-"""

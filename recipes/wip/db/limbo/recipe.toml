@@ -1,6 +1,7 @@
 #TODO compilation error on the sqlite3 parser
 [source]
 git = "https://github.com/tursodatabase/limbo"
+shallow_clone = true
 [build]
 template = "custom"
 script = """

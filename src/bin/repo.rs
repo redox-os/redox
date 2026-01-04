@@ -10,7 +10,7 @@ use cookbook::cook::pty::{PtyOut, UnixSlavePty, flush_pty, setup_pty};
 use cookbook::cook::script::KILL_ALL_PID;
 use cookbook::cook::tree::{WalkTreeEntry, display_tree_entry, format_size, walk_tree_entry};
 use cookbook::log_to_pty;
-use cookbook::recipe::CookRecipe;
+use cookbook::recipe::{CookRecipe, recipes_flatten_package_names, recipes_mark_as_deps};
 use pkg::PackageName;
 use pkg::package::PackageError;
 use ratatui::Terminal;
@@ -69,6 +69,7 @@ const REPO_HELP_STR: &str = r#"
                                         ignored when command "fetch" is used
         COOKBOOK_NONSTOP=false     pkeep running even a recipe build failed
         COOKBOOK_VERBOSE=true      print success/error on each recipe
+        COOKBOOK_CLEAN_BUILD=false remove build directory before building
         COOKBOOK_MAKE_JOBS=        override build jobs count from nproc
 "#;
 
@@ -236,7 +237,7 @@ fn main_inner() -> anyhow::Result<()> {
         return publish_packages(&recipe_names, &config.repo_dir);
     }
 
-    if verbose {
+    if verbose && recipe_names.len() > 1 {
         println!(
             "\nCommand '{}' completed for {} recipes.",
             command.to_string(),
@@ -491,12 +492,14 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
                 recipe_names = CookRecipe::get_package_deps_recursive(&recipe_names, true)
                     .context("failed get package deps")?;
             }
-            CookRecipe::get_build_deps_recursive(
-                &recipe_names,
-                !command.is_pushing(),
+            let mut packages =
+                CookRecipe::get_build_deps_recursive(&recipe_names, !command.is_pushing())?;
+            if command.is_pushing() || !config.with_package_deps {
                 // In CliCommand::Cook, is_deps==true will make it skip checking source
-                command.is_pushing() || !config.with_package_deps,
-            )?
+                recipes_mark_as_deps(&recipe_names, &mut packages);
+            }
+            packages = recipes_flatten_package_names(packages);
+            packages
         } else {
             recipe_names
                 .iter()
@@ -577,6 +580,7 @@ fn handle_cook(
         &recipe.name,
         &recipe.recipe,
         config.cook.offline,
+        config.cook.clean_build,
         !is_deps,
         logger,
     )
