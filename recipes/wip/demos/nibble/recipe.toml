@@ -1,0 +1,5 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/Vaishnav-Sabari-Girish/nibble"
+[build]
+template = "cargo"

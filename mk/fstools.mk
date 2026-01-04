@@ -3,7 +3,7 @@
 fstools: $(FSTOOLS_TAG) $(FSTOOLS)
 
 # These tools run inside Podman if it is used, or on the host if Podman is not used
-$(FSTOOLS): $(CONTAINER_TAG)
+$(FSTOOLS): | prefix $(CONTAINER_TAG) $(FSTOOLS_TAG)
 ifeq ($(PODMAN_BUILD),1)
 ifeq ($(FSTOOLS_IN_PODMAN),1)
 	$(PODMAN_RUN) make $@
@@ -13,26 +13,32 @@ endif
 else
 	rm -rf $@ $@.partial
 	mkdir -p $@.partial
-	ln -sr recipes $@.partial/recipes
+	ln -s ../../recipes $@.partial/recipes
+	$(MAKE) fstools_fetch PODMAN_BUILD=$(SKIP_CHECK_TOOLS)
 
-	# Install cookbook, installer, and redoxfs for host (may be outside of podman container)
-	#TODO: Build and install installer and redoxfs using cookbook?
+	# Compile installer and redoxfs for host (may be outside of podman container)
 	cd $@.partial && \
 		export CARGO_TARGET_DIR=../$@-target && \
-		$(HOST_CARGO) install --root . --path ../.. --locked && \
-		env -u RUSTUP_TOOLCHAIN ./bin/repo fetch installer redoxfs && \
-		$(HOST_CARGO) install --root . --path recipes/core/installer/source && \
-		$(HOST_CARGO) install --root . --path recipes/core/redoxfs/source
+		$(HOST_CARGO) install --root . --path recipes/core/installer/source $(INSTALLER_FEATURES) && \
+		$(HOST_CARGO) install --root . --path recipes/core/redoxfs/source $(REDOXFS_FEATURES)
 
 	mv $@.partial $@
 	touch $@
 endif
 
-$(FSTOOLS_TAG): $(FSTOOLS)
+fstools_fetch: $(FSTOOLS_TAG) FORCE
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
+	./target/release/repo fetch installer redoxfs
+endif
+
+$(FSTOOLS_TAG): $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
 	$(HOST_CARGO) build --manifest-path Cargo.toml --release --locked
+	mkdir -p $(@D)
 	touch $@
 endif
 

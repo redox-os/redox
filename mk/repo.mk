@@ -1,6 +1,6 @@
 # Configuration file for recipe commands
 
-$(REPO_TAG): prefix $(FILESYSTEM_CONFIG) | $(FSTOOLS_TAG) $(CONTAINER_TAG)
+$(REPO_TAG): prefix $(FILESYSTEM_CONFIG) | $(FSTOOLS) $(FSTOOLS_TAG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
@@ -39,6 +39,16 @@ else
 	@./target/release/repo find $(foreach f,$(subst $(comma), ,$*),$(f))
 endif
 
+# Invoke clean for relibc in recipe and relibc in sysroot
+c.relibc: $(FSTOOLS_TAG) FORCE
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
+	./target/release/repo clean relibc
+	rm -rf $(PREFIX)/relibc-install $(PREFIX)/sysroot $(REPO_TAG)
+	@echo "\033[1;36;49mSysroot cleaned\033[0m"
+endif
+
 # Invoke clean for one or more targets separated by comma
 c.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
@@ -58,7 +68,7 @@ else
 endif
 
 # Invoke repo.sh for one or more targets separated by comma
-r.%: $(FSTOOLS_TAG) FORCE
+r.%: prefix $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else

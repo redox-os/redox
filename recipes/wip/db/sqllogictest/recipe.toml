@@ -1,9 +1,8 @@
 #TODO Works, but not reliably
-#TODO Raises the following warnings.
-#setsockopt(16, 6, 1, 0x7fffffff4adc, 4) - unknown option
-#setsockopt(16, 1, 9, 0x7fffffff4ad0, 4) - unknown option
-#setsockopt(16, 6, 1, 0x7fffffff4ad4, 4) - unknown option
-
+#TODO Raises the following warnings:
+# setsockopt(16, 6, 1, 0x7fffffff4adc, 4) - unknown option
+# setsockopt(16, 1, 9, 0x7fffffff4ad0, 4) - unknown option
+# setsockopt(16, 6, 1, 0x7fffffff4ad4, 4) - unknown option
 
 [source]
 git = "https://github.com/risinglightdb/sqllogictest-rs.git"

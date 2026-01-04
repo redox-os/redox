@@ -4,76 +4,49 @@ PREFIX=prefix/$(TARGET)
 
 PREFIX_INSTALL=$(PREFIX)/sysroot/
 PREFIX_PATH=$(ROOT)/$(PREFIX_INSTALL)/bin
-RELIBC_SOURCE=recipes/core/relibc/source
+BINUTILS_TARGET=recipes/dev/binutils-gdb/target/$(HOST_TARGET)/$(TARGET)
+LIBTOOL_TARGET=recipes/dev/libtool/target/$(HOST_TARGET)
+GCC_TARGET=recipes/dev/gcc13/target/$(HOST_TARGET)/$(TARGET)
+LIBSTDCXX_TARGET=recipes/libs/libstdcxx-v3/target/$(TARGET)/$(HOST_TARGET)
+RELIBC_FREESTANDING_TARGET=recipes/core/relibc/target/$(TARGET)/$(HOST_TARGET)
+RELIBC_TARGET=recipes/core/relibc/target/$(TARGET)
 
-BINUTILS_BRANCH=redox-2.43.1
-GCC_BRANCH=redox-13.2.0
-LIBTOOL_VERSION=2.5.4
 # official RISC-V support introduced in newer version
 UPSTREAM_RUSTC_VERSION=2025-11-15
 
 export PREFIX_RUSTFLAGS=-L $(ROOT)/$(PREFIX_INSTALL)/$(TARGET)/lib
 export RUSTUP_TOOLCHAIN=$(ROOT)/$(PREFIX_INSTALL)
 export REDOXER_TOOLCHAIN=$(RUSTUP_TOOLCHAIN)
+PREFIX_CONFIG=CI=1 COOKBOOK_CLEAN_BUILD=true COOKBOOK_VERBOSE=true COOKBOOK_NONSTOP=false
 
-export CC=
-export CXX=
-
-ifeq ($(TARGET),riscv64gc-unknown-redox)
-	GCC_ARCH?=--with-arch=rv64gc --with-abi=lp64d
-else
-	GCC_ARCH?=
-endif
-
-# TODO(andypython): Upstream libtool patches to remove the need to locally build libtool.
-# Cannot be CI built, i.e. be a part of relibc-install.tar.gz, as the prefix has to be correctly
-# set while building. Otherwise aclocal will not be able to find libtool's files. Furthermore, doing
-# so would break non-podman builds (not sure if they are still supported though).
 prefix: $(PREFIX)/sysroot
 
-# Update relibc used for compiling and clean all statically linked recipes
-prefix_clean: | $(FSTOOLS_TAG)
-	rm -rf $(PREFIX)/relibc $(PREFIX)/sysroot $(REPO_TAG)
-	$(MAKE) c.base,base-initfs,extrautils,kernel,ion,pkgutils,redoxfs,relibc
-
 PREFIX_STRIP=\
-	mkdir -p bin libexec "$(GCC_TARGET)/bin" && \
-	find bin libexec "$(GCC_TARGET)/bin" "$(GCC_TARGET)/lib" \
+	mkdir -p bin libexec "$(TARGET)/bin" && \
+	find bin libexec "$(TARGET)/bin" "$(TARGET)/lib" \
 		-type f \
 		-exec strip --strip-unneeded {} ';' \
 		2> /dev/null
 
-$(RELIBC_SOURCE): | $(FSTOOLS_TAG)
+# Update relibc used for compiling and clean all statically linked recipes
+prefix_clean: | $(FSTOOLS_TAG)
+	$(MAKE) c.relibc
+	$(MAKE) c.base,base-initfs,extrautils,kernel,ion,pkgutils,redoxfs
+
+$(PREFIX)/relibc-install: $(PREFIX)/rust-install | $(FSTOOLS_TAG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
-	./target/release/repo fetch relibc
-	touch $(RELIBC_SOURCE)
-endif
-
-$(PREFIX)/relibc: | $(RELIBC_SOURCE)
-	mkdir -p "$(@D)"
-	rm -rf "$@.partial" "$@"
-	cp -r "$(RELIBC_SOURCE)" "$@.partial"
-	touch "$@.partial"
-	mv "$@.partial" "$@"
-
-$(PREFIX)/relibc-install: $(PREFIX)/relibc | $(PREFIX)/rust-install $(CONTAINER_TAG)
-ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) make $@
-else
+	@echo "\033[1;36;49mBuilding relibc-install\033[0m"
 	rm -rf "$@.partial" "$@"
 	cp -r "$(PREFIX)/rust-install" "$@.partial"
 	rm -rf "$@.partial/$(TARGET)/include/"*
 	cp -r "$(PREFIX)/rust-install/$(GNU_TARGET)/include/c++" "$@.partial/$(GNU_TARGET)/include/c++"
 	cp -r "$(PREFIX)/rust-install/lib/rustlib/$(HOST_TARGET)/lib/" "$@.partial/lib/rustlib/$(HOST_TARGET)/"
-	cd "$<" && \
 	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
-	export CARGO="env -u CARGO cargo" && \
-	$(MAKE) clean && \
-	$(MAKE) -j `$(NPROC)` all && \
-	$(MAKE) -j `$(NPROC)` install DESTDIR="$(ROOT)/$@.partial/$(GNU_TARGET)"
-	cd "$@.partial" && $(PREFIX_STRIP)
+	export CARGO="env -u CARGO cargo" $(PREFIX_CONFIG) && \
+	./target/release/repo cook relibc
+	cp -r "$(RELIBC_TARGET)/stage/usr/". "$@.partial/$(GNU_TARGET)"
 	touch "$@.partial"
 	mv "$@.partial" "$@"
 endif
@@ -86,60 +59,35 @@ $(PREFIX)/relibc-install.tar.gz: $(PREFIX)/relibc-install
 		--directory="$<" \
 		.
 
-$(PREFIX)/libtool: | $(CONTAINER_TAG)
+# TODO: move this behind PREFIX_BINARY=0 when compiled prefix has it
+$(PREFIX)/libtool-install: | $(FSTOOLS_TAG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
+	@echo "\033[1;36;49mBuilding libtool-install\033[0m"
 	rm -rf "$@.partial" "$@"
 	mkdir -p "$@.partial"
-
-	git clone \
-		--recurse-submodules \
-		--shallow-submodules \
-		"https://gitlab.redox-os.org/redox-os/libtool/" \
-		--branch "v$(LIBTOOL_VERSION)-redox" \
-		--depth 2 \
-		"$@.partial"
-
-	touch "$@.partial"
-	echo $(LIBTOOL_VERSION) > $@.partial/.tarball-version
-	mv "$@.partial" "$@"
-endif
-
-$(PREFIX)/libtool-build: $(PREFIX)/libtool $(PREFIX)/rust-install $(CONTAINER_TAG)
-ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) make $@
-else
-	rm -rf "$@.partial" "$@"
-	mkdir -p "$@.partial"
-	PATH="$(ROOT)/$(PREFIX)/rust-install/bin:$$PATH" && \
-	cd "$<" && \
-		./bootstrap \
-			--skip-po \
-			--force \
-			--gnulib-srcdir=./gnulib
-	PATH="$(ROOT)/$(PREFIX)/rust-install/bin:$$PATH" && \
-	cd "$@.partial" && \
-		cp -r $(abspath $<)/. ./ && \
-		"$(ROOT)/$</configure" \
-			--target="$(TARGET)" \
-			--prefix=$(abspath $(PREFIX)/sysroot) && \
-		$(MAKE) -j `$(NPROC)`
-
+	export $(PREFIX_CONFIG) COOKBOOK_HOST_SYSROOT=/usr && \
+	./target/release/repo cook host:libtool
+	cp -r "$(LIBTOOL_TARGET)/stage/usr/". "$@.partial"
+	mv "$@.partial/bin/libtoolize" "$@.partial/bin/libtoolize.orig"
+# adapt path for libtoolize
+	sed 's|/usr/share|$(ROOT)/$@/share|g' "$@.partial/bin/libtoolize.orig" > "$@.partial/bin/libtoolize"
+	chmod 0755 "$@.partial/bin/libtoolize"
 	touch "$@.partial"
 	mv "$@.partial" "$@"
 endif
 
-$(PREFIX)/sysroot: $(PREFIX)/relibc-install $(PREFIX)/libtool-build $(CONTAINER_TAG)
+$(PREFIX)/sysroot: $(PREFIX)/relibc-install $(PREFIX)/libtool-install $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
 	rm -rf "$@"
 	cp -r "$(PREFIX)/relibc-install/" "$@"
-	PATH="$(ROOT)/$(PREFIX)/rust-install/bin:$$PATH" && \
-	cd "$(PREFIX)/libtool-build" && \
-		$(MAKE) install -j `$(NPROC)`
-	cd "$@" && $(PREFIX_STRIP)
+	cp -r "$(PREFIX)/libtool-install/". "$@"
+# adapt path for libtoolize
+	sed 's|/usr/share|$(ROOT)/$@/share|g' "$@/bin/libtoolize.orig" > "$@/bin/libtoolize"
+	chmod 0755 "$@/bin/libtoolize"
 	touch "$@"
 endif
 
@@ -170,152 +118,97 @@ endif
 else
 
 # BUILD GCC ---------------------------------------------------
-PREFIX_FREESTANDING_INSTALL=$(PREFIX)/gcc-freestanding-install
-PREFIX_FREESTANDING_PATH=$(ROOT)/$(PREFIX_FREESTANDING_INSTALL)/bin
-
-$(PREFIX)/binutils-$(BINUTILS_BRANCH).tar.bz2:
-	mkdir -p "$(@D)"
-	rm -fv $(PREFIX)/binutils*.tar.bz2*
-	wget -O $@.partial "https://gitlab.redox-os.org/redox-os/binutils-gdb/-/archive/$(BINUTILS_BRANCH)/binutils-gdb-$(BINUTILS_BRANCH).tar.bz2"
-	mv $@.partial $@
-
-$(PREFIX)/binutils: $(PREFIX)/binutils-$(BINUTILS_BRANCH).tar.bz2
+$(PREFIX)/binutils-install: | $(FSTOOLS_TAG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
+	@echo "\033[1;36;49mBuilding binutils-install\033[0m"
 	rm -rf "$@.partial" "$@"
 	mkdir -p "$@.partial"
-	tar --extract --file "$<" --directory "$@.partial" --no-same-owner --strip-components=1
+	export CI=1 $(PREFIX_CONFIG) COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_TARGET=$(TARGET) COOKBOOK_CROSS_GNU_TARGET=$(GNU_TARGET) && \
+	./target/release/repo cook host:binutils-gdb 
+	cp -r "$(BINUTILS_TARGET)/stage/usr/". "$@.partial"
 	touch "$@.partial"
 	mv "$@.partial" "$@"
 endif
 
-$(PREFIX)/binutils-install: $(PREFIX)/binutils $(CONTAINER_TAG)
+$(PREFIX)/gcc-freestanding-install: $(PREFIX)/libtool-install $(PREFIX)/binutils-install | $(FSTOOLS_TAG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
-	rm -rf "$<-build" "$@.partial" "$@"
-	mkdir -p "$<-build" "$@.partial"
-	cd "$<-build" && \
-	"$(ROOT)/$</configure" \
-		--target="$(GNU_TARGET)" \
-		$(GCC_ARCH) \
-		--program-prefix="$(GNU_TARGET)-" \
-		--prefix="" \
-		--disable-werror \
-		--enable-default-hash-style=gnu \
-		&& \
-	$(MAKE) -j `$(NPROC)` all && \
-	$(MAKE) -j `$(NPROC)` install DESTDIR="$(ROOT)/$@.partial"
-	rm -rf "$<-build"
-	cd "$@.partial" && $(PREFIX_STRIP)
+	@echo "\033[1;36;49mBuilding gcc-freestanding-install\033[0m"
+	rm -rf "$@.partial" "$@" $(PREFIX)/relibc-freestanding-install $(PREFIX)/sysroot
+	mkdir -p "$@.partial" $(PREFIX)/relibc-freestanding-install/$(GNU_TARGET)/include
+	export $(PREFIX_CONFIG) PATH="$(ROOT)/$(PREFIX)/libtool-install/bin:$(ROOT)/$(PREFIX)/binutils-install/bin:$$PATH" \
+		COOKBOOK_LIBTOOL_DIR=$(ROOT)/$(PREFIX)/libtool-install COOKBOOK_CROSS_TARGET=$(TARGET) COOKBOOK_CROSS_GNU_TARGET=$(GNU_TARGET) \
+		COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_SYSROOT=$(ROOT)/$(PREFIX)/relibc-freestanding-install/$(GNU_TARGET) && \
+	./target/release/repo cook host:gcc13
+	cp -r "$(GCC_TARGET)/stage/usr/". "$@.partial"
+	cp -r "$(GCC_TARGET)/stage.cxx/usr/". "$@.partial"
+	cp -r "$(PREFIX)/binutils-install/". "$@.partial"
+	rm -rf $(PREFIX)/relibc-freestanding-install
 	touch "$@.partial"
 	mv "$@.partial" "$@"
 endif
 
-$(PREFIX)/gcc-$(GCC_BRANCH).tar.bz2:
-	mkdir -p "$(@D)"
-	rm -fv $(PREFIX)/gcc*.tar.bz2*
-	wget -O $@.partial "https://gitlab.redox-os.org/redox-os/gcc/-/archive/$(GCC_BRANCH)/gcc-$(GCC_BRANCH).tar.bz2"
-	mv "$@.partial" "$@"
-
-$(PREFIX)/gcc: $(PREFIX)/gcc-$(GCC_BRANCH).tar.bz2
+$(PREFIX)/relibc-freestanding-install: $(PREFIX)/gcc-freestanding-install | $(FSTOOLS_TAG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
+	@echo "\033[1;36;49mBuilding relibc-freestanding-install\033[0m"
+	rm -rf "$@.partial" "$@"
 	mkdir -p "$@.partial"
-	tar --extract --file "$<" --directory "$@.partial" --no-same-owner --strip-components=1
-	cd "$@.partial" && ./contrib/download_prerequisites
+	export CARGO="env -u CARGO -u RUSTUP_TOOLCHAIN cargo" RUSTUP="env -u CARGO -u RUSTUP_TOOLCHAIN rustup" && \
+	export PATH="$(ROOT)/$(PREFIX)/gcc-freestanding-install/bin:$$PATH" && \
+	export CC_$(subst -,_,$(TARGET))="$(GNU_TARGET)-gcc -isystem $(ROOT)/$@.partial/$(GNU_TARGET)/include" LINKFLAGS="" && \
+	export $(PREFIX_CONFIG) COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_TARGET=$(HOST_TARGET) && \
+	./target/release/repo cook relibc
+	cp -r "$(RELIBC_FREESTANDING_TARGET)/stage/usr/". "$@.partial/$(GNU_TARGET)"
 	touch "$@.partial"
 	mv "$@.partial" "$@"
 endif
 
-$(PREFIX)/gcc-freestanding-install: $(PREFIX)/gcc | $(PREFIX)/binutils-install $(CONTAINER_TAG)
+$(PREFIX)/gcc-install: $(PREFIX)/relibc-freestanding-install $(PREFIX)/libtool-install | $(FSTOOLS_TAG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
-	rm -rf "$<-freestanding-build" "$@.partial" "$@"
-	mkdir -p "$<-freestanding-build"
-	cp -r "$(PREFIX)/binutils-install" "$@.partial"
-	cd "$<-freestanding-build" && \
+	@echo "\033[1;36;49mBuilding gcc-install\033[0m"
+	rm -rf "$@.partial" "$@-build.partial" "$@"
+	if [ ! -d "$(ROOT)/$(GCC_TARGET)" ]; then \
+		echo "\033[1;38;5;196m Incomplete build stages. Please re-run the build\033[0m"; \
+		rm -rf "$(PREFIX)"/gcc-freestanding-install && "$(PREFIX)"/relibc-freestanding-install && \
+		exit 1; fi
+	mkdir -p "$@.partial" "$@-build.partial"
+	cp -r "$(PREFIX)/gcc-freestanding-install/". "$@.partial"
+	cp -r "$(PREFIX)/relibc-freestanding-install/". "$@.partial"
+	cp -r "$(PREFIX)/libtool-install/". "$@.partial"
+	@#TODO: how to make this not conflict with libc?
+	rm -f "$@.partial/lib/gcc/$(GNU_TARGET)/13.2.0/include/limits.h"
+# libgcc and bare features of libstdcxx
 	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
-	"$(ROOT)/$</configure" \
-		--target="$(GNU_TARGET)" \
-		$(GCC_ARCH) \
-		--program-prefix="$(GNU_TARGET)-" \
-		--prefix="" \
-		--disable-nls \
-		--disable-shared \
-		--enable-languages=c,c++ \
-		--without-headers \
-		--with-linker-hash-style=gnu \
-		&& \
-	$(MAKE) -j `$(NPROC)` all-gcc all-target-libgcc && \
-	$(MAKE) -j `$(NPROC)` install-gcc install-target-libgcc DESTDIR="$(ROOT)/$@.partial"
-	rm -rf "$<-freestanding-build"
-	cd "$@.partial" && $(PREFIX_STRIP)
-	touch "$@.partial"
-	mv "$@.partial" "$@"
-endif
-
-$(PREFIX)/relibc-freestanding: | $(RELIBC_SOURCE)
-	mkdir -p "$(@D)"
-	rm -rf "$@.partial" "$@"
-	cp -r "$(RELIBC_SOURCE)" "$@.partial"
-	touch "$@.partial"
-	mv "$@.partial" "$@"
-
-
-$(PREFIX)/relibc-freestanding-install: $(PREFIX)/relibc-freestanding | $(PREFIX_FREESTANDING_INSTALL) $(CONTAINER_TAG)
-ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) make $@
-else
-	rm -rf "$@.partial" "$@"
-	mkdir -p "$@.partial"
-	cd "$<" && \
-	export PATH="$(PREFIX_FREESTANDING_PATH):$$PATH" && \
-	export CARGO="env -u CARGO -u RUSTUP_TOOLCHAIN cargo" && \
-	export CC_$(subst -,_,$(TARGET))="$(GNU_TARGET)-gcc -isystem $(ROOT)/$@.partial/$(GNU_TARGET)/include" && \
-	$(MAKE) clean && \
-	$(MAKE) -j 1 all && \
-	$(MAKE) -j 1 install DESTDIR="$(ROOT)/$@.partial/$(GNU_TARGET)"
-	cd "$@.partial" && $(PREFIX_STRIP)
-	touch "$@.partial"
-	mv "$@.partial" "$@"
-endif
-
-$(PREFIX)/gcc-install: $(PREFIX)/gcc | $(PREFIX)/relibc-freestanding-install $(CONTAINER_TAG)
-ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) make $@
-else
-	rm -rf "$<-build" "$@.partial" "$@"
-	mkdir -p "$<-build"
-	cp -r "$(PREFIX)/binutils-install" "$@.partial"
-	cd "$<-build" && \
+	$(MAKE) -C "$(ROOT)/$(GCC_TARGET)/build" all-target-libgcc all-target-libstdc++-v3 && \
+	$(MAKE) -C "$(ROOT)/$(GCC_TARGET)/build" install-target-libgcc install-target-libstdc++-v3 DESTDIR="$(ROOT)/$@-build.partial/usr"
+	cp -r "$@-build.partial/usr/". "$@.partial"
+	@#TODO: in riscv64gc libgcc_s.so is a GNU ld script
+	rm -f "$@.partial"/$(GNU_TARGET)/lib/libgcc_s.so
+	ln -s libgcc_s.so.1 "$@.partial"/$(GNU_TARGET)/lib/libgcc_s.so
+	@#TODO: generates wrong lib path for libtool
+	rm -f "$@.partial"/$(GNU_TARGET)/lib/libstdc++.la
+	rm -f "$@.partial"/$(GNU_TARGET)/lib/libsupc++.la
+# fully featured libstdcxx, not supported for targets only supporting static linking
+ifneq ($(TARGET),riscv64gc-unknown-redox)
+ifneq ($(TARGET),i586-unknown-redox)
 	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
-	"$(ROOT)/$</configure" \
-		--target="$(GNU_TARGET)" \
-		$(GCC_ARCH) \
-		--program-prefix="$(GNU_TARGET)-" \
-		--prefix="" \
-		--with-sysroot \
-		--with-build-sysroot="$(ROOT)/$(PREFIX)/relibc-freestanding-install/$(GNU_TARGET)" \
-		--with-native-system-header-dir="/include" \
-		--disable-multilib \
-		--disable-nls \
-		--disable-werror \
-		--enable-languages=c,c++ \
-		--enable-shared \
-		--enable-threads=posix \
-		--with-linker-hash-style=gnu \
-		&& \
-	$(MAKE) -j `$(NPROC)` all-gcc all-target-libgcc all-target-libstdc++-v3 && \
-	$(MAKE) -j `$(NPROC)` install-gcc install-target-libgcc install-target-libstdc++-v3 DESTDIR="$(ROOT)/$@.partial"
-	rm $(ROOT)/$@.partial/$(GNU_TARGET)/lib/*.la
-	rm -rf "$<-build"
-	cd "$@.partial" && $(PREFIX_STRIP)
+	export $(PREFIX_CONFIG) "COOKBOOK_HOST_SYSROOT=$(ROOT)/$@.partial" COOKBOOK_CROSS_TARGET=$(HOST_TARGET) && \
+	rm -rf "$(LIBSTDCXX_TARGET)/stage" && ./target/release/repo cook libstdcxx-v3
+	cp -r "$(LIBSTDCXX_TARGET)/stage/usr/". "$@.partial/$(GNU_TARGET)"
+endif
+endif
+	rm -rf "$@-build.partial"
 	touch "$@.partial"
 	mv "$@.partial" "$@"
+# no longer needed, delete build files to save disk space
+	rm -rf $(BINUTILS_TARGET) $(LIBTOOL_TARGET) $(GCC_TARGET) $(LIBSTDCXX_TARGET) $(RELIBC_FREESTANDING_TARGET)
 endif
 
 $(PREFIX)/gcc-install.tar.gz: $(PREFIX)/gcc-install
@@ -341,21 +234,36 @@ $(PREFIX_RUST_VERSION_TAG):
 	touch $@
 
 $(PREFIX)/rustc-install.tar.xz: | $(PREFIX_RUST_VERSION_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
 	mkdir -p "$(@D)"
 	wget -O $@.partial "https://static.rust-lang.org/dist/$(UPSTREAM_RUSTC_VERSION)/rustc-nightly-$(HOST_TARGET).tar.xz"
 	mv $@.partial $@
+endif
 
 $(PREFIX)/cargo-install.tar.xz: | $(PREFIX_RUST_VERSION_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
 	mkdir -p "$(@D)"
 	wget -O $@.partial "https://static.rust-lang.org/dist/$(UPSTREAM_RUSTC_VERSION)/cargo-nightly-$(HOST_TARGET).tar.xz"
 	mv $@.partial $@
+endif
 
 $(PREFIX)/rust-std-host-install.tar.xz: | $(PREFIX_RUST_VERSION_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
 	mkdir -p "$(@D)"
 	wget -O $@.partial "https://static.rust-lang.org/dist/$(UPSTREAM_RUSTC_VERSION)/rust-std-nightly-$(HOST_TARGET).tar.xz"
 	mv $@.partial $@
+endif
 
 $(PREFIX)/rust-std-target-install.tar.xz: | $(PREFIX_RUST_VERSION_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
 	mkdir -p "$(@D)"
 ifeq ($(TARGET),x86_64-unknown-redox)
 	wget -O $@.partial "https://static.rust-lang.org/dist/$(UPSTREAM_RUSTC_VERSION)/rust-std-nightly-$(TARGET).tar.xz"
@@ -363,13 +271,22 @@ ifeq ($(TARGET),x86_64-unknown-redox)
 else
 	touch $@
 endif
+endif
 
 $(PREFIX)/rust-src-install.tar.xz: | $(PREFIX_RUST_VERSION_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
 	mkdir -p "$(@D)"
 	wget -O $@.partial "https://static.rust-lang.org/dist/$(UPSTREAM_RUSTC_VERSION)/rust-src-nightly.tar.xz"
 	mv $@.partial $@
+endif
 
 $(PREFIX)/rust-install: $(PREFIX)/gcc-install $(PREFIX)/rustc-install.tar.xz $(PREFIX)/cargo-install.tar.xz $(PREFIX)/rust-std-host-install.tar.xz $(PREFIX)/rust-std-target-install.tar.xz $(PREFIX)/rust-src-install.tar.xz
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
+	@echo "\033[1;36;49mBuilding rust-install\033[0m"
 	rm -rf "$@.partial" "$@"
 	mkdir -p "$@.partial"
 	cp -r "$(PREFIX)/gcc-install/". "$@.partial"
@@ -383,6 +300,7 @@ endif
 	rm -f "$@.partial/manifest.in"
 	touch "$@.partial"
 	mv "$@.partial" "$@"
+endif
 
 # BUILD RUST ---------------------------------------------------
 else 
@@ -395,6 +313,7 @@ $(PREFIX)/rust-install: $(ROOT)/rust/configure | $(PREFIX)/gcc-install $(PREFIX)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
+	@echo "\033[1;36;49mBuilding rust-install\033[0m"
 	rm -rf "$(PREFIX)/rust-build" "$@.partial" "$@"
 	mkdir -p "$(PREFIX)/rust-build"
 	cp -r "$(PREFIX)/gcc-install" "$@.partial"
