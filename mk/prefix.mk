@@ -158,7 +158,7 @@ else
 	@echo "\033[1;36;49mBuilding relibc-freestanding-install\033[0m"
 	rm -rf "$@.partial" "$@"
 	mkdir -p "$@.partial"
-	export CARGO="env -u CARGO -u RUSTUP_TOOLCHAIN cargo" && \
+	export CARGO="env -u CARGO -u RUSTUP_TOOLCHAIN cargo" RUSTUP="env -u CARGO -u RUSTUP_TOOLCHAIN rustup" && \
 	export PATH="$(ROOT)/$(PREFIX)/gcc-freestanding-install/bin:$$PATH" && \
 	export CC_$(subst -,_,$(TARGET))="$(GNU_TARGET)-gcc -isystem $(ROOT)/$@.partial/$(GNU_TARGET)/include" LINKFLAGS="" && \
 	export $(PREFIX_CONFIG) COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_TARGET=$(HOST_TARGET) && \
