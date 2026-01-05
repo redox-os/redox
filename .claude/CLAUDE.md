@@ -217,47 +217,59 @@ librelibc.a: 16.6 MB
 ELF 64-bit LSB relocatable, ARM aarch64
 ```
 
-### aarch64 QEMU Boot Status
+### aarch64 QEMU Boot - SUCCESS! 🎉
 
-The existing aarch64 Redox ISO boots successfully in QEMU:
+On 2026-01-05, the Cranelift-compiled aarch64 kernel booted in QEMU!
+
+**How to replace kernel (requires macFUSE):**
+```bash
+# Mount RedoxFS image
+mkdir -p /tmp/redoxfs-mount
+/opt/other/redox/build/fstools/bin/redoxfs build/aarch64/desktop/redox-live.iso /tmp/redoxfs-mount
+
+# Replace kernel with Cranelift version
+llvm-strip -o /tmp/kernel-stripped recipes/core/kernel/source/target/aarch64-redox-none/release/kernel
+cp /tmp/kernel-stripped /tmp/redoxfs-mount/boot/kernel
+
+# Unmount
+umount /tmp/redoxfs-mount
+```
+
+**QEMU Command:**
 ```bash
 qemu-system-aarch64 -M virt -cpu cortex-a72 -m 2G \
   -device ramfb -device qemu-xhci -device usb-kbd -device usb-tablet \
   -bios /opt/homebrew/opt/qemu/share/qemu/edk2-aarch64-code.fd \
   -drive file=build/aarch64/desktop/redox-live.iso,format=raw,if=virtio \
-  -nographic
+  -serial file:/tmp/qemu-serial.log \
+  -monitor unix:/tmp/qemu-monitor.sock,server,nowait \
+  -display none
 ```
 
-**Boot Log:**
+**Boot Log (Cranelift kernel):**
 ```
 Redox OS Bootloader 1.0.0 on aarch64/UEFI
 RedoxFS 67bdb861-27ba-47d9-9c44-8bb69b5386da: 647 MiB
-kernel: 1/1 MiB
-initfs: 24/24 MiB
-kernel_entry(...)
-kernel::arch::aarch64::device::serial:INFO -- serial_port virq = 33
+USB HID driver spawned with scheme `usb.pci-00-00-02.0_xhci`
+Finished graphical debug
+########## Redox OS ##########
+# Login with the following:  #
+# `user`                     #
+# `root`:`password`          #
+##############################
+redox login:
 ```
 
-**Blocker for Cranelift kernel boot:**
-- Replacing the kernel in the RedoxFS image requires macFUSE kernel extension (needs reboot to enable)
-- Or building a fresh image with `redox_installer`
+**Known Issue:** virtio-netd driver panics with "not implemented: virtio_core: aarch64 enable_msix"
+- This is a userspace driver issue, not kernel
+- Network unavailable but system otherwise functional
 
-**Cranelift aarch64 kernel properties:**
-```
-Entry point: 0xFFFFFF000006CE50
-.text: 1.77 MB at 0xFFFFFF0000001000
-.rodata: 304 KB
-.data + .got: ~370 KB
-Machine: AArch64
-```
-
-**Current Status:**
+**Final Status:**
 | Architecture | Kernel | relibc | QEMU Boot |
 |--------------|--------|--------|-----------|
 | x86_64 | ✅ | ✅ | ✅ |
-| aarch64 | ✅ | ✅ | 🔧 (needs image rebuild) |
+| aarch64 | ✅ | ✅ | ✅ |
 
-### Next Steps for aarch64 Boot
-1. Enable macFUSE kernel extension (requires reboot)
-2. Or use Linux VM to mount and modify RedoxFS
-3. Or build fresh image with `make ARCH=aarch64` using Cranelift toolchain
+### Summary: Pure Rust Toolchain for Redox OS
+
+Both x86_64 and aarch64 Redox kernels can now be compiled with Cranelift (pure Rust) instead of LLVM!
