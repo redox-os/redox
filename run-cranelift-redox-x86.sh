@@ -15,6 +15,7 @@ if [[ ! -f "$IMAGE" ]]; then
     # Download base image if needed
     if [[ ! -f /tmp/redox-base.img ]]; then
         echo "Downloading Redox base image..."
+        echo "WHAT?? NO!! I THOUGHT WE USE LOCAL BUILD!?!"
         curl -L -o /tmp/redox.img.zst \
             "https://static.redox-os.org/img/x86_64/redox_server_x86_64_2025-12-29_200_harddrive.img.zst"
         zstd -d /tmp/redox.img.zst -o /tmp/redox-base.img

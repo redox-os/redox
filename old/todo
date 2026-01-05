@@ -1,0 +1,6 @@
+/opt/other/redox/ git -C rust/src/llvm-project fetch --depth=1 origin
+git -C rust/src/llvm-project fetch origin 31dae798503308de8b95f553410529db606f8377
+git submodule update --init --recursive
+remote: Total 0 (delta 0), reused 0 (delta 0), pack-reused 0 (from 0)
+error: RPC failed; HTTP 524 curl 22 The requested URL returned error: 524
+fatal: expected 'acknowledgments'
