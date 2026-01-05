@@ -46,24 +46,30 @@ Bootstrap now builds with Cranelift for aarch64!
 
 ## Next Steps
 
-### Build Bootstrap with Cranelift
-Now that redox-scheme compatibility is fixed, build bootstrap with Cranelift:
+### Bootstrap Built with Cranelift - SUCCESS! 🎉
+
+**Commit:** `d13f8aa7` in `recipes/core/base/source`
+
+Bootstrap now builds and links with Cranelift for aarch64!
+
+**Build command:**
 ```bash
-cd /opt/other/redox/recipes/core/base/source/bootstrap
-DYLD_LIBRARY_PATH=~/.rustup/toolchains/nightly-2026-01-02-aarch64-apple-darwin/lib \
-RUSTFLAGS="-Zcodegen-backend=/opt/other/rustc_codegen_cranelift/dist/lib/librustc_codegen_cranelift.dylib" \
-cargo +nightly-2026-01-02 build \
-  --target aarch64-unknown-redox \
-  --release \
-  -Z build-std=core,alloc \
-  -Zbuild-std-features=compiler_builtins/no-f16-f128
+cd recipes/core/base/source/bootstrap
+./build-cranelift.sh
 ```
 
-### Create Full Cranelift Initfs
-1. Build bootstrap with Cranelift
-2. Build all initfs components with Cranelift
-3. Create initfs archive
-4. Test in QEMU
+**Output:**
+```
+bootstrap-cranelift-stripped: 820 KB
+ELF 64-bit LSB executable, ARM aarch64, statically linked
+Entry point: 0x3000
+```
+
+### Next Steps
+
+1. Build all initfs components with Cranelift
+2. Create initfs archive using `redox-initfs-ar`
+3. Inject into Redox ISO and test in QEMU
 
 ### Alternative: Test on x86_64
 `x86_64-unknown-redox` is tier 2, so standard toolchain works. Could test pcid-spawner fix there first.
@@ -81,6 +87,8 @@ cargo +nightly-2026-01-02 build \
 | `recipes/core/base/source/bootstrap/src/start.rs` | Use compat::open() |
 | `recipes/core/base/source/bootstrap/src/exec.rs` | Use compat::open() |
 | `recipes/core/base/source/bootstrap/src/initfs.rs` | Use compat::open() |
+| `recipes/core/base/source/bootstrap/aarch64-unknown-redox-clif.json` | Custom target (64-bit atomics) |
+| `recipes/core/base/source/bootstrap/build-cranelift.sh` | Build script |
 
 ## Build Scripts Created
 
