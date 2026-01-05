@@ -65,11 +65,32 @@ ELF 64-bit LSB executable, ARM aarch64, statically linked
 Entry point: 0x3000
 ```
 
+### Initfs Binaries Built with Cranelift - SUCCESS! 🎉
+
+**Commit:** `527c979c` in `recipes/core/base/source`
+
+All 18 initfs binaries now build with Cranelift:
+- Core: init, logd, ramfs, randd, zerod, nulld
+- Drivers: pcid, pcid-spawner, acpid, fbbootlogd, fbcond, hwd, inputd, lived, nvmed, rtcd, vesad
+- Virtio: virtio-blkd, virtio-gpud
+- Plus: redoxfs, bootstrap
+
+**Build command:**
+```bash
+cd recipes/core/base/source
+./build-initfs-cranelift.sh
+```
+
+**Output:**
+```
+initfs-cranelift.img: 49 MB
+18 binaries @ ~2.2 MB each (stripped)
+```
+
 ### Next Steps
 
-1. Build all initfs components with Cranelift
-2. Create initfs archive using `redox-initfs-ar`
-3. Inject into Redox ISO and test in QEMU
+1. Inject initfs into Redox ISO
+2. Test in QEMU
 
 ### Alternative: Test on x86_64
 `x86_64-unknown-redox` is tier 2, so standard toolchain works. Could test pcid-spawner fix there first.
