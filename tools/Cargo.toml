@@ -1,0 +1,12 @@
+[package]
+name = "redox-build"
+version = "0.1.0"
+edition = "2024"
+
+[[bin]]
+name = "build-userspace"
+path = "src/build-userspace.rs"
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+which = "7"
