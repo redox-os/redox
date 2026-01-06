@@ -252,7 +252,7 @@ build_base_drivers() {
         # PCI and system
         pcid pcid-spawner acpid hwd
         # Storage
-        ahcid nvmed virtio-blkd ided lived ramfs usbscsid
+        ahcid nvmed virtio-blkd virtio-9pd ided lived ramfs usbscsid
         # Graphics
         vesad fbcond fbbootlogd virtio-gpud ihdgd
         # USB
@@ -309,7 +309,7 @@ build_initfs() {
     cp "$ROOT/tools/aarch64-unknown-redox-clif.json" .
 
     # Build initfs drivers (minimal set for boot)
-    INITFS_DRIVERS=(nvmed ahcid virtio-blkd xhcid lived ramfs)
+    INITFS_DRIVERS=(nvmed ahcid virtio-blkd virtio-9pd xhcid lived ramfs)
 
     RUSTFLAGS="-Zcodegen-backend=$CRANELIFT_LIB \
         -L $SYSROOT/lib \

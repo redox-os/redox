@@ -480,5 +480,159 @@ build/aarch64/cranelift-sysroot/
 ```
 
 **QEMU Testing Notes:**
-UEFI firmware (`edk2-aarch64-code.fd`) not available in Homebrew QEMU 10.2.0.
-Download separately from https://github.com/tianocore/edk2 or use `brew install qemu-efi-aarch64`.
+UEFI firmware installed at `tools/firmware/edk2-aarch64-code.fd` (downloaded from retrage's EDK2 nightly).
+
+**Boot Test Results (2026-01-06):**
+```bash
+qemu-system-aarch64 -M virt -cpu cortex-a72 -m 2G \
+    -bios tools/firmware/edk2-aarch64-code.fd \
+    -drive file=build/aarch64/desktop/redox-live.iso,format=raw,id=hd0,if=none \
+    -device virtio-blk-pci,drive=hd0 \
+    -serial stdio -display none
+```
+
+**What works:**
+- ✅ Cranelift kernel boots successfully (2 MiB)
+- ✅ PCI enumeration (virtio-net, virtio-blk, XHCI)
+- ✅ virtio-blkd driver with legacy INTx# interrupt
+- ✅ RedoxFS mounts
+- ✅ init, vesad, fbcond, hwd, pcid all start
+
+**Issue with injected binaries:**
+Cranelift userspace binaries (`/usr/bin/ipcd`) crash at CRT init.
+ABI mismatch between Cranelift-compiled binaries and LLVM-compiled initfs.
+Full ISO rebuild needed for compatible userspace.
+
+### Cranelift InitFS Rebuild - SUCCESS! - 2026-01-06
+
+Successfully rebuilt the entire initfs with Cranelift, fixing the ABI mismatch issue.
+
+**Build Script:** `build-cranelift-initfs.sh`
+
+**Components:**
+- Bootstrap static library with Cranelift (1.3 MB linked)
+- InitFS binaries (stripped, ~65 MB total)
+- redoxfs filesystem driver
+
+**What's Working in Cranelift InitFS:**
+```
+init: opening init.rc
+rtcd, nulld, zerod, randd, logd, ramfs
+inputd, vesad (800x600 framebuffer)
+fbbootlogd, fbcond, lived
+hwd (ACPI backend)
+pcid (PCI enumeration: virtio-net, virtio-blk, XHCI)
+acpid (AML interpreter)
+```
+
+**Remaining Issues:**
+- ~~pcid-spawner: "No such device"~~ **FIXED** - see below
+- ipcd from /usr/bin/: Crashes at 0x35AE8C (LLVM-compiled binary, ABI mismatch)
+
+### pcid-spawner "No such device" - FIXED! - 2026-01-06
+
+**Root Cause:** The `daemon` crate's NO_FORK mode blocked forever because daemon functions
+run infinite loops. When hwd started pcid and waited, init would block indefinitely.
+
+**The Fix (commit b54b1061):**
+Modified `hwd/src/main.rs` to spawn pcid without waiting:
+```rust
+use std::process;
+use std::thread;
+use std::time::Duration;
+
+// In ACPI backend:
+match process::Command::new("pcid").spawn() {
+    Ok(_child) => {
+        log::info!("spawned pcid, waiting for scheme registration");
+        thread::sleep(Duration::from_millis(500));
+    }
+    Err(err) => {
+        log::error!("failed to spawn pcid: {}", err);
+    }
+}
+```
+
+Also restored proper fork() in `daemon/src/lib.rs` using `libc::fork()` instead of the
+broken NO_FORK workaround.
+
+**Boot Log After Fix:**
+```
+hwd: using ACPI backend
+hwd: spawned pcid, waiting for scheme registration
+pcid: PCI SG-BS:DV.F VEND:DEVI CL.SC.IN.RV
+pcid: PCI 00-00:00.0 1B36:0008 06.00.00.00 6
+pcid: PCI 00-00:01.0 1AF4:1000 02.00.00.00 2  (virtio-net)
+pcid: PCI 00-00:02.0 1AF4:1001 01.00.00.00 1  (virtio-blk)
+pcid: PCI 00-00:03.0 1B36:000D 0C.03.30.01 12 (XHCI)
+pcid-spawner: spawn "/scheme/initfs/lib/drivers/virtio-blkd"
+virtio-blk: disk size: 1331200 sectors
+```
+
+The boot now proceeds to mount the main filesystem and run init.d scripts successfully!
+
+**Build Process:**
+1. Build initfs archiver first (host tool, avoids Cargo.lock conflicts)
+2. Build initfs binaries with Cranelift
+3. Build redoxfs with Cranelift
+4. Build bootstrap static library with Cranelift
+5. Link bootstrap with all rlib dependencies
+6. Strip binaries to reduce size (102 MB -> 65 MB)
+7. Archive into initfs.img (128 MiB max size)
+8. Inject into ISO
+
+**Key Fixes:**
+- Edition 2024 compatibility: Added `#![allow(unsafe_op_in_unsafe_fn)]`
+- Version conflicts: Pin libredox to 0.1.11 for syscall 0.6.0 compatibility
+- Separate target dirs to avoid workspace Cargo.lock conflicts
+- Include all rlib dependencies when linking bootstrap
+
+### virtio-9pd Driver - 2026-01-06
+
+Added a new virtio-9p filesystem driver that enables mounting host directories via QEMU's virtfs.
+
+**Location:** `recipes/core/base/source/drivers/fs/virtio-9pd/`
+
+**Components:**
+- `protocol.rs` - 9P2000.L protocol types and message encoding
+- `client.rs` - 9P client over virtio transport
+- `scheme.rs` - Redox scheme implementation for filesystem access
+- `main.rs` - PCI driver initialization
+
+**Features:**
+- File/directory operations (open, read, write, readdir)
+- File metadata (stat, statfs)
+- File creation and deletion
+- Full integration with Redox scheme system
+
+**Build:**
+```bash
+./build-virtio-9pd.sh
+# Result: 7.1 MB binary at target/aarch64-unknown-redox-clif/release/virtio-9pd
+```
+
+**QEMU Usage:**
+```bash
+# Create shared directory
+mkdir -p /tmp/redox-share
+echo "Hello!" > /tmp/redox-share/test.txt
+
+# Run QEMU with virtio-9p device
+qemu-system-aarch64 -M virt -cpu cortex-a72 -m 2G \
+    -bios tools/firmware/edk2-aarch64-code.fd \
+    -drive file=build/aarch64/desktop/redox-live.iso,format=raw,id=hd0,if=none \
+    -device virtio-blk-pci,drive=hd0 \
+    -fsdev local,id=fsdev0,path=/tmp/redox-share,security_model=mapped-xattr \
+    -device virtio-9p-pci,fsdev=fsdev0,mount_tag=hostshare \
+    -serial stdio
+```
+
+**In Redox:**
+Once booted, if the driver loads successfully, access files at `/scheme/9p.hostshare/`
+
+**Why 9P?**
+- No need to rebuild main filesystem with Cranelift
+- Host-side changes instantly visible in guest
+- Perfect for rapid development iteration
+
+**PCI Device ID:** 0x1AF4:0x1009 (virtio-9p legacy)
