@@ -25,3 +25,4 @@ wget-log
 .claude/CLAUDE.md
 
 .claude/
+*.img
