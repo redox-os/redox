@@ -10,4 +10,12 @@ autotools_recursive_regenerate
 """
 
 [build]
-template = "configure"
+template = "custom"
+script = """
+DYNAMIC_INIT
+COOKBOOK_CONFIGURE_FLAGS+=(
+# TODO: https://gitlab.redox-os.org/redox-os/redox/-/issues/1753
+    'ac_cv_func_mkfifo=no'
+)
+cookbook_configure
+"""
