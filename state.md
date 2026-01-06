@@ -191,15 +191,37 @@ match unsafe { libc::fork() } {
 }
 ```
 
+### virtio-blkd IRQ Conflict - FIXED!
+
+**Commit:** `de8c0066` in kernel source
+
+**Problem:** All drivers failed with "failed to open IRQ file: File exists (os error 17)" when trying to register for interrupts.
+
+**Root Cause:** During IRQ chip initialization (GIC, GICv3, BCM2835, BCM2836), all IRQ descriptors were marked as `used = true`. The IRQ scheme's `is_reserved()` function checked this field, returning EEXIST for any driver IRQ open.
+
+**Fix:** Changed all IRQ chip init code to set `used = false`:
+```rust
+// Before (broken):
+irq_desc[idx + i].basic.used = true;
+
+// After (fixed):
+irq_desc[idx + i].basic.used = false;  // Available for driver reservation
+```
+
+**Result:** virtio-blkd now successfully opens IRQ file and disk driver works:
+```
+kernel::scheme::irq:DEBUG -- open_phandle_irq virq=38
+virtio-blk: disk size: 1331200 sectors and block size of 512 bytes
+```
+
 ### Remaining Issues
 
-1. **virtio-blkd panic** - "IRQ file already exists" error, needs investigation
-2. **fbcond panic** - "No display present" in headless mode (expected)
-3. **randd warning** - "no entropy source" (expected in VM)
+1. **fbcond panic** - "No display present" in headless mode (expected)
+2. **ipcd hang** - Init stuck waiting for ipcd to start (needs investigation)
 
 ### Next Steps
 
-1. Fix virtio-blkd IRQ conflict
+1. Investigate ipcd hang
 2. Test with display (-display gtk)
 3. Reach login prompt
 
@@ -207,6 +229,10 @@ match unsafe { libc::fork() } {
 
 | File | Change |
 |------|--------|
+| `recipes/core/kernel/source/src/arch/aarch64/device/irqchip/gic.rs` | IRQ init: used = false |
+| `recipes/core/kernel/source/src/arch/aarch64/device/irqchip/gicv3.rs` | IRQ init: used = false |
+| `recipes/core/kernel/source/src/arch/aarch64/device/irqchip/irq_bcm2835.rs` | IRQ init: used = false |
+| `recipes/core/kernel/source/src/arch/aarch64/device/irqchip/irq_bcm2836.rs` | IRQ init: used = false |
 | `recipes/core/base/source/daemon/src/lib.rs` | Restored fork() for daemon daemonization |
 | `recipes/core/base/source/drivers/pcid-spawner/src/main.rs` | Added retry loop |
 | `recipes/core/base/source/.cargo/config.toml` | Relibc patches |
