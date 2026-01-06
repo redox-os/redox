@@ -26,6 +26,9 @@ DYNAMIC_INIT
 # Netsurf does not currently support out-of-tree builds :(
 rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 
+# obscure crash from sccache if jobs number is too much
+COOKBOOK_MAKE_JOBS="$(( ${COOKBOOK_MAKE_JOBS} > 8 ? 8 : ${COOKBOOK_MAKE_JOBS} ))"
+
 export TARGET="framebuffer"
 export CFLAGS="${CFLAGS} -I${PWD}/inst-${TARGET}/include"
 export LDFLAGS="${LDFLAGS} -L${COOKBOOK_SYSROOT}/lib -L${PWD}/inst-${TARGET}/lib -Wl,--allow-multiple-definition -Wl,-rpath-link,${COOKBOOK_SYSROOT}/lib"
