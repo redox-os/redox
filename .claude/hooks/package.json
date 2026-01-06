@@ -1,0 +1,16 @@
+{
+  "name": "hooks",
+  "version": "1.0.0",
+  "main": "permissions_hook.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "mqtt": "^5.14.1",
+    "dotenv": "^17.2.3"
+  }
+}
