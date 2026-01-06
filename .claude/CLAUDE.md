@@ -146,3 +146,49 @@ librelibc.a: 16 MB
 ```
 
 This means both the kernel AND the C library can now be compiled with a pure Rust toolchain!
+
+### virtio-9p Host Filesystem Sharing - SUCCESS! 🎉
+
+On 2026-01-06, successfully implemented virtio-9p filesystem sharing between QEMU host and Redox guest!
+
+**The Problem:**
+Initial implementation hung on the second virtio queue transaction because `futures::executor::block_on()`
+doesn't work with virtio's async completion mechanism without a proper event loop to handle interrupts.
+
+**The Fix:**
+Replaced `block_on()` with a simple spin-polling function that repeatedly polls the future until ready:
+```rust
+fn spin_poll<F: std::future::Future>(mut future: F) -> F::Output {
+    // Create no-op waker and spin until ready
+    loop {
+        match future.poll(&mut cx) {
+            Poll::Ready(result) => return result,
+            Poll::Pending => core::hint::spin_loop(),
+        }
+    }
+}
+```
+
+**Test Results:**
+```
+test-9p: opening /scheme/9p.hostshare/test.txt
+test-9p: read 42 bytes: Hello from host filesystem via virtio-9p!
+test-9p: SUCCESS!
+```
+
+**QEMU Command with 9p Sharing:**
+```bash
+qemu-system-aarch64 -M virt -cpu cortex-a72 -m 2G \
+    -bios tools/firmware/edk2-aarch64-code.fd \
+    -drive file=build/aarch64/server-official.iso,format=raw,id=hd0,if=none \
+    -device virtio-blk-pci,drive=hd0 \
+    -device virtio-9p-pci,fsdev=host0,mount_tag=hostshare \
+    -fsdev local,id=host0,path=/tmp/9p-share,security_model=none \
+    -serial stdio
+```
+
+**Usage:**
+1. Create files on host: `echo "test" > /tmp/9p-share/test.txt`
+2. Access from Redox: `/scheme/9p.hostshare/test.txt`
+
+This enables rapid testing without rebuilding the ISO - just modify files on the host!
