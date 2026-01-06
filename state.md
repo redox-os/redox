@@ -87,13 +87,79 @@ initfs-cranelift.img: 49 MB
 18 binaries @ ~2.2 MB each (stripped)
 ```
 
+### Bootstrap Boots and Launches Init - SUCCESS!
+
+**Commits:**
+- `653dbb9d` in `recipes/core/base/source` - fix bootstrap scheme opens
+- `b91aab5e` in `recipes/core/relibc/source` - fix FdGuard::open and make_init
+
+**Problem:** `openat(0, path)` returns EOPNOTSUPP for scheme paths on Redox kernel.
+
+**Fix:** Use legacy `SYS_OPEN` syscall (opcode 5) instead of `openat` for all scheme path opens:
+- `bootstrap/src/lib.rs`: Added `compat::open_fd()` helper
+- `bootstrap/src/exec.rs`: Use `compat::open_fd()` for `/scheme/kernel.proc/authority` and `/scheme/sys/env`
+- `bootstrap/src/procmgr.rs`: Use `compat::open_fd()` for `/scheme/event`
+- `relibc/redox-rt/src/proc.rs`: Added `legacy_open_for_fdguard()` for `FdGuard::open` and `make_init()`
+
+**QEMU Boot Log (2026-01-06):**
+```
+kernel::syscall::process:DEBUG -- Bootstrap entry point: 3000
+kernel::scheme::user:DEBUG -- call_fdread: payload: 8 metadata: 2
+UNHANDLED EXCEPTION, CPU #0, PID 1, NAME /scheme/initfs/bin/init
+```
+
+Bootstrap now successfully:
+1. Opens `/scheme/kernel.proc/authority`
+2. Creates event queue (`/scheme/event`)
+3. Creates init process (`/scheme/proc/init`)
+4. Executes init binary from initfs
+
+### Init Entry Point 0x0 Bug - FIXED!
+
+**Root Cause:** Cranelift-built binaries were missing CRT objects (crt0.o, crti.o, crtn.o) which contain `_start`.
+
+**Fix 1 - Add CRT objects to RUSTFLAGS:**
+```bash
+-Clink-arg=${RELIBC}/crt0.o \
+-Clink-arg=${RELIBC}/crt0_rust.o \
+-Clink-arg=${RELIBC}/crti.o \
+-Clink-arg=${RELIBC}/crtn.o
+```
+
+**Fix 2 - Use static relocation model:**
+PIE (Position Independent Executable) binaries have entry point 0x0 which requires dynamic relocation.
+The kernel/bootstrap ELF loader doesn't handle PIE relocation.
+Added `-Crelocation-model=static` to produce static executables.
+
+**Before:**
+```
+Type: DYN (Shared object file)
+Entry point: 0x0
+```
+
+**After:**
+```
+Type: EXEC (Executable file)
+Entry point: 0x40FFEC
+_start symbol present
+```
+
+### Current Status: Init Runs Without Crash!
+
+**QEMU Boot Log (2026-01-06):**
+```
+kernel::syscall::process:DEBUG -- Bootstrap entry point: 3000
+kernel::scheme::user:DEBUG -- call_fdread: payload: 8 metadata: 2
+(no EXCEPTION or panic - system is running)
+```
+
+The Cranelift-compiled init binary starts without crashing. The system continues running after bootstrap.
+
 ### Next Steps
 
-1. Inject initfs into Redox ISO
-2. Test in QEMU
-
-### Alternative: Test on x86_64
-`x86_64-unknown-redox` is tier 2, so standard toolchain works. Could test pcid-spawner fix there first.
+1. Verify init is actually running (add debug output)
+2. Test driver startup (pcid, vesad, etc.)
+3. Reach login prompt with full Cranelift userspace
 
 ## Files Modified
 
@@ -104,12 +170,15 @@ initfs-cranelift.img: 49 MB
 | `recipes/core/base/source/redox-scheme/*` | Local redox-scheme patch for syscall 0.7.0 |
 | `recipes/core/base/source/Cargo.toml` | Added redox-scheme patch |
 | `recipes/core/base/source/bootstrap/Cargo.toml` | Added redox-scheme patch |
-| `recipes/core/base/source/bootstrap/src/lib.rs` | Added compat::open() |
+| `recipes/core/base/source/bootstrap/src/lib.rs` | Added compat::open() and open_fd() |
 | `recipes/core/base/source/bootstrap/src/start.rs` | Use compat::open() |
-| `recipes/core/base/source/bootstrap/src/exec.rs` | Use compat::open() |
+| `recipes/core/base/source/bootstrap/src/exec.rs` | Use compat::open_fd() for scheme paths |
 | `recipes/core/base/source/bootstrap/src/initfs.rs` | Use compat::open() |
+| `recipes/core/base/source/bootstrap/src/procmgr.rs` | Use compat::open_fd() for /scheme/event |
 | `recipes/core/base/source/bootstrap/aarch64-unknown-redox-clif.json` | Custom target (64-bit atomics) |
 | `recipes/core/base/source/bootstrap/build-cranelift.sh` | Build script |
+| `recipes/core/base/source/build-initfs-cranelift.sh` | CRT objects + static relocation |
+| `recipes/core/relibc/source/redox-rt/src/proc.rs` | Legacy SYS_OPEN for FdGuard::open/make_init |
 
 ## Build Scripts Created
 
