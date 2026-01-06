@@ -32,10 +32,17 @@ COOKBOOK_CONFIGURE_FLAGS=(
     --with-native-system-header-dir="/include"
     --disable-hosted-libstdcxx
     --with-sysroot
+    --with-build-sysroot="${COOKBOOK_CROSS_SYSROOT:-$COOKBOOK_SYSROOT}"
 )
 else
+export CFLAGS_FOR_TARGET="${CPPFLAGS}" CXXFLAGS_FOR_TARGET="${CPPFLAGS}" LDFLAGS_FOR_TARGET="${LDFLAGS}"
+export CC_FOR_BUILD="$CC_WRAPPER gcc" CXX_FOR_BUILD="$CC_WRAPPER g++"
+unset CFLAGS CPPFLAGS LDFLAGS
 COOKBOOK_CONFIGURE_FLAGS+=(
     --with-sysroot=/
+    --with-gmp="${COOKBOOK_SYSROOT}/usr"
+    --with-mpfr="${COOKBOOK_SYSROOT}/usr"
+    --with-mpc="${COOKBOOK_SYSROOT}/usr"
 )
 fi
 
@@ -48,7 +55,6 @@ fi
 
 COOKBOOK_CONFIGURE_FLAGS+=(
     --target="${CROSS_GNU_TARGET}"
-    --with-build-sysroot="${COOKBOOK_CROSS_SYSROOT:-$COOKBOOK_SYSROOT}"
     --with-linker-hash-style=gnu
     --enable-languages=c,c++,lto
     --enable-initfini-array
