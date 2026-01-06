@@ -353,3 +353,132 @@ audiod: No such device
 Both x86_64 and aarch64 Redox kernels can now be compiled with Cranelift (pure Rust) instead of LLVM!
 
 Full userspace (46+ binaries) now builds with Cranelift for aarch64. Some binaries run successfully in QEMU.
+
+### ipcd Investigation - 2026-01-06
+
+**Root Cause Found:** ipcd crashes during `fork()` because `has_proc_fd` is false in relibc.
+
+**Why fork() fails:**
+```rust
+// In redox-rt/src/proc.rs:
+assert!(
+    proc_info.has_proc_fd,
+    "cannot use ForkArgs::Managed without an existing proc info"
+);
+```
+
+The `has_proc_fd` flag is set at compile time via `cfg!(feature = "proc")` in redox-rt.
+Even though `proc` is a default feature, binaries compiled for the Cranelift target don't have it enabled properly.
+
+**Attempted Workaround:**
+Modified `daemon/src/lib.rs` to skip fork() entirely:
+```rust
+pub fn new<F: FnOnce(Daemon) -> !>(f: F) -> ! {
+    let (_, write_pipe) = std::io::pipe().unwrap();
+    f(Daemon { write_pipe })  // Run directly, no fork
+}
+```
+
+**New Problem: CRT Initialization Crash**
+When rebuilding ipcd with the no-fork daemon:
+- Binary has correct entry point (0x35AE70)
+- Crashes in `relibc_start_v1` during CRT initialization
+- Error: UNHANDLED EXCEPTION at entry+0x1C
+- FAR_EL1 shows memory access at 0x3A8378
+
+**Required CRT Object Fix:**
+CRT objects must include BOTH the `.o` and `.asm.o` files:
+```bash
+# crt0.o needs _start from asm.o
+ld.lld -r -o crt0.o crt0-*.rcgu.o crt0-*.asm.o
+
+# crti.o needs _init/_fini from asm.o
+ld.lld -r -o crti.o crti-*.rcgu.o crti-*.asm.o
+```
+
+**Unresolved Issue:**
+Even with proper entry point, the binary crashes during CRT initialization.
+Likely cause: ABI mismatch between Cranelift-compiled code and LLVM-compiled relibc components in the ISO.
+
+**Next Steps:**
+1. Rebuild entire ISO with Cranelift-compiled userspace (not just individual binaries)
+2. Or investigate the specific CRT initialization incompatibility
+3. Consider using the official Redox cross-compiler for a clean test
+
+**Build Script for ipcd:**
+```bash
+# Located at /opt/other/redox/build-ipcd.sh
+RELIBC_DIR=/opt/other/redox/recipes/core/relibc/source/target/aarch64-unknown-redox-clif/release
+RUSTFLAGS="-Zcodegen-backend=...librustc_codegen_cranelift.dylib \
+  -L ${RELIBC_DIR} -Cpanic=abort \
+  -Clink-arg=${RELIBC_DIR}/crt0.o \
+  -Clink-arg=${RELIBC_DIR}/crt0_rust.o \
+  -Clink-arg=${RELIBC_DIR}/crti.o \
+  -Clink-arg=${RELIBC_DIR}/crtn.o"
+```
+
+**relibc Dependency Fix:**
+To build relibc, both relibc and redox-rt must use the same syscall version:
+```toml
+# In Cargo.toml and redox-rt/Cargo.toml:
+redox_syscall = "0.6.0"  # Not 0.7.0
+redox_event = "=0.4.2"   # Pin exact version
+# In redox-ioctl/Cargo.toml:
+redox_syscall = "0.6.0"
+```
+
+### Full ISO Rebuild with Cranelift - 2026-01-06
+
+**Build Script:** `build-cranelift-iso.sh`
+
+A comprehensive build script was created to rebuild the entire ISO with Cranelift-compiled userspace.
+
+**Components Built:**
+| Component | Size | Status |
+|-----------|------|--------|
+| Kernel (aarch64) | 8.3 MB | ✅ |
+| relibc | 16 MB | ✅ |
+| Userspace binaries | 46+ | ✅ |
+
+**Build Command:**
+```bash
+./build-cranelift-iso.sh aarch64 server all
+```
+
+**What it does:**
+1. Creates custom target specs for Cranelift (max-atomic-width: 64)
+2. Builds relibc with Cranelift backend
+3. Sets up sysroot with CRT objects and unwind stubs
+4. Builds kernel with Cranelift
+5. Builds 46+ userspace drivers/daemons
+6. Injects Cranelift binaries into existing ISO
+
+**Userspace Binaries Built:**
+- Core services: init, logd, randd, zerod, audiod, ipcd, ptyd
+- Network: smolnetd
+- PCI/System: pcid, pcid-spawner, acpid, hwd
+- Storage: ahcid, nvmed, virtio-blkd, ided, lived, ramfs, usbscsid
+- Graphics: vesad, fbcond, fbbootlogd, virtio-gpud, ihdgd
+- USB: xhcid, usbhidd, usbhubd, usbctl
+- Network drivers: e1000d, rtl8139d, rtl8168d, virtio-netd, alxd, ixgbed
+- Other: inputd, redoxerd
+
+**Target Specs:**
+Custom target JSONs with `max-atomic-width: 64` (Cranelift doesn't support 128-bit atomics on aarch64):
+- `tools/aarch64-redox-none.json` - Kernel target
+- `tools/aarch64-unknown-redox-clif.json` - Userspace target
+
+**Sysroot Structure:**
+```
+build/aarch64/cranelift-sysroot/
+├── lib/
+│   ├── libc.a (from relibc)
+│   ├── crt0.o, crti.o, crtn.o
+│   ├── libunwind_stubs.a
+│   └── libpthread.a, libdl.a, librt.a (empty stubs)
+└── include/
+```
+
+**QEMU Testing Notes:**
+UEFI firmware (`edk2-aarch64-code.fd`) not available in Homebrew QEMU 10.2.0.
+Download separately from https://github.com/tianocore/edk2 or use `brew install qemu-efi-aarch64`.
