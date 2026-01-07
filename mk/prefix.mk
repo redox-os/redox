@@ -28,8 +28,12 @@ PREFIX_STRIP=\
 		-exec strip --strip-unneeded {} ';' \
 		2> /dev/null
 
-# Update relibc used for compiling and clean all statically linked recipes
+# Remove prefix builds but retain downloaded binaries
 prefix_clean: | $(FSTOOLS_TAG)
+	rm -rf $(PREFIX)/sysroot $(PREFIX)/*-install
+
+# Remove relibc in sysroot and all statically linked recipes
+static_clean: | $(FSTOOLS_TAG)
 	$(MAKE) c.relibc
 	$(MAKE) c.base,base-initfs,extrautils,kernel,ion,pkgutils,redoxfs
 
