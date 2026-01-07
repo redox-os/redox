@@ -59,6 +59,15 @@ Hybrid build using official ISO base with Cranelift initfs:
 - **llvm-ar/strip** - from Rust toolchain
 - **libm crate** - replaces openlibm
 
+## Critical Build Requirement
+
+The target spec (`aarch64-unknown-redox-clif.json`) MUST have:
+```json
+"position-independent-executables": false
+```
+
+The kernel's ELF loader doesn't support PIE relocation. Without this, binaries jump to address 0x0 on startup.
+
 ## Next Steps
 
 1. Build kernel with Cranelift for fully pure ISO
