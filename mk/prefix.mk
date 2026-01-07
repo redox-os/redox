@@ -29,7 +29,7 @@ PREFIX_STRIP=\
 		2> /dev/null
 
 # Remove prefix builds but retain downloaded binaries
-prefix_clean: | $(FSTOOLS_TAG)
+prefix_clean:
 	rm -rf $(PREFIX)/sysroot $(PREFIX)/*-install
 
 # Remove relibc in sysroot and all statically linked recipes
