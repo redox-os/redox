@@ -20,8 +20,9 @@ Using virtio-9p for direct access to host filesystem on mac!
 - `virtio-9pd` - 9p filesystem driver for host sharing
 - Full boot to login prompt
 
-### What doesn't work:
 - `run-cranelift-redox-x86.sh` works via cranelift-redox-x86-ok.img but is NOT what we want (aarch64)
+- 
+### What doesn't work:
 - `run-cranelift-aarch64-official.sh` with official iso does NOT work
 - DO NOT USE `build/aarch64/server-official.iso` - known to NOT WORK
 - uutils `ls` has localization bug - use `simple-ls` instead
@@ -47,7 +48,16 @@ The new build-cranelift.sh uses:
   1. Build kernel with Cranelift ✅ (already works)
   2. Build all rootfs userspace with Cranelift ❌ (not yet)
   3. Create ISO from scratch ❌ (not yet)
+  
+# Known Issues
 
+  - fbcond crashes when no framebuffer (nographic mode)
+  - virtio-netd panic: MSI-X not implemented for aarch64
+  - 9p not available without explicit QEMU config
+
+  Test Command
+
+  ./run-9p.sh build/aarch64/server-cranelift.iso
 
 Usage
 

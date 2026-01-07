@@ -1,22 +1,21 @@
 #!/bin/bash
-# Run Redox in parallel - interactive mode on different serial socket
+# Run Redox with virtio-9p host filesystem sharing
 set -e
 
-ISO="${1:-build/aarch64/server-cranelift.iso}"
-SHARE="${2:-/tmp/9p-share-$$}"
-SOCK="/tmp/redox-serial-$$.sock"
+echo password | pbcopy
+
+ISO="${1:-build/aarch64/server-cranelift.iso.bak}"
+SHARE="${2:-/tmp/9p-share}"
 
 mkdir -p "$SHARE"
-[ -f "$SHARE/test.txt" ] || echo "Hello from parallel instance $$" > "$SHARE/test.txt"
 
-echo "Starting Redox PARALLEL instance (PID: $$)"
-echo "9p share: $SHARE"
-echo "Serial socket: $SOCK"
+# Create test file if not exists
+[ -f "$SHARE/test.txt" ] || echo "Hello from host filesystem via virtio-9p!" > "$SHARE/test.txt"
+
+echo "Starting Redox with 9p share at: $SHARE"
+echo "Access from Redox: /scheme/9p.hostshare/"
 echo "Press Ctrl-A X to exit QEMU"
 echo
-
-# Clean up socket on exit
-trap "rm -f $SOCK" EXIT
 
 # QEMU optimization flags for faster boot
 ACCEL_OPTS=""
@@ -26,6 +25,7 @@ else
     ACCEL_OPTS="-accel kvm -cpu host -smp 4" 2>/dev/null || ACCEL_OPTS="-smp 4"
 fi
 
+# Note: no ramfb device - it causes resolution menu that blocks serial boot
 qemu-system-aarch64 -M virt $ACCEL_OPTS -m 2G \
     -bios tools/firmware/edk2-aarch64-code.fd \
     -drive file="$ISO",format=raw,id=hd0,if=none \

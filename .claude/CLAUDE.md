@@ -8,6 +8,14 @@ The kernel boots and relibc compiles using <a href="https://github.com/rust-lang
 
 WIP: aarch64 
 
+New builds should be based on WORKING
+build/aarch64/server-cranelift.iso
+If it breaks , restore from backup:
+build/aarch64/server-cranelift.iso.ok.bak
+
+IGNORE 
+build/aarch64/server-official.iso !!!
+
 Using virtio-9p for direct access to host filesystem on mac!
 
 run-cranelift-redox-x86.sh works via cranelift-redox-x86-ok.img but is NOT what we want (aarch64)
@@ -22,16 +30,47 @@ The new build-cranelift.sh uses:
 Usage
 
 # Default aarch64 builds
-./build-cranelift.sh kernel     # Build kernel
-./build-cranelift.sh relibc     # Build relibc
-./build-cranelift.sh drivers    # Build drivers
-./build-cranelift.sh all        # Full build
-./build-cranelift.sh shell      # Enter build shell
-./build-cranelift.sh env        # Show configuration
+/opt/other/redox/build-cranelift.sh kernel     # Build kernel
+.build-cranelift.sh relibc     # Build relibc
+.build-cranelift.sh drivers    # Build drivers
+.build-cranelift.sh all        # Full build
+.build-cranelift.sh shell      # Enter build shell
+.build-cranelift.sh env        # Show configuration
 
 # Legacy x86_64 (use ARCH_x86=1)
 ARCH_x86=1 ./build-cranelift.sh kernel
 ARCH=x86_64 ./build-cranelift.sh kernel
 ./build.sh -X qemu
 
+
+# FUSE is working on this Mac
+redoxfs mount    | ✅ works
+
+ALWAYS make a backup before modifying working iso disk images!
+
+# TODOs
+
+omit credentials while testing (disable redox login: prompt for now)
+
+root:~# echo "write test $(date)" > /scheme/9p.hostshare/write-test.txt
+ion: pipeline execution error: failed to redirect stdout to file '/scheme/9p.hostshare/write-test.txt': I/O error (os error 5)
+
+See STATE.md for current state (may be out of sync, update often but carefully)
+
+
+# FAQ
+
+ The original initfs uses "RedoxFtw" magic, not "RedoxFS\0". 
+ ./build/aarch64/cranelift-initfs/initfs-tools-target/release/redox-initfs-ar --output /tmp/pure-rust-initfs.img 
+
+usually you want to cd into root dir
+cd /opt/other/redox/
+
+# OTHER
+
+Don't push to gitlab upstream, just to the origin fork!
+
+If you currently cannot boot / run a qemu session, just start a parallel one with different SOCK, similar to run-parallel.sh
+
+If fixes work in the iso also apply them to build/aarch64/server-cranelift.qcow2 or use qcow2 directly, but create .bak !
 
