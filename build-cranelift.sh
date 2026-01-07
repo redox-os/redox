@@ -172,12 +172,12 @@ create_target_specs() {
         cat > tools/${TARGET_KERNEL}.json << 'EOF'
 {
     "arch": "aarch64",
-    "data-layout": "e-m:e-i8:8:32-i16:16:32-i64:64-i128:128-n32:64-S128",
+    "data-layout": "e-m:e-p270:32:32-p271:32:32-p272:64:64-i8:8:32-i16:16:32-i64:64-i128:128-n32:64-S128-Fn32",
     "disable-redzone": true,
     "executables": true,
-    "features": "+strict-align,+neon,+fp-armv8",
+    "features": "+v8a,+strict-align,+neon,+fp-armv8",
     "linker": "rust-lld",
-    "linker-flavor": "ld.lld",
+    "linker-flavor": "gnu-lld",
     "llvm-target": "aarch64-unknown-none",
     "max-atomic-width": 64,
     "panic-strategy": "abort",
@@ -193,10 +193,10 @@ EOF
     "data-layout": "e-m:e-p270:32:32-p271:32:32-p272:64:64-i8:8:32-i16:16:32-i64:64-i128:128-n32:64-S128-Fn32",
     "env": "relibc",
     "executables": true,
-    "features": "+strict-align,+neon,+fp-armv8",
+    "features": "+v8a,+strict-align,+neon,+fp-armv8",
     "has-rpath": true,
     "linker": "rust-lld",
-    "linker-flavor": "ld.lld",
+    "linker-flavor": "gnu-lld",
     "llvm-target": "aarch64-unknown-redox",
     "max-atomic-width": 64,
     "os": "redox",
@@ -398,14 +398,20 @@ build_drivers() {
 
     export CARGO_TARGET_$(echo ${TARGET_USER}-clif | tr '[:lower:]-' '[:upper:]_')_LINKER=rust-lld
 
-    # Core drivers to build
+    # Core drivers to build (initfs + base)
+    # Note: nulld is a symlink to zerod (same binary, different name)
     local drivers=(
-        init audiod ipcd ptyd logd randd zerod
-        pcid pcid-spawner acpid
-        vesad virtio-blkd virtio-9pd
+        # Core services
+        init audiod ipcd ptyd logd randd zerod ramfs rtcd
+        # PCI and hardware
+        pcid pcid-spawner acpid hwd
+        # Storage
+        nvmed virtio-blkd virtio-9pd lived
+        # Graphics
+        vesad fbcond fbbootlogd virtio-gpud inputd
     )
 
-    RUSTFLAGS="$RUSTFLAGS -L $sysroot/lib -Cpanic=abort" \
+    RUSTFLAGS="$RUSTFLAGS -L $sysroot/lib -Cpanic=abort -Clink-arg=-z -Clink-arg=muldefs" \
     cargo build \
         --target ${TARGET_USER}-clif.json \
         --release \
