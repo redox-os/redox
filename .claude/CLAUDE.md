@@ -192,3 +192,31 @@ qemu-system-aarch64 -M virt -cpu cortex-a72 -m 2G \
 2. Access from Redox: `/scheme/9p.hostshare/test.txt`
 
 This enables rapid testing without rebuilding the ISO - just modify files on the host!
+
+### Cranelift Userspace Binary Execution - SUCCESS! - 2026-01-07
+
+Successfully executed a Cranelift-compiled userspace binary (`simple-ls`) on Redox aarch64!
+
+**Build Command:**
+```bash
+cd recipes/core/base/source
+./build-simple-ls.sh  # Builds and places ls at /tmp/9p-share/ls
+```
+
+**Boot Log showing ls execution:**
+```
+init: running: ls /scheme/
+event  memory  pipe  sys  time  kernel.dtb  kernel.acpi  debug  irq  kernel.proc  serio  initfs  proc  null  zero  rand  log  logging  input  fbbootlog  disk.live  acpi  pci  disk.pci-00-00-02.0_virtio_blk  9p.hostshare
+```
+
+**Key Fix - 9p Read Buffer:**
+The virtio-9p driver's read count must be limited to fit the response in msize:
+```rust
+// In client.rs read():
+let max_data = self.msize.saturating_sub(7 + 4);  // header + data_len field
+let count = count.min(max_data);
+```
+
+**simple-ls location:** `recipes/core/base/source/simple-ls/`
+
+This completes the proof that the entire Rust toolchain (Cranelift codegen) can produce working Redox userspace binaries!
