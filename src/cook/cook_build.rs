@@ -385,6 +385,10 @@ pub fn build(
             if offline_mode {
                 command.env("COOKBOOK_OFFLINE", "1");
             }
+            // Pass through Cranelift environment variable if set
+            if let Ok(cranelift) = std::env::var("COOKBOOK_CRANELIFT") {
+                command.env("COOKBOOK_CRANELIFT", cranelift);
+            }
             command
         };
 

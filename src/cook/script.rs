@@ -18,12 +18,22 @@ function DYNAMIC_INIT {
 
     [ -z "${COOKBOOK_VERBOSE}" ] || echo "DEBUG: Program is being compiled dynamically."
 
-    COOKBOOK_CONFIGURE_FLAGS=(
-        --host="${GNU_TARGET}"
-        --prefix="/usr"
-        --enable-shared
-        --disable-static
-    )
+    # For native builds, don't set --host to avoid looking for prefixed compilers
+    if [ "${TARGET}" = "${COOKBOOK_HOST_TARGET}" ]
+    then
+        COOKBOOK_CONFIGURE_FLAGS=(
+            --prefix="/usr"
+            --enable-shared
+            --disable-static
+        )
+    else
+        COOKBOOK_CONFIGURE_FLAGS=(
+            --host="${GNU_TARGET}"
+            --prefix="/usr"
+            --enable-shared
+            --disable-static
+        )
+    fi
 
     COOKBOOK_CMAKE_FLAGS=(
         -DBUILD_SHARED_LIBS=True
@@ -41,7 +51,8 @@ function DYNAMIC_INIT {
 
     # TODO: check paths for spaces
     export LDFLAGS="-Wl,-rpath-link,${COOKBOOK_SYSROOT}/lib -L${COOKBOOK_SYSROOT}/lib"
-    export RUSTFLAGS="-C target-feature=-crt-static"
+    # Append to RUSTFLAGS to preserve Cranelift backend if set
+    export RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-C target-feature=-crt-static"
     export COOKBOOK_DYNAMIC=1
 }
 
@@ -50,12 +61,22 @@ function DYNAMIC_STATIC_INIT {
     DYNAMIC_INIT
     if [ "${COOKBOOK_DYNAMIC}" == "1" ]
     then
-        COOKBOOK_CONFIGURE_FLAGS=(
-            --host="${GNU_TARGET}"
-            --prefix="/usr"
-            --enable-shared
-            --enable-static
-        )
+        # For native builds, don't set --host to avoid looking for prefixed compilers
+        if [ "${TARGET}" = "${COOKBOOK_HOST_TARGET}" ]
+        then
+            COOKBOOK_CONFIGURE_FLAGS=(
+                --prefix="/usr"
+                --enable-shared
+                --enable-static
+            )
+        else
+            COOKBOOK_CONFIGURE_FLAGS=(
+                --host="${GNU_TARGET}"
+                --prefix="/usr"
+                --enable-shared
+                --enable-static
+            )
+        fi
 
         COOKBOOK_CMAKE_FLAGS=(
             -DBUILD_SHARED_LIBS=True
@@ -131,6 +152,18 @@ build_flags+=" --offline"
 install_flags+=" --offline"
 fi
 
+# Cranelift codegen backend support
+# Set COOKBOOK_CRANELIFT=1 to use Cranelift instead of LLVM
+if [ ! -z "${COOKBOOK_CRANELIFT}" ]
+then
+    [ -z "${COOKBOOK_VERBOSE}" ] || echo "DEBUG: Using Cranelift codegen backend"
+    # Add build-std flags for rebuilding std library with Cranelift
+    build_flags+=" -Z build-std=core,alloc"
+    build_flags+=" -Zbuild-std-features=compiler-builtins-mem,compiler_builtins/no-f16-f128"
+    install_flags+=" -Z build-std=core,alloc"
+    install_flags+=" -Zbuild-std-features=compiler-builtins-mem,compiler_builtins/no-f16-f128"
+fi
+
 # cargo template
 COOKBOOK_CARGO="${COOKBOOK_REDOXER}"
 function cookbook_cargo {
@@ -177,12 +210,22 @@ function cookbook_cargo_packages {
 
 # configure template
 COOKBOOK_CONFIGURE="${COOKBOOK_SOURCE}/configure"
-COOKBOOK_CONFIGURE_FLAGS=(
-    --host="${GNU_TARGET}"
-    --prefix="/usr"
-    --disable-shared
-    --enable-static
-)
+# For native builds, don't set --host to avoid looking for prefixed compilers
+if [ "${TARGET}" = "${COOKBOOK_HOST_TARGET}" ]
+then
+    COOKBOOK_CONFIGURE_FLAGS=(
+        --prefix="/usr"
+        --disable-shared
+        --enable-static
+    )
+else
+    COOKBOOK_CONFIGURE_FLAGS=(
+        --host="${GNU_TARGET}"
+        --prefix="/usr"
+        --disable-shared
+        --enable-static
+    )
+fi
 COOKBOOK_MAKE="make"
 
 function cookbook_configure {
