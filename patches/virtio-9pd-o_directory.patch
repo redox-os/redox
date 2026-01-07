@@ -1,0 +1,18 @@
+diff --git a/drivers/fs/virtio-9pd/src/scheme.rs b/drivers/fs/virtio-9pd/src/scheme.rs
+index 8aa5c292..2846be7a 100644
+--- a/drivers/fs/virtio-9pd/src/scheme.rs
++++ b/drivers/fs/virtio-9pd/src/scheme.rs
+@@ -168,12 +168,8 @@ impl SchemeSync for Scheme9p<'_> {
+         };
+ 
+         // Check directory flag consistency
+-        // Allow O_DIRECTORY on regular files if O_STAT is set (for stat operations)
++        // Don't reject O_DIRECTORY on files - Redox coreutils use it for stat
+         let is_dir = qid.is_dir();
+-        if flags & O_DIRECTORY != 0 && !is_dir && flags & O_STAT == 0 {
+-            let _ = self.client.clunk(fid);
+-            return Err(Error::new(ENOTDIR));
+-        }
+         if flags & O_STAT == 0 && flags & O_DIRECTORY == 0 && is_dir {
+             let _ = self.client.clunk(fid);
+             return Err(Error::new(EISDIR));
