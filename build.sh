@@ -49,7 +49,9 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
     exit
 fi
 
-defaultarch="x86_64"
+# Default to aarch64 (ARM64) - our target architecture
+# Use -X or ARCH_x86=1 for legacy x86_64 builds
+defaultarch="aarch64"
 defaultname="desktop"
 ARCH=""
 CONFIG_NAME=""
@@ -89,8 +91,13 @@ if [ -z "$config_name" ] && [ -n "$FILESYSTEM_CONFIG" ]; then
     CONFIG_NAME=`basename "$FILESYSTEM_CONFIG" .toml`
 fi
 
+# Support ARCH_x86 environment variable for legacy x86_64 builds
 if [ -z "$ARCH" ]; then
-    ARCH="$defaultarch"
+    if [ -n "$ARCH_x86" ]; then
+        ARCH="x86_64"
+    else
+        ARCH="$defaultarch"
+    fi
 fi
 
 if [ -z "$CONFIG_NAME" ]; then

@@ -5,8 +5,14 @@
 HOST_ARCH?=$(shell uname -m)
 
 # Configuration
-## Architecture to build Redox for (aarch64, i586, or x86_64). Defaults to a host one
-ARCH?=$(HOST_ARCH)
+## Architecture to build Redox for (aarch64 [default], i586, or x86_64)
+## NOTE: aarch64 is the default target architecture for Redox Cranelift builds
+## Use ARCH_x86=1 or ARCH=x86_64 for legacy x86_64 builds
+ifdef ARCH_x86
+ARCH?=x86_64
+else
+ARCH?=aarch64
+endif
 ## Sub-device type for aarch64 if needed
 BOARD?=
 ## Enable to use binary prefix (much faster)

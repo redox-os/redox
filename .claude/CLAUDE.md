@@ -1,10 +1,10 @@
 # Redox OS Development Notes
 
-## Cranelift Backend Experiment - SUCCESS! 🎉
+## Cranelift Backend Experiment - SUCCESS!
 
-### Breakthrough: Kernel builds with Cranelift!
+### Architecture: aarch64 is the default!
 
-On 2026-01-04, we successfully compiled the Redox kernel using Cranelift instead of LLVM.
+All builds default to **aarch64** (ARM64). For legacy x86_64 builds, use `ARCH_x86=1`.
 
 **Fork with fixes:** https://github.com/pannous/rustc_codegen_cranelift
 
@@ -20,7 +20,32 @@ On 2026-01-04, we successfully compiled the Redox kernel using Cranelift instead
 3. **Fixed kernel Intel syntax** (commit ff9ac52c in kernel repo)
    - Changed `int $3` to `int 3` for Cranelift compatibility
 
-### Working Build Command
+### Pure Rust Toolchain
+
+The build system now uses a pure Rust toolchain where possible:
+
+| Component | Replacement |
+|-----------|-------------|
+| LLVM | Cranelift codegen backend |
+| openlibm (C) | libm crate (Rust) via math_libm.rs |
+| GNU ld/gcc | rust-lld linker |
+| ar, strip | llvm-ar, llvm-strip from Rust |
+
+### Working Build Commands
+
+```bash
+# Default: aarch64 builds
+./build-cranelift.sh kernel     # Build aarch64 kernel
+./build-cranelift.sh relibc     # Build aarch64 relibc
+./build-cranelift.sh drivers    # Build aarch64 drivers
+./build-cranelift.sh all        # Full aarch64 build
+./build-cranelift.sh shell      # Enter Cranelift build shell
+
+# Legacy x86_64 builds (use ARCH_x86=1)
+ARCH_x86=1 ./build-cranelift.sh kernel   # x86_64 kernel
+```
+
+### Direct Builds (without cookbook)
 
 ```bash
 cd recipes/core/kernel/source
@@ -29,17 +54,10 @@ cd recipes/core/kernel/source
 DYLD_LIBRARY_PATH=/Users/me/.rustup/toolchains/nightly-2026-01-02-aarch64-apple-darwin/lib \
 RUSTFLAGS="-Zcodegen-backend=/opt/other/rustc_codegen_cranelift/dist/lib/librustc_codegen_cranelift.dylib" \
 cargo +nightly-2026-01-02 build \
-  --target x86_64-unknown-none \
+  --target aarch64-unknown-none \
   --release \
   -Z build-std=core,alloc \
   -Zbuild-std-features=compiler-builtins-mem,compiler_builtins/no-f16-f128
-```
-
-### Result
-
-```
-kernel: ELF 64-bit LSB pie executable, x86-64, version 1 (SYSV)
-Size: 4.4 MB
 ```
 
 ### Build Cranelift Backend
@@ -50,131 +68,15 @@ cd /opt/other/rustc_codegen_cranelift
 ./y.sh build --sysroot clif
 ```
 
-### relibc Status
-
-**Blocker:** Cranelift doesn't support variadic functions yet.
-
-relibc defines many variadic C functions (`printf`, `scanf`, `syslog`, etc.):
-```rust
-pub unsafe extern "C" fn syslog(priority: c_int, message: *const c_char, mut __valist: ...) {
-```
-
-Error: `Defining variadic functions is not yet supported by Cranelift`
-
-VaList API was updated for nightly-2026-01-02 (commit f339c31f in relibc source).
-
-### Mac (aarch64) Testing
-
-Cranelift works excellently on Mac for normal Rust code:
-
-| Feature | Status |
-|---------|--------|
-| std library | ✅ |
-| Inline asm | ✅ |
-| global_asm + sym | ✅ |
-| Threading, Arc, Mutex | ✅ |
-| Serde + serde_json | ✅ |
-| Tokio async runtime | ✅ |
-
-The only blocker is *defining* variadic functions (relibc needs this).
-
-### Next Steps
-
-- Monitor Cranelift variadic function support
-- Test kernel functionality in QEMU
-- Contribute `sym` operand support upstream
-
-### Historical Context
-
-Initial blockers (now resolved):
-- `sym` operands in inline asm - **FIXED** in fork
-- `int $3` vs `int 3` syntax - **FIXED** in kernel
-- Duplicate wrapper symbols - **FIXED** in fork
-
-### QEMU Boot Test - SUCCESS! 🎉
-
-On 2026-01-04, the Cranelift-compiled kernel was successfully booted in QEMU.
-
-**Boot Log Highlights:**
-```
-kernel: 8/8 MiB (loaded Cranelift kernel)
-kernel::arch::x86_shared::start:INFO -- Redox OS starting...
-kernel::startup::memory:INFO -- Memory: 1979 MB
-Framebuffer 1280x800 stride 1280 at 80000000
-vesad: 1280x800 stride 1280 at 0x80000000
-ahcid: SATA QEMU HARDDISK 512 MB detected
-redox login: (reached login prompt!)
-```
-
-**Critical Fix for Boot:**
-The linker script must be explicitly passed via RUSTFLAGS:
-```bash
-RUSTFLAGS="-Zcodegen-backend=.../librustc_codegen_cranelift.dylib \
-           -C relocation-model=static \
-           -C link-arg=-Tlinkers/x86_64.ld"
-```
-
-Without the linker script, the kernel had no .text section and entry point was 0x0.
-
-**Tested Configuration:**
-- QEMU x86_64 with UEFI (edk2-x86_64-code.fd)
-- 2GB RAM, 2 CPUs, Q35 machine
-- Disk: Pre-built Redox server image with kernel replaced
-
-### relibc Compiled with Cranelift - SUCCESS! 🎉
+### relibc Compiled with Cranelift - SUCCESS!
 
 On 2026-01-04, relibc (Redox's C library) was compiled using Cranelift.
 
-**Key Change:** Your commit `a86211e4` added variadic function support!
+**Key Change:** Commit `a86211e4` added variadic function support!
 
-**Build Command:**
-```bash
-cd recipes/core/relibc/source
+### virtio-9p Host Filesystem Sharing - SUCCESS!
 
-DYLD_LIBRARY_PATH=~/.rustup/toolchains/nightly-2026-01-02-aarch64-apple-darwin/lib \
-RUSTFLAGS="-Zcodegen-backend=/opt/other/rustc_codegen_cranelift/dist/lib/librustc_codegen_cranelift.dylib" \
-cargo +nightly-2026-01-02 build \
-  --target x86_64-unknown-redox \
-  --release \
-  -Z build-std=core,alloc \
-  -Zbuild-std-features=compiler_builtins/no-f16-f128
-```
-
-**Result:**
-```
-librelibc.a: 16 MB
-```
-
-This means both the kernel AND the C library can now be compiled with a pure Rust toolchain!
-
-### virtio-9p Host Filesystem Sharing - SUCCESS! 🎉
-
-On 2026-01-06, successfully implemented virtio-9p filesystem sharing between QEMU host and Redox guest!
-
-**The Problem:**
-Initial implementation hung on the second virtio queue transaction because `futures::executor::block_on()`
-doesn't work with virtio's async completion mechanism without a proper event loop to handle interrupts.
-
-**The Fix:**
-Replaced `block_on()` with a simple spin-polling function that repeatedly polls the future until ready:
-```rust
-fn spin_poll<F: std::future::Future>(mut future: F) -> F::Output {
-    // Create no-op waker and spin until ready
-    loop {
-        match future.poll(&mut cx) {
-            Poll::Ready(result) => return result,
-            Poll::Pending => core::hint::spin_loop(),
-        }
-    }
-}
-```
-
-**Test Results:**
-```
-test-9p: opening /scheme/9p.hostshare/test.txt
-test-9p: read 42 bytes: Hello from host filesystem via virtio-9p!
-test-9p: SUCCESS!
-```
+On 2026-01-06, successfully implemented virtio-9p filesystem sharing.
 
 **QEMU Command with 9p Sharing:**
 ```bash
@@ -191,32 +93,28 @@ qemu-system-aarch64 -M virt -cpu cortex-a72 -m 2G \
 1. Create files on host: `echo "test" > /tmp/9p-share/test.txt`
 2. Access from Redox: `/scheme/9p.hostshare/test.txt`
 
-This enables rapid testing without rebuilding the ISO - just modify files on the host!
-
 ### Cranelift Userspace Binary Execution - SUCCESS! - 2026-01-07
 
 Successfully executed a Cranelift-compiled userspace binary (`simple-ls`) on Redox aarch64!
 
-**Build Command:**
+### Known Limitations
+
+1. **aarch64 128-bit atomics**: Cranelift has max-atomic-width=64 for aarch64
+2. **macOS host builds**: redoxer overrides CC; use PREFIX_BINARY=1
+
+### Architecture Naming Convention
+
+- **Default**: aarch64 (no suffix needed)
+- **Legacy**: x86_64 (use `_x86` suffix or `ARCH_x86=1`)
+
+Files and targets specific to x86_64 should be marked with `_x86` suffix.
+
+### Pure Rust Math Library
+
+The `contrib/pure-rust/math_libm.rs` file provides C-compatible exports wrapping the Rust `libm` crate, replacing openlibm (C).
+
+To integrate into relibc:
 ```bash
-cd recipes/core/base/source
-./build-simple-ls.sh  # Builds and places ls at /tmp/9p-share/ls
+cp contrib/pure-rust/math_libm.rs recipes/core/relibc/source/src/
+# Add: mod math_libm; to lib.rs
 ```
-
-**Boot Log showing ls execution:**
-```
-init: running: ls /scheme/
-event  memory  pipe  sys  time  kernel.dtb  kernel.acpi  debug  irq  kernel.proc  serio  initfs  proc  null  zero  rand  log  logging  input  fbbootlog  disk.live  acpi  pci  disk.pci-00-00-02.0_virtio_blk  9p.hostshare
-```
-
-**Key Fix - 9p Read Buffer:**
-The virtio-9p driver's read count must be limited to fit the response in msize:
-```rust
-// In client.rs read():
-let max_data = self.msize.saturating_sub(7 + 4);  // header + data_len field
-let count = count.min(max_data);
-```
-
-**simple-ls location:** `recipes/core/base/source/simple-ls/`
-
-This completes the proof that the entire Rust toolchain (Cranelift codegen) can produce working Redox userspace binaries!
