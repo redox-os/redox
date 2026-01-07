@@ -26,7 +26,7 @@ function recipe_build {
         --disable-rs232 \
         --disable-realdevice \
         --disable-midi
-    "$REDOX_MAKE" -j"$($NPROC)"
+    "$REDOX_MAKE" -j"$COOKBOOK_MAKE_JOBS"
     skip=1
 }
 
