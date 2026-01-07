@@ -10,6 +10,10 @@ The kernel boots and relibc compiles using <a href="https://github.com/rust-lang
 
 Using virtio-9p for direct access to host filesystem on mac!
 
+```
+./run-9p.sh
+```  
+
 ### What works:
 - **server-cranelift.iso** - boots, `ls /` works, 9p host share works!
 - `simple-ls` - pure Rust ls compiled with Cranelift
@@ -27,6 +31,23 @@ The new build-cranelift.sh uses:
 - rust-lld - linker (no GCC)
 - llvm-ar/strip - from Rust toolchain
 - libm crate - contrib/pure-rust/math_libm.rs replaces openlibm
+
+⏺ It's a hybrid:
+
+  | Component         | Source                                               |
+  |-------------------|------------------------------------------------------|
+  | ISO base          | Official Redox build system (server config)          |
+  | Kernel            | Official (LLVM-compiled)                             |
+  | initfs            | Our Cranelift build (simple-ls, virtio-9pd, drivers) |
+  | rootfs (/usr/bin) | Official (uutils has bugs)                           |
+
+  The server-cranelift.iso started as the official build, then we injected our Cranelift-built initfs into it.
+
+  For a fully pure Rust aarch64 build, we'd still need to:
+  1. Build kernel with Cranelift ✅ (already works)
+  2. Build all rootfs userspace with Cranelift ❌ (not yet)
+  3. Create ISO from scratch ❌ (not yet)
+
 
 Usage
 
