@@ -10,11 +10,12 @@ WIP: aarch64
 
 New builds should be based on WORKING
 build/aarch64/server-cranelift.iso
-If it breaks , restore from backup:
+If it breaks restore from backup:
+build/aarch64/server-cranelift.iso.bak
+If it STILL breaks restore from last good backup:
 build/aarch64/server-cranelift.iso.ok.bak
 
-IGNORE 
-build/aarch64/server-official.iso !!!
+IGNORE build/aarch64/server-official.iso !!!
 
 Using virtio-9p for direct access to host filesystem on mac!
 
@@ -65,6 +66,16 @@ See STATE.md for current state (may be out of sync, update often but carefully)
 
 usually you want to cd into root dir
 cd /opt/other/redox/
+
+# QEMU Notes
+
+HVF acceleration crashes aarch64 Redox! Use emulated CPU instead:
+- ❌ `-accel hvf -cpu host` causes "Lacks grant" crashes in userspace
+- ❌ `-accel hvf -cpu host` + `highmem=off` - flaky, sometimes works
+- ❌ `-smp 4` with HVF - crashes (kernel only sees 1 CPU anyway)
+- ✅ `-cpu cortex-a72` works reliably (slower but stable)
+- run-backup.sh uses cortex-a72 - NEVER MODIFY IT (our fallback config!)
+- Root cause: likely exception/memory handling in kernel under HVF
 
 # OTHER
 
