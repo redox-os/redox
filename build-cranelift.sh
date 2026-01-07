@@ -287,9 +287,11 @@ build_kernel() {
 
     local kernel_rustflags="$RUSTFLAGS"
 
-    # x86_64 needs linker script
+    # All architectures need linker script
     if [ "$ARCH" = "x86_64" ]; then
         kernel_rustflags="$kernel_rustflags -C relocation-model=static -C link-arg=-Tlinkers/x86_64.ld"
+    elif [ "$ARCH" = "aarch64" ]; then
+        kernel_rustflags="$kernel_rustflags -C relocation-model=static -C link-arg=-Tlinkers/aarch64.ld"
     fi
 
     RUSTFLAGS="$kernel_rustflags" \
