@@ -376,6 +376,11 @@ build_drivers() {
 
     cd recipes/core/base/source
 
+    # Apply patches
+    for patch in "$SCRIPT_DIR/patches/"*.patch; do
+        [ -f "$patch" ] && git apply --check "$patch" 2>/dev/null && git apply "$patch" && log "Applied $(basename $patch)"
+    done
+
     # Copy target spec
     cp "$SCRIPT_DIR/tools/${TARGET_USER}-clif.json" .
 
@@ -409,6 +414,8 @@ build_drivers() {
         nvmed virtio-blkd virtio-9pd lived
         # Graphics
         vesad fbcond fbbootlogd virtio-gpud inputd
+        # Test utilities
+        test-9p
     )
 
     RUSTFLAGS="$RUSTFLAGS -L $sysroot/lib -Cpanic=abort -Clink-arg=-z -Clink-arg=muldefs" \
