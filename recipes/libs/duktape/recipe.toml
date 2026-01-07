@@ -9,7 +9,7 @@ rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 
 sed -i "s/= gcc/= ${TARGET}-gcc/g" Makefile.cmdline
 
-"${COOKBOOK_MAKE}" -f Makefile.cmdline -j"$($NPROC)"
+"${COOKBOOK_MAKE}" -f Makefile.cmdline -j"$COOKBOOK_MAKE_JOBS"
 
 mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
 cp ./duk "${COOKBOOK_STAGE}/usr/bin/duk"
