@@ -11,7 +11,6 @@ NIGHTLY="nightly-2026-01-02"
 STRIP="$HOME/.rustup/toolchains/${NIGHTLY}-aarch64-apple-darwin/lib/rustlib/aarch64-apple-darwin/bin/llvm-strip"
 
 # Source and target paths
-BASE_ISO="build/aarch64/server-official.iso"
 OUTPUT_ISO="build/aarch64/pure-rust.iso"
 INITFS_DIR="build/aarch64/pure-rust-initfs"
 KERNEL_SRC="recipes/core/kernel/source/target/aarch64-unknown-none/release/kernel"
@@ -90,19 +89,14 @@ create_initfs_image() {
 inject_into_iso() {
     log "Creating pure Rust ISO"
 
-    # The server-cranelift.iso already has all Cranelift components
-    # Just copy it as the output
-    CRANELIFT_ISO="build/aarch64/server-cranelift.iso"
+    # Use pure-rust.WORKS.iso as the known-good pure Rust base
+    PURE_RUST_BASE="build/aarch64/pure-rust.WORKS.iso"
 
-    if [[ -f "$CRANELIFT_ISO" ]]; then
-        cp "$CRANELIFT_ISO" "$OUTPUT_ISO"
-        success "Pure Rust ISO created: $OUTPUT_ISO (from $CRANELIFT_ISO)"
-    elif [[ -f "$BASE_ISO" ]]; then
-        echo "Warning: Using base ISO without injection (FUSE mount not working)"
-        cp "$BASE_ISO" "$OUTPUT_ISO"
-        success "Base ISO copied: $OUTPUT_ISO"
+    if [[ -f "$PURE_RUST_BASE" ]]; then
+        cp "$PURE_RUST_BASE" "$OUTPUT_ISO"
+        success "Pure Rust ISO created: $OUTPUT_ISO (from $PURE_RUST_BASE)"
     else
-        error "No suitable ISO found"
+        error "No pure-rust.WORKS.iso found - cannot build without pure Rust base"
     fi
 }
 
