@@ -42,6 +42,7 @@ schemes = [
   "null",
   "zero",
   "log",
+  "tmp",
   # Network schemes
   "ip",
   "icmp",
@@ -231,10 +232,14 @@ directory = true
 mode = 0o755
 
 [[files]]
+path = "/tmp"
+data = "/scheme/tmp"
+symlink = true
+
+[[files]]
 path = "/var/tmp"
-data = ""
-directory = true
-mode = 0o1777
+data = "/scheme/tmp"
+symlink = true
 
 # User settings
 [users.root]
