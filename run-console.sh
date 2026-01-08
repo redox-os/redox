@@ -6,8 +6,11 @@ echo password | pbcopy
 cd "$(dirname "$0")"
 ROOT="$(pwd)"
 
-QCOW2="${1:-$ROOT/build/aarch64/dev.qcow2.works}"
-BASE_ISO="$ROOT/build/aarch64/pure-rust-works.iso"
+# QCOW2="${1:-$ROOT/build/aarch64/dev.qcow2.works}"
+# BASE_ISO="$ROOT/build/aarch64/pure-rust-works.iso"
+QCOW2="${1:-$ROOT/build/aarch64/dev.qcow2}"
+BASE_ISO="$ROOT/build/aarch64/pure-rust.iso"
+
 SHARE="${2:-$ROOT/share/}"
 
 echo "Using $BASE_ISO with snapshot via qcow2: $QCOW2"

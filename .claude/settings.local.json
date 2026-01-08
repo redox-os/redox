@@ -1,4 +1,15 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(qemu-system-aarch64:*)",
+      "Bash(ls:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(cp:*)",
+      "Bash(qemu-img rebase:*)",
+      "Bash(./snapshot.sh:*)"
+    ]
+  },
   "hooks": {
     "PreToolUse": [
       {

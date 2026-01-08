@@ -1,0 +1,27 @@
+HVF instruction cache fix for aarch64
+
+This patch adds instruction cache synchronization after mapping executable
+pages, fixing crashes when running under Apple HVF (Hypervisor.framework).
+
+Root cause: ARM64 has separate instruction and data caches. When code is
+loaded into memory via the data cache, the instruction cache may contain
+stale data. TCG emulation doesn't have real caches, but HVF uses actual
+Apple Silicon caches, exposing this bug.
+
+Fix: Call dc cvau (data cache clean) and ic ivau (instruction cache
+invalidate) after mapping executable pages.
+
+Files changed:
+- rmm/src/arch/mod.rs - Added sync_icache() to Arch trait (default no-op)
+- rmm/src/arch/aarch64.rs - Implemented sync_icache() with dc cvau + ic ivau
+- src/context/memory.rs - Call sync_icache() in mmap() and mprotect() for PROT_EXEC
+
+To test:
+1. Rebuild kernel with: ./build-cranelift.sh kernel
+2. Rebuild ISO with new kernel
+3. Test with: qemu-system-aarch64 -M virt -accel hvf -cpu host ...
+
+If HVF still crashes, the issue may also require icache sync in:
+- Dynamic linker (ld_so) after relocations
+- Signal trampoline setup
+- Any JIT or runtime code generation

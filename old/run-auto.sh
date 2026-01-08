@@ -17,18 +17,18 @@ echo
 # -accel hvf: hardware virtualization on macOS (much faster)
 # -cpu host: use native CPU features with hvf
 # -smp 4: multiple cores for parallel init
-ACCEL_OPTS=""
-if [ "$(uname)" = "Darwin" ]; then
-    ACCEL_OPTS="-accel hvf -cpu host -smp 4"
-else
-    ACCEL_OPTS="-accel kvm -cpu host -smp 4" 2>/dev/null || ACCEL_OPTS="-smp 4"
-fi
+
+# CPU="-cpu cortex-a72"  # WORKS!
+CPU="-accel tcg,thread=multi -cpu cortex-a72 -smp 4" # WORKS!
+# CPU="-accel hvf -cpu max"  # boots but breaks later on arrow keys?
+# ACCEL_OPTS="-accel hvf -cpu host -smp 4" BREAKS!!
+
 
 # Check if expect is available
 if command -v expect &>/dev/null; then
     expect -c "
         set timeout -1
-        spawn qemu-system-aarch64 -M virt $ACCEL_OPTS -m 2G \
+        spawn qemu-system-aarch64 -M virt $CPU -m 2G \
             -bios tools/firmware/edk2-aarch64-code.fd \
             -drive file=$ISO,format=raw,id=hd0,if=none \
             -device virtio-blk-pci,drive=hd0 \
@@ -47,7 +47,7 @@ if command -v expect &>/dev/null; then
     "
 else
     echo "Note: 'expect' not found - manual login required (root/password)"
-    exec qemu-system-aarch64 -M virt $ACCEL_OPTS -m 2G \
+    exec qemu-system-aarch64 -M virt $CPU -m 2G \
         -bios tools/firmware/edk2-aarch64-code.fd \
         -drive file="$ISO",format=raw,id=hd0,if=none \
         -device virtio-blk-pci,drive=hd0 \

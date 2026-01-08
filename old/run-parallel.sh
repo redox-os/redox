@@ -1,6 +1,7 @@
 #!/bin/bash
 # Run Redox in parallel - interactive mode on different serial socket
 set -e
+echo password | pbcopy
 
 ISO="${1:-build/aarch64/server-cranelift.iso}"
 SHARE="${2:-/tmp/9p-share-$$}"
@@ -16,17 +17,13 @@ echo "Press Ctrl-A X to exit QEMU"
 echo
 
 # Clean up socket on exit
-trap "rm -f $SOCK" EXIT
+# trap "rm -f $SOCK" EXIT
 
 # QEMU optimization flags for faster boot
-ACCEL_OPTS=""
-if [ "$(uname)" = "Darwin" ]; then
-    ACCEL_OPTS="-accel hvf -cpu host -smp 4"
-else
-    ACCEL_OPTS="-accel kvm -cpu host -smp 4" 2>/dev/null || ACCEL_OPTS="-smp 4"
-fi
+CPU="cortex-a72" # WORKS SAFE!
+# CPU="-accel tcg,thread=multi -cpu cortex-a72 -smp 4" # WORKS maybe!
 
-qemu-system-aarch64 -M virt $ACCEL_OPTS -m 2G \
+qemu-system-aarch64 -M virt $CPU -m 2G \
     -bios tools/firmware/edk2-aarch64-code.fd \
     -drive file="$ISO",format=raw,id=hd0,if=none \
     -device virtio-blk-pci,drive=hd0 \

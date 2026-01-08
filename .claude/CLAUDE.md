@@ -8,65 +8,42 @@ The kernel boots and relibc compiles using Cranelift — no C++ make or cmake de
 
 We build ONLY for aarch64! 
 
-New builds should be based on 
-build/aarch64/pure-rust.iso 
-by copying to
-build/aarch64/pure-rust-patch.iso 
+New builds should are based on 
+build/aarch64/pure-rust.iso via qcow2 !
 If it breaks, restore by copying from the backup:
 build/aarch64/pure-rust.WORKS.iso
 
-debug build/aarch64/pure-rust.iso with
-`./run-debug.sh`
+Using virtio-9p ./share for direct access to host filesystem on mac!
 
-Using virtio-9p for direct access to host filesystem on mac!
-
-run-cranelift-redox-x86.sh works via cranelift-redox-x86-ok.img but is NOT what we want (aarch64)
-run-cranelift-aarch64-official.sh with official iso does NOT work! We need to build aarch64 from scratch:
-
-The new build-cranelift.sh uses:
-- Cranelift - codegen backend (no LLVM)
-- rust-lld - linker (no GCC)
-- llvm-ar/strip - from Rust toolchain
-- libm crate - contrib/pure-rust/math_libm.rs replaces openlibm
-
-# Build Scripts
-- `build-cranelift.sh` - Main Cranelift builder (kernel, relibc, drivers, all)
-- `build-pure-rust-iso.sh` - Quick ISO assembly from pre-built binaries
-- `build.sh` - Legacy Makefile wrapper (LLVM toolchain, not used)
-
-## Usage
-```bash
-./build-cranelift.sh kernel   # Build kernel
-./build-cranelift.sh relibc   # Build relibc
-./build-cranelift.sh drivers  # Build drivers
-./build-cranelift.sh all      # Full build
-./build-cranelift.sh shell    # Enter build shell
-```
-
-
-# FUSE is working on this Mac
-redoxfs mount    | ✅ works
-But we want to use direct host file system integration with 9P as often as possible. 
-
-ALWAYS make a backup before modifying working iso disk images!
 
 # Development Workflow
 
 ## Quick Start
+
 ```bash
-./run-dev.sh              # Boot with qcow2 (persistent changes)
-./snapshot.sh save test1  # Save state before experimenting
+./run-dev.sh       # Unix socket Foreground or -s  Boot with qcow2 (persistent changes)
+./run-debug.sh  # GDB TCP (telnet) daemonized
+./snapshot.sh save test1  # Save state via qcow2 before experimenting
 ./snapshot.sh load test1  # Rollback if things break
 ./snapshot.sh reset       # Clean slate from base ISO
 ```
 
 ## Injecting Files into Redox
 
+• ALWAYS inject into pure-rust.iso via qcow2 (see below) NOT via redoxfs 
+• we want to use direct host file system integration ./share with 9P as often as possible. 
+• ALWAYS make a backup before, like this:
+./snapshot.sh save before-feature
+
+NEVER remove old qcow2 !
+Use ./snapshot.sh to handle all patches!
+
+NEW: 9P and/or qcow2
 ### Method 1: 9P Share (Runtime - Fastest)
-Host files in `/tmp/9p-share/` appear at `/scheme/9p.hostshare/` in Redox.
+Host files in /opt/other/redox/share/ appear at /scheme/9p.hostshare/ in Redox.
 ```bash
 # On host:
-cp my-tool /tmp/9p-share/
+cp my-tool /opt/other/redox/share/
 # In Redox:
 /scheme/9p.hostshare/my-tool
 ```
@@ -75,8 +52,7 @@ Good for: Testing binaries, scripts, quick iterations
 ### Method 2: Mount qcow2/ISO (Persistent)
 ```bash
 # Mount the dev qcow2
-build/fstools/bin/redoxfs build/aarch64/dev.qcow2 /tmp/redox-mount &
-sleep 3
+build/fstools/bin/redoxfs build/aarch64/dev.qcow2 /tmp/redox-mount & sleep 3
 # Copy files
 cp my-tool /tmp/redox-mount/usr/bin/
 # Unmount
@@ -100,6 +76,26 @@ cd recipes/core/base/source
 ./build-initfs-cranelift.sh  # Builds all initfs tools
 # Or build individual:
 RUSTFLAGS="..." cargo +nightly build --target aarch64-unknown-redox-clif.json -p my-tool
+```
+
+# Cranelift
+The new build-cranelift.sh uses:
+- Cranelift - codegen backend (no LLVM)
+- rust-lld - linker (no GCC)
+- llvm-ar/strip - from Rust toolchain
+- libm crate - contrib/pure-rust/math_libm.rs replaces openlibm
+
+# Build Scripts
+- `build-cranelift.sh` - Main Cranelift builder (kernel, relibc, drivers, all)
+- `build-pure-rust-iso.sh` - Quick ISO assembly from pre-built binaries ONLY USE WHEN WE CAN'T patch via qcow2
+
+## Usage
+```bash
+./build-cranelift.sh kernel   # Build kernel
+./build-cranelift.sh relibc   # Build relibc
+./build-cranelift.sh drivers  # Build drivers
+./build-cranelift.sh all      # Full build
+./build-cranelift.sh shell    # Enter build shell
 ```
 
 # TODOs
@@ -158,3 +154,8 @@ If fixes work in the iso also apply them to build/aarch64/server-cranelift.qcow2
 
 blindly append all (semi) interesting finds and procedural insights to notes.md ( we may siff through them later )
 whenever you encounter scripts that don't / do work or found some 'missing' files append that to notes.md 
+
+Before and after each Bash command, give a short one-liner comment of what you are planning to achieve and what the result was. 
+
+./snapshot.sh save feature_you_implemented if it works (or wip)
+Always mention the working saved snapshot name in Git commits

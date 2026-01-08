@@ -14,7 +14,7 @@ echo ""
 echo password | pbcopy
 
 ISO="${1:-build/aarch64/pure-rust.iso.ok.DONT_TOUCH.bak}"
-SHARE="${2:-/tmp/9p-backup}"
+SHARE="${2:-/opt/other/redox/share/}"
 
 echo "Starting Redox backup $ISO with 9p share at: $SHARE"
 echo "Access from Redox: /scheme/9p.hostshare/"

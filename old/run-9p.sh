@@ -18,15 +18,16 @@ echo "Press Ctrl-A X to exit QEMU"
 echo
 
 # QEMU optimization flags for faster boot
-ACCEL_OPTS=""
-if [ "$(uname)" = "Darwin" ]; then
-    ACCEL_OPTS="-accel hvf -cpu host -smp 4"
-else
-    ACCEL_OPTS="-accel kvm -cpu host -smp 4" 2>/dev/null || ACCEL_OPTS="-smp 4"
-fi
+CPU="-accel tcg,thread=multi -cpu cortex-a72" # WORKS!
+# CPU="-accel hvf -cpu host" # BREAKS!!
+# CPU="-cpu host" # why not alone?? needs accelerator!
+# CPU="-accel hvf -cpu max"  # boots but breaks later on arrow keys? :
+# kernel::context::memory:DEBUG -- Lacks grant
+# kernel::arch::aarch64::interrupt::exception:ERROR -- FATAL: Not an SVC induced synchronous exception (ty=100100)
+
 
 # Note: no ramfb device - it causes resolution menu that blocks serial boot
-qemu-system-aarch64 -M virt $ACCEL_OPTS -m 2G \
+qemu-system-aarch64 -M virt $CPU -m 2G \
     -bios tools/firmware/edk2-aarch64-code.fd \
     -drive file="$ISO",format=raw,id=hd0,if=none \
     -device virtio-blk-pci,drive=hd0 \

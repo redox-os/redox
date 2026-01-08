@@ -8,7 +8,8 @@ ROOT="$(pwd)"
 INSTANCE="${1:-1}"
 QCOW2="${QCOW2:-$ROOT/build/aarch64/dev.qcow2}"
 BASE_ISO="$ROOT/build/aarch64/pure-rust.iso"
-SHARE="${SHARE:-/tmp/9p-debug-$INSTANCE}"
+SHARE="${SHARE:-$ROOT/share}"
+# SHARE="${SHARE:-$ROOT/share-$INSTANCE}" # once we share more to avoid data corruption on parallel access!
 
 # Create qcow2 from base ISO if it doesn't exist
 if [[ ! -f "$QCOW2" ]]; then
