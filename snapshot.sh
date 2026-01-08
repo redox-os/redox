@@ -75,7 +75,13 @@ case "$1" in
         fi
         ;;
     nuke)
-        echo "Recreating qcow2 from base ISO (all snapshots will be lost)..."
+        echo "⚠️ ⚡️ 🚨 ⚡︎ ⚠️ ⚡️ 🚨 ⚡︎"
+        echo "Recreating qcow2 from base ISO (ALL SNAPSHOTS WILL BE LOST)..."
+read -p "Are you sure? Type 'yes' to continue: " CONFIRM
+if [[ "$CONFIRM" != "yes" ]]; then
+    echo "Aborted."
+    exit 1
+fi
         rm -f "$QCOW2" "$STATEFILE"
         qemu-img create -f qcow2 -b "$BASE_ISO" -F raw "$QCOW2"
         echo "(iso)" > "$STATEFILE"

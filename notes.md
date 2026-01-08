@@ -118,6 +118,12 @@ This means both the kernel AND the C library can now be compiled with a pure Rus
 
 ### virtio-9p Host Filesystem Sharing - SUCCESS! 🎉
 
+### macOS NBD Limitation (qemu-nbd)
+
+macOS does not provide a kernel NBD driver, so `qemu-nbd` does not work natively.
+Use the qcow2 -> raw conversion + `redoxfs` workflow instead, or run `qemu-nbd`
+inside a Linux VM if a true NBD device is required.
+
 On 2026-01-06, successfully implemented virtio-9p filesystem sharing between QEMU host and Redox guest!
 
 **The Problem:**
@@ -354,3 +360,10 @@ Committed to recipes/core/base/source submodule.
 Testing blocked: Initfs rebuild produces different image that crashes.
 Need to investigate proper initfs rebuild process.
 
+Added run-utm.sh to boot with UTM-bundled QEMU and virtio-9p share support.
+
+## Symlink feature failed (2026-01-08)
+- Cannot add 'ln -s /scheme/9p.hostshare /root/host' to init.rc
+- Reason: cranelift-initfs/initfs/bin binaries are broken, rebuilding initfs crashes boot
+- redox-initfs-ar requires bootstrap + initfs dir, no way to extract/modify working initfs
+- Workaround: run 'ln -s /scheme/9p.hostshare /root/host' manually after login
