@@ -7,6 +7,7 @@ cd "$(dirname "$0")"
 ROOT="$(pwd)"
 QCOW2="${QCOW2:-$ROOT/build/aarch64/dev.qcow2}"
 BASE_ISO="$ROOT/build/aarch64/pure-rust.iso"
+STATEFILE="${QCOW2}.state"
 
 if [[ ! -f "$QCOW2" ]]; then
     echo "Error: qcow2 not found: $QCOW2"
@@ -18,11 +19,15 @@ case "$1" in
     save|s)
         NAME="${2:-snap-$(date +%H%M%S)}"
         qemu-img snapshot -c "$NAME" "$QCOW2"
+        echo "$NAME" > "$STATEFILE"
         echo "Saved snapshot: $NAME"
         ;;
-    list|l|ls)
+    list|l|ls|status|st)
+        CURRENT="(unknown)"
+        [[ -f "$STATEFILE" ]] && CURRENT="$(cat "$STATEFILE")"
+        echo "Current: $CURRENT"
         echo "Snapshots in $QCOW2:"
-        qemu-img snapshot -l "$QCOW2"
+        qemu-img snapshot -l "$QCOW2" 2>/dev/null || echo "  (none)"
         ;;
     load|restore|r)
         if [[ -z "$2" ]]; then
@@ -32,6 +37,7 @@ case "$1" in
             exit 1
         fi
         qemu-img snapshot -a "$2" "$QCOW2"
+        echo "$2" > "$STATEFILE"
         echo "Restored snapshot: $2"
         ;;
     delete|d|rm)
@@ -46,6 +52,7 @@ case "$1" in
         # Try to load "base" snapshot if it exists, otherwise warn
         if qemu-img snapshot -l "$QCOW2" 2>/dev/null | grep -q "base"; then
             qemu-img snapshot -a "base" "$QCOW2"
+            echo "base" > "$STATEFILE"
             echo "Reset to 'base' snapshot (other snapshots preserved)"
         else
             echo "No 'base' snapshot found. Create one with: $0 save base"
@@ -55,8 +62,9 @@ case "$1" in
         ;;
     nuke)
         echo "Recreating qcow2 from base ISO (all snapshots will be lost)..."
-        rm -f "$QCOW2"
+        rm -f "$QCOW2" "$STATEFILE"
         qemu-img create -f qcow2 -b "$BASE_ISO" -F raw "$QCOW2"
+        echo "(iso)" > "$STATEFILE"
         echo "Nuked - clean slate from ISO"
         ;;
     info|i)
@@ -67,7 +75,7 @@ case "$1" in
         echo ""
         echo "Commands:"
         echo "  save [name]   - Create snapshot (default: snap-HHMMSS)"
-        echo "  list          - List all snapshots"
+        echo "  list/status   - Show current + all snapshots"
         echo "  load <name>   - Restore to snapshot"
         echo "  delete <name> - Delete snapshot"
         echo "  reset         - Load 'base' snapshot (preserves other snapshots)"
