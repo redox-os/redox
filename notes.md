@@ -413,3 +413,16 @@ When user types `. .ionrc`, Ion doesn't recognize `.` as a builtin and tries to 
 **Workaround**: Use `source` instead of `.` in Redox scripts until upstream is patched.
 
 **Upstream**: https://gitlab.redox-os.org/redox-os/ion
+
+## Ion alias syntax note
+- Function names must be alphanumeric only (no '.')
+- Tried: fn . file ... end => rejected
+- Try: alias . source (may or may not work depending on Ion version)
+- Confirmed workaround: just use 'source script' instead of '. script'
+
+
+## 2026-01-08 fbcond boot error fix
+Fixed GUARD PAGE crash in fbcond during boot. The issue was unwrap() calls in 
+display.rs reopen_for_handoff() panicking when display wasn't ready. Now handles
+errors gracefully and logs warning instead. Committed in drivers submodule as 25241ec0.
+
