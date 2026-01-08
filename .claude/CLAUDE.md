@@ -95,17 +95,16 @@ The new build-cranelift.sh uses:
 # TODOs
 ⚠️ ATTENTION: cranelift-initfs/initfs/bin binaries are broken, rebuilding initfs crashes boot
 
+### Ion Shell config file location (FIXED)
+Ion does NOT use `~/.ionrc` - it uses XDG paths:
+- **Config file**: `~/.config/ion/initrc` (not `.ionrc`!)
+- Created the proper path in image
+
 ### Ion Shell "." (dot) command bug (IDENTIFIED)
-`.ionrc` not loaded on start via dot:
-```
-root:~# . .ionrc
-ion: pipeline execution error: command exec error: Exec format error (os error 8)
-root:~# source .ionrc
-✌️ .ionrc ok
-```
+`. script` fails with "Exec format error" but `source script` works.
 **Root cause**: Ion doesn't register "." as a builtin alias for "source" in `src/lib/builtins/mod.rs`.
 **Fix**: Add `.add(".", &builtin_source, SOURCE_DESC)` to `with_basic()` function.
-**Workaround**: Use `source` instead of `.` OR load `/scheme/9p.hostshare/dot-workaround.ion`
+**Workaround**: Use `source` instead of `.`
 **Upstream**: https://gitlab.redox-os.org/redox-os/ion (needs PR)
 
 root:/scheme/9p.hostshare# cat hi
