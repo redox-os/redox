@@ -2,9 +2,20 @@
 # Run Redox for parallel debugging - uses different ports to allow multiple instances
 set -e
 
-ISO="${1:-build/aarch64/server-cranelift.iso}"
-SHARE="${2:-/tmp/9p-debug}"
-INSTANCE="${3:-1}"
+cd "$(dirname "$0")"
+ROOT="$(pwd)"
+
+INSTANCE="${1:-1}"
+QCOW2="${QCOW2:-$ROOT/build/aarch64/dev.qcow2}"
+BASE_ISO="$ROOT/build/aarch64/pure-rust.iso"
+SHARE="${SHARE:-/tmp/9p-debug-$INSTANCE}"
+
+# Create qcow2 from base ISO if it doesn't exist
+if [[ ! -f "$QCOW2" ]]; then
+    echo "Creating dev.qcow2 from $BASE_ISO..."
+    mkdir -p "$(dirname "$QCOW2")"
+    qemu-img create -f qcow2 -b "$BASE_ISO" -F raw "$QCOW2" 4G
+fi
 
 # Calculate unique ports based on instance
 SERIAL_PORT=$((4440 + INSTANCE))
@@ -12,20 +23,21 @@ MONITOR_PORT=$((4450 + INSTANCE))
 GDB_PORT=$((1234 + INSTANCE))
 
 mkdir -p "$SHARE"
+echo password | pbcopy
 
-echo "Starting Redox DEBUG instance #$INSTANCE"
-echo "9p share: $SHARE"
-echo "Serial port: localhost:$SERIAL_PORT (telnet to connect)"
-echo "Monitor port: localhost:$MONITOR_PORT"
-echo "GDB port: localhost:$GDB_PORT"
-echo ""
-echo "Connect with: telnet localhost $SERIAL_PORT"
-echo "Or: socat -,rawer tcp:localhost:$SERIAL_PORT"
+echo "Redox DEBUG #$INSTANCE"
+echo "  qcow2: $QCOW2"
+echo "  9p: $SHARE"
+echo "  serial: telnet localhost $SERIAL_PORT"
+echo "  monitor: telnet localhost $MONITOR_PORT"
+echo "  gdb: localhost:$GDB_PORT (paused, use 'c' to continue)"
 echo ""
 
-qemu-system-aarch64 -M virt -cpu cortex-a72 -m 2G \
+CPU="-accel tcg,thread=multi -cpu cortex-a72 -smp 4"
+
+qemu-system-aarch64 -M virt $CPU -m 2G \
     -bios tools/firmware/edk2-aarch64-code.fd \
-    -drive file="$ISO",format=raw,id=hd0,if=none \
+    -drive file="$QCOW2",format=qcow2,id=hd0,if=none \
     -device virtio-blk-pci,drive=hd0 \
     -device virtio-9p-pci,fsdev=host0,mount_tag=hostshare \
     -fsdev local,id=host0,path="$SHARE",security_model=none \
@@ -36,5 +48,4 @@ qemu-system-aarch64 -M virt -cpu cortex-a72 -m 2G \
     -S \
     -daemonize
 
-echo "QEMU running in background (instance #$INSTANCE)"
-echo "PID: $(pgrep -f "serial tcp::${SERIAL_PORT}")"
+echo "QEMU PID: $(pgrep -f "serial tcp::${SERIAL_PORT}")"
