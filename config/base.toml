@@ -23,10 +23,6 @@ uutils = {}
 [[files]]
 path = "/usr/lib/init.d/00_base"
 data = """
-# clear and recreate tmpdir with 0o1777 permission
-rm -rf /tmp
-mkdir -m a=rwxt /tmp
-
 ipcd
 ptyd
 nowait sudo --daemon
@@ -36,6 +32,12 @@ nowait sudo --daemon
 path = "/usr/lib/init.d/00_drivers"
 data = """
 pcid-spawner /etc/pcid.d/
+"""
+
+[[files]]
+path = "/usr/lib/init.d/00_tmp"
+data = """
+ramfs tmp
 """
 
 [[files]]
@@ -168,12 +170,16 @@ directory = true
 mode = 0o755
 
 [[files]]
-path = "/var/tmp"
-data = ""
-directory = true
-mode = 0o1777
+path = "/tmp"
+data = "/scheme/tmp"
+symlink = true
 
 ## Device file symlinks
+[[files]]
+path = "/var/tmp"
+data = "/scheme/tmp"
+symlink = true
+
 [[files]]
 path = "/dev/null"
 data = "/scheme/null"

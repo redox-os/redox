@@ -39,6 +39,7 @@ BINS=(
     virtio-netd
     xhcid
     inputd
+    ramfs
     redoxerd
 )
 
@@ -61,11 +62,14 @@ export CARGO_PROFILE_RELEASE_PANIC=abort
     $(for bin in "${BINS[@]}"; do echo "-p" "${bin}"; done)
 for bin in "${BINS[@]}"
 do
-    if [[ "${bin}" == "inputd" || "${bin}" == "pcid" || "${bin}" == "pcid-spawner" || "${bin}" == "redoxerd" ]]; then
+    case "${bin}" in
+    inputd | pcid | pcid-spawner | ramfs | redoxerd)
         cp -v "target/${TARGET}/${build_type}/${bin}" "${COOKBOOK_STAGE}/usr/bin"
-    else
+        ;;
+    *)
         cp -v "target/${TARGET}/${build_type}/${bin}" "${COOKBOOK_STAGE}/usr/lib/drivers"
-    fi
+        ;;
+    esac
 done
 
 mkdir -pv "${COOKBOOK_STAGE}/etc/pcid"
