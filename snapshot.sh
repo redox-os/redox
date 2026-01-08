@@ -18,6 +18,20 @@ fi
 case "$1" in
     save|s)
         NAME="${2:-snap-$(date +%H%M%S)}"
+        # If snapshot exists, rename it to name.bak first
+        if qemu-img snapshot -l "$QCOW2" 2>/dev/null | grep -qw "$NAME"; then
+            echo "Renaming existing '$NAME' to '${NAME}.bak'..."
+            qemu-img snapshot -d "${NAME}.bak" "$QCOW2" 2>/dev/null || true
+            # Save current state temporarily
+            qemu-img snapshot -c "_tmp_save_" "$QCOW2"
+            # Load old snapshot, save as .bak
+            qemu-img snapshot -a "$NAME" "$QCOW2"
+            qemu-img snapshot -c "${NAME}.bak" "$QCOW2"
+            # Restore current state and clean up
+            qemu-img snapshot -a "_tmp_save_" "$QCOW2"
+            qemu-img snapshot -d "_tmp_save_" "$QCOW2"
+            qemu-img snapshot -d "$NAME" "$QCOW2"
+        fi
         qemu-img snapshot -c "$NAME" "$QCOW2"
         echo "$NAME" > "$STATEFILE"
         echo "Saved snapshot: $NAME"
