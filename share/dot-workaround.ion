@@ -1,0 +1,14 @@
+# Workaround: Ion shell doesn't have "." (dot) as a builtin alias for "source"
+# Usage: Run "source /scheme/9p.hostshare/dot-workaround.ion" at startup
+# Or add to your .ionrc: alias . source
+# 
+# The "." command tries to execute the file as a binary instead of sourcing it.
+# This is a bug in Ion - the upstream fix is to add:
+#   .add(".", &builtin_source, SOURCE_DESC)
+# in src/lib/builtins/mod.rs
+#
+# For now, use "source" instead of "." to source scripts.
+fn . file
+    source $file
+end
+echo "✌️ dot workaround loaded - you can now use '. script' instead of 'source script'"

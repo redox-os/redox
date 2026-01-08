@@ -20,23 +20,17 @@ Using virtio-9p ./share for direct access to host filesystem on mac!
 
 ## Quick Start
 
-```bash
-./run-dev.sh       # Unix socket Foreground or -s  Boot with qcow2 (persistent changes)
-./run-debug.sh  # GDB TCP (telnet) daemonized
-./snapshot.sh save test1  # Save state via qcow2 before experimenting
-./snapshot.sh load test1  # Rollback if things break
-./snapshot.sh reset       # Clean slate from base ISO
-```
+⚠️ Make a backup of our current image:
+`cp build/aarch64/pure-rust.img build/aarch64/pure-rust.img.bak` before each session !
+
+./run-dev.sh       # Unix socket Foreground or -s for /tmp/redox-dev-raw.sock
+
+./old/run-debug.sh  # GDB TCP (telnet) daemonized ever needed?
 
 ## Injecting Files into Redox
 
-• ALWAYS inject into pure-rust.iso via qcow2 (see below) NOT via redoxfs 
 • we want to use direct host file system integration ./share with 9P as often as possible. 
-• ALWAYS make a backup before, like this:
-./snapshot.sh save before-feature
 
-NEVER remove old qcow2 !
-Use ./snapshot.sh to handle all patches!
 
 NEW: 9P and/or qcow2
 ### Method 1: 9P Share (Runtime - Fastest)
@@ -49,24 +43,24 @@ cp my-tool /opt/other/redox/share/
 ```
 Good for: Testing binaries, scripts, quick iterations
 
-### Method 2: Mount qcow2/ISO (Persistent)
+### Method 2: Mount img
 ```bash
-# Mount the dev qcow2
-build/fstools/bin/redoxfs build/aarch64/dev.qcow2 /tmp/redox-mount & sleep 3
-# Copy files
-cp my-tool /tmp/redox-mount/usr/bin/
-# Unmount
-umount /tmp/redox-mount
+/opt/other/redox/mount-redox-mount.sh # same as:
+# /opt/other/redox/build/fstools/bin/redoxfs /opt/other/redox/build/aarch64/pure-rust.img /opt/other/redox/redox-mount/
+cp my-tool /opt/other/redox/redox-mount/usr/bin/ # or whatever
+  # After editing, convert back:
+umount /opt/other/redox/redox-mount/
 ```
-Good for: Permanent changes to filesystem
+
+IMPORTANT: 
+ALWAYS test with /opt/other/redox/run-dev.sh after your injections!
+If it works cp pure-rust.img with feature name, otherwise ask if we want to rollback or try again!
 
 ### Method 3: Rebuild initfs (For drivers/init)
 ```bash
 # Edit files in recipes/core/base/source/
 cd recipes/core/base/source && ./build-initfs-cranelift.sh
-# Inject new initfs into ISO/qcow2
-build/fstools/bin/redoxfs build/aarch64/dev.qcow2 /tmp/mnt &
-sleep 3; cp /tmp/initfs-cranelift.img /tmp/mnt/boot/initfs; umount /tmp/mnt
+# Inject new initfs same as above
 ```
 
 ## Building Userspace Tools
@@ -99,6 +93,31 @@ The new build-cranelift.sh uses:
 ```
 
 # TODOs
+⚠️ ATTENTION: cranelift-initfs/initfs/bin binaries are broken, rebuilding initfs crashes boot
+
+### Ion Shell "." (dot) command bug (IDENTIFIED)
+`.ionrc` not loaded on start via dot:
+```
+root:~# . .ionrc
+ion: pipeline execution error: command exec error: Exec format error (os error 8)
+root:~# source .ionrc
+✌️ .ionrc ok
+```
+**Root cause**: Ion doesn't register "." as a builtin alias for "source" in `src/lib/builtins/mod.rs`.
+**Fix**: Add `.add(".", &builtin_source, SOURCE_DESC)` to `with_basic()` function.
+**Workaround**: Use `source` instead of `.` OR load `/scheme/9p.hostshare/dot-workaround.ion`
+**Upstream**: https://gitlab.redox-os.org/redox-os/ion (needs PR)
+
+root:/scheme/9p.hostshare# cat hi
+hi
+root:/scheme/9p.hostshare# cat ba
+cat: ba: I/O error (os error 5)
+
+root:/scheme/9p.hostshare# df
+Path            Size      Used      Free Use%
+/scheme/memory   1422356    192756   1229600  13%
+/scheme/logging   1422356    192756   1229600  13%
+1970-01-01T00-05-26.968Z [@inputd:208 ERROR] invalid path ''
 
 • coreutils broken - all commands show `ls:` prefix
   - 9p O_DIRECTORY fix applied (test-9p works)
@@ -113,32 +132,13 @@ See STATE.md for current state (may be out of sync, update often but carefully)
 
 
 # FAQ
+⏺ Wrong tool! initfs needs "RedoxFtw" magic, not "RedoxFS\0". I used redoxfs-ar but should use redox-initfs-ar.
 
- The original initfs uses "RedoxFtw" magic, not "RedoxFS\0". 
  ./build/aarch64/cranelift-initfs/initfs-tools-target/release/redox-initfs-ar --output /tmp/pure-rust-initfs.img 
 
 usually you want to cd into root dir
 cd /opt/other/redox/
 
-# QEMU Notes
-
-HVF acceleration crashes aarch64 Redox! Use emulated CPU instead:
-- ❌ `-accel hvf -cpu host` causes "Lacks grant" crashes in userspace
-- ❌ `-accel hvf -cpu host` + `highmem=off` - flaky, sometimes works
-- ❌ `-smp 4` with HVF - crashes (kernel only sees 1 CPU anyway)
-- ✅ `-cpu cortex-a72` works reliably (slower but stable)
-- run-backup.sh uses cortex-a72 - NEVER MODIFY IT (our fallback config!)
-- Root cause: likely exception/memory handling in kernel under HVF
-
-# acceleration:
-  HVF icache investigation results:
-  2. icache fix status:
-    - Code was correct (dc cvau + ic ivau for ARM64 cache maintenance)
-    - BUT causes early kernel crash - likely Cranelift inline assembly incompatibility
-    - Reverted the icache changes since they don't work with Cranelift codegen
-  3. The "Lacks grant" HVF crash still occurs in userspace because:
-    - The underlying issue (I-cache not synced after loading executable code) is still present
-    - Would need an icache fix that works with Cranelift
 
 # OTHER
 
@@ -147,8 +147,6 @@ if you go to other directories like recipes, cd back to /opt/other/redox/ after
 commit often, small increments even if broken ( as WIP but note the challenges in the commit message )
 
 Don't push to gitlab upstream, just to the origin fork!
-
-If you currently cannot boot / run a qemu session, just start a parallel one with different SOCK, similar to run-parallel.sh
 
 If fixes work in the iso also apply them to build/aarch64/server-cranelift.qcow2 or use qcow2 directly, but create .bak !
 

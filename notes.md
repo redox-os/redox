@@ -196,6 +196,19 @@ let count = count.min(max_data);
 
 This completes the proof that the entire Rust toolchain (Cranelift codegen) can produce working Redox userspace binaries!
 
+### Raw QEMU Boot Helper
+
+Added `run-dev-raw.sh` to boot directly from a raw disk image (no ISO backing).
+Defaults to `/tmp/dev-raw.img` or override with `RAW_IMG=...`.
+
+### Raw Base Image Overlay (pure-rust.img)
+
+Converted `build/aarch64/pure-rust.iso` to raw:
+`qemu-img convert -O raw build/aarch64/pure-rust.iso build/aarch64/pure-rust.img`
+
+Created overlay (note: use absolute backing path to avoid path duplication issues):
+`qemu-img create -f qcow2 -b /opt/other/redox/build/aarch64/pure-rust.img -F raw build/aarch64/dev.qcow2`
+
 
 
 
@@ -367,3 +380,36 @@ Added run-utm.sh to boot with UTM-bundled QEMU and virtio-9p share support.
 - Reason: cranelift-initfs/initfs/bin binaries are broken, rebuilding initfs crashes boot
 - redox-initfs-ar requires bootstrap + initfs dir, no way to extract/modify working initfs
 - Workaround: run 'ln -s /scheme/9p.hostshare /root/host' manually after login
+
+## Raw img persistence (2026-01-08)
+- Writing to /root/ok inside QEMU persisted during session, but after QEMU terminated the host-mounted raw img still had old contents (cat showed 123).
+- Suspect unclean shutdown or different RAW_IMG path; need clean shutdown/sync to flush or verify RAW_IMG used by run-dev-img.sh.
+
+- No `sync` binary found in `redox-mount/usr/bin`; added `simple-sync` to `simple-coreutils` for a lightweight sync helper.
+
+- `cargo +nightly build` for `simple-sync` failed under sccache (Operation not permitted); succeeded with `RUSTC_WRAPPER=` and `-Zbuild-std` for `aarch64-unknown-redox-clif`.
+- Built binary copied to `share/simple-sync` for 9p usage.
+
+
+## Ion Shell: "." (dot) builtin not registered
+
+**Issue**: `. .ionrc` fails with "Exec format error (os error 8)" while `source .ionrc` works.
+
+**Root cause**: In Ion shell source (`src/lib/builtins/mod.rs`), the `source` command is registered as a builtin but `.` (dot) is NOT:
+```rust
+.add("source", &builtin_source, SOURCE_DESC)
+// MISSING: .add(".", &builtin_source, SOURCE_DESC)
+```
+
+When user types `. .ionrc`, Ion doesn't recognize `.` as a builtin and tries to execute it as a command (hence ENOEXEC).
+
+**Fix**: Add `.` as an alias for `source` in Ion's `with_basic()` function:
+```rust
+.add(".", &builtin_source, SOURCE_DESC)
+```
+
+**Blocked on**: Rebuilding Ion for Redox requires cross-compiling the `calculate` crate which has C dependencies (`decimal`).
+
+**Workaround**: Use `source` instead of `.` in Redox scripts until upstream is patched.
+
+**Upstream**: https://gitlab.redox-os.org/redox-os/ion
