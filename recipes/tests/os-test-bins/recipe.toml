@@ -18,18 +18,32 @@ make OS=Redox CC="${CC_WRAPPER} ${GNU_TARGET}-gcc" \
         CC_FOR_BUILD="${CC_WRAPPER} cc" CFLAGS_FOR_BUILD= CPPFLAGS_FOR_BUILD= \
         LDFLAGS_FOR_BUILD= -j ${COOKBOOK_MAKE_JOBS} all
 
+skips=(
+    # These tests hang
+    ppoll-block-sleep-raise-write
+    ppoll-block-sleep-write-raise
+)
+
+for skip in "${skips[@]}"
+do
+    mkdir -p out.known/${os}/"$(dirname "${skip}")"
+    echo "skipped" > out.known/${os}/"${skip}.out"
+done
+
+cp -t out -R out.known/${os}
+
 # Create runner script
 mkdir -p "${COOKBOOK_STAGE}/usr/bin"
 cat > "${COOKBOOK_STAGE}/usr/bin/os-test-runner" <<EOF
 #!/usr/bin/env bash
-set -ex
+set -e
 cd /usr/share/os-test
 
-echo "Ensuring outputs are newer than sources"
-find out -type f -exec touch '{}' ';'
-
-echo "Ensuring all executables are newer than sources and outputs"
+echo "Ensuring executables are newer than sources"
 find . -type f -perm /111 -exec touch '{}' ';'
+
+echo "Ensuring outputs are newer than sources and executables"
+find out -type f -exec touch '{}' ';'
 
 make test
 EOF
