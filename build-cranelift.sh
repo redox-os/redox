@@ -190,6 +190,9 @@ EOF
         cat > tools/${TARGET_USER}-clif.json << 'EOF'
 {
     "arch": "aarch64",
+    "crt-objects-fallback": "false",
+    "crt-static-default": true,
+    "crt-static-respected": true,
     "data-layout": "e-m:e-p270:32:32-p271:32:32-p272:64:64-i8:8:32-i16:16:32-i64:64-i128:128-n32:64-S128-Fn32",
     "env": "relibc",
     "executables": true,
@@ -202,6 +205,12 @@ EOF
     "os": "redox",
     "panic-strategy": "abort",
     "position-independent-executables": false,
+    "pre-link-objects": {
+        "static-nopic-exe": ["crt0.o", "crti.o"]
+    },
+    "post-link-objects": {
+        "static-nopic-exe": ["crtn.o"]
+    },
     "relro-level": "full",
     "target-family": ["unix"],
     "target-pointer-width": 64
@@ -230,6 +239,9 @@ EOF
         cat > tools/${TARGET_USER}-clif.json << 'EOF'
 {
     "arch": "x86_64",
+    "crt-objects-fallback": "false",
+    "crt-static-default": true,
+    "crt-static-respected": true,
     "data-layout": "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-f80:128-n8:16:32:64-S128",
     "env": "relibc",
     "executables": true,
@@ -241,6 +253,12 @@ EOF
     "os": "redox",
     "panic-strategy": "abort",
     "position-independent-executables": false,
+    "pre-link-objects": {
+        "static-nopic-exe": ["crt0.o", "crti.o"]
+    },
+    "post-link-objects": {
+        "static-nopic-exe": ["crtn.o"]
+    },
     "relro-level": "full",
     "target-family": ["unix"],
     "target-pointer-width": 64
