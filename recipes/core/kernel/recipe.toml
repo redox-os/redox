@@ -1,5 +1,6 @@
 [source]
-git = "https://gitlab.redox-os.org/redox-os/kernel.git"
+git = "https://gitlab.redox-os.org/Ibuki.O/kernel.git"
+branch = "namespace-improvement"
 
 [build]
 template = "custom"

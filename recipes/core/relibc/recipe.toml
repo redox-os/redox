@@ -1,5 +1,6 @@
 [source]
-git = "https://gitlab.redox-os.org/redox-os/relibc.git"
+git = "https://gitlab.redox-os.org/Ibuki.O/relibc.git"
+branch = "namespace-improvement"
 
 [build]
 template = "custom"
