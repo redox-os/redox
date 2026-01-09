@@ -17,4 +17,31 @@ make OS=Redox CC="${CC_WRAPPER} ${GNU_TARGET}-gcc" \
         LDFLAGS= EXTRA_LDFLAGS= \
         CC_FOR_BUILD="${CC_WRAPPER} cc" CFLAGS_FOR_BUILD= CPPFLAGS_FOR_BUILD= \
         LDFLAGS_FOR_BUILD= -j ${COOKBOOK_MAKE_JOBS} all
+
+# Create runner script
+mkdir -p "${COOKBOOK_STAGE}/usr/bin"
+cat > "${COOKBOOK_STAGE}/usr/bin/os-test-runner" <<EOF
+#!/usr/bin/env bash
+set -ex
+cd /usr/share/os-test
+
+echo "Ensuring outputs are newer than sources"
+find out -type f -exec touch '{}' ';'
+
+echo "Ensuring all executables are newer than sources and outputs"
+find . -type f -perm /111 -exec touch '{}' ';'
+
+make test
+EOF
+chmod +x "${COOKBOOK_STAGE}/usr/bin/os-test-runner"
 """
+
+[package]
+dependencies = [
+    "gcc13",
+    "gnu-binutils",
+    "gnu-grep",
+    "gnu-make",
+    "libarchive",
+    "sed",
+]
