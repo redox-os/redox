@@ -119,7 +119,7 @@ Fixed GUARD PAGE crash in fbcond during boot. The issue was unwrap() calls in
 display.rs reopen_for_handoff() panicking when display wasn't ready. Now handles
 errors gracefully and logs warning instead. Committed in drivers submodule as 25241ec0.
 
-⚠️ ATTENTION: cranelift-initfs/initfs/bin binaries are broken, rebuilding initfs crashes boot
+✅ FIXED: Cranelift binaries now have proper entry points (CRT objects added to target spec)
 
  Risk: pre-built packages may not match Cranelift ABI
 

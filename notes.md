@@ -494,4 +494,46 @@ Commits:
 ### Future Work
 To enable networking, need to either:
 1. Fix Cranelift ELF entry point issue
-2. Or cross-compile with LLVM and inject updated binaries
+ - virtio-netd/src/main.rs: graceful error handling 
+- virtio-netd/src/scheme.rs: VirtioNet::new returns Result
+2. Or cross-compile with LLVM and inject updated binaries NO! NO LLVM!
+
+Fixed GUARD PAGE crash in fbcond during boot. The issue was unwrap() calls in
+display.rs reopen_for_handoff() panicking when display wasn't ready. Now handles
+errors gracefully and logs warning instead. Committed in drivers submodule as 25241ec0.
+
+
+## Build Version Tracking
+  CLAUDE.md note added listing all files to update on each build:
+  Update these files with current commit/date on each significant build:
+  - recipes/core/base/source/init.rc (source, line 1 comment)
+  - build/aarch64/pure-rust-initfs/etc/init.rc (initfs)
+  - build/aarch64/cranelift-initfs/initfs/etc/init.rc (cranelift initfs)
+  - ~/.config/ion/initrc in mounted images (login message)
+## 2026-01-09 Cranelift ELF entry point FIXED!
+
+### Root Cause
+- Target spec used `gnu-lld` linker-flavor directly
+- Unlike `gnu-cc`, gnu-lld doesn't auto-include crt0.o
+- Result: No `_start` symbol, entry point was 0x0
+
+### Solution
+Added to tools/aarch64-unknown-redox-clif.json:
+```json
+"pre-link-objects": {
+    "static-nopic-exe": ["crt0.o", "crti.o"]
+},
+"post-link-objects": {
+    "static-nopic-exe": ["crtn.o"]
+}
+```
+
+### Result
+- virtio-netd entry point: 0x323e50 (was 0x0)
+- virtio-core MSI-X fallback works on aarch64
+- Both queues (RX/TX) enabled successfully
+- System boots cleanly with network driver loaded!
+
+Commits:
+- 9dfae9134 (main): target spec with CRT objects
+- 8b003702 (base/source): copied target spec
