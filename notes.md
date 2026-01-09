@@ -431,7 +431,6 @@ errors gracefully and logs warning instead. Committed in drivers submodule as 25
 - /scheme/initfs/bin/* is embedded in boot image, NOT in redox-mount-works
 - To recover initfs crashes: restore entire .img from working backup
 - redox-mount-works only contains the main filesystem (/usr, /home, /etc)
-- Broken redoxfs saved as pure-rust.img.broken-redoxfs for analysis
 
 
 ## 2026-01-09 - PIE fix SUCCESS!
@@ -439,5 +438,60 @@ errors gracefully and logs warning instead. Committed in drivers submodule as 25
 - Rebuilt ALL initfs binaries with PIE:false
 - Boot now reaches login prompt with Cranelift-compiled initfs
 - Files fixed: tools/*.json, recipes/core/*/source/*.json, build-cranelift.sh
-- Snapshot: pure-rust-pie-fix.img
+- Snapshot: pure-rust.works.img
 
+
+## 2026-01-09: initrc build version display
+Added build version/commit/date to Ion shell initrc:
+- File: ~/.config/ion/initrc 
+- Shows: 'Pure-Rust Redox | Build: <commit> | <date>'
+- Applied to both pure-rust.img and redox-mount-works
+
+                                                                   
+###
+     kernel::arch::aarch64::interrupt::exception:ERROR -- FATAL: Not an SVC induced synchronous exception (ty=111100)
+     FAR_EL1: 0xe1a8
+happens when ... ?
+## 2026-01-09 virtio-netd crash fix
+Fixed UNHANDLED EXCEPTION in virtio-netd using same pattern as fbcond fix.
+Replaced unwrap()/expect()/assert!/unimplemented!() with graceful error handling.
+Changes in recipes/core/base/source/drivers/net/virtio-netd/
+Commit: 0db15443 in base/source submodule
+NOTE: Source-only fix - cannot rebuild drivers (initfs binaries are broken per CLAUDE.md)
+
+
+## init.rc build version locations
+- recipes/core/base/source/init.rc (source)
+- build/aarch64/pure-rust-initfs/etc/init.rc
+- build/aarch64/cranelift-initfs/initfs/etc/init.rc
+Format: # Pure-Rust Redox | Build: <commit> | <date>
+
+
+## 2026-01-09 virtio-netd crash analysis & fix
+
+### Root Cause
+1. LLVM-built binary (in image) panics at:
+   `drivers/virtio-core/src/arch/aarch64.rs:8 - not implemented: virtio_core: aarch64 enable_msix`
+   
+2. Source has fix (uses legacy INTx fallback) but can't rebuild because:
+   - Cranelift binaries have entry point 0x0 (ELF loading broken)
+   - llvm-objdump shows: `start address: 0x0000000000000000`
+
+### Fix Applied
+- Removed /etc/pcid.d/virtio-netd.toml from image
+- Driver no longer spawned at boot
+- System boots cleanly to login prompt
+
+### Source Code Fixes (for future rebuilds)
+- virtio-netd/src/main.rs: graceful error handling 
+- virtio-netd/src/scheme.rs: VirtioNet::new returns Result
+- virtio-core/arch/aarch64.rs: already has MSI-X fallback (source is fixed)
+
+Commits:
+- 6a06c53a (base/source): virtio-netd graceful error handling
+- 8098827e3 (main): disabled virtio-netd pcid config
+
+### Future Work
+To enable networking, need to either:
+1. Fix Cranelift ELF entry point issue
+2. Or cross-compile with LLVM and inject updated binaries

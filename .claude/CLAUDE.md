@@ -31,6 +31,8 @@ Using virtio-9p ./share for direct access to host filesystem on mac!
 
 • we want to use direct host file system integration ./share with 9P as often as possible. 
 
+Until we have netd working GET MISSING pkg from 
+https://static.redox-os.org/pkg/aarch64-unknown-redox/
 
 NEW: 9P and/or qcow2
 ### Method 1: 9P Share (Runtime - Fastest)
@@ -92,20 +94,57 @@ The new build-cranelift.sh uses:
 ./build-cranelift.sh shell    # Enter build shell
 ```
 
+# RECOVERY
+pure-rust.works.img is always mounted at /opt/other/redox/redox-mount-works
+copy it back to pure-rust.img if pure-rust.img is completely broken
+copy selected files from redox-mount-works if only parts are broken
+
+# Build Version Tracking
+Update these files with current commit/date on each significant build:
+- `recipes/core/base/source/init.rc` (source, line 1 comment)
+- `build/aarch64/pure-rust-initfs/etc/init.rc` (initfs)
+- `build/aarch64/cranelift-initfs/initfs/etc/init.rc` (cranelift initfs)
+- `~/.config/ion/initrc` in mounted images (login message)
+
 # TODOs
+
+## 2026-01-09 virtio-netd boot crash fixed
+LLVM binary panicked on "not implemented: virtio_core: aarch64 enable_msix".
+Source has fix but Cranelift builds have entry point 0x0.
+Workaround: Removed /etc/pcid.d/virtio-netd.toml from image.
+Source fixes in 6a06c53a (base/source), see notes.md for details.
+
+## 2026-01-08 fbcond boot error fix
+Fixed GUARD PAGE crash in fbcond during boot. The issue was unwrap() calls in
+display.rs reopen_for_handoff() panicking when display wasn't ready. Now handles
+errors gracefully and logs warning instead. Committed in drivers submodule as 25241ec0.
+
 ⚠️ ATTENTION: cranelift-initfs/initfs/bin binaries are broken, rebuilding initfs crashes boot
 
-### Ion Shell config file location (FIXED)
-Ion does NOT use `~/.ionrc` - it uses XDG paths:
+ Risk: pre-built packages may not match Cranelift ABI
+
+The target spec NEEDS "position-independent-executables": false:
+The kernel's ELF loader doesn't support PIE relocation. Without this, binaries jump to address 0x0 on startup.
+'true' would only be for security 🤷
+
+# Get working redoxfs from mounted working image (it's inside initfs which we can't extract easily)
+
+
+DID ANY modifications to redoxfs ever work??
+init: running: rm -rf /tmp
+kernel::context::memory:DEBUG -- Lacks grant
+kernel::arch::aarch64::interrupt::exception:ERROR -- FATAL: Not an SVC induced synchronous exception (ty=100100)
+FAR_EL1: 0x0
+kernel::context::signal:INFO -- UNHANDLED EXCEPTION, CPU #0, PID 34, NAME /scheme/initfs/bin/redoxfs, CONTEXT 0xfffffe800012eea0
+CRASH
+ crash is in /scheme/initfs/bin/redoxfs which is embedded in the boot image, not the main filesystem. no easy fix
+
 - **Config file**: `~/.config/ion/initrc` (not `.ionrc`!)
-- Created the proper path in image
 
 ### Ion Shell "." (dot) command bug (IDENTIFIED)
-`. script` fails with "Exec format error" but `source script` works.
 **Root cause**: Ion doesn't register "." as a builtin alias for "source" in `src/lib/builtins/mod.rs`.
 **Fix**: Add `.add(".", &builtin_source, SOURCE_DESC)` to `with_basic()` function.
 **Workaround**: Use `source` instead of `.`
-**Upstream**: https://gitlab.redox-os.org/redox-os/ion (needs PR)
 
 root:/scheme/9p.hostshare# cat hi
 hi
