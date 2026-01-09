@@ -426,3 +426,18 @@ Fixed GUARD PAGE crash in fbcond during boot. The issue was unwrap() calls in
 display.rs reopen_for_handoff() panicking when display wasn't ready. Now handles
 errors gracefully and logs warning instead. Committed in drivers submodule as 25241ec0.
 
+
+## 2026-01-09 - initfs vs redoxfs mount clarification
+- /scheme/initfs/bin/* is embedded in boot image, NOT in redox-mount-works
+- To recover initfs crashes: restore entire .img from working backup
+- redox-mount-works only contains the main filesystem (/usr, /home, /etc)
+- Broken redoxfs saved as pure-rust.img.broken-redoxfs for analysis
+
+
+## 2026-01-09 - PIE fix SUCCESS!
+- Fixed 'position-independent-executables': true -> false in all Cranelift target specs
+- Rebuilt ALL initfs binaries with PIE:false
+- Boot now reaches login prompt with Cranelift-compiled initfs
+- Files fixed: tools/*.json, recipes/core/*/source/*.json, build-cranelift.sh
+- Snapshot: pure-rust-pie-fix.img
+

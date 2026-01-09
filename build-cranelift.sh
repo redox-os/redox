@@ -201,7 +201,7 @@ EOF
     "max-atomic-width": 64,
     "os": "redox",
     "panic-strategy": "abort",
-    "position-independent-executables": true,
+    "position-independent-executables": false,
     "relro-level": "full",
     "target-family": ["unix"],
     "target-pointer-width": 64
@@ -240,7 +240,7 @@ EOF
     "max-atomic-width": 64,
     "os": "redox",
     "panic-strategy": "abort",
-    "position-independent-executables": true,
+    "position-independent-executables": false,
     "relro-level": "full",
     "target-family": ["unix"],
     "target-pointer-width": 64
