@@ -20,17 +20,17 @@ make OS=Redox CC="${CC_WRAPPER} ${GNU_TARGET}-gcc" \
 
 skips=(
     # These tests hang
-    ppoll-block-sleep-raise-write
-    ppoll-block-sleep-write-raise
+    signal/ppoll-block-sleep-raise-write
+    signal/ppoll-block-sleep-write-raise
 )
 
 for skip in "${skips[@]}"
 do
-    mkdir -p out.known/${os}/"$(dirname "${skip}")"
-    echo "skipped" > out.known/${os}/"${skip}.out"
+    mkdir -p out.known/redox/"$(dirname "${skip}")"
+    echo "skipped" > out.known/redox/"${skip}.out"
 done
 
-cp -t out -R out.known/${os}
+cp -t out -R out.known/redox
 
 # Create runner script
 mkdir -p "${COOKBOOK_STAGE}/usr/bin"
