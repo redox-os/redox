@@ -9,10 +9,17 @@ template = "cmake"
 cmakeflags = [
     "-DSDL_SHARED=ON",
     "-DSDL_STATIC=OFF",
-    "-DSDL_TESTS=OFF",
+    "-DSDL_TEST_LIBRARY=OFF",
     "-DSDL_DISABLE_INSTALL_DOCS=ON",
+    "-DSDL_DBUS=OFF",
+    "-DSDL_LIBURING=OFF",
+    "-DSDL_IBUS=OFF",
+    "-DSDL_OPENGL=OFF",
+    "-DSDL_OPENGLES=OFF",
+    "-DSDL_LIBUDEV=OFF",
+    "-DSDL_AUDIO=OFF",
 ]
 dependencies = [
-    "liborbital",
+    #"liborbital",
     "mesa",
 ]

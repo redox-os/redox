@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/grpc/grpc/blob/v1.76.x/BUILDING.md
+[source]
+git = "https://github.com/grpc/grpc"
+branch = "v1.76.x"
+shallow_clone = true
+[build]
+template = "cmake"
