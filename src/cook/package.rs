@@ -47,7 +47,14 @@ pub fn package(
             .map_err(|err| format!("failed to save pkgar secret key: {:?}", err))?;
     }
 
-    let stage_modified = modified_all(stage_dirs, modified_dir)?;
+    let Ok(stage_modified) = modified_all(stage_dirs, modified_dir) else {
+        // stage dirs doesn't exist, assume safe only when clean_target = true
+        if !crate::config::get_config().cook.clean_target {
+            return Err("Stage directory is not present at packaging step".into());
+        } else {
+            return Ok(());
+        }
+    };
 
     let packages = recipe.recipe.get_packages_list();
 

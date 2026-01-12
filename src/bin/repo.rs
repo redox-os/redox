@@ -8,7 +8,7 @@ use cookbook::cook::ident;
 use cookbook::cook::package::package;
 use cookbook::cook::pty::{PtyOut, UnixSlavePty, flush_pty, setup_pty};
 use cookbook::cook::script::KILL_ALL_PID;
-use cookbook::cook::tree::{WalkTreeEntry, display_tree_entry, format_size, walk_tree_entry};
+use cookbook::cook::tree::{self, WalkTreeEntry};
 use cookbook::log_to_pty;
 use cookbook::recipe::{CookRecipe, recipes_flatten_package_names, recipes_mark_as_deps};
 use pkg::PackageName;
@@ -63,14 +63,15 @@ const REPO_HELP_STR: &str = r#"
         --repo-binary              override recipes config to use repo_binary
 
     cook env and their defaults:
-        CI=                        set to any value to disable TUI
-        COOKBOOK_LOGS=             whether to capture build logs (default is !CI)
-        COOKBOOK_OFFLINE=false     prevent internet access if possible
+        CI=                         set to any value to disable TUI
+        COOKBOOK_LOGS=              whether to capture build logs (default is !CI)
+        COOKBOOK_OFFLINE=false      prevent internet access if possible
                                         ignored when command "fetch" is used
-        COOKBOOK_NONSTOP=false     pkeep running even a recipe build failed
-        COOKBOOK_VERBOSE=true      print success/error on each recipe
-        COOKBOOK_CLEAN_BUILD=false remove build directory before building
-        COOKBOOK_MAKE_JOBS=        override build jobs count from nproc
+        COOKBOOK_NONSTOP=false      keep running even a recipe build failed
+        COOKBOOK_VERBOSE=true       print success/error on each recipe
+        COOKBOOK_CLEAN_BUILD=false  remove build directory before building
+        COOKBOOK_CLEAN_TARGET=false remove target directory after building
+        COOKBOOK_MAKE_JOBS=         override build jobs count from nproc
 "#;
 
 #[derive(Clone)]
@@ -579,8 +580,7 @@ fn handle_cook(
         &target_dir,
         &recipe.name,
         &recipe.recipe,
-        config.cook.offline,
-        config.cook.clean_build,
+        &config.cook,
         !is_deps,
         logger,
     )
@@ -589,6 +589,24 @@ fn handle_cook(
     package(&recipe, &stage_dirs, &auto_deps, logger)
         .map_err(|err| anyhow!("failed to package: {:?}", err))?;
 
+    if config.cook.clean_target {
+        let stage_dirs = get_stage_dirs(&recipe.recipe.optional_packages, &target_dir);
+        if config.cook.verbose && stage_dirs.iter().any(|d| d.is_dir()) {
+            log_to_pty!(logger, "DEBUG: Listing stage files before removing them");
+        }
+        for stage_dir in stage_dirs {
+            if stage_dir.is_dir() {
+                if config.cook.verbose {
+                    if let Some(stage_name) = stage_dir.file_name() {
+                        log_to_pty!(logger, "--- {}.pkgar:", stage_name.to_string_lossy());
+                    }
+                    tree::walk_file_tree(&stage_dir, "    ", logger)?;
+                }
+                fs::remove_dir_all(&stage_dir)
+                    .map_err(|err| anyhow!("failed to remove stage dir: {:?}", err))?;
+            }
+        }
+    }
     Ok(())
 }
 
@@ -669,7 +687,7 @@ fn handle_push(recipes: &Vec<CookRecipe>, config: &CliConfig) -> anyhow::Result<
     };
     if config.with_package_deps {
         for (i, root) in roots.iter().enumerate() {
-            walk_tree_entry(
+            tree::walk_tree_entry(
                 &root.name,
                 &recipe_map,
                 "",
@@ -706,7 +724,7 @@ fn handle_push(recipes: &Vec<CookRecipe>, config: &CliConfig) -> anyhow::Result<
         println!("");
         println!(
             "Pushed {} of {} {}",
-            format_size(total_size),
+            tree::format_size(total_size),
             visited.len(),
             if visited.len() == 1 {
                 "package"
@@ -727,7 +745,7 @@ fn handle_tree(recipes: &Vec<CookRecipe>, _config: &CliConfig) -> anyhow::Result
     let roots: Vec<&CookRecipe> = recipes.iter().filter(|r| !r.is_deps).collect();
     let num_roots = roots.len();
     for (i, root) in roots.iter().enumerate() {
-        display_tree_entry(
+        tree::display_tree_entry(
             &root.name,
             &recipe_map,
             "",
@@ -740,7 +758,7 @@ fn handle_tree(recipes: &Vec<CookRecipe>, _config: &CliConfig) -> anyhow::Result
     println!("");
     println!(
         "Estimated image size: {} of {} {}",
-        format_size(total_size),
+        tree::format_size(total_size),
         visited.len(),
         if visited.len() == 1 {
             "package"

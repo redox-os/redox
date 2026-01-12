@@ -19,8 +19,11 @@ pub struct CookConfigOpt {
     /// whether to print verbose logs to certain commands
     /// build failure still be printed anyway
     pub verbose: Option<bool>,
-    /// whether to always clean the build directory
+    /// whether to always clean the build directory before building
     pub clean_build: Option<bool>,
+    /// whether to always clean the target directory after building
+    /// (deletes everything except pkgar files)
+    pub clean_target: Option<bool>,
 }
 
 #[derive(Debug, Default, Clone, Deserialize, PartialEq, Serialize)]
@@ -32,6 +35,7 @@ pub struct CookConfig {
     pub nonstop: bool,
     pub verbose: bool,
     pub clean_build: bool,
+    pub clean_target: bool,
 }
 
 impl From<CookConfigOpt> for CookConfig {
@@ -44,6 +48,7 @@ impl From<CookConfigOpt> for CookConfig {
             nonstop: value.nonstop.unwrap(),
             verbose: value.verbose.unwrap(),
             clean_build: value.clean_build.unwrap(),
+            clean_target: value.clean_target.unwrap(),
         }
     }
 }
@@ -97,6 +102,9 @@ pub fn init_config() {
     }
     if config.cook_opt.clean_build.is_none() {
         config.cook_opt.clean_build = Some(extract_env("COOKBOOK_CLEAN_BUILD", false));
+    }
+    if config.cook_opt.clean_target.is_none() {
+        config.cook_opt.clean_target = Some(extract_env("COOKBOOK_CLEAN_TARGET", false));
     }
     if config.mirrors.len() == 0 {
         // The GNU FTP mirror below is automatically inserted for convenience
