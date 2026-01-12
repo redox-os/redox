@@ -7,7 +7,7 @@ use std::{
 use anyhow::Context;
 use pkg::{Package, PackageName};
 
-use crate::recipe::CookRecipe;
+use crate::{cook::pty::PtyOut, log_to_pty, recipe::CookRecipe};
 
 pub enum WalkTreeEntry<'a> {
     Built(&'a PathBuf, u64),
@@ -121,6 +121,45 @@ pub fn display_pkg_fn(
     let line_prefix = if is_last { "└── " } else { "├── " };
     println!("{}{}{} {}", prefix, line_prefix, package_name, size_str);
     Ok(())
+}
+
+pub fn walk_file_tree(dir: &PathBuf, prefix: &str, logger: &PtyOut) -> std::io::Result<u64> {
+    if !dir.is_dir() {
+        return Ok(0);
+    }
+
+    let entries: Vec<_> = std::fs::read_dir(dir)?.filter_map(|e| e.ok()).collect();
+    let mut total_size = 0;
+    for (index, entry) in entries.iter().enumerate() {
+        let path = entry.path();
+        let metadata = entry.metadata()?;
+        let is_last = index == entries.len() - 1;
+
+        let line_prefix = if is_last { "└── " } else { "├── " };
+        let file_name = path
+            .file_name()
+            .and_then(|n| n.to_str())
+            .unwrap_or("Unknown");
+
+        if path.is_dir() {
+            log_to_pty!(logger, "{}{}{}/", prefix, line_prefix, file_name);
+            let new_prefix = format!("{}{}", prefix, if is_last { "    " } else { "│   " });
+            walk_file_tree(&path, &new_prefix, logger)?;
+        } else {
+            let size = metadata.len();
+            total_size += size;
+            log_to_pty!(
+                logger,
+                "{}{}{} ({})",
+                prefix,
+                line_prefix,
+                file_name,
+                format_size(size)
+            );
+        }
+    }
+
+    Ok(total_size)
 }
 
 pub fn format_size(bytes: u64) -> String {
