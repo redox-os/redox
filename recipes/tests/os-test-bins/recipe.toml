@@ -2,6 +2,11 @@
 same_as = "../os-test"
 
 [build]
+dependencies = [
+    "gettext",
+    "libarchive",
+    "libiconv",
+]
 template = "custom"
 script = """
 DYNAMIC_INIT
@@ -46,6 +51,7 @@ echo "Ensuring outputs are newer than sources and executables"
 find out -type f -exec touch '{}' ';'
 
 make test
+make html
 EOF
 chmod +x "${COOKBOOK_STAGE}/usr/bin/os-test-runner"
 """
