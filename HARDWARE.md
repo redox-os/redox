@@ -41,11 +41,11 @@ We also recommend to add your `pciutils` log on [this](https://gitlab.redox-os.o
 
 This section contain limitations that apply to any status.
 
-- ACPI support is incomplete (some things are hardcoded on the kernel)
+- ACPI support is incomplete (some things are hardcoded on the kernel to work)
 - Wi-Fi and Bluetooth aren't supported yet
-- AMD, NVIDIA, and ARM GPU drivers aren't available yet (only BIOS VESA and UEFI GOP)
+- AMD, NVIDIA, ARM, and PowerVR GPUs aren't supported yet (only BIOS VESA and UEFI GOP)
 - I2C devices aren't supported yet (PS/2 or USB devices should be used)
-- USB support varies on each device model because some USB devices require specific drivers (use input devices with stanrdized controls for more compatibility)
+- USB support varies on each device model because some USB devices require specific drivers (use input devices with standardized controls for more compatibility)
 - Automatic operating system discovery is not implemented in the boot loader yet (remember this before installing Redox)
 
 ## Contribute to this document
