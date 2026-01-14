@@ -1,6 +1,6 @@
 # Hardware Compatibility
 
-This document tracks the current hardware compatibility of Redox.
+This document tracks the current hardware compatibility of Redox OS.
 
 - [Why are hardware reports needed?](#why-are-hardware-reports-needed)
 - [What if my computer is customized?](#what-if-my-computer-is-customized)
@@ -25,22 +25,28 @@ These reports helps us to fix the problems above, your report may help to fix ma
 
 ## What if my computer is customized?
 
-You can use the "Custom" word on the "Vendor" and "Model" categories, we also recommend to add your `pciutils` log on [this document link](https://gitlab.redox-os.org/redox-os/drivers/-/blob/master/COMMUNITY-HW.md?ref_type=heads) to help us with probable porting.
+If your desktop is customized (common) you should use the "Custom" word on the "Vendor" category and insert the motherboard and CPU vendor/model in the "Model" category.
+
+A customized laptop should only be reported if you replaced the original CPU, report the CPU vendor and model in the "Model" category.
+
+We also recommend to add your `pciutils` log on [this](https://gitlab.redox-os.org/redox-os/base/-/blob/main/drivers/COMMUNITY-HW.md) document to help us with probable porting.
 
 ## Status
 
-- **Recommended:** The system boots with all features working.
-- **Booting:** The system boots with some issues.
-- **Broken:** The system can't boot.
+- **Recommended:** The operating system boots with video, sound, PS/2 or USB input, Ethernet, terminal and Orbital working.
+- **Booting:** The operating system boots with some issues or lacking hardware support (write the issues and what supported hardware is not working in the "Report" section).
+- **Broken:** The boot loader don't work or can't bootstrap the operating system.
 
 ## General
 
-This section contain limitations to consider.
+This section contain limitations that apply to any status.
 
 - ACPI support is incomplete (some things are hardcoded on the kernel)
-- Wi-Fi is not supported yet
-- GPU drivers aren't supported yet (only VESA and UEFI GOP)
-- Automatic operating system discovery on boot loader is not implemented (remember this before installing Redox)
+- Wi-Fi and Bluetooth aren't supported yet
+- AMD, NVIDIA, and ARM GPU drivers aren't available yet (only BIOS VESA and UEFI GOP)
+- I2C devices aren't supported yet (PS/2 or USB devices should be used)
+- USB support varies on each device model because some USB devices require specific drivers (use input devices with stanrdized controls for more compatibility)
+- Automatic operating system discovery is not implemented in the boot loader yet (remember this before installing Redox)
 
 ## Contribute to this document
 
