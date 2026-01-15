@@ -1,9 +1,13 @@
 # TODO: Need to port more libs
 # newer version requires c_std=gnu23
 [source]
-tar = "https://github.com/GNOME/epiphany/archive/refs/tags/46.4.tar.gz"
-
+tar = "https://download.gnome.org/sources/epiphany/46/epiphany-46.5.tar.xz"
 [build]
+template = "meson"
+mesonflags = [
+  "-Dunit_tests=disabled",
+  "-Dman-pages=disabled",
+]
 dependencies = [
   "cairo",
 #   "gck2",
@@ -31,10 +35,3 @@ dependencies = [
 #   "webkitgtk6",
 #   "webkitgtk-web-process-extension6"
 ]
-
-template = "custom"
-script = """
-DYNAMIC_INIT
-
-cookbook_meson
-"""

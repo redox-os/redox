@@ -2,9 +2,16 @@
 # build instructions: https://gitlab.gnome.org/World/Upscaler#meson
 [source]
 git = "https://gitlab.gnome.org/World/Upscaler"
-rev = "30c2a8411fac281ed548189a9fea45dc9efe5b68"
+rev = "1.6.3"
+shallow_clone = true
 [build]
 template = "meson"
+mesonflags = [
+    "-Dnetwork_tests=false",
+]
+dev-dependencies = [
+    "blueprint"
+]
 dependencies = [
     "gtk4",
     "libadwaita",
