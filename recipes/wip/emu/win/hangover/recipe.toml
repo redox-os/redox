@@ -2,8 +2,12 @@
 # build instructions: https://github.com/AndreRH/hangover/blob/master/docs/COMPILE.md
 [source]
 git = "https://github.com/AndreRH/hangover"
-rev = "hangover-10.18"
+rev = "hangover-11.0"
 shallow_clone = true
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
 [build]
 template = "custom"
 dependencies = [

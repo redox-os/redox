@@ -1,8 +1,9 @@
 #TODO port to redox
 #build instructions: https://gitlab.winehq.org/wine/wine/-/wikis/Building-Wine
 [source]
-tar = "http://dl.winehq.org/wine/source/10.x/wine-10.18.tar.xz"
-blake3 = "0517c4200935456fbc22b152a19c5fd0d027d2b06c511968a5533101e1274f54"
+git = "https://gitlab.winehq.org/wine/wine"
+branch = "stable"
+shallow_clone = true
 script = """
 DYNAMIC_INIT
 autotools_recursive_regenerate
