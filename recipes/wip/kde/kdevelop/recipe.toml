@@ -1,12 +1,14 @@
 #TODO not compiled or tested
-#TODO probably missing dependencies, see https://packages.debian.org/source/trixie/kdevelop
-# build instructions: https://kdevelop.org/build-it/
+#TODO discover minimum dependencies from cmake log
 [source]
 git = "https://invent.kde.org/kdevelop/kdevelop"
-branch = "release/25.08"
+branch = "release/25.12"
 shallow_clone = true
 [build]
 template = "cmake"
+cmakeflags = [
+    "-DBUILD_DOC=OFF",
+]
 # dependencies = [
 #     "apr",
 #     "apr-util",

@@ -2,7 +2,7 @@
 #TODO determine minimum dependencies from cmake log
 [source]
 git = "https://invent.kde.org/plasma/discover"
-branch = "Plasma/6.5"
+branch = "Plasma/6.6"
 shallow_clone = true
 [build]
 template = "cmake"
