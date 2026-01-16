@@ -1,6 +1,6 @@
-diff -ruwN source-old/fuzzing/fuzz_resolver.c source/fuzzing/fuzz_resolver.c
---- source-old/fuzzing/fuzz_resolver.c	2025-11-03 05:42:10.000000000 -0700
-+++ source/fuzzing/fuzz_resolver.c	2025-11-10 12:32:57.663974728 -0700
+diff -ruwN glib-2.87.0/fuzzing/fuzz_resolver.c source/fuzzing/fuzz_resolver.c
+--- glib-2.87.0/fuzzing/fuzz_resolver.c	2025-11-03 05:42:10.000000000 -0700
++++ source/fuzzing/fuzz_resolver.c	2026-01-15 18:35:07.058788231 -0700
 @@ -29,7 +29,7 @@
                   gint          rrtype)
  {
@@ -10,9 +10,9 @@ diff -ruwN source-old/fuzzing/fuzz_resolver.c source/fuzzing/fuzz_resolver.c
    GList *record_list = NULL;
  
    /* Data too long? */
-diff -ruwN source-old/gio/gcredentialsprivate.h source/gio/gcredentialsprivate.h
---- source-old/gio/gcredentialsprivate.h	2025-11-03 05:42:10.000000000 -0700
-+++ source/gio/gcredentialsprivate.h	2025-11-10 12:35:09.114747806 -0700
+diff -ruwN glib-2.87.0/gio/gcredentialsprivate.h source/gio/gcredentialsprivate.h
+--- glib-2.87.0/gio/gcredentialsprivate.h	2025-11-03 05:42:10.000000000 -0700
++++ source/gio/gcredentialsprivate.h	2026-01-15 18:35:07.058963309 -0700
 @@ -104,7 +104,7 @@
   */
  #undef G_CREDENTIALS_HAS_PID
@@ -22,9 +22,9 @@ diff -ruwN source-old/gio/gcredentialsprivate.h source/gio/gcredentialsprivate.h
  #define G_CREDENTIALS_SUPPORTED 1
  #define G_CREDENTIALS_USE_LINUX_UCRED 1
  #define G_CREDENTIALS_NATIVE_TYPE G_CREDENTIALS_TYPE_LINUX_UCRED
-diff -ruwN source-old/gio/glocalfile.c source/gio/glocalfile.c
---- source-old/gio/glocalfile.c	2025-11-03 05:42:10.000000000 -0700
-+++ source/gio/glocalfile.c	2025-11-10 12:32:57.664235788 -0700
+diff -ruwN glib-2.87.0/gio/glocalfile.c source/gio/glocalfile.c
+--- glib-2.87.0/gio/glocalfile.c	2025-11-03 05:42:10.000000000 -0700
++++ source/gio/glocalfile.c	2026-01-15 18:35:07.058984475 -0700
 @@ -47,6 +47,10 @@
  #include <sys/mount.h>
  #endif
@@ -36,9 +36,9 @@ diff -ruwN source-old/gio/glocalfile.c source/gio/glocalfile.c
  #ifndef O_BINARY
  #define O_BINARY 0
  #endif
-diff -ruwN source-old/gio/gnetworking.h.in source/gio/gnetworking.h.in
---- source-old/gio/gnetworking.h.in	2025-11-03 05:42:10.000000000 -0700
-+++ source/gio/gnetworking.h.in	2025-11-10 12:32:57.664602707 -0700
+diff -ruwN glib-2.87.0/gio/gnetworking.h.in source/gio/gnetworking.h.in
+--- glib-2.87.0/gio/gnetworking.h.in	2025-11-03 05:42:10.000000000 -0700
++++ source/gio/gnetworking.h.in	2026-01-15 18:35:07.059494095 -0700
 @@ -40,13 +40,17 @@
  #include <netdb.h>
  #include <netinet/in.h>
@@ -57,9 +57,9 @@ diff -ruwN source-old/gio/gnetworking.h.in source/gio/gnetworking.h.in
  @NAMESER_COMPAT_INCLUDE@
  
  #ifndef __GI_SCANNER__
-diff -ruwN source-old/gio/gthreadedresolver.c source/gio/gthreadedresolver.c
---- source-old/gio/gthreadedresolver.c	2025-11-03 05:42:10.000000000 -0700
-+++ source/gio/gthreadedresolver.c	2025-11-10 12:32:57.664870630 -0700
+diff -ruwN glib-2.87.0/gio/gthreadedresolver.c source/gio/gthreadedresolver.c
+--- glib-2.87.0/gio/gthreadedresolver.c	2025-11-03 05:42:10.000000000 -0700
++++ source/gio/gthreadedresolver.c	2026-01-15 18:35:07.059664185 -0700
 @@ -698,7 +698,7 @@
  }
  
@@ -82,9 +82,9 @@ diff -ruwN source-old/gio/gthreadedresolver.c source/gio/gthreadedresolver.c
    gint len = 512;
    gint herr;
    GByteArray *answer;
-diff -ruwN source-old/gio/gunixconnection.c source/gio/gunixconnection.c
---- source-old/gio/gunixconnection.c	2025-11-03 05:42:10.000000000 -0700
-+++ source/gio/gunixconnection.c	2025-11-10 12:36:14.017908505 -0700
+diff -ruwN glib-2.87.0/gio/gunixconnection.c source/gio/gunixconnection.c
+--- glib-2.87.0/gio/gunixconnection.c	2025-11-03 05:42:10.000000000 -0700
++++ source/gio/gunixconnection.c	2026-01-15 18:35:07.059895298 -0700
 @@ -496,7 +496,7 @@
    GSocket *socket;
    gint n;
@@ -112,9 +112,9 @@ diff -ruwN source-old/gio/gunixconnection.c source/gio/gunixconnection.c
    if (turn_off_so_passcreds)
      {
        if (!g_socket_set_option (socket,
-diff -ruwN source-old/gio/gunixmounts.c source/gio/gunixmounts.c
---- source-old/gio/gunixmounts.c	2025-11-03 05:42:10.000000000 -0700
-+++ source/gio/gunixmounts.c	2025-11-10 12:32:57.665218112 -0700
+diff -ruwN glib-2.87.0/gio/gunixmounts.c source/gio/gunixmounts.c
+--- glib-2.87.0/gio/gunixmounts.c	2025-11-03 05:42:10.000000000 -0700
++++ source/gio/gunixmounts.c	2026-01-15 18:35:07.060167680 -0700
 @@ -1114,7 +1114,7 @@
  }
  
@@ -153,9 +153,9 @@ diff -ruwN source-old/gio/gunixmounts.c source/gio/gunixmounts.c
  /* Common code {{{2 */
  #else
  #error No g_get_mount_table() implementation for system
-diff -ruwN source-old/gio/meson.build source/gio/meson.build
---- source-old/gio/meson.build	2025-11-03 05:42:10.000000000 -0700
-+++ source/gio/meson.build	2025-11-10 12:32:57.665641216 -0700
+diff -ruwN glib-2.87.0/gio/meson.build source/gio/meson.build
+--- glib-2.87.0/gio/meson.build	2025-11-03 05:42:10.000000000 -0700
++++ source/gio/meson.build	2026-01-15 18:35:07.060812870 -0700
 @@ -18,7 +18,7 @@
  
  gnetworking_h_nameser_compat_include = ''
@@ -174,9 +174,9 @@ diff -ruwN source-old/gio/meson.build source/gio/meson.build
    # res_query()
    res_query_test = '''#include <resolv.h>
                        int main (int argc, char ** argv) {
-diff -ruwN source-old/gio/tests/gdbus-server-auth.c source/gio/tests/gdbus-server-auth.c
---- source-old/gio/tests/gdbus-server-auth.c	2025-11-03 05:42:10.000000000 -0700
-+++ source/gio/tests/gdbus-server-auth.c	2025-11-10 12:36:39.750972219 -0700
+diff -ruwN glib-2.87.0/gio/tests/gdbus-server-auth.c source/gio/tests/gdbus-server-auth.c
+--- glib-2.87.0/gio/tests/gdbus-server-auth.c	2025-11-03 05:42:10.000000000 -0700
++++ source/gio/tests/gdbus-server-auth.c	2026-01-15 18:35:07.061075904 -0700
 @@ -243,7 +243,7 @@
      }
    else    /* We should prefer EXTERNAL whenever it is allowed. */
@@ -186,9 +186,9 @@ diff -ruwN source-old/gio/tests/gdbus-server-auth.c source/gio/tests/gdbus-serve
        /* We know that both GDBus and libdbus support full credentials-passing
         * on Linux. */
        g_assert_cmpint (uid, ==, getuid ());
-diff -ruwN source-old/glib/glib-unix.c source/glib/glib-unix.c
---- source-old/glib/glib-unix.c	2025-11-03 05:42:10.000000000 -0700
-+++ source/glib/glib-unix.c	2025-11-10 12:32:57.665846181 -0700
+diff -ruwN glib-2.87.0/glib/glib-unix.c source/glib/glib-unix.c
+--- glib-2.87.0/glib/glib-unix.c	2025-11-03 05:42:10.000000000 -0700
++++ source/glib/glib-unix.c	2026-01-15 18:35:07.061343737 -0700
 @@ -74,6 +74,10 @@
  #include <sys/user.h>
  #endif  /* defined (__FreeBSD__ )*/
@@ -221,3 +221,42 @@ diff -ruwN source-old/glib/glib-unix.c source/glib/glib-unix.c
  #else
    #error "g_unix_fd_query_path() not supported on this platform"
  #endif
+diff -ruwN glib-2.87.0/glib/gstrfuncs.c source/glib/gstrfuncs.c
+--- glib-2.87.0/glib/gstrfuncs.c	2025-11-03 05:42:10.000000000 -0700
++++ source/glib/gstrfuncs.c	2026-01-15 19:15:21.406736293 -0700
+@@ -707,7 +707,7 @@
+ 
+   gchar *fail_pos;
+   gdouble val;
+-#ifndef __BIONIC__
++#if !defined(__BIONIC__) && !defined(__redox__)
+   struct lconv *locale_data;
+ #endif
+   const char *decimal_point;
+@@ -720,7 +720,7 @@
+ 
+   fail_pos = NULL;
+ 
+-#ifndef __BIONIC__
++#if !defined(__BIONIC__) && !defined(__redox__)
+   locale_data = localeconv ();
+   decimal_point = locale_data->decimal_point;
+   decimal_point_len = strlen (decimal_point);
+@@ -931,7 +931,7 @@
+ 
+   return buffer;
+ #else
+-#ifndef __BIONIC__
++#if !defined(__BIONIC__) && !defined(__redox__)
+   struct lconv *locale_data;
+ #endif
+   const char *decimal_point;
+@@ -964,7 +964,7 @@
+ 
+   _g_snprintf (buffer, buf_len, format, d);
+ 
+-#ifndef __BIONIC__
++#if !defined(__BIONIC__) && !defined(__redox__)
+   locale_data = localeconv ();
+   decimal_point = locale_data->decimal_point;
+   decimal_point_len = strlen (decimal_point);
