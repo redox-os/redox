@@ -18,6 +18,7 @@ COOKBOOK_CONFIGURE_FLAGS+=(
     --disable-strip
     --sysconfdir=/etc/ssh
 )
+export CFLAGS+=" -DSYSTEMD_NOTIFY=1"
 cookbook_configure
 mv "${COOKBOOK_STAGE}"/usr/sbin/sshd "${COOKBOOK_STAGE}"/usr/bin/sshd
 rmdir "${COOKBOOK_STAGE}"/usr/sbin

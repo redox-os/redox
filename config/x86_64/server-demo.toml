@@ -82,9 +82,8 @@ Description=The nginx HTTP and reverse proxy server
 After=network-online.target
 
 [Service]
-Type=notify
-ExecStart=/usr/bin/nginx
-TimeoutStopSec=5
+Type=simple
+ExecStart=/usr/bin/nginx -g "daemon off;"
 
 [Install]
 WantedBy=multi-user.target
@@ -99,16 +98,34 @@ Description=OpenBSD Secure Shell server
 After=network-online.target
 
 [Service]
-Type=notify
-ExecStart=/usr/bin/sshd
-TimeoutStopSec=5
+Type=simple
+ExecStart=/usr/bin/sshd -D
+
+[Install]
+WantedBy=multi-user.target
+"""
+
+
+
+[[files]]
+path = "/etc/rustysd/system/php.service"
+data = """
+[Unit]
+Description=OpenBSD Secure Shell server
+After=network-online.target
+
+[Service]
+Type=simple
+# currently php-fpm not that quite work
+ExecStart=env PWD=/var/www/html php -S localhost:9000
+# ExecStart=/usr/bin/php-fpm --fpm-config /etc/php/84/php-fpm.conf  --nodaemonize
 
 [Install]
 WantedBy=multi-user.target
 """
 
 [[files]]
-path = "/home/user/public_html/index.php"
+path = "/var/www/html/index.php"
 data = """
 <?php
 
@@ -116,14 +133,14 @@ echo "Hello from PHP on Redox!";
 """
 
 [[files]]
-path = "/home/user/public_html/phpinfo.php"
+path = "/var/www/html/phpinfo.php"
 data = """
 <?php phpinfo();
 """
 
 
 [[files]]
-path = "/home/user/public_html/README"
+path = "/var/www/html/README"
 data = """
 This is a demonstration into PHP server.
 
@@ -142,7 +159,9 @@ postinstall = true
 path = "/etc/nginx/nginx.conf"
 data = """
 user nginx;
-worker_processes auto;
+
+# currently nginx does a lot spin locking for some reason
+worker_processes 1;
 error_log /var/log/nginx/error.log;
 pid /var/run/nginx.pid;
 
@@ -171,6 +190,7 @@ server {
     listen       80;
     server_name  localhost;
     root   /usr/share/website;
+    absolute_redirect off;
 
     location / {
         index  index.html index.htm;
@@ -185,7 +205,7 @@ data = """
 server {
     listen 8081;
     server_name localhost;
-    root /home/user/public_html;
+    root /var/www/html;
 
     index index.php index.html index.htm;
 
@@ -194,10 +214,12 @@ server {
     }
 
     location ~ \\.php$ {
-        include fastcgi_params;
-        fastcgi_pass 127.0.0.1:9000;
-        fastcgi_index index.php;
-        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+# because we're not using PHP FPM (see rustysd php.service)
+#       include fastcgi_params;
+#       fastcgi_pass 127.0.0.1:9000;
+#       fastcgi_index index.php;
+#       fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        proxy_pass http://127.0.0.1:9000;
     }
 }
 """
@@ -207,6 +229,7 @@ postinstall = true
 path = "/etc/php/84/php-fpm.conf"
 data = """
 
+error_log=/var/log/php-fpm.log
 include=/etc/php/84/php-fpm.d/*.conf
 """
 
@@ -275,14 +298,18 @@ data = """
 # At the moment we support SSH, NGINX, Python, PHP. There's more to come
 #
 # This server demo is insecure by design, we encourage you to get familiar into
-# basics of server security if you wish to use this as a production server.
+#   basics of server security if you wish to use this as a production server.
 #
-# To start the daemon, run
-# > sudo bash server.sh
-#
-# A WIP port of rustysd is available, you can try start it manually
+# There should be rustysd already running, if not, you can try start it manually
 # > sudo rustysd --conf /etc/rustysd
 #
-# The server will start port 22 (ssh), 80 (static web) and 8080 (php)
+# You can also try running all daemons manually
+# > sudo bash server.sh
+#
+# The server will start port 22 (ssh), 80 (static web) and 8081 (php)
+# If you use the Redox OS build system, starting QEMU with `net=redir` 
+#   should expose those port to 8022, 8080 and 8081.
+# Try logging in to console via SSH with `ssh user@localhost -p 8022`
+# 
 ##############################################################################
 """
