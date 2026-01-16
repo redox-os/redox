@@ -1,5 +1,6 @@
 [source]
-tar = "https://www.php.net/distributions/php-8.4.12.tar.xz"
+tar = "https://www.php.net/distributions/php-8.4.17.tar.xz"
+blake3 = "a8478dddd948d4b26e51c5727ac0895440da76e8ad9be947098a4284ca0b7f2a"
 patches = [
     "redox.patch"
 ]

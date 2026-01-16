@@ -1,7 +1,7 @@
 diff -ruwN source/configure source-new/configure
---- source/configure	2025-08-26 20:36:28.000000000 +0700
-+++ source-new/configure	2025-09-26 16:31:28.871157195 +0700
-@@ -25863,7 +25863,7 @@
+--- source/configure	2026-01-14 00:17:10.000000000 +0700
++++ source-new/configure	2026-01-16 15:56:01.944755811 +0700
+@@ -26007,7 +26007,7 @@
  then :
    ac_cv_lib_curl_curl_easy_perform=yes
  else case e in #(
@@ -10,7 +10,7 @@ diff -ruwN source/configure source-new/configure
  esac
  fi
  rm -f core conftest.err conftest.$ac_objext conftest.beam \
-@@ -37356,7 +37356,7 @@
+@@ -37728,7 +37728,7 @@
  then :
    php_cv_lib_gd_works=yes
  else case e in #(
@@ -19,7 +19,7 @@ diff -ruwN source/configure source-new/configure
  esac
  fi
  rm -f core conftest.err conftest.$ac_objext conftest.beam \
-@@ -40056,7 +40056,7 @@
+@@ -40464,7 +40464,7 @@
    LIBS_SAVED=$LIBS
    CFLAGS="$CFLAGS $GMP_CFLAGS"
    LIBS="$LIBS $GMP_LIBS"
@@ -29,8 +29,8 @@ diff -ruwN source/configure source-new/configure
  if test "x$ac_cv_header_gmp_h" = xyes
  then :
 diff -ruwN source/ext/phar/Makefile.frag source-new/ext/phar/Makefile.frag
---- source/ext/phar/Makefile.frag	2025-08-26 20:36:28.000000000 +0700
-+++ source-new/ext/phar/Makefile.frag	2025-09-26 16:31:29.029526842 +0700
+--- source/ext/phar/Makefile.frag	2026-01-14 00:17:10.000000000 +0700
++++ source-new/ext/phar/Makefile.frag	2026-01-16 15:56:01.946130660 +0700
 @@ -30,7 +30,7 @@
  	-@test -f $(builddir)/phar/phar.inc || cp $(srcdir)/phar/phar.inc $(builddir)/phar/phar.inc
  
@@ -41,8 +41,8 @@ diff -ruwN source/ext/phar/Makefile.frag source-new/ext/phar/Makefile.frag
  $(builddir)/phar.php: $(srcdir)/build_precommand.php $(srcdir)/phar/*.inc $(srcdir)/phar/*.php $(SAPI_CLI_PATH)
  	-@(echo "Generating phar.php"; \
 diff -ruwN source/ext/posix/posix.c source-new/ext/posix/posix.c
---- source/ext/posix/posix.c	2025-08-26 20:36:28.000000000 +0700
-+++ source-new/ext/posix/posix.c	2025-09-26 16:31:29.085983450 +0700
+--- source/ext/posix/posix.c	2026-01-14 00:17:10.000000000 +0700
++++ source-new/ext/posix/posix.c	2026-01-16 15:56:01.946290813 +0700
 @@ -375,7 +375,7 @@
  
  	ZEND_PARSE_PARAMETERS_NONE();
@@ -53,25 +53,27 @@ diff -ruwN source/ext/posix/posix.c source-new/ext/posix/posix.c
  		RETURN_FALSE;
  	}
 diff -ruwN source/sapi/fpm/fpm/fpm_status.c source-new/sapi/fpm/fpm/fpm_status.c
---- source/sapi/fpm/fpm/fpm_status.c	2025-08-26 20:36:28.000000000 +0700
-+++ source-new/sapi/fpm/fpm/fpm_status.c	2025-09-27 01:07:38.657514932 +0700
-@@ -104,11 +104,15 @@
+--- source/sapi/fpm/fpm/fpm_status.c	2026-01-14 00:17:10.000000000 +0700
++++ source-new/sapi/fpm/fpm/fpm_status.c	2026-01-16 15:57:37.781307156 +0700
+@@ -84,6 +84,7 @@
+ 			continue;
  		}
- 		proc_p = &procs[i];
  		/* prevent NaN */
 +#ifdef HAVE_TIMES
- 		if (procs[i].cpu_duration.tv_sec == 0 && procs[i].cpu_duration.tv_usec == 0) {
+ 		if (proc_p->cpu_duration.tv_sec == 0 && proc_p->cpu_duration.tv_usec == 0) {
  			cpu = 0.;
  		} else {
- 			cpu = (procs[i].last_request_cpu.tms_utime + procs[i].last_request_cpu.tms_stime + procs[i].last_request_cpu.tms_cutime + procs[i].last_request_cpu.tms_cstime) / fpm_scoreboard_get_tick() / (procs[i].cpu_duration.tv_sec + procs[i].cpu_duration.tv_usec / 1000000.) * 100.;
+@@ -91,6 +92,9 @@
+ 					proc_p->last_request_cpu.tms_cstime) / fpm_scoreboard_get_tick() /
+ 					(proc_p->cpu_duration.tv_sec + proc_p->cpu_duration.tv_usec / 1000000.) * 100.;
  		}
 +#else
 +			cpu = 0.;
 +#endif
  
  		array_init(&fpm_proc_stat);
- 		add_assoc_long(&fpm_proc_stat, "pid", procs[i].pid);
-@@ -590,11 +594,15 @@
+ 		add_assoc_long(&fpm_proc_stat, "pid", proc_p->pid);
+@@ -573,11 +577,15 @@
  				}
  
  				/* prevent NaN */
