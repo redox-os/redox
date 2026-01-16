@@ -10,7 +10,7 @@ mesonflags = [
     "-Dnetwork_tests=false",
 ]
 dev-dependencies = [
-    "blueprint"
+    "host:blueprint" # add script for linux compilation
 ]
 dependencies = [
     "gtk4",

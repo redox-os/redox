@@ -7,12 +7,12 @@ tar = "https://github.com/transmission/transmission/releases/download/4.0.6/tran
 [build]
 template = "cmake"
 cmakeflags = [
+    "-DENABLE_CLI=ON",
     "-DINSTALL_WEB=OFF",
     "-DENABLE_TESTS=OFF",
     "-DINSTALL_DOC=OFF",
 ]
-dependencies = [
+#dependencies = [
     #"openssl3",
     #"curl",
-    "gtk3mm",
-]
+#]

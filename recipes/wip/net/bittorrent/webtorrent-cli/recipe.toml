@@ -2,6 +2,7 @@
 [source]
 git = "https://github.com/webtorrent/webtorrent-cli"
 rev = "v5.1.3"
+shallow_clone = true
 [build]
 template = "custom"
 script = """
