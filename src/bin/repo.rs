@@ -593,8 +593,8 @@ fn handle_cook(
         let stage_dirs = get_stage_dirs(&recipe.recipe.optional_packages, &target_dir);
         for stage_dir in stage_dirs {
             if stage_dir.is_dir() {
-                let mut stage_files_buf = format!("{}\n", recipe.name.without_host());
-                tree::walk_file_tree(&stage_dir, "    ", &mut stage_files_buf)
+                let mut stage_files_buf = String::new();
+                tree::walk_file_tree(&stage_dir, "", &mut stage_files_buf)
                     .context("failed to walk stage files tree")?;
                 fs::write(stage_dir.with_added_extension("files"), stage_files_buf)
                     .context("unable to write stage files")?;
