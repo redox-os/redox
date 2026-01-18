@@ -470,9 +470,14 @@ pub fn remove_stage_dir(stage_dir: &PathBuf) -> Result<(), String> {
         remove_all(&stage_file)?;
     }
     let stage_meta = stage_dir.with_added_extension("toml");
-    Ok(if stage_meta.is_file() {
+    if stage_meta.is_file() {
         remove_all(&stage_meta)?;
-    })
+    }
+    let stage_files = stage_dir.with_added_extension("files");
+    if stage_files.is_file() {
+        remove_all(&stage_files)?;
+    }
+    Ok(())
 }
 
 pub fn get_stage_dirs(features: &Vec<OptionalPackageRecipe>, target_dir: &Path) -> Vec<PathBuf> {
