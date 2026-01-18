@@ -3,6 +3,7 @@
 PREFIX=prefix/$(TARGET)
 
 PREFIX_INSTALL=$(PREFIX)/sysroot/
+PREFIX_ASSETS=prefix/assets
 PREFIX_PATH=$(ROOT)/$(PREFIX_INSTALL)/bin
 BINUTILS_TARGET=recipes/dev/binutils-gdb/target/$(HOST_TARGET)/$(TARGET)
 LIBTOOL_TARGET=recipes/dev/libtool/target/$(HOST_TARGET)
@@ -98,7 +99,7 @@ endif
 # PREFIX_BINARY ---------------------------------------------------
 ifeq ($(PREFIX_BINARY),1)
 
-$(PREFIX)/rust-install.tar.gz: | $(CONTAINER_TAG)
+$(PREFIX_ASSETS)/rust-install.tar.gz: | $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
@@ -108,7 +109,7 @@ else
 	mv $@.partial $@
 endif
 
-$(PREFIX)/rust-install: $(PREFIX)/rust-install.tar.gz $(CONTAINER_TAG)
+$(PREFIX)/rust-install: $(PREFIX_ASSETS)/rust-install.tar.gz $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
@@ -349,7 +350,7 @@ endif
 
 endif
 
-$(PREFIX)/rust-install.tar.gz: $(PREFIX)/rust-install
+$(PREFIX_ASSETS)/rust-install.tar.gz: $(PREFIX)/rust-install
 	tar \
 		--create \
 		--gzip \
