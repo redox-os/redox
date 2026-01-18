@@ -1,13 +1,13 @@
+use anyhow::Context;
+use pkg::{Package, PackageName};
+use std::fmt::Write as _;
 use std::{
     collections::{HashMap, HashSet},
     fs::read_to_string,
     path::PathBuf,
 };
 
-use anyhow::Context;
-use pkg::{Package, PackageName};
-
-use crate::{cook::pty::PtyOut, log_to_pty, recipe::CookRecipe};
+use crate::recipe::CookRecipe;
 
 pub enum WalkTreeEntry<'a> {
     Built(&'a PathBuf, u64),
@@ -123,11 +123,11 @@ pub fn display_pkg_fn(
     Ok(())
 }
 
-pub fn walk_file_tree(dir: &PathBuf, prefix: &str, logger: &PtyOut) -> std::io::Result<u64> {
+pub fn walk_file_tree(dir: &PathBuf, prefix: &str, buffer: &mut String) -> std::io::Result<u64> {
     if !dir.is_dir() {
         return Ok(0);
     }
-
+    let fmt_err = std::io::Error::other;
     let entries: Vec<_> = std::fs::read_dir(dir)?.filter_map(|e| e.ok()).collect();
     let mut total_size = 0;
     for (index, entry) in entries.iter().enumerate() {
@@ -142,20 +142,21 @@ pub fn walk_file_tree(dir: &PathBuf, prefix: &str, logger: &PtyOut) -> std::io::
             .unwrap_or("Unknown");
 
         if path.is_dir() {
-            log_to_pty!(logger, "{}{}{}/", prefix, line_prefix, file_name);
+            writeln!(buffer, "{}{}{}/", prefix, line_prefix, file_name).map_err(fmt_err)?;
             let new_prefix = format!("{}{}", prefix, if is_last { "    " } else { "│   " });
-            walk_file_tree(&path, &new_prefix, logger)?;
+            walk_file_tree(&path, &new_prefix, buffer)?;
         } else {
             let size = metadata.len();
             total_size += size;
-            log_to_pty!(
-                logger,
+            writeln!(
+                buffer,
                 "{}{}{} ({})",
                 prefix,
                 line_prefix,
                 file_name,
                 format_size(size)
-            );
+            )
+            .map_err(fmt_err)?;
         }
     }
 

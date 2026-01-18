@@ -591,19 +591,14 @@ fn handle_cook(
 
     if config.cook.clean_target {
         let stage_dirs = get_stage_dirs(&recipe.recipe.optional_packages, &target_dir);
-        if config.cook.verbose && stage_dirs.iter().any(|d| d.is_dir()) {
-            log_to_pty!(logger, "DEBUG: Listing stage files before removing them");
-        }
         for stage_dir in stage_dirs {
             if stage_dir.is_dir() {
-                if config.cook.verbose {
-                    if let Some(stage_name) = stage_dir.file_name() {
-                        log_to_pty!(logger, "--- {}.pkgar:", stage_name.to_string_lossy());
-                    }
-                    tree::walk_file_tree(&stage_dir, "    ", logger)?;
-                }
-                fs::remove_dir_all(&stage_dir)
-                    .map_err(|err| anyhow!("failed to remove stage dir: {:?}", err))?;
+                let mut stage_files_buf = String::new();
+                tree::walk_file_tree(&stage_dir, "", &mut stage_files_buf)
+                    .context("failed to walk stage files tree")?;
+                fs::write(stage_dir.with_added_extension("files"), stage_files_buf)
+                    .context("unable to write stage files")?;
+                fs::remove_dir_all(&stage_dir).context("failed to remove stage dir")?;
             }
         }
     }
