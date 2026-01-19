@@ -1,4 +1,0 @@
-[source]
-git = "https://github.com/sorairolake/hf"
-[build]
-template = "cargo"
