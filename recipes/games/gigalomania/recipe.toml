@@ -22,9 +22,9 @@ rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 
 export CPPHOST="${TARGET}-g++"
 
-"${REDOX_MAKE}" all -j"$(${NPROC})"
+"${COOKBOOK_MAKE}" all -j"${COOKBOOK_MAKE_JOBS}"
 
-"${REDOX_MAKE}" VERBOSE=1 DESTDIR="${COOKBOOK_STAGE}/usr" install
+"${COOKBOOK_MAKE}" VERBOSE=1 DESTDIR="${COOKBOOK_STAGE}/usr" install
 
 rm -rf "${COOKBOOK_STAGE}/bundle"
 
