@@ -39,6 +39,50 @@ pcid-spawner /etc/pcid.d/
 """
 
 [[files]]
+path = "/etc/login_schemes.toml"
+data = """
+[user_schemes.root]
+schemes = ["*"]
+[user_schemes.user]
+schemes = [
+  # Kernel schemes
+  "debug",
+  "event",
+  "memory",
+  "pipe",
+  "serio",
+  "irq",
+  "time",
+  "sys",
+  # Base schemes
+  "rand",
+  "null",
+  "zero",
+  "log",
+  # Network schemes
+  "ip",
+  "icmp",
+  "tcp",
+  "udp",
+  # IPC schemes
+  "shm",
+  "chan",
+  "uds_stream",
+  "uds_dgram",
+  # File schemes
+  "file",
+  # Display schemes
+  "display.vesa",
+  "display*",
+  # Other schemes
+  "pty",
+  "sudo",
+  "audio",
+  "orbital",
+]
+"""
+
+[[files]]
 path = "/etc/hostname"
 data = "redox"
 
