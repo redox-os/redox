@@ -30,7 +30,7 @@ rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 COOKBOOK_MAKE_JOBS="$(( ${COOKBOOK_MAKE_JOBS} > 8 ? 8 : ${COOKBOOK_MAKE_JOBS} ))"
 
 export TARGET="framebuffer"
-export CFLAGS="${CFLAGS} -I${PWD}/inst-${TARGET}/include"
+export CFLAGS="${CFLAGS} ${CPPFLAGS} -I${PWD}/inst-${TARGET}/include"
 export LDFLAGS="${LDFLAGS} -L${COOKBOOK_SYSROOT}/lib -L${PWD}/inst-${TARGET}/lib -Wl,--allow-multiple-definition -Wl,-rpath-link,${COOKBOOK_SYSROOT}/lib"
 # nghttp2 is not linked for some reason
 export LDFLAGS="${LDFLAGS} -lcurl -lnghttp2"
