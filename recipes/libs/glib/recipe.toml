@@ -13,10 +13,21 @@ dependencies = [
     "libiconv",
     "pcre2",
     "zlib",
+# this will recurse: glib -> host:gobject -> host:glib
+    "host:gobject-introspection",
 ]
 script = """
 DYNAMIC_INIT
-cookbook_meson \
-    -Ddefault_library=shared \
+COOKBOOK_MESON_FLAGS+=(
+    -Ddefault_library=shared
     -Dxattr=false
+    -Dlibmount=disabled
+    -Dselinux=disabled
+)
+
+if [ "$TARGET" != "$COOKBOOK_HOST_TARGET" ]; then
+COOKBOOK_MESON_FLAGS+=(-Dintrospection=enabled)
+fi
+
+cookbook_meson
 """

@@ -284,6 +284,7 @@ impl CookRecipe {
 
     fn new_recursive(
         names: &[PackageName],
+        recurse_set: &mut BTreeSet<PackageName>,
         recurse_build_deps: bool,
         recurse_dev_build_deps: bool,
         recurse_package_deps: bool,
@@ -299,11 +300,18 @@ impl CookRecipe {
         let mut recipes = Vec::new();
         let mut recipes_set = BTreeSet::new();
         for name in names {
-            let recipe = Self::from_name(name.clone())?;
+            let mut recipe = Self::from_name(name.clone())?;
+            if !recurse_set.contains(&recipe.name) {
+                recurse_set.insert(recipe.name.clone());
+            } else {
+                // possible recursion (e.g. glib)
+                continue;
+            }
 
             if recurse_build_deps {
                 let dependencies = Self::new_recursive(
                     &recipe.recipe.build.dependencies,
+                    recurse_set,
                     recurse_build_deps,
                     recurse_dev_build_deps,
                     recurse_package_deps,
@@ -317,17 +325,28 @@ impl CookRecipe {
                     err
                 })?;
 
+                let mut local_recipes_set = BTreeSet::new();
                 for dependency in dependencies {
+                    local_recipes_set.insert(dependency.name.clone());
                     if !recipes_set.contains(&dependency.name) {
                         recipes_set.insert(dependency.name.clone());
                         recipes.push(dependency);
                     }
                 }
+
+                recipe.recipe.build.dependencies = recipe
+                    .recipe
+                    .build
+                    .dependencies
+                    .into_iter()
+                    .filter(|p| local_recipes_set.contains(p))
+                    .collect();
             }
 
             if recurse_dev_build_deps {
                 let dependencies = Self::new_recursive(
                     &recipe.recipe.build.dev_dependencies,
+                    recurse_set,
                     recurse_build_deps,
                     recurse_dev_build_deps,
                     recurse_package_deps,
@@ -341,17 +360,28 @@ impl CookRecipe {
                     err
                 })?;
 
+                let mut local_recipes_set = BTreeSet::new();
                 for dependency in dependencies {
+                    local_recipes_set.insert(dependency.name.clone());
                     if !recipes_set.contains(&dependency.name) {
                         recipes_set.insert(dependency.name.clone());
                         recipes.push(dependency);
                     }
                 }
+
+                recipe.recipe.build.dev_dependencies = recipe
+                    .recipe
+                    .build
+                    .dev_dependencies
+                    .into_iter()
+                    .filter(|p| local_recipes_set.contains(p))
+                    .collect();
             }
 
             if recurse_package_deps {
                 let dependencies = Self::new_recursive(
                     &recipe.recipe.package.dependencies,
+                    recurse_set,
                     recurse_build_deps,
                     recurse_dev_build_deps,
                     recurse_package_deps,
@@ -386,8 +416,10 @@ impl CookRecipe {
         names: &[PackageName],
         include_dev: bool,
     ) -> Result<Vec<Self>, PackageError> {
+        let mut recipes_set = BTreeSet::new();
         let packages = Self::new_recursive(
             names,
+            &mut recipes_set,
             true,
             include_dev,
             false,
@@ -404,9 +436,11 @@ impl CookRecipe {
         names: &[PackageName],
         include_names: bool,
     ) -> Result<Vec<PackageName>, PackageError> {
+        let mut recipes_set = BTreeSet::new();
         // recurse_build_deps == true here as libraries (build deps) can have runtime files (package deps)
         let packages = Self::new_recursive(
             names,
+            &mut recipes_set,
             true,
             false,
             true,
