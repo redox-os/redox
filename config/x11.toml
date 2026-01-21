@@ -46,6 +46,7 @@ export DBUS_DEBUG_OUTPUT=1
 mkdir -p /var/lib/dbus
 dbus-uuidgen --ensure
 mkdir -p /run/dbus
+rm -f /run/dbus/pid
 dbus-daemon --system
 """
 
