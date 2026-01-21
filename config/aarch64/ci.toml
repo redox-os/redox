@@ -83,6 +83,7 @@ patch = {}
 patchelf = {}
 pcre = {}
 pkgutils = {}
+pls = {}
 pop-icon-theme = {}
 redoxfs = {}
 relibc = {}
