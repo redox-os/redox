@@ -1,6 +1,6 @@
 [source]
 git = "https://github.com/pop-os/cosmic-files.git"
-branch = "master"
+branch = "epoch-update"
 
 [build]
 template = "custom"
