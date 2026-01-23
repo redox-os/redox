@@ -106,6 +106,12 @@ else
 	bash
 endif
 
+setenv: FORCE
+	@echo export ARCH='$(ARCH)'
+	@echo export BOARD='$(BOARD)'
+	@echo export CONFIG_NAME='$(CONFIG_NAME)'
+	@echo BUILD='$(BUILD)'
+
 export RUST_GDB=gdb-multiarch # Necessary when debugging for another architecture than the host
 GDB_KERNEL_FILE=recipes/core/kernel/target/$(TARGET)/build/kernel.sym
 gdb: FORCE
