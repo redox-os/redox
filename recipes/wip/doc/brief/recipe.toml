@@ -1,0 +1,7 @@
+#TODO not compiled or tested
+#TODO discover minimum dependencies from meson log
+[source]
+git = "https://github.com/shonebinu/Brief"
+rev = "v0.3.0"
+[build]
+template = "meson"

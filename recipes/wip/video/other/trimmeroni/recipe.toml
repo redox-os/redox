@@ -1,5 +1,5 @@
 #TODO compiled but not tested
 [source]
-git = "https://github.com/outfrost/trimmeroni"
+git = "https://codeberg.org/outfrost/trimmeroni"
 [build]
 template = "cargo"

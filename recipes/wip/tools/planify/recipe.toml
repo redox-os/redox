@@ -1,0 +1,7 @@
+#TODO not compiled or tested
+#TODO determine minimum dependencies from meson log
+[source]
+git = "https://github.com/alainm23/planify"
+rev = "v4.17.0"
+[build]
+template = "meson"
