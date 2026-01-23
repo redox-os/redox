@@ -1,6 +1,12 @@
 # TODO Fix coreutils i18n/l10n behavior on Redox
+# TODO waiting for rustix bump before removing patches
+# TODO Fix locale init bug on aarch64 before removing patches
 [source]
 git = "https://github.com/uutils/coreutils"
+rev = "aa218a30aca43fd1805841357ff885afbd9090c3"
+patches = [
+  "redox.patch"
+]
 
 [build]
 template = "custom"
@@ -51,6 +57,7 @@ BINS=(
     more
     mv
     nl
+    nproc
     numfmt
     od
     paste
