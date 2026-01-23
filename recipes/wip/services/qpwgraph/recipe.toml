@@ -1,10 +1,15 @@
 #TODO not compiled or tested
+#TODO determine minimum dependencies from cmake log
 # build instructions: https://gitlab.freedesktop.org/rncbc/qpwgraph#building
 [source]
 git = "https://gitlab.freedesktop.org/rncbc/qpwgraph"
-rev = "9fead6eff8c5831d66f618b2e8e195c94d5c22e6"
+rev = "v0.9.8"
 [build]
 template = "cmake"
+cmakeflags = [
+    "-DCONFIG_ALSA_MIDI=0",
+    "-DCONFIG_SYSTEM_TRAY=0",
+]
 dependencies = [
     "qt6-base",
     "pipewire",

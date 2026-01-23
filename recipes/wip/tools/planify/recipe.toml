@@ -5,3 +5,8 @@ git = "https://github.com/alainm23/planify"
 rev = "v4.17.0"
 [build]
 template = "meson"
+mesonflags = [
+    "-Dwebkit=false",
+    "-Dportal=false",
+    "-Devolution=false",
+]

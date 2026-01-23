@@ -1,12 +1,12 @@
 #TODO not compiled or tested
-# build instructions: https://pipewire.pages.freedesktop.org/wireplumber/installing-wireplumber.html
+#TODO discover minimum dependencies from cmake log
 [source]
 git = "https://gitlab.freedesktop.org/pipewire/wireplumber"
-rev = "d3eb77b292655cef333a8f4cab4e861415bc37c2"
+rev = "0.5.13"
+shallow_clone = true
 [build]
 template = "meson"
-dependencies = [
-    "pipewire",
-    "glib",
-    "lua54",
+mesonflags = [
+    "-Dtests=false",
+    "-Ddbus-tests=false",
 ]

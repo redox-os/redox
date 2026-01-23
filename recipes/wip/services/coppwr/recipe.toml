@@ -1,6 +1,7 @@
-#TODO make pipewire work
+#TODO not compiled or tested
 [source]
 git = "https://github.com/dimtpap/coppwr"
+shallow_clone = true
 [build]
 template = "cargo"
 dependencies = [
