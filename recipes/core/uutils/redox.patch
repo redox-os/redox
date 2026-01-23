@@ -1,0 +1,120 @@
+diff --git a/Cargo.lock b/Cargo.lock
+index 49bf30262..37b5a89ec 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -2476,9 +2476,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "rustix"
+-version = "1.1.3"
++version = "1.1.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "146c9e247ccc180c1f61615433868c99f3de3ae256a30a43b49f67c2d9171f34"
++checksum = "cd15f8a2c5551a84d56efdc1cd049089e409ac19a3072d5037a17fd70719ff3e"
+ dependencies = [
+  "bitflags 2.10.0",
+  "errno",
+@@ -2786,9 +2786,9 @@ checksum = "55937e1799185b12863d447f42597ed69d9928686b8d88a1df17376a097d8369"
+ 
+ [[package]]
+ name = "tempfile"
+-version = "3.24.0"
++version = "3.23.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "655da9c7eb6305c55742045d5a8d2037996d61d8de95806335c7c86ce0f82e9c"
++checksum = "2d31c77bdf42a745371d260a26ca7163f1e0924b64afa0b688e61b5a9fa02f16"
+ dependencies = [
+  "fastrand",
+  "getrandom 0.3.4",
+diff --git a/Cargo.toml b/Cargo.toml
+index 3c8fea771..b04ac85a3 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -265,6 +265,7 @@ feat_os_unix_redox = [
+   "feat_common_core",
+   #
+   "chmod",
++  "nproc",
+   "stat",
+   "uname",
+ ]
+diff --git a/src/uucore/src/lib/features/fs.rs b/src/uucore/src/lib/features/fs.rs
+index a783d04ea..33967f5de 100644
+--- a/src/uucore/src/lib/features/fs.rs
++++ b/src/uucore/src/lib/features/fs.rs
+@@ -839,23 +839,39 @@ pub fn make_fifo(path: &Path) -> std::io::Result<()> {
+ }
+ 
+ // Redox's libc appears not to include the following utilities
++// TODO: Waiting for rustix release that includes https://github.com/rust-lang/libc/commit/76e737e
+ 
+-#[cfg(target_os = "redox")]
++#[cfg(all(target_os = "redox", target_pointer_width = "64"))]
+ pub fn major(dev: libc::dev_t) -> libc::c_uint {
+     (((dev >> 8) & 0xFFF) | ((dev >> 32) & 0xFFFFF000)) as _
+ }
+ 
+-#[cfg(target_os = "redox")]
++#[cfg(all(target_os = "redox", target_pointer_width = "64"))]
+ pub fn minor(dev: libc::dev_t) -> libc::c_uint {
+     ((dev & 0xFF) | ((dev >> 12) & 0xFFFFF00)) as _
+ }
+ 
+-#[cfg(target_os = "redox")]
++#[cfg(all(target_os = "redox", target_pointer_width = "64"))]
+ pub fn makedev(maj: libc::c_uint, min: libc::c_uint) -> libc::dev_t {
+     let [maj, min] = [maj as libc::dev_t, min as libc::dev_t];
+     (min & 0xff) | ((maj & 0xfff) << 8) | ((min & !0xff) << 12) | ((maj & !0xfff) << 32)
+ }
+ 
++#[cfg(all(target_os = "redox", target_pointer_width = "32"))]
++pub fn major(_: libc::dev_t) -> libc::c_uint {
++    0
++}
++
++#[cfg(all(target_os = "redox", target_pointer_width = "32"))]
++pub fn minor(_: libc::dev_t) -> libc::c_uint {
++    0
++}
++
++#[cfg(all(target_os = "redox", target_pointer_width = "32"))]
++pub fn makedev(_: libc::c_uint, _: libc::c_uint) -> libc::dev_t {
++    0
++}
++
+ #[cfg(test)]
+ mod tests {
+     // Note this useful idiom: importing names from outer (for mod tests) scope.
+diff --git a/src/uucore/src/lib/mods/locale.rs b/src/uucore/src/lib/mods/locale.rs
+index ec9a78b43..2faccec5c 100644
+--- a/src/uucore/src/lib/mods/locale.rs
++++ b/src/uucore/src/lib/mods/locale.rs
+@@ -195,10 +195,11 @@ fn init_localization(
+         }
+     };
+ 
+-    LOCALIZER.with(|lock| {
++    // TODO: In aarch64 redox OS, this lock (once cell) is already initialized out of nothing
++    let _ = LOCALIZER.with(|lock| {
+         lock.set(loc)
+             .map_err(|_| LocalizationError::Bundle("Localizer already initialized".into()))
+-    })?;
++    });
+     Ok(())
+ }
+ 
+@@ -400,10 +401,12 @@ pub fn setup_localization(p: &str) -> Result<(), LocalizationError> {
+             let english_bundle = create_english_bundle_from_embedded(&default_locale, p)?;
+             let localizer = Localizer::new(english_bundle);
+ 
+-            LOCALIZER.with(|lock| {
++            // TODO: In aarch64 redox OS, this lock (once cell) is already initialized out of nothing
++            // TODO: When this code is used? Patching for keep sake
++            let _ = LOCALIZER.with(|lock| {
+                 lock.set(localizer)
+                     .map_err(|_| LocalizationError::Bundle("Localizer already initialized".into()))
+-            })?;
++            });
+             Ok(())
+         }
+     }
