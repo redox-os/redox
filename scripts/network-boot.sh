@@ -31,7 +31,7 @@ ARGS=(
     "--dhcp-range=${NETWORK}.3,${NETWORK}.254,255.255.255.0,1h"
     "--dhcp-option=6,1.1.1.1,1.0.0.1"
     "--enable-tftp"
-    "--tftp-root=${BUILD}"
+    "--tftp-root=$(realpath "${BUILD}")"
     # BIOS
     "--dhcp-match=set:bios,option:client-arch,0"
     "--dhcp-boot=tag:!ipxe,tag:bios,undionly.kpxe"
