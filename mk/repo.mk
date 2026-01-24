@@ -96,8 +96,8 @@ else
 endif
 ifeq ($(ALLOW_FSTOOLS),1)
 	@if [ -f $(MOUNTED_TAG) ]; then \
-		$(MAKE) unmount && rm -f $(MOUNTED_TAG) && echo "Filesystem unmounted"; \
-	else echo "Not unmounting by ourself, don't forget to do it"; \
+		$(MAKE) unmount && rm -f $(MOUNTED_TAG); \
+	else echo "\033[0;33;49mNot unmounting by ourself, don't forget to do it\033[0m"; \
 	fi
 endif
 
@@ -121,8 +121,8 @@ else
 endif
 ifeq ($(ALLOW_FSTOOLS),1)
 	@if [ -f $(MOUNTED_TAG) ]; then \
-		$(MAKE) unmount && rm -f $(MOUNTED_TAG) && echo "Filesystem unmounted"; \
-	else echo "Not unmounting by ourself, don't forget to do it"; \
+		$(MAKE) unmount && rm -f $(MOUNTED_TAG); \
+	else echo "\033[1;33;49mNot unmounting by ourself, don't forget to do it\033[0m"; \
 	fi
 endif
 
