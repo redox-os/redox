@@ -10,3 +10,31 @@ diff -ruwN make-4.4/src/arscan.c source/src/arscan.c
  #  include <ar.h>
  # else
     /* These platforms don't have <ar.h> but have archives in the same format
+diff -ruwN make-4.4/src/getopt1.c source/src/getopt1.c
+--- make-4.4/src/getopt1.c	2022-10-23 21:52:32.000000000 +0700
++++ source/src/getopt1.c	2026-01-24 23:28:34.306706884 +0700
+@@ -48,6 +48,10 @@
+ #endif
+ #endif
+ 
++#ifdef __redox__
++#define ELIDE_CODE
++#endif
++
+ #ifndef ELIDE_CODE
+ 
+ 
+diff -ruwN make-4.4/src/getopt.c source/src/getopt.c
+--- make-4.4/src/getopt.c	2022-10-23 21:52:32.000000000 +0700
++++ source/src/getopt.c	2026-01-24 23:21:09.488487860 +0700
+@@ -56,6 +56,10 @@
+ # endif
+ #endif
+ 
++#ifdef __redox__
++#define ELIDE_CODE
++#endif
++
+ #ifndef ELIDE_CODE
+ 
+ 
