@@ -370,6 +370,26 @@ fn publish_packages(recipe_names: &Vec<CookRecipe>, repo_path: &PathBuf) -> anyh
     run_command(command, &None).map_err(|e| anyhow!(e))
 }
 
+fn add_dependencies_recursive(recipe: &cookbook::recipe::Recipe, force_source: &mut HashSet<PackageName>) {
+    for dep in &recipe.build.dependencies {
+        if !force_source.contains(dep) {
+            force_source.insert(dep.clone());
+            if let Ok(dep_recipe) = CookRecipe::from_name(dep.clone()) {
+                add_dependencies_recursive(&dep_recipe.recipe, force_source);
+            }
+        }
+    }
+    
+    for dep in &recipe.build.dev_dependencies {
+        if !force_source.contains(dep) {
+            force_source.insert(dep.clone());
+            if let Ok(dep_recipe) = CookRecipe::from_name(dep.clone()) {
+                add_dependencies_recursive(&dep_recipe.recipe, force_source);
+            }
+        }
+    }
+}
+
 fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<CookRecipe>)> {
     let mut config = CliConfig::new()?;
     let mut command: Option<String> = None;
@@ -512,23 +532,55 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
         && !command.is_cleaning()
     {
         let repo_binary = conf.general.repo_binary == Some(true);
-        let mut last_rule = if repo_binary { "binary" } else { "source" };
+        
+        // Derive only "source" and "binary" to their dependencies, don't do it for "ignore" and "local"
+        let mut force_source_recipes: std::collections::HashSet<PackageName> = std::collections::HashSet::new();
+        let force_binary_recipes: std::collections::HashSet<PackageName> = std::collections::HashSet::new();
         let mut should_drop_host_packages = true;
-        // Use rev() so recipes that don't listed in config is inherited from parent
-        for recipe in recipes.iter_mut().rev() {
-            if let Some(conf) = conf.packages.get(recipe.name.as_str()) {
-                last_rule = match conf {
-                    PackageConfig::Build(rule) => &rule,
-                    _ => {
-                        if repo_binary {
-                            "binary"
-                        } else {
-                            "source"
-                        }
+        
+        // When repo_binary=1, collect "source" recipes and their dependencies
+        if repo_binary {
+            for recipe in recipes.iter() {
+                if let Some(conf) = conf.packages.get(recipe.name.as_str()) {
+                    let rule = match conf {
+                        PackageConfig::Build(rule) => rule.as_str(),
+                        _ => "binary",
+                    };
+                    if rule == "source" {
+                        force_source_recipes.insert(recipe.name.clone());
+                        add_dependencies_recursive(&recipe.recipe, &mut force_source_recipes);
+                        should_drop_host_packages = false;
                     }
-                };
-                if should_drop_host_packages && (last_rule == "source" || last_rule == "local") {
-                    should_drop_host_packages = false;
+                }
+            }
+        }
+        
+        for recipe in recipes.iter_mut() {
+            let last_rule = match (force_source_recipes.contains(&recipe.name), force_binary_recipes.contains(&recipe.name)) {
+                (true, true) => {
+                    // both lists: flip logic
+                    if repo_binary { "source" } else { "binary" }
+                },
+                (true, false) => "source",
+                (false, true) => "binary",
+                (false, false) => {
+                    // check config or use default
+                    if let Some(conf) = conf.packages.get(recipe.name.as_str()) {
+                        match conf {
+                            PackageConfig::Build(rule) => {
+                                let rule_str = rule.as_str();
+                                if should_drop_host_packages && (rule_str == "source" || rule_str == "local") {
+                                    should_drop_host_packages = false;
+                                }
+                                rule_str
+                            },
+                            _ => {
+                                if repo_binary { "binary" } else { "source" }
+                            }
+                        }
+                    } else {
+                        if repo_binary { "binary" } else { "source" }
+                    }
                 }
             };
             recipe
