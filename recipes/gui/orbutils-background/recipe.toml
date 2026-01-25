@@ -1,5 +1,5 @@
 [source]
-git = "https://gitlab.redox-os.org/redox-os/orbutils.git"
+same_as = "../orbutils"
 
 [build]
 template = "cargo"
