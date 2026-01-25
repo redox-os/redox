@@ -116,7 +116,6 @@ osx_macports()
     install_macports_pkg "expat"
     install_macports_pkg "file"
     install_macports_pkg "findutils"
-    install_macports_pkg "findutils"
     install_macports_pkg "flex"
     install_macports_pkg "gcc14"
     install_macports_pkg "gdb +multiarch"
@@ -134,7 +133,6 @@ osx_macports()
     install_macports_pkg "m4"
     install_macports_pkg "meson"
     install_macports_pkg "nasm"
-    install_macports_pkg "ninja"
     install_macports_pkg "ninja"
     install_macports_pkg "openssl11"
     install_macports_pkg "openssl3"
@@ -182,7 +180,6 @@ osx_homebrew()
     install_brew_pkg "ant"
     install_brew_pkg "autoconf"
     install_brew_pkg "automake"
-    install_brew_pkg "automake"
     install_brew_pkg "bison"
     install_brew_pkg "cmake"
     install_brew_pkg "curl"
@@ -199,7 +196,6 @@ osx_homebrew()
     install_brew_pkg "jpeg"
     install_brew_pkg "libpng"
     install_brew_pkg "libtool"
-    install_brew_pkg "libtool"
     install_brew_pkg "llvm"
     install_brew_pkg "lua"
     install_brew_pkg "m4"
@@ -207,7 +203,6 @@ osx_homebrew()
     install_brew_pkg "make"
     install_brew_pkg "meson"
     install_brew_pkg "nasm"
-    install_brew_pkg "ninja"
     install_brew_pkg "ninja"
     install_brew_pkg "openssl@1.1"
     install_brew_pkg "openssl@3.0"
@@ -251,7 +246,6 @@ freebsd()
     fi
 
     install_freebsd_pkg "autoconf"
-    install_freebsd_pkg "automake"
     install_freebsd_pkg "automake"
     install_freebsd_pkg "bison"
     install_freebsd_pkg "cmake"
@@ -345,7 +339,6 @@ archLinux()
     perl \
     perl-html-parser \
     pkgconf \
-    po4a \
     po4a \
     protobuf \
     python \
@@ -586,7 +579,6 @@ fedora()
     glibc-devel.i686 \
     gmp-devel \
     gperf \
-    gperf \
     help2man \
     libjpeg-turbo-devel \
     libpng-devel \
@@ -596,7 +588,6 @@ fedora()
     luajit \
     lzip \
     m4 \
-    make \
     make \
     meson \
     nasm \
@@ -669,7 +660,6 @@ suse()
     "nasm"
     "ninja"
     "openssl"
-    "patch"
     "patch"
     "patchelf"
     "perl"
