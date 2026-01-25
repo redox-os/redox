@@ -7,7 +7,7 @@ template = "custom"
 script = """
 for style in Mono Sans Serif
 do
-    DEST="${COOKBOOK_STAGE}/ui/fonts/${style}/FreeFont"
+    DEST="${COOKBOOK_STAGE}/usr/share/fonts/${style}/FreeFont"
     mkdir -pv "${DEST}"
     cp -v "${COOKBOOK_SOURCE}/Free${style}"*".otf" "${DEST}"
 done

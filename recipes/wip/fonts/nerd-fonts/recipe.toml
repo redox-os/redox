@@ -5,6 +5,6 @@ rev = "7b41c66a1ef0c4ac5884a4203cb53c0901217e32"
 [build]
 template = "custom"
 script = """
-mkdir -pv "${COOKBOOK_STAGE}"/ui/fonts
-cp -rv "${COOKBOOK_SOURCE}"/patched-fonts/* "${COOKBOOK_STAGE}"/ui/fonts
+mkdir -pv "${COOKBOOK_STAGE}"/usr/share/fonts
+cp -rv "${COOKBOOK_SOURCE}"/patched-fonts/* "${COOKBOOK_STAGE}"/usr/share/fonts
 """

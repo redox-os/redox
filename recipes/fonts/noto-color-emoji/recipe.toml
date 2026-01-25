@@ -4,7 +4,7 @@ rev = "e8073ab740292f8d5f19b5de144087ac58044d06"
 [build]
 template = "custom"
 script = """
-DEST="${COOKBOOK_STAGE}/ui/fonts/Emoji/Noto"
+DEST="${COOKBOOK_STAGE}/usr/share/fonts/Emoji/Noto"
 mkdir -pv "${DEST}"
 cp -v "${COOKBOOK_SOURCE}/fonts/NotoColorEmoji.ttf" "${DEST}"
 """

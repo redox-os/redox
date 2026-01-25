@@ -7,7 +7,7 @@ template = "custom"
 script = """
 for style in Mono Sans Serif
 do
-    DEST="${COOKBOOK_STAGE}/ui/fonts/${style}/IBM-Plex"
+    DEST="${COOKBOOK_STAGE}/usr/share/fonts/${style}/IBM-Plex"
     mkdir -pv "${DEST}"
     cp -v "${COOKBOOK_SOURCE}/IBM-Plex-${style}/fonts/complete/ttf/"*".ttf" "${DEST}"
 done
