@@ -9,9 +9,14 @@ dependencies = [
     "fontconfig",
     "freetype2",
     "libpng",
-    "libstdcxx-v3",
     "mesa",
     "zlib",
+]
+dev-dependencies = [
+    "llvm21.dev",
+    "host:llvm21.dev",
+    "host:llvm21.runtime",
+    "host:libarchive",  # workaround for cmake error
 ]
 script = """
 DYNAMIC_INIT
