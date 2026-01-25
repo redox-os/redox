@@ -23,7 +23,6 @@ cp -v \
 
 # Drivers that are built on all architectures, and NOT in drivers-initfs
 BINS=(
-    alxd
     e1000d
     ihdad
     ihdgd
