@@ -107,11 +107,13 @@ else ifeq ($(ARCH),riscv64gc)
 	disk?=nvme
 	PFLASH0=$(firstword \
 		$(wildcard /usr/share/qemu-efi-riscv64/RISCV_VIRT_CODE.fd) \
+		$(wildcard /usr/share/edk2/riscv/RISCV_VIRT_CODE.fd) \
 		$(wildcard /usr/share/qemu/edk2-riscv-code.fd) \
 		$(wildcard /opt/homebrew/opt/qemu/share/qemu/edk2-riscv-code.fd) \
 	)
 	PFLASH1=$(firstword \
 		$(wildcard /usr/share/qemu-efi-riscv64/RISCV_VIRT_VARS.fd) \
+		$(wildcard /usr/share/edk2/riscv/RISCV_VIRT_VARS.fd) \
 		$(wildcard /usr/share/qemu/edk2-riscv-vars.fd) \
 		$(wildcard /opt/homebrew/opt/qemu/share/qemu/edk2-riscv-vars.fd) \
 	)
