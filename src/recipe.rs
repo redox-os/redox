@@ -267,6 +267,14 @@ impl CookRecipe {
         Self::new(name, dir.to_path_buf(), recipe)
     }
 
+    pub fn from_list(names: Vec<PackageName>) -> Result<Vec<Self>, PackageError> {
+        let mut packages = Vec::new();
+        for name in names {
+            packages.push(Self::from_name(name)?);
+        }
+        Ok(packages)
+    }
+
     pub fn from_path(dir: &Path, read_recipe: bool, is_host: bool) -> Result<Self, PackageError> {
         let file = dir.join("recipe.toml");
         let mut name: PackageName = dir.file_name().unwrap().try_into()?;
@@ -438,7 +446,7 @@ impl CookRecipe {
         self.dir.join("target").join(self.target)
     }
 
-    pub fn apply_filesystem_config(&mut self, rule: &str) -> Result<(), String> {
+    pub fn apply_filesystem_config(&mut self, rule: &str) -> Result<(), anyhow::Error> {
         match rule {
             // build from source as usual
             "source" => {}
@@ -457,12 +465,12 @@ impl CookRecipe {
                 self.recipe.build.set_as_none();
             }
             rule => {
-                return Err(format!(
+                anyhow::bail!(
                     // Fail fast because we could risk losing local changes if "local" was typo'ed
                     "Invalid pkg config {} = \"{}\"\nExpecting either 'source', 'local', 'binary' or 'ignore'",
                     self.name.as_str(),
                     rule
-                ));
+                );
             }
         }
         self.rule = rule.to_string();
