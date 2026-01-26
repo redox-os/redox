@@ -7,3 +7,8 @@ script = """
 mkdir -pv "${COOKBOOK_STAGE}"/usr/share/benchmarks
 cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}"/usr/share/benchmarks
 """
+
+[package]
+dependencies = [
+    "iperf3"
+]
