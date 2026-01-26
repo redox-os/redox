@@ -18,17 +18,9 @@ then
     exit 1
 fi
 
-if [ -z "${ARCH}" ]
-then
-    export ARCH="$(uname -m)"
-fi
+eval $(make setenv)
 
-if [ -z "${CONFIG_NAME}" ]
-then
-    export CONFIG_NAME=desktop
-fi
-
-IMAGE="build/${ARCH}/${CONFIG_NAME}/filesystem.img"
+IMAGE="${BUILD}/filesystem.img"
 set -x
 rm -f "${IMAGE}"
 make "${IMAGE}"
