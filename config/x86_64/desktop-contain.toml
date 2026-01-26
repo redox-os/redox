@@ -17,7 +17,7 @@ include = ["../desktop.toml"]
 [[files]]
 path = "/usr/lib/init.d/20_orbital"
 data = """
-audiod
+notify audiod
 export VT 3
 nowait orbital contain_orblogin launcher
 unset VT

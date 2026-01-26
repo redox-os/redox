@@ -29,7 +29,7 @@ shared-mime-info = {}
 [[files]]
 path = "/usr/lib/init.d/20_orbital"
 data = """
-audiod
+notify audiod
 export BROWSER /bin/netsurf-fb
 export VT 3
 nowait orbital orblogin launcher
