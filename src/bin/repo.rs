@@ -12,7 +12,6 @@ use cookbook::cook::tree::{self, WalkTreeEntry};
 use cookbook::log_to_pty;
 use cookbook::recipe::{CookRecipe, recipes_flatten_package_names, recipes_mark_as_deps};
 use pkg::PackageName;
-use pkg::package::PackageError;
 use ratatui::Terminal;
 use ratatui::layout::{Constraint, Direction, Layout, Position, Rect};
 use ratatui::prelude::TermionBackend;
@@ -21,7 +20,7 @@ use ratatui::text::{Line, Span, Text};
 use ratatui::widgets::{Block, Borders, Clear, List, ListItem, ListState, Paragraph, Wrap};
 use redox_installer::PackageConfig;
 use std::borrow::Cow;
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::collections::{BTreeMap, HashMap, HashSet, VecDeque};
 use std::io::{Read, Write, stderr, stdin, stdout};
 use std::path::PathBuf;
 use std::process::Command;
@@ -370,26 +369,6 @@ fn publish_packages(recipe_names: &Vec<CookRecipe>, repo_path: &PathBuf) -> anyh
     run_command(command, &None).map_err(|e| anyhow!(e))
 }
 
-fn add_dependencies_recursive(recipe: &cookbook::recipe::Recipe, force_source: &mut HashSet<PackageName>) {
-    for dep in &recipe.build.dependencies {
-        if !force_source.contains(dep) {
-            force_source.insert(dep.clone());
-            if let Ok(dep_recipe) = CookRecipe::from_name(dep.clone()) {
-                add_dependencies_recursive(&dep_recipe.recipe, force_source);
-            }
-        }
-    }
-    
-    for dep in &recipe.build.dev_dependencies {
-        if !force_source.contains(dep) {
-            force_source.insert(dep.clone());
-            if let Ok(dep_recipe) = CookRecipe::from_name(dep.clone()) {
-                add_dependencies_recursive(&dep_recipe.recipe, force_source);
-            }
-        }
-    }
-}
-
 fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<CookRecipe>)> {
     let mut config = CliConfig::new()?;
     let mut command: Option<String> = None;
@@ -460,47 +439,50 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
 
     let command = command.ok_or(anyhow!("Error: No command specified."))?;
     let command: CliCommand = str::parse(&command)?;
-    let mut recipes = if config.all || config.category.is_some() {
-        if !recipe_names.is_empty() {
-            bail!("Do not specify recipe names when using the --all or --category flag.");
-        }
-        if config.all && config.category.is_some() {
-            bail!("Do not specify both --all and --category flag.");
-        }
-        if config.all && !command.is_cleaning() {
-            // because read_recipe is false by logic below
-            // some recipes on wip folders are invalid anyway
-            bail!(
-                "Refusing to run an unrealistic command to {} all recipes",
-                command.to_string()
-            );
-        }
-        match &config.category {
-            None => pkg::recipes::list(""),
-            Some(prefix) => pkg::recipes::list("")
-                .into_iter()
-                .filter(|p| p.starts_with(prefix))
-                .collect(),
-        }
-        .iter()
-        // TODO: Allow selecting recipes from category as host?
-        .map(|f| CookRecipe::from_path(f, !command.is_cleaning(), false))
-        .collect::<Result<Vec<CookRecipe>, PackageError>>()?
-    } else {
-        if recipe_names.is_empty() {
+    if command.is_informational() {
+        // avoid extra data that clobber stdout
+        config.cook.verbose = false;
+    }
+
+    let mut preloaded_recipes: BTreeMap<PackageName, CookRecipe> = BTreeMap::new();
+
+    if recipe_names.is_empty() {
+        if config.all || config.category.is_some() {
+            if !recipe_names.is_empty() {
+                bail!("Do not specify recipe names when using the --all or --category flag.");
+            }
+            if config.all && config.category.is_some() {
+                bail!("Do not specify both --all and --category flag.");
+            }
+            if config.all && !command.is_cleaning() {
+                // because read_recipe is false by logic below
+                // some recipes on wip folders are invalid anyway
+                bail!(
+                    "Refusing to run an unrealistic command to {} all recipes",
+                    command.to_string()
+                );
+            }
+            let all_recipes_path = match &config.category {
+                None => pkg::recipes::list(""),
+                Some(prefix) => pkg::recipes::list("")
+                    .into_iter()
+                    .filter(|p| p.starts_with(prefix))
+                    .collect(),
+            };
+
+            for path in all_recipes_path {
+                // TODO: Allow selecting recipes from category as host?
+                let recipe = CookRecipe::from_path(&path, !command.is_cleaning(), false)?;
+                let recipe_name = recipe.name.clone();
+                preloaded_recipes.insert(recipe_name.clone(), recipe);
+                recipe_names.push(recipe_name);
+            }
+        } else {
             if let Some(conf) = config.filesystem.as_ref() {
                 recipe_names = conf
                     .packages
-                    .iter()
-                    .filter_map(|(f, v)| {
-                        match v {
-                            PackageConfig::Build(rule) if rule == "ignore" => {
-                                return None;
-                            }
-                            _ => {}
-                        }
-                        PackageName::new(f).ok()
-                    })
+                    .keys()
+                    .filter_map(|k| PackageName::new(k.to_string()).ok())
                     .collect();
             } else {
                 bail!(
@@ -508,95 +490,133 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
                 );
             }
         }
-        if command.is_building() || (command.is_pushing() && config.with_package_deps) {
-            if config.with_package_deps {
-                recipe_names = CookRecipe::get_package_deps_recursive(&recipe_names, true)
-                    .context("failed get package deps")?;
-            }
-            let mut packages =
-                CookRecipe::get_build_deps_recursive(&recipe_names, !command.is_pushing())?;
-            if command.is_pushing() || !config.with_package_deps {
-                // In CliCommand::Cook, is_deps==true will make it skip checking source
-                recipes_mark_as_deps(&recipe_names, &mut packages);
-            }
-            packages = recipes_flatten_package_names(packages);
-            packages
+    }
+
+    if command.is_cleaning() {
+        let recipes = if preloaded_recipes.is_empty() {
+            CookRecipe::from_list(recipe_names)?
         } else {
-            recipe_names
-                .iter()
-                .map(|f| CookRecipe::from_name(f.clone()).unwrap())
-                .collect()
-        }
-    };
-    if let Some(conf) = config.filesystem.as_ref()
-        && !command.is_cleaning()
-    {
+            preloaded_recipes.into_values().collect()
+        };
+
+        return Ok((config, command, recipes));
+    }
+
+    let mut recipes = if let Some(conf) = config.filesystem.as_ref() {
         let repo_binary = conf.general.repo_binary == Some(true);
-        
-        // Derive only "source" and "binary" to their dependencies, don't do it for "ignore" and "local"
-        let mut force_source_recipes: std::collections::HashSet<PackageName> = std::collections::HashSet::new();
-        let force_binary_recipes: std::collections::HashSet<PackageName> = std::collections::HashSet::new();
-        let mut should_drop_host_packages = true;
-        
-        // When repo_binary=1, collect "source" recipes and their dependencies
-        if repo_binary {
-            for recipe in recipes.iter() {
-                if let Some(conf) = conf.packages.get(recipe.name.as_str()) {
-                    let rule = match conf {
-                        PackageConfig::Build(rule) => rule.as_str(),
-                        _ => "binary",
-                    };
-                    if rule == "source" {
-                        force_source_recipes.insert(recipe.name.clone());
-                        add_dependencies_recursive(&recipe.recipe, &mut force_source_recipes);
-                        should_drop_host_packages = false;
-                    }
+
+        // Expand deps for "source" + "local" and "binary"
+        // This is the complete map from filesystem config
+        let mut source_names: Vec<PackageName> = Vec::new();
+        let mut binary_names: Vec<PackageName> = Vec::new();
+        let mut special_rules: HashMap<PackageName, String> = HashMap::new();
+        let default_rule = if repo_binary { "binary" } else { "source" };
+        for (recipe_name_str, recipe_config) in conf.packages.iter() {
+            let Ok(recipe_name) = PackageName::new(recipe_name_str) else {
+                continue;
+            };
+            let rule = match recipe_config {
+                PackageConfig::Build(rule) => rule,
+                _ => default_rule,
+            };
+
+            if rule == "source" || rule == "local" {
+                source_names.push(recipe_name.clone());
+            } else if rule == "binary" {
+                binary_names.push(recipe_name.clone());
+            }
+            if rule != "source" && rule != "binary" {
+                special_rules.insert(recipe_name, rule.to_string());
+            }
+        }
+        source_names = CookRecipe::get_all_deps_names_recursive(&source_names, true)?;
+        binary_names = CookRecipe::get_all_deps_names_recursive(&binary_names, false)?;
+        let source_names: HashSet<PackageName> = source_names.into_iter().collect();
+        let binary_names: HashSet<PackageName> = binary_names.into_iter().collect();
+
+        // These are list that derived from recipe_names
+        let mut source_recipe_names: Vec<PackageName> = Vec::new();
+        let mut binary_recipe_names: Vec<PackageName> = Vec::new();
+        let mut ignore_recipe_names: Vec<PackageName> = Vec::new();
+        for recipe_name in recipe_names.iter() {
+            if source_names.contains(recipe_name) {
+                source_recipe_names.push(recipe_name.clone());
+            } else if binary_names.contains(recipe_name) {
+                binary_recipe_names.push(recipe_name.clone());
+            } else {
+                if special_rules
+                    .get(recipe_name)
+                    .is_some_and(|s| s == "ignore")
+                {
+                    ignore_recipe_names.push(recipe_name.clone());
+                } else if repo_binary {
+                    binary_recipe_names.push(recipe_name.clone());
+                } else {
+                    source_recipe_names.push(recipe_name.clone());
                 }
             }
         }
-        
+
+        if config.with_package_deps {
+            source_recipe_names =
+                CookRecipe::get_package_deps_recursive(&source_recipe_names, true)?;
+            binary_recipe_names =
+                CookRecipe::get_package_deps_recursive(&binary_recipe_names, true)?;
+        }
+
+        let mut recipes = if command.is_building() {
+            CookRecipe::get_build_deps_recursive(&source_recipe_names, true)?
+        } else {
+            CookRecipe::from_list(source_recipe_names.clone())?
+        };
+
+        let binary_recipes = if command.is_building() {
+            CookRecipe::get_build_deps_recursive(&binary_recipe_names, false)?
+        } else {
+            CookRecipe::from_list(binary_recipe_names.clone())?
+        };
+
+        let ignore_recipes = CookRecipe::from_list(ignore_recipe_names.clone())?;
+
+        recipes.extend(binary_recipes);
+        recipes.extend(ignore_recipes);
+        recipes = recipes_flatten_package_names(recipes);
+
         for recipe in recipes.iter_mut() {
-            let last_rule = match (force_source_recipes.contains(&recipe.name), force_binary_recipes.contains(&recipe.name)) {
+            if let Some(special_rule) = special_rules.get(&recipe.name) {
+                recipe.apply_filesystem_config(&special_rule)?;
+                continue;
+            }
+            let rule = match (
+                source_names.contains(&recipe.name),
+                binary_names.contains(&recipe.name),
+            ) {
                 (true, true) => {
                     // both lists: flip logic
                     if repo_binary { "source" } else { "binary" }
-                },
+                }
                 (true, false) => "source",
                 (false, true) => "binary",
-                (false, false) => {
-                    // check config or use default
-                    if let Some(conf) = conf.packages.get(recipe.name.as_str()) {
-                        match conf {
-                            PackageConfig::Build(rule) => {
-                                let rule_str = rule.as_str();
-                                if should_drop_host_packages && (rule_str == "source" || rule_str == "local") {
-                                    should_drop_host_packages = false;
-                                }
-                                rule_str
-                            },
-                            _ => {
-                                if repo_binary { "binary" } else { "source" }
-                            }
-                        }
-                    } else {
-                        if repo_binary { "binary" } else { "source" }
-                    }
-                }
+                (false, false) => default_rule,
             };
-            recipe
-                .apply_filesystem_config(last_rule)
-                .map_err(|e| anyhow!(e))?;
+            recipe.apply_filesystem_config(rule)?;
         }
-        // If there's no building from source, drop all host toolchain
-        // TODO: This is more of a hack to make CI passing
-        if should_drop_host_packages && config.with_package_deps {
-            recipes = recipes.into_iter().filter(|p| !p.name.is_host()).collect();
-        }
-    }
 
-    if command.is_informational() {
-        // avoid extra data that clobber stdout
-        config.cook.verbose = false;
+        recipes
+    } else {
+        if config.with_package_deps {
+            recipe_names = CookRecipe::get_package_deps_recursive(&recipe_names, true)?;
+        }
+        if command.is_building() {
+            CookRecipe::get_build_deps_recursive(&recipe_names, true)?
+        } else {
+            CookRecipe::from_list(recipe_names.clone())?
+        }
+    };
+
+    if command.is_pushing() || !config.with_package_deps {
+        // In CliCommand::Cook, is_deps==true will make it skip checking source
+        recipes_mark_as_deps(&recipe_names, &mut recipes);
     }
 
     Ok((config, command, recipes))
