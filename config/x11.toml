@@ -61,7 +61,7 @@ glib-compile-schemas /usr/share/glib-2.0/schemas/
 [[files]]
 path = "/usr/lib/init.d/20_orbital"
 data = """
-audiod
+notify audiod
 export BROWSER /bin/netsurf-fb
 export VT 3
 nowait orbital orbital-x11

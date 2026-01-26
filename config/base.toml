@@ -27,8 +27,8 @@ data = """
 rm -rf /tmp
 mkdir -m a=rwxt /tmp
 
-ipcd
-ptyd
+notify ipcd
+notify ptyd
 nowait sudo --daemon
 """
 

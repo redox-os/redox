@@ -12,7 +12,7 @@ netutils = {}
 [[files]]
 path = "/usr/lib/init.d/10_net"
 data = """
-smolnetd
+notify smolnetd
 nowait dhcpd
 """
 
