@@ -1,6 +1,15 @@
-#TODO missing script for configuration: https://github.com/coastalwhite/lemurs#compiling-from-source
+#TODO not compiled or tested
 [source]
 git = "https://github.com/coastalwhite/lemurs"
-rev = "37963b8ff6945ae8bdbabee658e5e36d0f67b84a"
 [build]
 template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_cargo
+mkdir -pv "${COOKBOOK_STAGE}/etc/lemurs"
+mkdir -pv "${COOKBOOK_STAGE}/etc/rustysd/system"
+mkdir -pv "${COOKBOOK_STAGE}/etc/pam.d"
+cp -rv "${COOKBOOK_SOURCE}"/extra/{config.toml,xsetup.sh} "${COOKBOOK_STAGE}/etc/lemurs"
+cp -rv "${COOKBOOK_SOURCE}"/extra/lemurs.service "${COOKBOOK_STAGE}/etc/rustysd/system"
+cp -rv "${COOKBOOK_SOURCE}"/extra/lemurs.pam "${COOKBOOK_STAGE}/etc/pam.d/lemurs"
+"""

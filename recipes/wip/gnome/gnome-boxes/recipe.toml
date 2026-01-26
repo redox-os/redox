@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+#TODO discover minimum dependencies from meson log
+[source]
+tar = "https://download.gnome.org/sources/gnome-boxes/49/gnome-boxes-49.1.tar.xz"
+[build]
+template = "meson"

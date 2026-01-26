@@ -10,7 +10,7 @@ cmakeflags = [
     "-DCONFIG_ALSA_MIDI=0",
     "-DCONFIG_SYSTEM_TRAY=0",
 ]
-dependencies = [
-    "qt6-base",
-    "pipewire",
-]
+#dependencies = [
+#    "qt6-base",
+#    "pipewire",
+#]

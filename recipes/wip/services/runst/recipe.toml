@@ -1,13 +1,10 @@
 #TODO not compiled or tested
 [source]
 git = "https://github.com/orhun/runst"
+shallow_clone = true
 [build]
-template = "custom"
+template = "cargo"
 dependencies = [
     "glib",
     "pango",
 ]
-script = """
-DYNAMIC_INIT
-cookbook_cargo
-"""

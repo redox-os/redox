@@ -1,6 +1,7 @@
 #TODO compiled but not tested
 [source]
 git = "https://github.com/hickory-dns/hickory-dns"
+shallow_clone = true
 [build]
 template = "custom"
 dependencies = [

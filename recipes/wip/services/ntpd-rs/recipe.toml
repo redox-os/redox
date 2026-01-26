@@ -1,9 +1,13 @@
-#TODO program source code error
-#TODO configure the service
+#TODO not compiled or tested
+#TODO configure the service: https://docs.ntpd-rs.pendulum-project.org/guide/installation/#running-as-a-system-service
 [source]
 git = "https://github.com/pendulum-project/ntpd-rs"
+shallow_clone = true
 [build]
 template = "custom"
 script = """
+DYNAMIC_INIT
 cookbook_cargo_packages ntpd
+mkdir -pv "${COOKBOOK_STAGE}/etc/ntpd-rs"
+cp -rv "${COOKBOOK_SOURCE}"/docs/examples/conf/ntp.toml.default "${COOKBOOK_STAGE}/etc/ntpd-rs/ntp.toml"
 """

@@ -1,0 +1,9 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/trasta298/keifu"
+[build]
+template = "cargo"
+[package]
+dependencies = [
+    "git",
+]
