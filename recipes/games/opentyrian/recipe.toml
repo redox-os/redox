@@ -34,7 +34,7 @@ export WITH_NETWORK=false
 export REDOX_OVERRIDE=true
 export prefix="/usr"
 export bindir="${prefix}/games"
-export icondir="/ui/icons/apps"
+export icondir="/usr/share/icons/apps"
 export gamesdir="${prefix}/share/games"
 
 if [ "${COOKBOOK_DYNAMIC}" == "1" ]; then

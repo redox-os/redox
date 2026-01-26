@@ -24,10 +24,10 @@ cp -v "target/${TARGET}/release/hnefatafl-server" "${COOKBOOK_STAGE}/usr/bin/hne
 cp -v "target/${TARGET}/release/hnefatafl-text-protocol" "${COOKBOOK_STAGE}/usr/bin/hnefatafl-text-protocol"
 
 mkdir -pv "${COOKBOOK_STAGE}"/usr/games
-mkdir -pv "${COOKBOOK_STAGE}"/ui/apps
-mkdir -pv "${COOKBOOK_STAGE}"/ui/icons/apps
-cp -rv "${COOKBOOK_SOURCE}"/src/bin/hnefatafl-client/helmet.png "${COOKBOOK_STAGE}"/ui/icons/apps/helmet.png
-cp -rv "${COOKBOOK_SOURCE}"/packages/redox/manifest "${COOKBOOK_STAGE}"/ui/apps/hnefatafl-client
+mkdir -pv "${COOKBOOK_STAGE}"/usr/share/ui/apps
+mkdir -pv "${COOKBOOK_STAGE}"/usr/share/icons/apps
+cp -rv "${COOKBOOK_SOURCE}"/src/bin/hnefatafl-client/helmet.png "${COOKBOOK_STAGE}"/usr/share/icons/apps/helmet.png
+cp -rv "${COOKBOOK_SOURCE}"/packages/redox/manifest "${COOKBOOK_STAGE}"/usr/share/ui/apps/hnefatafl-client
 mv "${COOKBOOK_STAGE}"/usr/bin/hnefatafl-client "${COOKBOOK_STAGE}"/usr/games/hnefatafl-client
 """
 
