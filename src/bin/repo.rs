@@ -516,33 +516,46 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
         let repo_binary = conf.general.repo_binary == Some(true);
 
         // Derive "source" + "local" and "binary" + "ignore"
-        let mut source_recipe_names: Vec<PackageName> = Vec::new();
-        let mut binary_recipe_names: Vec<PackageName> = Vec::new();
-
-        for recipe_name in recipe_names.iter() {
-            let rule = match conf.packages.get(recipe_name.as_str()) {
-                Some(PackageConfig::Build(rule)) => rule.as_str(),
-                _ => {
-                    if repo_binary {
-                        "binary"
-                    } else {
-                        "source"
-                    }
-                }
+        // This is the complete map from filesystem config
+        let mut source_names: Vec<PackageName> = Vec::new();
+        let mut binary_names: Vec<PackageName> = Vec::new();
+        let mut special_rules: HashMap<PackageName, String> = HashMap::new();
+        let default_rule = if repo_binary { "binary" } else { "source" };
+        for (recipe_name_str, recipe_config) in conf.packages.iter() {
+            let Ok(recipe_name) = PackageName::new(recipe_name_str) else {
+                continue;
+            };
+            let rule = match recipe_config {
+                PackageConfig::Build(rule) => rule,
+                _ => default_rule,
             };
 
             if rule == "source" || rule == "local" {
-                source_recipe_names.push(recipe_name.clone());
+                source_names.push(recipe_name.clone());
             } else {
-                binary_recipe_names.push(recipe_name.clone());
+                binary_names.push(recipe_name.clone());
             }
             if rule == "local" || rule == "ignore" {
-                // these don't inherit into their deps
-                let mut recipe = CookRecipe::from_name(recipe_name.clone())?;
-                recipe.apply_filesystem_config(rule)?;
-                preloaded_recipes.insert(recipe_name.clone(), recipe);
+                special_rules.insert(recipe_name, rule.to_string());
             }
         }
+        source_names = CookRecipe::get_all_deps_names_recursive(&source_names, true)?;
+        binary_names = CookRecipe::get_all_deps_names_recursive(&binary_names, false)?;
+        let source_names: HashSet<PackageName> = source_names.into_iter().collect();
+        let binary_names: HashSet<PackageName> = binary_names.into_iter().collect();
+
+        // These are list that derived from recipe_names
+        let mut source_recipe_names: Vec<PackageName> = Vec::new();
+        let mut binary_recipe_names: Vec<PackageName> = Vec::new();
+        for recipe_name in recipe_names.iter() {
+            if source_names.contains(recipe_name) {
+                source_recipe_names.push(recipe_name.clone());
+            }
+            if binary_names.contains(recipe_name) {
+                binary_recipe_names.push(recipe_name.clone());
+            }
+        }
+
         if config.with_package_deps {
             source_recipe_names =
                 CookRecipe::get_package_deps_recursive(&source_recipe_names, true)?;
@@ -556,20 +569,23 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
             CookRecipe::from_list(source_recipe_names.clone())?
         };
 
-        recipes.extend(CookRecipe::from_list(binary_recipe_names.clone())?);
+        let binary_recipes = if command.is_building() {
+            CookRecipe::get_build_deps_recursive(&binary_recipe_names, false)?
+        } else {
+            CookRecipe::from_list(binary_recipe_names.clone())?
+        };
+
+        recipes.extend(binary_recipes);
         recipes = recipes_flatten_package_names(recipes);
 
         for recipe in recipes.iter_mut() {
-            if let Some(preloaded) = preloaded_recipes.remove(&recipe.name) {
-                // can come from --category flag, which doesn't have specific rule
-                if !preloaded.rule.is_empty() {
-                    recipe.apply_filesystem_config(&preloaded.rule)?;
-                    continue;
-                }
+            if let Some(special_rule) = special_rules.get(&recipe.name) {
+                recipe.apply_filesystem_config(&special_rule)?;
+                continue;
             }
             let rule = match (
-                source_recipe_names.contains(&recipe.name),
-                binary_recipe_names.contains(&recipe.name),
+                source_names.contains(&recipe.name),
+                binary_names.contains(&recipe.name),
             ) {
                 (true, true) => {
                     // both lists: flip logic
@@ -579,14 +595,22 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
                 (false, true) => "binary",
                 (false, false) => {
                     // should not be possible to go here
-                    if repo_binary { "binary" } else { "source" }
+                    default_rule
                 }
             };
             recipe.apply_filesystem_config(rule)?;
         }
+
         recipes
     } else {
-        CookRecipe::from_list(recipe_names.clone())?
+        if config.with_package_deps {
+            recipe_names = CookRecipe::get_package_deps_recursive(&recipe_names, true)?;
+        }
+        if command.is_building() {
+            CookRecipe::get_build_deps_recursive(&recipe_names, true)?
+        } else {
+            CookRecipe::from_list(recipe_names.clone())?
+        }
     };
 
     if command.is_pushing() || !config.with_package_deps {

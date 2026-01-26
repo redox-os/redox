@@ -427,6 +427,16 @@ impl CookRecipe {
         Ok(packages.into_iter().map(|p| p.name).collect())
     }
 
+    pub fn get_all_deps_names_recursive(
+        names: &[PackageName],
+        include_dev: bool,
+    ) -> Result<Vec<PackageName>, PackageError> {
+        let packages =
+            Self::new_recursive(names, true, include_dev, true, true, true, true, WALK_DEPTH)?;
+
+        Ok(packages.into_iter().map(|p| p.name).collect())
+    }
+
     pub fn reload_recipe(&mut self) -> Result<(), PackageError> {
         self.recipe = Self::from_path(&self.dir, true, self.name.is_host())?.recipe;
         let _ = self.apply_filesystem_config(&self.rule.clone());
