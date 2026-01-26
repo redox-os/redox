@@ -444,13 +444,6 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
         config.cook.verbose = false;
     }
 
-    // 1. Get the list of packages
-    // 2. Put them into list to build or download
-    // 3. Expand with package deps for both list
-    // 4. Expand build deps for things to build
-    // 5. Merge both list
-
-    // early overrides for "ignore" and "local", also preloaded for recipes when doing all clean
     let mut preloaded_recipes: BTreeMap<PackageName, CookRecipe> = BTreeMap::new();
 
     if recipe_names.is_empty() {
@@ -501,10 +494,7 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
 
     if command.is_cleaning() {
         let recipes = if preloaded_recipes.is_empty() {
-            recipe_names
-                .iter()
-                .map(|f| CookRecipe::from_name(f.clone()).unwrap())
-                .collect()
+            CookRecipe::from_list(recipe_names)?
         } else {
             preloaded_recipes.into_values().collect()
         };
@@ -515,7 +505,7 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
     let mut recipes = if let Some(conf) = config.filesystem.as_ref() {
         let repo_binary = conf.general.repo_binary == Some(true);
 
-        // Derive "source" + "local" and "binary" + "ignore"
+        // Expand deps for "source" + "local" and "binary"
         // This is the complete map from filesystem config
         let mut source_names: Vec<PackageName> = Vec::new();
         let mut binary_names: Vec<PackageName> = Vec::new();
@@ -532,10 +522,10 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
 
             if rule == "source" || rule == "local" {
                 source_names.push(recipe_name.clone());
-            } else {
+            } else if rule == "binary" {
                 binary_names.push(recipe_name.clone());
             }
-            if rule == "local" || rule == "ignore" {
+            if rule != "source" && rule != "binary" {
                 special_rules.insert(recipe_name, rule.to_string());
             }
         }
@@ -547,12 +537,23 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
         // These are list that derived from recipe_names
         let mut source_recipe_names: Vec<PackageName> = Vec::new();
         let mut binary_recipe_names: Vec<PackageName> = Vec::new();
+        let mut ignore_recipe_names: Vec<PackageName> = Vec::new();
         for recipe_name in recipe_names.iter() {
             if source_names.contains(recipe_name) {
                 source_recipe_names.push(recipe_name.clone());
-            }
-            if binary_names.contains(recipe_name) {
+            } else if binary_names.contains(recipe_name) {
                 binary_recipe_names.push(recipe_name.clone());
+            } else {
+                if special_rules
+                    .get(recipe_name)
+                    .is_some_and(|s| s == "ignore")
+                {
+                    ignore_recipe_names.push(recipe_name.clone());
+                } else if repo_binary {
+                    binary_recipe_names.push(recipe_name.clone());
+                } else {
+                    source_recipe_names.push(recipe_name.clone());
+                }
             }
         }
 
@@ -575,7 +576,10 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
             CookRecipe::from_list(binary_recipe_names.clone())?
         };
 
+        let ignore_recipes = CookRecipe::from_list(ignore_recipe_names.clone())?;
+
         recipes.extend(binary_recipes);
+        recipes.extend(ignore_recipes);
         recipes = recipes_flatten_package_names(recipes);
 
         for recipe in recipes.iter_mut() {
@@ -593,10 +597,7 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
                 }
                 (true, false) => "source",
                 (false, true) => "binary",
-                (false, false) => {
-                    // should not be possible to go here
-                    default_rule
-                }
+                (false, false) => default_rule,
             };
             recipe.apply_filesystem_config(rule)?;
         }
