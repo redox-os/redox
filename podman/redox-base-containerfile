@@ -25,7 +25,6 @@ RUN apt-get update \
         genisoimage \
         git \
         git-lfs \
-        gobject-introspection \
         gperf \
         gtk-doc-tools \
         gtk-update-icon-cache \
