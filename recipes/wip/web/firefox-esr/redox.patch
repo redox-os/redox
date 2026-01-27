@@ -1,0 +1,86 @@
+diff --color -ruwN source/build/moz.configure/init.configure source-new/build/moz.configure/init.configure
+--- source/build/moz.configure/init.configure	2026-01-07 04:09:42.000000000 +0700
++++ source-new/build/moz.configure/init.configure	2026-01-27 12:48:28.508789372 +0700
+@@ -511,6 +511,8 @@
+         canonical_os = canonical_kernel = "NetBSD"
+     elif os.startswith("openbsd"):
+         canonical_os = canonical_kernel = "OpenBSD"
++    elif os.startswith("redox"):
++        canonical_os = canonical_kernel = "Redox"
+     elif os.startswith("solaris"):
+         canonical_os = canonical_kernel = "SunOS"
+     elif os.startswith("wasi") and allow_wasi:
+@@ -934,6 +936,14 @@
+ 
+ set_define("XP_FREEBSD", target_is_freebsd)
+ 
++@depends(target)
++def target_is_redox(target):
++    if target.kernel == "Redox":
++        return True
++
++
++set_define("XP_REDOX", target_is_redox)
++
+ 
+ @depends(target)
+ def target_is_solaris(target):
+diff --color -ruwN source/mozglue/misc/PlatformMutex.h source-new/mozglue/misc/PlatformMutex.h
+--- source/mozglue/misc/PlatformMutex.h	2026-01-07 04:09:50.000000000 +0700
++++ source-new/mozglue/misc/PlatformMutex.h	2026-01-27 13:12:16.262181670 +0700
+@@ -48,7 +48,7 @@
+ 
+   PlatformData* platformData();
+ 
+-#if !defined(XP_WIN) && !defined(__wasi__)
++#if !defined(XP_WIN) && !defined(__wasi__) && !defined(__redox__)
+   void* platformData_[sizeof(pthread_mutex_t) / sizeof(void*)];
+   static_assert(sizeof(pthread_mutex_t) / sizeof(void*) != 0 &&
+                     sizeof(pthread_mutex_t) % sizeof(void*) == 0,
+diff --color -ruwN source/python/mozbuild/mozbuild/configure/constants.py source-new/python/mozbuild/mozbuild/configure/constants.py
+--- source/python/mozbuild/mozbuild/configure/constants.py	2026-01-07 04:09:50.000000000 +0700
++++ source-new/python/mozbuild/mozbuild/configure/constants.py	2026-01-27 09:16:48.349211711 +0700
+@@ -40,6 +40,7 @@
+         "NetBSD",
+         "OpenBSD",
+         "OSX",
++        "Redox",
+         "SunOS",
+         "WINNT",
+         "WASI",
+@@ -55,6 +56,7 @@
+         "Linux",
+         "NetBSD",
+         "OpenBSD",
++        "Redox",
+         "SunOS",
+         "WINNT",
+         "WASI",
+@@ -146,6 +148,7 @@
+     "Linux": "__linux__",
+     "NetBSD": "__NetBSD__",
+     "OpenBSD": "__OpenBSD__",
++    "Redox": "__redox__",
+     "SunOS": "__sun__",
+     "WINNT": "_WIN32 || __CYGWIN__",
+     "WASI": "__wasi__",
+diff --color -ruwN source/xpcom/build/BinaryPath.h source-new/xpcom/build/BinaryPath.h
+--- source/xpcom/build/BinaryPath.h	2026-01-07 04:09:59.000000000 +0700
++++ source-new/xpcom/build/BinaryPath.h	2026-01-27 12:51:20.922621049 +0700
+@@ -133,11 +133,15 @@
+     return rv;
+   }
+ 
+-#elif defined(ANDROID)
++#elif defined(ANDROID) || defined(XP_REDOX)
+   static nsresult Get(char aResult[MAXPATHLEN]) {
+     // On Android, we use the MOZ_ANDROID_LIBDIR variable that is set by the
+     // Java bootstrap code.
++#if defined(XP_REDOX)
++    const char* libDir = getenv("MOZ_REDOX_LIBDIR");
++#else
+     const char* libDir = getenv("MOZ_ANDROID_LIBDIR");
++#endif
+     if (!libDir) {
+       return NS_ERROR_FAILURE;
+     }
