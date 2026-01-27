@@ -59,6 +59,7 @@ find out -type f -exec touch '{}' ';'
 
 make test
 make html
+make json
 EOF
 chmod +x "${COOKBOOK_STAGE}/usr/bin/os-test-runner"
 """
