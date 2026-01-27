@@ -1,5 +1,25 @@
-#TODO missing script for building
+# TODO: Using patched mozjs from servo, maybe move patcehs into to upstream patches?
 [source]
-tar = "https://ftp.mozilla.org/pub/nspr/releases/v4.9.6/src/nspr-4.9.6.tar.gz"
+# tar = "https://ftp.mozilla.org/pub/nspr/releases/v4.9.6/src/nspr-4.9.6.tar.gz"
+git = "https://github.com/willnode/mozjs"
+branch = "redox"
+shallow_clone = true
 [build]
 template = "custom"
+script = """
+export HOST_CC="cc"
+export CC="$GNU_TARGET-gcc"
+export CXX="$GNU_TARGET-g++"
+export LDFLAGS="-shared"
+export CFLAGS="-fPIC"
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --enable-optimize
+    --disable-debug
+    --enable-64bit
+    --with-pthreads
+    ac_cv_path_LD="$LD"
+)
+COOKBOOK_MAKE_JOBS=1
+COOKBOOK_CONFIGURE="$COOKBOOK_SOURCE/mozjs-sys/mozjs/nsprpub/configure"
+cookbook_configure
+"""
