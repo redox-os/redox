@@ -12,7 +12,8 @@ patches = [
 template = "custom"
 script = """
 DYNAMIC_INIT
-CARGO_PROFILE_RELEASE_LTO=thin cookbook_cargo --no-default-features --features feat_os_unix_redox --bin coreutils
+# TODO: upstream changes, consider using feat_require_unix_core if relibc is ready?
+CARGO_PROFILE_RELEASE_LTO=thin cookbook_cargo --no-default-features --features feat_os_unix_redox,kill --bin coreutils
 
 BINS=(
     '['
@@ -48,6 +49,7 @@ BINS=(
     head
     join
     install
+    kill
     link
     ln
     ls
