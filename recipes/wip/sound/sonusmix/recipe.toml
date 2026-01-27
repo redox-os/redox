@@ -1,0 +1,17 @@
+#TODO not compiled or tested
+# build instructions: https://codeberg.org/sonusmix/sonusmix#building-from-source
+[source]
+git = "https://codeberg.org/sonusmix/sonusmix"
+shallow_clone = true
+[build]
+template = "custom"
+dependencies = [
+    "gtk4",
+]
+script = """
+DYNAMIC_INIT
+cookbook_cargo
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/{applications,icons}/"
+cp -v "${COOKBOOK_SOURCE}/assets/org.sonusmix.Sonusmix.desktop" "${COOKBOOK_STAGE}/usr/share/applications/"
+cp -v "${COOKBOOK_SOURCE}/assets/sonusmix.svg" "${COOKBOOK_STAGE}/usr/share/icons/"
+"""

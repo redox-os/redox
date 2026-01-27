@@ -5,7 +5,11 @@ tar = "https://freedesktop.org/software/pulseaudio/releases/pulseaudio-17.0.tar.
 [build]
 template = "meson"
 mesonflags = [
-    "-Ddaemon=false"
+    "-Ddaemon=false",
+    "-Ddoxygen=disabled",
+    "-Dman=false",
+    "-Dtests=disabled",
+    "-Drunning-from-build-tree=false",
 ]
 dependencies = [
     "libsndfile",

@@ -1,10 +1,12 @@
 #TODO failed to find output device
 [source]
 git = "https://github.com/glicol/glicol-cli"
+shallow_clone = true
 [build]
 template = "custom"
 script = """
+DYNAMIC_INIT
 cookbook_cargo
 mkdir -pv "${COOKBOOK_STAGE}"/usr/share/glicol
-cp -rv "${COOKBOOK_SOURCE}"/{test.glicol,test2.glicol} "${COOKBOOK_STAGE}"/usr/share/glicol
+cp -rv "${COOKBOOK_SOURCE}"/*.glicol "${COOKBOOK_STAGE}"/usr/share/glicol
 """

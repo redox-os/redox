@@ -1,17 +1,40 @@
 #TODO not compiled or tested
+#TODO determine minimum dependencies from cmake log
 # build instructions: https://github.com/LMMS/lmms/wiki/Compiling#build-environment
 [source]
 git = "https://github.com/LMMS/lmms"
-rev = "807751dc4dce53583ecf4140b67a5dc343c789a7"
+shallow_clone = true
 [build]
 template = "cmake"
-dependencies = [
-    "qt5-base",
-    "libsamplerate",
-    "libvorbis",
-    "libogg",
-    "sdl2",
-    "fftw",
-    "libstk",
-    "fltk",
+cmakeflags = [
+    "-DWANT_ALSA=OFF",
+    "-DWANT_OSS=OFF",
+    "-DWANT_CALF=OFF",
+    "-DWANT_CAPS=OFF",
+    "-DWANT_CARLA=OFF",
+    "-DWANT_CMT=OFF",
+    "-DWANT_JACK=OFF",
+    "-DWANT_LV2=OFF",
+    "-DWANT_SUIL=OFF",
+    "-DWANT_PULSEAUDIO=OFF",
+    "-DWANT_PORTAUDIO=OFF",
+    "-DWANT_SNDIO=OFF",
+    "-DWANT_SOUNDIO=OFF",
+    "-DWANT_SF2=OFF",
+    "-DWANT_GIG=OFF",
+    "-DWANT_SID=OFF",
+    "-DWANT_STK=OFF",
+    "-DWANT_SWH=OFF",
+    "-DWANT_TAP=OFF",
+    "-DWANT_VST=OFF",
 ]
+#dependencies = [
+#    "qt5-base",
+#    "libsamplerate",
+#    "libvorbis",
+#    "libogg",
+#    "sdl2",
+#    "fftw",
+#    "libstk",
+#    "fltk",
+#]
