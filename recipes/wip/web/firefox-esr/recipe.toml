@@ -1,4 +1,4 @@
-#TODO wrong compilation on gecko-profiler (bindgen/clang-sys)
+#TODO patches for quinn-udp crate, switch into git fork
 # mach: https://firefox-source-docs.mozilla.org/setup/linux_build.html
 # dependencies: https://packages.gentoo.org/packages/www-client/firefox/dependencies
 # feature flags: https://wiki.gentoo.org/wiki/Firefox#USE_flags
@@ -53,6 +53,7 @@ sed -i "s|TARGET_CXX|${CXX}|g" mozconfig
 sed -i "s|TARGET|${TARGET}|g" mozconfig
 export MOZCONFIG="${COOKBOOK_BUILD}/mozconfig"
 export PYTHONDONTWRITEBYTECODE=1
+unset CC_WRAPPER
 if [[ -z "$CI" ]]; then export MACH_NO_TERMINAL_FOOTER=1; fi;
 
 # clang-sys specifics
