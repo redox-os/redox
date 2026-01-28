@@ -25,8 +25,8 @@ DYNAMIC_INIT
     -C link-args="-lgmodule-2.0 -lffi -liconv -lpcre2-8 -lz"
 mkdir -pv "${COOKBOOK_STAGE}/usr/bin/"
 cp -v "target/${TARGET}/release/cosmic-player" "${COOKBOOK_STAGE}/usr/bin/"
-mkdir -pv "${COOKBOOK_STAGE}/ui/apps/"
-cp -v "${COOKBOOK_RECIPE}/manifest" "${COOKBOOK_STAGE}/ui/apps/cosmic-player"
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/ui/apps/"
+cp -v "${COOKBOOK_RECIPE}/manifest" "${COOKBOOK_STAGE}/usr/share/ui/apps/cosmic-player"
 #TODO: install with just?
 APPID="com.system76.CosmicPlayer"
 mkdir -pv "${COOKBOOK_STAGE}/usr/share/applications/"

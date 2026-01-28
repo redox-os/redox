@@ -17,9 +17,9 @@ rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 mkdir -pv "${COOKBOOK_STAGE}/usr/games/classicube"
 cp -v "src/ClassiCube" "${COOKBOOK_STAGE}/usr/games/classicube"
 
-mkdir -pv "${COOKBOOK_STAGE}/ui/apps"
-cp -v "${COOKBOOK_RECIPE}/manifest" "${COOKBOOK_STAGE}/ui/apps/classicube"
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/ui/apps"
+cp -v "${COOKBOOK_RECIPE}/manifest" "${COOKBOOK_STAGE}/usr/share/ui/apps/classicube"
 
-mkdir -pv "${COOKBOOK_STAGE}/ui/icons/apps"
-cp -v "${COOKBOOK_SOURCE}/misc/CCicon.png" "${COOKBOOK_STAGE}/ui/icons/apps/classicube.png"
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/icons/apps"
+cp -v "${COOKBOOK_SOURCE}/misc/CCicon.png" "${COOKBOOK_STAGE}/usr/share/icons/apps/classicube.png"
 """
