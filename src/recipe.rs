@@ -3,6 +3,7 @@ use std::{
     convert::TryInto,
     fs,
     path::{Path, PathBuf},
+    sync::OnceLock,
 };
 
 use pkg::{PackageName, package::PackageError, recipes};
@@ -69,17 +70,15 @@ pub enum SourceRecipe {
 impl SourceRecipe {
     pub fn guess_version(&self) -> Option<String> {
         match self {
-            SourceRecipe::Tar {
-                tar,
-                blake3: _,
-                patches: _,
-                script: _,
-            } => {
-                let re = Regex::new(r"\d+\.\d+\.\d+").unwrap();
-                if let Some(arm) = re.captures(&tar) {
-                    return Some(arm.get(0).unwrap().as_str().to_string());
+            SourceRecipe::Tar { tar, .. } => {
+                fn version_regex() -> &'static Regex {
+                    static REGEX: OnceLock<Regex> = OnceLock::new();
+                    REGEX.get_or_init(|| Regex::new(r"\d+\.\d+\.\d+").unwrap())
                 }
-                None
+                version_regex()
+                    .captures(tar)
+                    .and_then(|m| m.get(0))
+                    .map(|m| m.as_str().to_string())
             }
             _ => None,
         }
@@ -306,22 +305,40 @@ impl CookRecipe {
 
         let mut recipes = Vec::new();
         let mut recipes_set = BTreeSet::new();
-        for name in names {
-            let recipe = Self::from_name(name.clone())?;
 
-            if recurse_build_deps {
-                let dependencies = Self::new_recursive(
-                    &recipe.recipe.build.dependencies,
+        let mut try_collect = |deps: &[PackageName]| -> Result<Vec<Self>, PackageError> {
+            Self::new_recursive(
+                deps,
+                recurse_build_deps,
+                recurse_dev_build_deps,
+                recurse_package_deps,
+                collect_build_deps,
+                collect_package_deps,
+                collect_build_deps,
+                recursion - 1,
+            )
+        };
+
+        let mut try_collect_package =
+            |deps: &[PackageName]| -> Result<Vec<Self>, PackageError> {
+                Self::new_recursive(
+                    deps,
                     recurse_build_deps,
                     recurse_dev_build_deps,
                     recurse_package_deps,
                     collect_build_deps,
                     collect_package_deps,
-                    collect_build_deps,
+                    collect_package_deps,
                     recursion - 1,
                 )
-                .map_err(|mut err| {
-                    err.append_recursion(name);
+            };
+
+        for name in names {
+            let recipe = Self::from_name(name.clone())?;
+
+            if recurse_build_deps {
+                let dependencies = try_collect(&recipe.recipe.build.dependencies).map_err(|mut err| {
+                    err.append_recursion(name.clone());
                     err
                 })?;
 
@@ -334,18 +351,8 @@ impl CookRecipe {
             }
 
             if recurse_dev_build_deps {
-                let dependencies = Self::new_recursive(
-                    &recipe.recipe.build.dev_dependencies,
-                    recurse_build_deps,
-                    recurse_dev_build_deps,
-                    recurse_package_deps,
-                    collect_build_deps,
-                    collect_package_deps,
-                    collect_build_deps,
-                    recursion - 1,
-                )
-                .map_err(|mut err| {
-                    err.append_recursion(name);
+                let dependencies = try_collect(&recipe.recipe.build.dev_dependencies).map_err(|mut err| {
+                    err.append_recursion(name.clone());
                     err
                 })?;
 
@@ -358,18 +365,8 @@ impl CookRecipe {
             }
 
             if recurse_package_deps {
-                let dependencies = Self::new_recursive(
-                    &recipe.recipe.package.dependencies,
-                    recurse_build_deps,
-                    recurse_dev_build_deps,
-                    recurse_package_deps,
-                    collect_build_deps,
-                    collect_package_deps,
-                    collect_package_deps,
-                    recursion - 1,
-                )
-                .map_err(|mut err| {
-                    err.append_recursion(name);
+                let dependencies = try_collect_package(&recipe.recipe.package.dependencies).map_err(|mut err| {
+                    err.append_recursion(name.clone());
                     err
                 })?;
 

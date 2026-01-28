@@ -41,14 +41,14 @@ pub struct CookConfig {
 impl From<CookConfigOpt> for CookConfig {
     fn from(value: CookConfigOpt) -> Self {
         CookConfig {
-            offline: value.offline.unwrap(),
-            jobs: value.jobs.unwrap(),
-            tui: value.tui.unwrap(),
-            logs: value.logs.unwrap(),
-            nonstop: value.nonstop.unwrap(),
-            verbose: value.verbose.unwrap(),
-            clean_build: value.clean_build.unwrap(),
-            clean_target: value.clean_target.unwrap(),
+            offline: value.offline.unwrap_or(false),
+            jobs: value.jobs.unwrap_or(1),
+            tui: value.tui.unwrap_or(false),
+            logs: value.logs.unwrap_or(false),
+            nonstop: value.nonstop.unwrap_or(false),
+            verbose: value.verbose.unwrap_or(true),
+            clean_build: value.clean_build.unwrap_or(false),
+            clean_target: value.clean_target.unwrap_or(false),
         }
     }
 }
@@ -77,35 +77,25 @@ pub fn init_config() {
         CookbookConfig::default()
     };
 
-    if config.cook_opt.tui.is_none() {
-        config.cook_opt.tui = Some(!env::var("CI").is_ok_and(|s| !s.is_empty()));
-    }
-    if config.cook_opt.jobs.is_none() {
-        config.cook_opt.jobs = Some(extract_env(
-            "COOKBOOK_MAKE_JOBS",
-            std::thread::available_parallelism()
-                .map(|f| usize::from(f))
-                .unwrap_or(1),
-        ));
-    }
-    if config.cook_opt.logs.is_none() {
-        config.cook_opt.logs = Some(extract_env("COOKBOOK_LOGS", config.cook_opt.tui.unwrap()));
-    }
-    if config.cook_opt.offline.is_none() {
-        config.cook_opt.offline = Some(extract_env("COOKBOOK_OFFLINE", false));
-    }
-    if config.cook_opt.verbose.is_none() {
-        config.cook_opt.verbose = Some(extract_env("COOKBOOK_VERBOSE", true));
-    }
-    if config.cook_opt.nonstop.is_none() {
-        config.cook_opt.nonstop = Some(extract_env("COOKBOOK_NONSTOP", false));
-    }
-    if config.cook_opt.clean_build.is_none() {
-        config.cook_opt.clean_build = Some(extract_env("COOKBOOK_CLEAN_BUILD", false));
-    }
-    if config.cook_opt.clean_target.is_none() {
-        config.cook_opt.clean_target = Some(extract_env("COOKBOOK_CLEAN_TARGET", false));
-    }
+    let tui_default = !env::var("CI").is_ok_and(|s| !s.is_empty());
+    set_if_none(&mut config.cook_opt.tui, tui_default);
+
+    let jobs_default = std::thread::available_parallelism()
+        .map(|f| usize::from(f))
+        .unwrap_or(1);
+    set_if_none(
+        &mut config.cook_opt.jobs,
+        extract_env("COOKBOOK_MAKE_JOBS", jobs_default),
+    );
+
+    let logs_default = config.cook_opt.tui.unwrap_or(false);
+    set_if_none(&mut config.cook_opt.logs, extract_env("COOKBOOK_LOGS", logs_default));
+
+    set_if_none(&mut config.cook_opt.offline, extract_env("COOKBOOK_OFFLINE", false));
+    set_if_none(&mut config.cook_opt.verbose, extract_env("COOKBOOK_VERBOSE", true));
+    set_if_none(&mut config.cook_opt.nonstop, extract_env("COOKBOOK_NONSTOP", false));
+    set_if_none(&mut config.cook_opt.clean_build, extract_env("COOKBOOK_CLEAN_BUILD", false));
+    set_if_none(&mut config.cook_opt.clean_target, extract_env("COOKBOOK_CLEAN_TARGET", false));
     if config.mirrors.len() == 0 {
         // The GNU FTP mirror below is automatically inserted for convenience
         // You can choose other mirrors by setting it on cookbook.toml
@@ -120,12 +110,15 @@ pub fn init_config() {
     CONFIG.set(config).expect("config is initialized twice");
 }
 
+fn set_if_none<T>(opt: &mut Option<T>, value: T) {
+    opt.get_or_insert(value);
+}
+
 fn extract_env<T: FromStr>(key: &str, default: T) -> T {
-    if let Ok(e) = env::var(&key) {
-        str::parse(&e).unwrap_or(default)
-    } else {
-        default
-    }
+    env::var(key)
+        .ok()
+        .and_then(|e| str::parse(&e).ok())
+        .unwrap_or(default)
 }
 
 pub fn get_config() -> &'static CookbookConfig {
@@ -140,30 +133,17 @@ pub fn translate_mirror(original_url: &str) -> String {
         .or_else(|| original_url.strip_prefix("http://"))
         .unwrap_or(original_url);
 
-    let mut best_match_prefix: Option<&String> = None;
+    let protocol = &original_url[..(original_url.len() - stripped_url.len())];
 
-    for prefix in config.mirrors.keys() {
-        if stripped_url.starts_with(prefix) {
-            match best_match_prefix {
-                Some(current_best) if prefix.len() > current_best.len() => {
-                    best_match_prefix = Some(prefix);
-                }
-                None => {
-                    best_match_prefix = Some(prefix);
-                }
-                _ => {}
-            }
-        }
-    }
-
-    if let Some(prefix) = best_match_prefix {
-        let mirror_base = config.mirrors.get(prefix).unwrap();
-        let suffix = &stripped_url[prefix.len()..];
-        let ptotocol = &original_url[..(original_url.len() - stripped_url.len())];
-        return format!("{}{}{}", ptotocol, mirror_base, suffix);
-    }
-
-    original_url.to_string()
+    config.mirrors
+        .iter()
+        .filter(|(prefix, _)| stripped_url.starts_with(*prefix))
+        .max_by_key(|(prefix, _)| prefix.len())
+        .map(|(prefix, mirror_base)| {
+            let suffix = &stripped_url[prefix.len()..];
+            format!("{}{}{}", protocol, mirror_base, suffix)
+        })
+        .unwrap_or_else(|| original_url.to_string())
 }
 
 #[cfg(test)]
