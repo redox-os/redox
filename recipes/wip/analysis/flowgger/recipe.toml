@@ -2,5 +2,6 @@
 # build instructions: https://github.com/awslabs/flowgger/wiki/Installation
 [source]
 git = "https://github.com/awslabs/flowgger"
+shallow_clone = true
 [build]
 template = "cargo"

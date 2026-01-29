@@ -5,6 +5,13 @@
 tar = "https://github.com/audacity/audacity/releases/download/Audacity-3.7.7/audacity-sources-3.7.7.tar.gz"
 [build]
 template = "cmake"
+cmakeflags = [
+    "-Daudacity_conan_enabled=Off",
+    "-Daudacity_has_tests=Off",
+    "-Daudacity_has_updates_check=Off",
+    "-Daudacity_has_vst3=Off",
+    "-Daudacity_has_crashreports=Off",
+]
 #dependencies = [
 #    "libuuid",
 #]

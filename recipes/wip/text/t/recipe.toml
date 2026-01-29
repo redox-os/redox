@@ -1,6 +1,6 @@
 #TODO not compiled or tested
 [source]
-git = "https://github.com/tekaratzas/RustGPT"
+git = "https://github.com/alecthomas/t"
 shallow_clone = true
 [build]
 template = "cargo"
