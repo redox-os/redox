@@ -6,8 +6,8 @@ branch = "master"
 template = "custom"
 script = """
 cookbook_cargo --no-default-features
-mkdir -pv "${COOKBOOK_STAGE}/ui/apps"
-cp -v "${COOKBOOK_RECIPE}/manifest" "${COOKBOOK_STAGE}/ui/apps/30_cosmic-edit"
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/ui/apps"
+cp -v "${COOKBOOK_RECIPE}/manifest" "${COOKBOOK_STAGE}/usr/share/ui/apps/30_cosmic-edit"
 #TODO: install with just?
 APPID="com.system76.CosmicEdit"
 mkdir -pv "${COOKBOOK_STAGE}/usr/share/applications/"

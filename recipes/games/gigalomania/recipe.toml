@@ -28,9 +28,9 @@ export CPPHOST="${TARGET}-g++"
 
 rm -rf "${COOKBOOK_STAGE}/bundle"
 
-mkdir -pv "${COOKBOOK_STAGE}/ui/apps"
-cp -v "${COOKBOOK_RECIPE}/manifest" "${COOKBOOK_STAGE}/ui/apps/gigalomania"
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/ui/apps"
+cp -v "${COOKBOOK_RECIPE}/manifest" "${COOKBOOK_STAGE}/usr/share/ui/apps/gigalomania"
 
-mkdir -pv "${COOKBOOK_STAGE}/ui/icons/apps"
-cp -v "gigalomania64.png" "${COOKBOOK_STAGE}/ui/icons/apps/gigalomania.png"
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/icons/apps"
+cp -v "gigalomania64.png" "${COOKBOOK_STAGE}/usr/share/icons/apps/gigalomania.png"
 """
