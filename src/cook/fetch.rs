@@ -52,7 +52,7 @@ pub fn fetch_offline(recipe: &CookRecipe, logger: &PtyOut) -> Result<PathBuf, St
 
     let ident = match &recipe.recipe.source {
         Some(SourceRecipe::Path { path: _ }) | None => {
-            fetch(recipe, logger)?;
+            fetch(recipe, true, logger)?;
             "local_source".to_string()
         }
         Some(SourceRecipe::SameAs { same_as }) => {
@@ -114,7 +114,7 @@ pub fn fetch_offline(recipe: &CookRecipe, logger: &PtyOut) -> Result<PathBuf, St
     Ok(source_dir)
 }
 
-pub fn fetch(recipe: &CookRecipe, logger: &PtyOut) -> Result<PathBuf, String> {
+pub fn fetch(recipe: &CookRecipe, check_source: bool, logger: &PtyOut) -> Result<PathBuf, String> {
     let recipe_dir = &recipe.dir;
     let source_dir = recipe_dir.join("source");
     match recipe.recipe.build.kind {
@@ -134,7 +134,7 @@ pub fn fetch(recipe: &CookRecipe, logger: &PtyOut) -> Result<PathBuf, String> {
         Some(SourceRecipe::SameAs { same_as }) => {
             let recipe = fetch_resolve_canon(recipe_dir, &same_as, recipe.name.is_host())?;
             // recursively fetch
-            fetch(&recipe, logger)?;
+            fetch(&recipe, check_source, logger)?;
             fetch_make_symlink(&source_dir, &same_as)?;
             fetch_get_source_info(&recipe)?.source_identifier
         }
@@ -195,6 +195,8 @@ pub fn fetch(recipe: &CookRecipe, logger: &PtyOut) -> Result<PathBuf, String> {
                 rename(&source_dir_tmp, &source_dir)?;
 
                 false
+            } else if !check_source {
+                true
             } else {
                 if !source_dir.join(".git").is_dir() {
                     return Err(format!(
@@ -323,28 +325,29 @@ pub fn fetch(recipe: &CookRecipe, logger: &PtyOut) -> Result<PathBuf, String> {
         }) => {
             let source_tar = recipe_dir.join("source.tar");
             let mut tar_updated = false;
-            while {
+            loop {
                 if !source_tar.is_file() {
                     tar_updated = true;
                     download_wget(&tar, &source_tar, logger)?;
                 }
+                if !check_source {
+                    break;
+                }
                 let source_tar_blake3 = get_blake3(&source_tar, tar_updated && logger.is_none())?;
                 if let Some(blake3) = blake3 {
-                    if source_tar_blake3 != *blake3 {
-                        if tar_updated {
-                            return Err(format!(
-                                "The downloaded tar blake3 '{source_tar_blake3}' is not equal to blake3 in recipe.toml"
-                            ));
-                        } else {
-                            log_to_pty!(
-                                logger,
-                                "DEBUG: source tar blake3 is different and need redownload"
-                            );
-                            remove_all(&source_tar)?;
-                        }
-                        true
+                    if source_tar_blake3 == *blake3 {
+                        break;
+                    }
+                    if tar_updated {
+                        return Err(format!(
+                            "The downloaded tar blake3 '{source_tar_blake3}' is not equal to blake3 in recipe.toml"
+                        ));
                     } else {
-                        false
+                        log_to_pty!(
+                            logger,
+                            "DEBUG: source tar blake3 is different and need redownload"
+                        );
+                        remove_all(&source_tar)?;
                     }
                 } else {
                     //TODO: set blake3 hash on the recipe with something like "cook fix"
@@ -354,9 +357,9 @@ pub fn fetch(recipe: &CookRecipe, logger: &PtyOut) -> Result<PathBuf, String> {
                         source_tar.display(),
                         source_tar_blake3
                     );
-                    false
+                    break;
                 }
-            } {}
+            }
             if source_dir.is_dir() {
                 if tar_updated || fetch_is_patches_newer(recipe_dir, patches, &source_dir)? {
                     log_to_pty!(
@@ -397,6 +400,7 @@ pub fn fetch(recipe: &CookRecipe, logger: &PtyOut) -> Result<PathBuf, String> {
         cargoflags: _,
     } = &recipe.recipe.build.kind
     {
+        // TODO: No need to fetch if !check_source and already fetched?
         fetch_cargo(&source_dir, package_path.as_ref(), logger)?;
     }
 
