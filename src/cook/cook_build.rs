@@ -180,6 +180,10 @@ pub fn build(
     let sysroot_dir = target_dir.join("sysroot");
     let toolchain_dir = target_dir.join("toolchain");
     let stage_dirs = get_stage_dirs(&recipe.optional_packages, target_dir);
+    let stage_pkgars: Vec<PathBuf> = stage_dirs
+        .iter()
+        .map(|p| p.with_added_extension("pkgar"))
+        .collect();
     let cli_verbose = cook_config.verbose;
     let cli_jobs = cook_config.jobs;
     if recipe.build.kind == BuildKind::None {
@@ -218,7 +222,7 @@ pub fn build(
         };
     }
 
-    if !check_source && stage_dirs.iter().all(|dir| dir.exists()) {
+    if !check_source && stage_pkgars.iter().all(|file| file.is_file()) {
         if cli_verbose {
             log_to_pty!(logger, "DEBUG: using cached build, not checking source");
         }
@@ -245,14 +249,7 @@ pub fn build(
         .unwrap_or(Ok(SystemTime::UNIX_EPOCH))?;
 
     // check stage dir modified against pkgar files, any files missing will result in UNIX_EPOCH
-    let stage_modified = modified_all(
-        &stage_dirs
-            .iter()
-            .map(|p| p.with_added_extension("pkgar"))
-            .collect(),
-        modified,
-    )
-    .unwrap_or(SystemTime::UNIX_EPOCH);
+    let stage_modified = modified_all(&stage_pkgars, modified).unwrap_or(SystemTime::UNIX_EPOCH);
     // Rebuild stage if source is newer
     if stage_modified < source_modified
         || stage_modified < deps_modified
