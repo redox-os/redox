@@ -62,9 +62,8 @@ pub fn flush_pty(logger: &mut PtyOut) {
     };
     // Not sure if flush actually working
     let _ = pty.flush();
-    std::thread::sleep(Duration::from_millis(100));
+    std::thread::sleep(Duration::from_millis(10));
     let _ = file.flush();
-    std::thread::sleep(Duration::from_millis(100));
 }
 
 pub fn spawn_to_pipe(command: &mut Command, stdout_pipe: &PtyOut) -> Result<Child, Error> {
