@@ -1,5 +1,7 @@
-#TODO missing script for building, check the tarball
+#TODO missing script for gnu make or python script: https://github.com/icl-utk-edu/hpcc#compiling
 [source]
-tar = "https://hpcchallenge.org/projectsfiles/hpcc/download/hpcc-1.5.0.tar.gz"
+git = "https://github.com/icl-utk-edu/hpcc"
+rev = "1.5.0"
+shallow_clone = true
 [build]
 template = "custom"

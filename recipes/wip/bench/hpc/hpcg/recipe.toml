@@ -1,5 +1,6 @@
-#TODO missing script for building, see https://github.com/hpcg-benchmark/hpcg/blob/master/INSTALL
+#TODO not compiled or tested
 [source]
 git = "https://github.com/hpcg-benchmark/hpcg"
+shallow_clone = true
 [build]
-template = "custom"
+template = "cmake"

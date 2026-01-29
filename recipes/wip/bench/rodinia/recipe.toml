@@ -1,5 +1,5 @@
-#TODO missing script for building, lacking build instructions
+#TODO missing script for gnu make, build the openmp (cpu backend?) or opencl implementation
 [source]
-tar = "http://www.cs.virginia.edu/~skadron/lava/Rodinia/Packages/rodinia_3.1.tar.bz2"
+tar = "http://www.cs.virginia.edu/~skadron/lava/rodinia/Packages/rodinia_3.1.tar.bz2"
 [build]
 template = "custom"

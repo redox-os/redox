@@ -1,6 +1,7 @@
-#TODO make zstd work
+#TODO not compiled or tested
 [source]
 git = "https://github.com/iopsystems/rpc-perf"
+shallow_clone = true
 [build]
 template = "cargo"
 dependencies = [

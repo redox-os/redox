@@ -1,20 +1,21 @@
-#TODO missing script for "make", see https://github.com/ColinIanKing/stress-ng#building-stress-ng
-#TODO missing dependencies
+#TODO missing script for gnu make: https://github.com/ColinIanKing/stress-ng#building-stress-ng
+#TODO determine minimum dependencies
 [source]
 git = "https://github.com/ColinIanKing/stress-ng"
-rev = "8c39f5a2d9b199189456f414afd9e536dae69d1b"
+rev = "V0.20.00"
+shallow_clone = true
 [build]
 template = "custom"
-dependencies = [
-    "libbsd",
-    "libaio",
-    "libcap",
-    "libcap",
-    "libgcrypt",
-    "libjpeg",
-    "libmd",
-    "libmpfr",
-    "xxhash",
-    "zlib",
-    "mesa",
-]
+#dependencies = [
+#    "libbsd",
+#    "libaio",
+#    "libcap",
+#    "libcap",
+#    "libgcrypt",
+#    "libjpeg",
+#    "libmd",
+#    "libmpfr",
+#    "xxhash",
+#    "zlib",
+#    "mesa",
+#]
