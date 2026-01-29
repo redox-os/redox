@@ -9,7 +9,7 @@ diff '--color=auto' -rupwN source/Makefile source-new/Makefile
 +DESTDIR ?= "/"
 +INSTALLDIR = "${DESTDIR}/usr/games/"
 +DATADIR = "${DESTDIR}/usr/share/games/quake1/id1/"
-+ICODIR = "${DESTDIR}/ui/icons/apps/"
++ICODIR = "${DESTDIR}/usr/share/icons/apps/"
 +
  # Enable/Disable user directories support
 -DO_USERDIRS=0
