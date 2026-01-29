@@ -8,3 +8,5 @@ script = """
 mkdir -pv "${COOKBOOK_STAGE}/home/user/pts"
 cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}/home/user/pts"
 """
+[package]
+dependencies = ["php84"]
