@@ -329,7 +329,6 @@ pub fn fetch(recipe: &CookRecipe, check_source: bool, logger: &PtyOut) -> Result
                 if !source_tar.is_file() {
                     tar_updated = true;
                     download_wget(&tar, &source_tar, logger)?;
-                    continue;
                 }
                 if !check_source {
                     break;
@@ -400,8 +399,8 @@ pub fn fetch(recipe: &CookRecipe, check_source: bool, logger: &PtyOut) -> Result
         package_path,
         cargoflags: _,
     } = &recipe.recipe.build.kind
-        && check_source
     {
+        // TODO: No need to fetch if !check_source and already fetched?
         fetch_cargo(&source_dir, package_path.as_ref(), logger)?;
     }
 

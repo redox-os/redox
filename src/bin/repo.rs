@@ -628,7 +628,7 @@ fn handle_fetch(
     allow_offline: bool,
     logger: &PtyOut,
 ) -> anyhow::Result<PathBuf> {
-    let source_dir = match (config.cook.offline) && allow_offline {
+    let source_dir = match config.cook.offline && allow_offline {
         true => fetch_offline(&recipe, logger),
         false => fetch(&recipe, !recipe.is_deps, logger),
     }
