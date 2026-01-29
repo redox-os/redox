@@ -293,7 +293,7 @@ fn repo_inner(
                 let is_cook = *command == CliCommand::Cook;
                 let source_dir = handle_fetch(recipe, config, is_cook, logger)?;
                 if is_cook {
-                    handle_cook(recipe, config, source_dir, recipe.is_deps, logger)?;
+                    handle_cook(recipe, config, source_dir, logger)?;
                 }
                 Ok(())
             };
@@ -628,9 +628,9 @@ fn handle_fetch(
     allow_offline: bool,
     logger: &PtyOut,
 ) -> anyhow::Result<PathBuf> {
-    let source_dir = match config.cook.offline && allow_offline {
+    let source_dir = match (config.cook.offline) && allow_offline {
         true => fetch_offline(&recipe, logger),
-        false => fetch(&recipe, logger),
+        false => fetch(&recipe, !recipe.is_deps, logger),
     }
     .map_err(|e| anyhow!("failed to fetch: {:?}", e))?;
 
@@ -641,7 +641,6 @@ fn handle_cook(
     recipe: &CookRecipe,
     config: &CliConfig,
     source_dir: PathBuf,
-    is_deps: bool,
     logger: &PtyOut,
 ) -> anyhow::Result<()> {
     let recipe_dir = &recipe.dir;
@@ -653,7 +652,7 @@ fn handle_cook(
         &recipe.name,
         &recipe.recipe,
         &config.cook,
-        !is_deps,
+        !recipe.is_deps,
         logger,
     )
     .map_err(|err| anyhow!("failed to build: {:?}", err))?;
@@ -1099,7 +1098,6 @@ fn run_tui_cook(
     let cooker_handle = thread::spawn(move || {
         'done: for (mut recipe, source_dir) in work_rx {
             let name = recipe.name.clone();
-            let is_deps = recipe.is_deps;
             let (mut stdout_writer, mut stderr_writer) = setup_logger(&cooker_status_tx, &name);
             let mut logger = Some((&mut stdout_writer, &mut stderr_writer));
             'again: loop {
@@ -1107,13 +1105,7 @@ fn run_tui_cook(
                     .send(StatusUpdate::StartCook(name.clone()))
                     .unwrap();
                 let _ = recipe.reload_recipe(); // reread recipe.toml in case we're retrying
-                let handler = handle_cook(
-                    &recipe,
-                    &cooker_config,
-                    source_dir.clone(),
-                    is_deps,
-                    &logger,
-                );
+                let handler = handle_cook(&recipe, &cooker_config, source_dir.clone(), &logger);
                 if let Some(log_path) = cooker_config.logs_dir.as_ref() {
                     if let Err(err_ctx) = &handler {
                         log_to_pty!(&logger, "\n{:?}", err_ctx)
