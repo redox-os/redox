@@ -34,7 +34,7 @@ env -i \
 "${COOKBOOK_MAKE}" -j"${COOKBOOK_MAKE_JOBS}" ENABLE_FS=stdio ENABLE_NLS=0 neverball neverputt
 
 # Create install directories
-mkdir -pv "${COOKBOOK_STAGE}/usr/games/neverball" "${COOKBOOK_STAGE}/ui/apps" "${COOKBOOK_STAGE}/ui/icons/apps"
+mkdir -pv "${COOKBOOK_STAGE}/usr/games/neverball" "${COOKBOOK_STAGE}/usr/share/ui/apps" "${COOKBOOK_STAGE}/usr/share/icons/apps"
 
 # Copy assets
 cp -rv data "${COOKBOOK_STAGE}/usr/games/neverball"
@@ -46,9 +46,9 @@ do
     "${STRIP}" -v "${bin}" -o "${COOKBOOK_STAGE}/usr/games/neverball/${bin}"
 
     # Install manifest
-    cp -v "${COOKBOOK_RECIPE}/manifest-${bin}" "${COOKBOOK_STAGE}/ui/apps/${bin}"
+    cp -v "${COOKBOOK_RECIPE}/manifest-${bin}" "${COOKBOOK_STAGE}/usr/share/ui/apps/${bin}"
 
     # Install icon
-    cp -v "dist/${bin}_64.png" "${COOKBOOK_STAGE}/ui/icons/apps/${bin}.png"
+    cp -v "dist/${bin}_64.png" "${COOKBOOK_STAGE}/usr/share/icons/apps/${bin}.png"
 done
 """

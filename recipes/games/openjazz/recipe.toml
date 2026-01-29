@@ -33,7 +33,7 @@ cookbook_configure
 
 ASSETS_DIR="${COOKBOOK_STAGE}${DATAPATH}"
 INSTALL_DIR="${COOKBOOK_STAGE}/usr/games"
-ICON_DIR="${COOKBOOK_STAGE}/ui/icons/apps"
+ICON_DIR="${COOKBOOK_STAGE}/usr/share/icons/apps"
 MAN_ROOT="${COOKBOOK_STAGE}/usr/share/man"
 mkdir -p "${ASSETS_DIR}" "${INSTALL_DIR}" "${ICON_DIR}" "${MAN_ROOT}"
 

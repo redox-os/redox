@@ -25,9 +25,9 @@ COOKBOOK_CONFIGURE_FLAGS+=(
 )
 cookbook_configure
 
-mkdir -pv "${COOKBOOK_STAGE}/ui/apps"
-cp -v "${COOKBOOK_RECIPE}/manifest" "${COOKBOOK_STAGE}/ui/apps/dosbox"
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/ui/apps"
+cp -v "${COOKBOOK_RECIPE}/manifest" "${COOKBOOK_STAGE}/usr/share/ui/apps/dosbox"
 
-mkdir -pv "${COOKBOOK_STAGE}/ui/icons/apps"
-cp -v "${COOKBOOK_RECIPE}/icon.png" "${COOKBOOK_STAGE}/ui/icons/apps/dosbox.png"
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/icons/apps"
+cp -v "${COOKBOOK_RECIPE}/icon.png" "${COOKBOOK_STAGE}/usr/share/icons/apps/dosbox.png"
 """

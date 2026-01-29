@@ -7,8 +7,8 @@ template = "custom"
 script = """
 DYNAMIC_INIT
 cookbook_cargo --no-default-features
-mkdir -pv "${COOKBOOK_STAGE}/ui/apps"
-cp -v "${COOKBOOK_RECIPE}/manifest" "${COOKBOOK_STAGE}/ui/apps/10_cosmic-term"
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/ui/apps"
+cp -v "${COOKBOOK_RECIPE}/manifest" "${COOKBOOK_STAGE}/usr/share/ui/apps/10_cosmic-term"
 #TODO: install with just?
 APPID="com.system76.CosmicTerm"
 mkdir -pv "${COOKBOOK_STAGE}/usr/share/applications/"

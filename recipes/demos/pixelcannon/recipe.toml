@@ -9,8 +9,8 @@ cookbook_cargo
 mkdir -pv "${COOKBOOK_STAGE}/apps/pixelcannon"
 cp -Rv "${COOKBOOK_SOURCE}/assets" "${COOKBOOK_STAGE}/apps/pixelcannon"
 
-mkdir -pv "${COOKBOOK_STAGE}/ui/apps"
-cp -v "${COOKBOOK_SOURCE}/manifest" "${COOKBOOK_STAGE}/ui/apps/pixelcannon"
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/ui/apps"
+cp -v "${COOKBOOK_SOURCE}/manifest" "${COOKBOOK_STAGE}/usr/share/ui/apps/pixelcannon"
 """
 
 [package]

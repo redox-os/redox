@@ -6,10 +6,10 @@ template = "custom"
 script = """
 DYNAMIC_INIT
 cookbook_cargo
-mkdir -pv "${COOKBOOK_STAGE}/ui/apps"
-cp -v "${COOKBOOK_SOURCE}/pkg/manifest" "${COOKBOOK_STAGE}/ui/apps/periodictable"
-mkdir -pv "${COOKBOOK_STAGE}/ui/icons"
-cp -v "${COOKBOOK_SOURCE}/pkg/icon.png" "${COOKBOOK_STAGE}/ui/icons/periodictable.png"
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/ui/apps"
+cp -v "${COOKBOOK_SOURCE}/pkg/manifest" "${COOKBOOK_STAGE}/usr/share/ui/apps/periodictable"
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/icons"
+cp -v "${COOKBOOK_SOURCE}/pkg/icon.png" "${COOKBOOK_STAGE}/usr/share/icons/periodictable.png"
 """
 
 [package]

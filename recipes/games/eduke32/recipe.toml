@@ -28,9 +28,9 @@ mkdir -pv "${COOKBOOK_STAGE}/usr/games"
 cp -v ./eduke32 "${COOKBOOK_STAGE}/usr/games/eduke32"
 cp -v ./mapster32 "${COOKBOOK_STAGE}/usr/games/mapster32"
 
-mkdir -pv "${COOKBOOK_STAGE}/ui/apps"
-cp -v "${COOKBOOK_RECIPE}/manifest" "${COOKBOOK_STAGE}/ui/apps/eduke32"
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/ui/apps"
+cp -v "${COOKBOOK_RECIPE}/manifest" "${COOKBOOK_STAGE}/usr/share/ui/apps/eduke32"
 
-mkdir -pv "${COOKBOOK_STAGE}/ui/icons/apps"
-cp -v "${COOKBOOK_RECIPE}/icon.png" "${COOKBOOK_STAGE}/ui/icons/apps/eduke32.png"
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/icons/apps"
+cp -v "${COOKBOOK_RECIPE}/icon.png" "${COOKBOOK_STAGE}/usr/share/icons/apps/eduke32.png"
 """
