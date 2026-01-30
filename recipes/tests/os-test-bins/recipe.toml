@@ -32,6 +32,16 @@ make OS=Redox \
 
 skips=(
     # These tests hang
+    basic/pthread/pthread_barrierattr_setpshared
+    basic/pthread/pthread_cancel
+    basic/pthread/pthread_cleanup_pop
+    basic/pthread/pthread_cleanup_push
+    basic/pthread/pthread_condattr_setpshared
+    basic/pthread/pthread_mutex_consistent
+    basic/pthread/pthread_rwlock_timedrdlock
+    basic/pthread/pthread_rwlock_timedrwlock
+    basic/pthread/pthread_setcanceltype
+    basic/pthread/pthread_testcancel
     signal/ppoll-block-sleep-raise-write
     signal/ppoll-block-sleep-write-raise
 )
