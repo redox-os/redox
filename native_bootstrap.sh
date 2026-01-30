@@ -914,7 +914,7 @@ redox()
     
     # Core development packages that are likely available on Redox
     # This list is conservative and only includes essentials
-    packages=""autoconf \
+    packages="autoconf \
     automake \
     expat \
     gcc13 \
