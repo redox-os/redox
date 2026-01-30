@@ -1,5 +1,6 @@
 [source]
 git = "https://github.com/akopytov/sysbench.git"
+patches = ["redox.patch"]
 script = """
 DYNAMIC_INIT
 export CFLAGS+=" -I${COOKBOOK_SYSROOT}/include/luajit-2.1"
