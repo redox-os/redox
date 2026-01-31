@@ -1,17 +1,11 @@
 [source]
-git = "https://gitlab.redox-os.org/redox-os/llvm-project.git"
-upstream = "https://github.com/rust-lang/llvm-project.git"
-branch = "redox-2025-10-03"
-shallow_clone = true
+same_as = "../llvm21"
 
 [build]
 template = "custom"
 dependencies = [
-    "zlib",
-    "libxml2",
 ]
 dev-dependencies = [
-    "libstdcxx",
     "host:xz",
     "host:libarchive",  # workaround for cmake error
 ]
@@ -19,16 +13,16 @@ script = """
 DYNAMIC_INIT
 
 COOKBOOK_CMAKE_FLAGS+=(
-    -DLLVM_BUILD_UTILS=On
-    -DLLVM_TOOL_LLVM_COV_BUILD=On
-    -DLLVM_TOOL_LLVM_PROFDATA_BUILD=On
-    -DLLVM_INSTALL_UTILS=On
+    -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra;lld"
+    -DLIBCLANG_BUILD_STATIC=On
+    -DLLVM_INCLUDE_BENCHMARKS=Off
+    -DLLVM_INCLUDE_DOCS=Off
 
-# the rest of options that shared to clang
+# the rest of options should be exact with llvm21
+    -DCROSS_TOOLCHAIN_FLAGS_NATIVE="-DCMAKE_TOOLCHAIN_FILE=$(realpath "${COOKBOOK_RECIPE}/native.cmake")"
     -DCMAKE_CXX_FLAGS="--std=gnu++11"
     -DBUILD_SHARED_LIBS=False
     -DLLVM_LINK_LLVM_DYLIB=On
-    -DCROSS_TOOLCHAIN_FLAGS_NATIVE="-DCMAKE_TOOLCHAIN_FILE=$(realpath "${COOKBOOK_RECIPE}/native.cmake")"
     -DLLVM_BUILD_EXAMPLES=Off
     -DLLVM_BUILD_TESTS=Off
     -DLLVM_DEFAULT_TARGET_TRIPLE="${TARGET}"
@@ -40,6 +34,8 @@ COOKBOOK_CMAKE_FLAGS+=(
     -DLLVM_OPTIMIZED_TABLEGEN=On
     -DLLVM_TARGET_ARCH="$(echo "${TARGET}" | cut -d - -f1)"
     -DLLVM_TARGETS_TO_BUILD="X86"
+    -DLLVM_TOOL_LLVM_COV_BUILD=Off
+    -DLLVM_TOOL_LLVM_PROFDATA_BUILD=Off
     -DLLVM_TOOLS_INSTALL_DIR=bin
     -DLLVM_UTILS_INSTALL_DIR=bin
     -DUNIX=1
@@ -49,20 +45,37 @@ COOKBOOK_CMAKE_FLAGS+=(
 COOKBOOK_MAKE_JOBS="$(( ${COOKBOOK_MAKE_JOBS} > 16 ? 16 : ${COOKBOOK_MAKE_JOBS} ))"
 COOKBOOK_SOURCE="$COOKBOOK_SOURCE/llvm"
 cookbook_cmake
+
+# Redundant LLVM packages
+rm -rf ${COOKBOOK_STAGE}/usr/include/llvm* \
+    ${COOKBOOK_STAGE}/usr/lib/libLLVM*.a \
+    ${COOKBOOK_STAGE}/usr/lib/cmake/llvm \
+    ${COOKBOOK_STAGE}/usr/bin/llvm-* \
 """
 
-# llvm runtime
+# lld runtime (no library)
 [[optional-packages]]
-name = "runtime"
+name = "lld"
+dependencies = [ ".runtime" ]
 files = [
-    "usr/bin/**",
+    "usr/bin/*.lld",
+    "usr/bin/*-ld",
+    "usr/bin/lld*",
 ]
 
 [[optional-packages]]
 name = "dev"
-dependencies = [ ".runtime" ]
 files = [
-    "usr/include/llvm*/**",
-    "usr/lib/libLLVM*.a",
-    "usr/lib/cmake/llvm/**",
+    "usr/include/clang*/**",
+    "usr/lib/libclang*.a",
+    "usr/lib/cmake/clang/**",
+]
+
+[[optional-packages]]
+name = "lld-dev"
+dependencies = [ ".lld" ]
+files = [
+    "usr/include/lld*/**",
+    "usr/lib/liblld*.a",
+    "usr/lib/cmake/lld/**",
 ]
