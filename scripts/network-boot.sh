@@ -26,6 +26,7 @@ fi
 
 ARGS=(
     "--no-daemon"
+    "--bind-interfaces"
     "--listen-address=${NETWORK}.1"
     "--port=0"
     "--dhcp-range=${NETWORK}.3,${NETWORK}.254,255.255.255.0,1h"
