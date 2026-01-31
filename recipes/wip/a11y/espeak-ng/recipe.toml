@@ -1,0 +1,16 @@
+#     compiles, but only wavefile generation is supported
+#TODO waiting for a custom libpcaudio0 backend for real-time output (bpisch is working on it)
+
+[source]
+git = "https://gitlab.redox-os.org/bpisch/espeak-ng.git"
+branch = "redox"
+
+[build]
+template = "custom"
+dependencies = ["libstdcxx"]
+script = """
+DYNAMIC_INIT
+cp -R "${COOKBOOK_SOURCE}/espeak-ng-data" .
+cookbook_cmake
+cp -R "${COOKBOOK_SOURCE}/espeak-ng-data" "${COOKBOOK_STAGE}/usr/share/espeak-ng-data"
+"""
