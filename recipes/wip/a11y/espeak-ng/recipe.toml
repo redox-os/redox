@@ -10,7 +10,7 @@ template = "custom"
 dependencies = ["libstdcxx"]
 script = """
 DYNAMIC_INIT
-cp -R "${COOKBOOK_SOURCE}/../espeak-ng-data" .
+cp -R "${COOKBOOK_SOURCE}/espeak-ng-data" .
 cookbook_cmake
-cp -R "${COOKBOOK_SOURCE}/../espeak-ng-data" "${COOKBOOK_STAGE}/usr/share/espeak-ng-data"
+cp -R "${COOKBOOK_SOURCE}/espeak-ng-data" "${COOKBOOK_STAGE}/usr/share/espeak-ng-data"
 """
