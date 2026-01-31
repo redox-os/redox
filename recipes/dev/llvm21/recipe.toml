@@ -11,24 +11,28 @@ dependencies = [
     "libxml2",
 ]
 dev-dependencies = [
-    "libstdcxx",
     "host:xz",
     "host:libarchive",  # workaround for cmake error
 ]
 script = """
 DYNAMIC_INIT
+ARCH="$(echo "${TARGET}" | cut -d - -f1)"
+
+# This just build the LLVM library and tools just enough for Rust, to build the rest of LLVM see
+# https://github.com/llvm/llvm-zorg/blob/main/zorg/buildbot/builders/annotated/standalone-build.sh
 
 COOKBOOK_CMAKE_FLAGS+=(
-    -DLLVM_BUILD_UTILS=On
+    -DLLVM_BUILD_LLVM_DYLIB=On
+    -DLLVM_LINK_LLVM_DYLIB=On
+    -DLLVM_INCLUDE_UTILS=On
+    -DLLVM_INSTALL_UTILS=On
     -DLLVM_TOOL_LLVM_COV_BUILD=On
     -DLLVM_TOOL_LLVM_PROFDATA_BUILD=On
-    -DLLVM_INSTALL_UTILS=On
 
 # the rest of options that shared to clang
+    -DCROSS_TOOLCHAIN_FLAGS_NATIVE="-DCMAKE_TOOLCHAIN_FILE=$(realpath "${COOKBOOK_RECIPE}/native.cmake")"
     -DCMAKE_CXX_FLAGS="--std=gnu++11"
     -DBUILD_SHARED_LIBS=False
-    -DLLVM_LINK_LLVM_DYLIB=On
-    -DCROSS_TOOLCHAIN_FLAGS_NATIVE="-DCMAKE_TOOLCHAIN_FILE=$(realpath "${COOKBOOK_RECIPE}/native.cmake")"
     -DLLVM_BUILD_EXAMPLES=Off
     -DLLVM_BUILD_TESTS=Off
     -DLLVM_DEFAULT_TARGET_TRIPLE="${TARGET}"
@@ -38,7 +42,7 @@ COOKBOOK_CMAKE_FLAGS+=(
     -DLLVM_INCLUDE_EXAMPLES=Off
     -DLLVM_INCLUDE_TESTS=Off
     -DLLVM_OPTIMIZED_TABLEGEN=On
-    -DLLVM_TARGET_ARCH="$(echo "${TARGET}" | cut -d - -f1)"
+    -DLLVM_TARGET_ARCH=$ARCH
     -DLLVM_TARGETS_TO_BUILD="X86"
     -DLLVM_TOOLS_INSTALL_DIR=bin
     -DLLVM_UTILS_INSTALL_DIR=bin

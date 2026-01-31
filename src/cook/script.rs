@@ -198,33 +198,47 @@ COOKBOOK_CMAKE_FLAGS=(
     -DENABLE_SHARED=False
     -DENABLE_STATIC=True
 )
-function cookbook_cmake {
-if [ "$(echo "${TARGET}" | cut -d - -f3)" = "linux" ]; then
-    SYSTEM_NAME="Linux"
-else
-    SYSTEM_NAME="UnixPaths"
-fi
-    cat > cross_file.cmake <<EOF
-set(CMAKE_AR ${GNU_TARGET}-ar)
-set(CMAKE_CXX_COMPILER ${GNU_TARGET}-g++)
-set(CMAKE_C_COMPILER ${GNU_TARGET}-gcc)
-set(CMAKE_FIND_ROOT_PATH ${COOKBOOK_SYSROOT})
+
+function generate_cookbook_cmake_file {
+    target=$1
+    gcc_prefix=$2
+    sysroot=$3
+    file=$4
+    arch=$(echo "$target" | cut -d - -f1)
+    os=$(echo "$target" | cut -d - -f3)
+
+    if [ "$os" = "linux" ]; then
+        SYSTEM_NAME="Linux"
+    else
+        SYSTEM_NAME="UnixPaths"
+    fi
+
+    cat > $file <<EOF
+set(CMAKE_AR ${gcc_prefix}ar)
+set(CMAKE_CXX_COMPILER ${gcc_prefix}g++)
+set(CMAKE_C_COMPILER ${gcc_prefix}gcc)
+set(CMAKE_FIND_ROOT_PATH ${sysroot})
 set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
 set(CMAKE_PLATFORM_USES_PATH_WHEN_NO_SONAME 1)
-set(CMAKE_PREFIX_PATH, ${COOKBOOK_SYSROOT})
-set(CMAKE_RANLIB ${GNU_TARGET}-ranlib)
+set(CMAKE_PREFIX_PATH, ${sysroot})
+set(CMAKE_RANLIB ${gcc_prefix}ranlib)
 set(CMAKE_SHARED_LIBRARY_SONAME_C_FLAG "-Wl,-soname,")
 set(CMAKE_SYSTEM_NAME ${SYSTEM_NAME})
-set(CMAKE_SYSTEM_PROCESSOR $(echo "${TARGET}" | cut -d - -f1))
+set(CMAKE_SYSTEM_PROCESSOR ${arch})
 EOF
 
     if [ -n "${CC_WRAPPER}" ]
     then
-        echo "set(CMAKE_C_COMPILER_LAUNCHER ${CC_WRAPPER})" >> cross_file.cmake
-        echo "set(CMAKE_CXX_COMPILER_LAUNCHER ${CC_WRAPPER})" >> cross_file.cmake
+        echo "set(CMAKE_C_COMPILER_LAUNCHER ${CC_WRAPPER})" >> $file
+        echo "set(CMAKE_CXX_COMPILER_LAUNCHER ${CC_WRAPPER})" >> $file
     fi
+}
+
+function cookbook_cmake {
+
+    generate_cookbook_cmake_file $TARGET $GNU_TARGET- "$COOKBOOK_SYSROOT" cross_file.cmake
 
     "${COOKBOOK_CMAKE}" "${COOKBOOK_SOURCE}" \
         -DCMAKE_BUILD_TYPE=Release \
