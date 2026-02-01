@@ -1,9 +1,11 @@
 #TODO compiled but not tested
 [source]
 git = "https://github.com/giraffekey/xylo"
+shallow_clone = true
 [build]
 template = "custom"
 script = """
+DYNAMIC_INIT
 cookbook_cargo
 mkdir -pv "${COOKBOOK_STAGE}/usr/share/xylo"
 cp -rv "${COOKBOOK_SOURCE}/example.xylo" "${COOKBOOK_STAGE}/usr/share/xylo"
