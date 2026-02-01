@@ -1,0 +1,109 @@
+[source]
+same_as = "../llvm21"
+
+[build]
+template = "custom"
+dependencies = [
+    "llvm21",
+]
+dev-dependencies = [
+    "host:clang21", # for clang-tblgen
+    "host:llvm21",
+    "host:llvm21.dev",
+    "host:llvm21.runtime",
+    "host:xz",
+    "host:libarchive",  # workaround for cmake error
+]
+script = """
+DYNAMIC_INIT
+ARCH="$(echo "${TARGET}" | cut -d - -f1)"
+
+generate_cookbook_cmake_file $COOKBOOK_HOST_TARGET "" "$COOKBOOK_TOOLCHAIN" native.cmake
+
+COOKBOOK_CMAKE_FLAGS+=(
+    -DLLVM_ROOT="${COOKBOOK_SYSROOT}"
+    -DCLANG_LINK_CLANG_DYLIB=ON
+    -DLLVM_TABLEGEN_EXE=${COOKBOOK_TOOLCHAIN}/bin/llvm-tblgen
+    -DLIBCLANG_BUILD_STATIC=1
+    -DLLVM_BUILD_UTILS=On
+
+# the shared options from llvm
+    -DCMAKE_CXX_FLAGS="--std=gnu++11"
+    -DBUILD_SHARED_LIBS=False
+    -DLLVM_BUILD_EXAMPLES=Off
+    -DLLVM_BUILD_TESTS=Off
+    -DLLVM_DEFAULT_TARGET_TRIPLE="${TARGET}"
+    -DLLVM_ENABLE_LTO=Off
+    -DLLVM_ENABLE_RTTI=On
+    -DLLVM_ENABLE_THREADS=On
+    -DLLVM_INCLUDE_EXAMPLES=Off
+    -DLLVM_INCLUDE_TESTS=Off
+    -DLLVM_OPTIMIZED_TABLEGEN=On
+    -DLLVM_TARGET_ARCH=$ARCH
+    -DLLVM_TARGETS_TO_BUILD="X86"
+    -DLLVM_TOOLS_INSTALL_DIR=bin
+    -DLLVM_UTILS_INSTALL_DIR=bin
+    -DUNIX=1
+)
+
+COOKBOOK_SOURCE="$COOKBOOK_SOURCE/clang"
+
+if [ "$TARGET" = "$COOKBOOK_HOST_TARGET" ]; then
+
+    "${COOKBOOK_CMAKE}" "${COOKBOOK_SOURCE}" \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_INCLUDEDIR=include \
+        -DCMAKE_INSTALL_LIBDIR=lib \
+        -DCMAKE_INSTALL_OLDINCLUDEDIR=/include \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DCMAKE_INSTALL_SBINDIR=bin \
+        -DCMAKE_TOOLCHAIN_FILE=native.cmake \
+        -GNinja \
+        -Wno-dev \
+        "${COOKBOOK_CMAKE_FLAGS[@]}" \
+        "$@"
+
+    # All distros use clever tricks to this problem. I have no idea how I came up with this
+    export PATH="$PATH:$COOKBOOK_STAGE/usr/bin"
+    DESTDIR="${COOKBOOK_STAGE}" "${COOKBOOK_NINJA}" install-clang-tblgen
+    "${COOKBOOK_NINJA}" -j"${COOKBOOK_MAKE_JOBS}"
+    DESTDIR="${COOKBOOK_STAGE}" "${COOKBOOK_NINJA}" install -j"${COOKBOOK_MAKE_JOBS}"
+
+else
+
+    COOKBOOK_CMAKE_FLAGS+=(
+        -DCROSS_TOOLCHAIN_FLAGS_NATIVE="-DCMAKE_TOOLCHAIN_FILE=$(realpath native.cmake)"
+        -DCLANG_TABLEGEN_EXE=${COOKBOOK_TOOLCHAIN}/bin/clang-tblgen
+    )
+    cookbook_cmake
+
+fi
+
+"""
+
+# lld runtime (no library)
+[[optional-packages]]
+name = "lld"
+dependencies = [ ".runtime" ]
+files = [
+    "usr/bin/*.lld",
+    "usr/bin/*-ld",
+    "usr/bin/lld*",
+]
+
+[[optional-packages]]
+name = "dev"
+files = [
+    "usr/include/clang*/**",
+    "usr/lib/libclang*.a",
+    "usr/lib/cmake/clang/**",
+]
+
+[[optional-packages]]
+name = "lld-dev"
+dependencies = [ ".lld" ]
+files = [
+    "usr/include/lld*/**",
+    "usr/lib/liblld*.a",
+    "usr/lib/cmake/lld/**",
+]
