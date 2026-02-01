@@ -1,0 +1,11 @@
+#TODO not compiled or tested
+# build instructions: https://reth.rs/installation/source
+[source]
+git = "https://github.com/paradigmxyz/reth
+shallow_clone = true
+[build]
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_cargo_packages reth
+"""

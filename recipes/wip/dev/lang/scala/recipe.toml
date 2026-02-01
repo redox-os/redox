@@ -1,0 +1,7 @@
+#TODO missing script for sbt
+# probable build instructions: https://github.com/scala/scala3#building-a-local-distribution
+[source]
+tar = "https://github.com/scala/scala3/releases/download/3.3.7/scala3-3.3.7.tar.gz"
+[build]
+template = "custom"
+dev-dependencies = ["host:sbt"]

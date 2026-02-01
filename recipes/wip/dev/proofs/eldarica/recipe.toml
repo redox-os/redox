@@ -1,0 +1,8 @@
+#TODO missing script for sbt
+# build instructions: https://github.com/uuverifiers/eldarica#documentation
+[source]
+git = "https://github.com/uuverifiers/eldarica"
+rev = "v2.2.1"
+shallow_clone = true
+[build]
+template = "custom"
