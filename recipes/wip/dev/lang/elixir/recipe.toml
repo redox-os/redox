@@ -1,6 +1,7 @@
-#TODO missing script for "make", see https://github.com/elixir-lang/elixir#compiling-from-source
+#TODO missing script for gnu make: https://github.com/elixir-lang/elixir#compiling-from-source
 [source]
 git = "https://github.com/elixir-lang/elixir"
-rev = "927b10df80ee1c1c7396e68efe00d06bc3e80420"
+branch = "v1.19"
+shallow_clone = true
 [build]
 template = "custom"
