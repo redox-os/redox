@@ -1,6 +1,7 @@
-#TODO missing script for "make", see https://github.com/krpors/hx#compiling-and-running
+#TODO missing script for gnu make: https://github.com/krpors/hx#compiling-and-running
 [source]
 git = "https://github.com/krpors/hx"
-rev = "c124b40586f701e47b35628fde286d20bf9988ca"
+rev = "v1.0.15"
+shallow_clone = true
 [build]
 template = "custom"

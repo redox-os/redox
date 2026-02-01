@@ -1,5 +1,6 @@
 #TODO compilation error, missing mimalloc sys/syscall.h
 [source]
 git = "https://github.com/rhysd/hgrep"
+shallow_clone = true
 [build]
 template = "cargo"
