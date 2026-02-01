@@ -1,0 +1,12 @@
+#TODO not compiled or tested
+# build instructions: https://docs.soliditylang.org/en/v0.8.33/installing-solidity.html#building-from-source
+[source]
+tar = "https://github.com/argotorg/solidity/releases/download/v0.8.33/solidity_0.8.33.tar.gz"
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DPEDANTIC=OFF",
+]
+dependencies = [
+    "boost",
+]

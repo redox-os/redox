@@ -1,0 +1,15 @@
+#TODO missing script for building: https://emscripten.org/docs/building_from_source/index.html
+[source]
+git = "https://github.com/emscripten-core/emscripten"
+rev = "5.0.0"
+shallow_clone = true
+[build]
+template = "custom"
+dev-dependencies = [
+    "host:nodejs24",
+]
+[package]
+dependencies = [
+    "llvm21-common",
+    "binaryen",
+]

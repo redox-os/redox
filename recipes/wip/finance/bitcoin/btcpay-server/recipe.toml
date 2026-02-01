@@ -1,0 +1,13 @@
+#TODO missing script for building: https://github.com/btcpayserver/btcpayserver#how-to-build
+#TODO determine minimum dependencies
+# dependencies and docker container setup: https://github.com/btcpayserver/btcpayserver/blob/master/BTCPayServer.Tests/docker-compose.yml
+# configuration: https://docs.btcpayserver.org/Development/LocalDevelopment/
+[source]
+git = "https://github.com/btcpayserver/btcpayserver"
+rev = "v2.3.4"
+shallow_clone = true
+[build]
+template = "custom"
+dev-dependencies = [
+    "host:dotnet8",
+]

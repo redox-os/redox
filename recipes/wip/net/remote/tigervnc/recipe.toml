@@ -1,0 +1,16 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/TigerVNC/tigervnc/blob/1.16-branch/BUILDING.txt
+[source]
+git = "https://github.com/TigerVNC/tigervnc"
+branch = "1.16-branch"
+shallow_clone = true
+[build]
+template = "cmake"
+dependencies = [
+    "zlib",
+    "pixman",
+    "fltk14",
+    "libjpeg",
+    #"gnutls3",
+    #"libnettle",
+]

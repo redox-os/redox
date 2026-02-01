@@ -1,0 +1,22 @@
+#TODO missing script for building: https://github.com/dotnet/dotnet/tree/release/8.0.1xx#building
+# linux requirements: https://github.com/dotnet/runtime/blob/release/8.0/docs/workflow/requirements/linux-requirements.md
+# freebsd requirements: https://github.com/dotnet/runtime/blob/release/8.0/docs/workflow/requirements/freebsd-requirements.md#linux-environment
+# bootstraping: https://github.com/dotnet/source-build/blob/main/Documentation/bootstrapping-guidelines.md#building-for-new-os-using-a-rid-unknown-to-net
+[source]
+git = "https://github.com/dotnet/dotnet"
+branch = "release/8.0.1xx"
+shallow_clone = true
+[build]
+template = "custom"
+dependencies = [
+    "libicu",
+    "lttng-ust",
+    "openssl3",
+    "kerberos5",
+    "zlib",
+]
+dev-dependencies = [
+    "host:clang21",
+    "host:clang21.lld",
+    "host:llvm21.dev",
+]

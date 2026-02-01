@@ -1,0 +1,12 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/WebAssembly/binaryen#building
+[source]
+git = "https://github.com/WebAssembly/binaryen"
+rev = "version_125"
+shallow_clone = true
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DBUILD_TESTS=OFF",
+    "-DBYN_ENABLE_ASSERTIONS=OFF",
+]
