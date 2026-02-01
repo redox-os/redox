@@ -3,19 +3,12 @@ git = "https://github.com/akopytov/sysbench.git"
 patches = ["redox.patch"]
 script = """
 DYNAMIC_INIT
-export CFLAGS+=" -I${COOKBOOK_SYSROOT}/include/luajit-2.1"
-COOKBOOK_CONFIGURE_FLAGS+=(
-  --without-mysql
-  --with-system-luajit
-)
 autoreconf -fvi -I${COOKBOOK_HOST_SYSROOT}/share/aclocal
 """
 
 [build]
 template = "custom"
-configureFlags = ["--without-mysql", "--with-system-luajit"]
-dev-dependencies = ["autoconf", "automake", "libtool", "pkg-config"]
-dependencies = ["libtool", "luajit"]
+dependencies = ["luajit"]
 
 script = """
 DYNAMIC_INIT
