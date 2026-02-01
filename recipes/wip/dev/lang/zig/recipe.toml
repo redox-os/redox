@@ -15,8 +15,8 @@ dev-dependencies = [
   "llvm21.runtime",
   "clang21",
   "clang21.dev",
-  "clang21.lld-dev",
-  "clang21.lld",
+  "lld21.dev",
+  "lld21",
   "host:libarchive",
   "host:zig",
 ]
