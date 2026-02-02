@@ -1,4 +1,5 @@
-#TODO camino crate error
+# TODO compiles and works. Need cargo disk I/O errors fixed before it can be used.
+# tested 29th January 2026
 [source]
 git = "https://github.com/xd009642/tarpaulin"
 [build]
