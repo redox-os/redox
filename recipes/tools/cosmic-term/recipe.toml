@@ -9,7 +9,7 @@ dependencies = [
 ]
 script = """
 DYNAMIC_INIT
-export GETTEXT_DIR=${COOKBOOK_SYSROOT}/usr
+export GETTEXT_DIR="${COOKBOOK_SYSROOT}/usr"
 cookbook_cargo --no-default-features
 
 mkdir -pv "${COOKBOOK_STAGE}/usr/share/ui/apps"
