@@ -1,0 +1,15 @@
+#TODO not compiled or tested
+#TODO run configure.sh or cmake directly?
+# build instructions: https://github.com/cvc5/cvc5/blob/main/INSTALL.rst
+[source]
+git = "https://github.com/cvc5/cvc5"
+rev = "cvc5-1.3.2"
+shallow_clone = true
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DENABLE_AUTO_DOWNLOAD=ON",
+]
+dependencies = [
+    "libgmp",
+]

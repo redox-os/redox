@@ -1,6 +1,6 @@
-#TODO compiles, works in a basic way, but needs figuring out why -ldl is ignored
+#TODO compiles, works in a basic way but needs figuring out why -ldl is ignored
 #TODO also until new signal implementation gets to be the default, remove siginfo struct from relibc's include/bits/signal.h
-#     and modify relibc/src/header/signal/mod.rs sigtimedwait second parameter's type from siginfo_t to siginfo (cbindgen needs a reference)
+# and modify relibc/src/header/signal/mod.rs sigtimedwait second parameter's type from siginfo_t to siginfo (cbindgen needs a reference)
 #TODO needs further testing
 [source]
 tar = "https://www.cpan.org/src/5.0/perl-5.40.0.tar.gz"

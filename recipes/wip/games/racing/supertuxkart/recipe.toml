@@ -2,6 +2,7 @@
 # build instructions: https://github.com/supertuxkart/stk-code/blob/master/INSTALL.md#compiling
 [source]
 tar = "https://github.com/supertuxkart/stk-code/releases/download/1.5/SuperTuxKart-1.5-src.tar.gz"
+patches = ["redox.patch"]
 [build]
 template = "cmake"
 cmakeflags = [
@@ -18,7 +19,7 @@ dependencies = [
     "freetype2",
     "harfbuzz",
     "curl",
-    "openssl1",
+    "openssl3",
     "libpng",
     "zlib",
     "libjpeg",

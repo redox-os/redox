@@ -1,0 +1,12 @@
+#TODO not compiled or tested
+# build instructions: https://lighthouse-book.sigmaprime.io/installation_source.html
+[source]
+git = "https://github.com/sigp/lighthouse"
+branch = "stable"
+shallow_clone = true
+[build]
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_cargo_packages lighthouse
+"""

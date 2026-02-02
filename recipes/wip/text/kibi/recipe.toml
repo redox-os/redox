@@ -1,6 +1,8 @@
 #TODO promote
 [source]
 git = "https://github.com/ilai-deutel/kibi"
+rev = "v0.3.2"
+
 [build]
 template = "custom"
 script = """

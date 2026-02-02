@@ -1,6 +1,7 @@
-#TODO missing fzf dependency: https://github.com/junegunn/fzf
+#TODO fix fzf dependency
 [source]
 git = "https://github.com/justchokingaround/jerry"
+shallow_clone = true
 [build]
 template = "custom"
 script = """

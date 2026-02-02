@@ -1,0 +1,7 @@
+#TODO missing script for building, discover how to build
+[source]
+git = "https://github.com/sbt/sbt"
+branch = "1.12.x"
+shallow_clone = true
+[build]
+template = "custom"

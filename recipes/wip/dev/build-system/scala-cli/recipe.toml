@@ -1,0 +1,11 @@
+#TODO not tested yet
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}"/usr/bin
+wget https://github.com/VirtusLab/scala-cli/releases/download/v1.12.1/scala-cli.jar "${COOKBOOK_STAGE}"/usr/bin
+echo "#!/usr/bin/env sh \n java -jar scala-cli.jar" > "${COOKBOOK_STAGE}"/usr/bin/scala-cli
+chmod a+x "${COOKBOOK_STAGE}"/usr/bin/scala-cli
+"""
+[package]
+dependencies = ["openjdk21"]

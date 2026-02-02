@@ -1,6 +1,7 @@
 #TODO not compiled or tested
 [source]
 git = "https://github.com/ReFirmLabs/binwalk"
+shallow_clone = true
 [build]
 template = "cargo"
 dependencies = [
