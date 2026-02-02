@@ -7,10 +7,13 @@ dependencies = [
     "llvm21",
 ]
 dev-dependencies = [
-    "host:clang21", # for clang-tblgen
+    "libstdcxx", # no idea
+    "llvm21.dev",
+    "llvm21.runtime",
     "host:llvm21",
     "host:llvm21.dev",
     "host:llvm21.runtime",
+    "host:clang21", # for clang-tblgen
     "host:xz",
     "host:libarchive",  # workaround for cmake error
 ]
@@ -40,7 +43,7 @@ COOKBOOK_CMAKE_FLAGS+=(
     -DLLVM_INCLUDE_TESTS=Off
     -DLLVM_OPTIMIZED_TABLEGEN=On
     -DLLVM_TARGET_ARCH=$ARCH
-    -DLLVM_TARGETS_TO_BUILD="X86"
+    -DLLVM_TARGETS_TO_BUILD="X86;AArch64"
     -DLLVM_TOOLS_INSTALL_DIR=bin
     -DLLVM_UTILS_INSTALL_DIR=bin
     -DUNIX=1
@@ -81,29 +84,10 @@ fi
 
 """
 
-# lld runtime (no library)
-[[optional-packages]]
-name = "lld"
-dependencies = [ ".runtime" ]
-files = [
-    "usr/bin/*.lld",
-    "usr/bin/*-ld",
-    "usr/bin/lld*",
-]
-
 [[optional-packages]]
 name = "dev"
 files = [
     "usr/include/clang*/**",
     "usr/lib/libclang*.a",
     "usr/lib/cmake/clang/**",
-]
-
-[[optional-packages]]
-name = "lld-dev"
-dependencies = [ ".lld" ]
-files = [
-    "usr/include/lld*/**",
-    "usr/lib/liblld*.a",
-    "usr/lib/cmake/lld/**",
 ]

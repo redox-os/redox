@@ -17,6 +17,6 @@ dependencies = [
 ]
 dev-dependencies = [
     "host:clang21",
-    "host:clang21.lld",
+    "host:lld21",
     "host:llvm21.dev",
 ]

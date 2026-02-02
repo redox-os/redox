@@ -45,7 +45,7 @@ sed -i "s|COOKBOOK_TOOLCHAIN|${COOKBOOK_TOOLCHAIN}|g" config.toml
 
 python3 "${COOKBOOK_SOURCE}/x.py" install \
     --config config.toml \
-    --jobs $(nproc)
+    --jobs ${COOKBOOK_MAKE_JOBS}
 
 mkdir -p "${COOKBOOK_STAGE}"/usr
 rsync -av --delete "${COOKBOOK_BUILD}"/install/* "${COOKBOOK_STAGE}"/usr/
