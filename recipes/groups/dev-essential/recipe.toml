@@ -4,7 +4,6 @@ dependencies = [
     "automake",
     "gcc13",
     "gcc13.cxx",
-    "llvm21",
     "gnu-binutils",
     "gnu-make",
     "gnu-grep",
