@@ -518,9 +518,20 @@ fn build_deps_dir(
         let sysroot_modified = modified_dir(&tags_dir).unwrap_or(SystemTime::UNIX_EPOCH);
         if sysroot_modified < source_modified
             || sysroot_modified < deps_modified
-            || dep_pkgars
-                .iter()
-                .any(|(pkg, _)| !tags_dir.join(pkg.as_str()).is_file())
+            || !check_files_present(
+                &tags_dir,
+                &dep_pkgars
+                    .iter()
+                    .map(|(name, _)| {
+                        // TODO: without_host should just return as_str
+                        if name.is_host() {
+                            &name.as_str()["host:".len()..]
+                        } else {
+                            name.as_str()
+                        }
+                    })
+                    .collect(),
+            )?
         {
             log_to_pty!(logger, "DEBUG: updating '{}'", deps_dir.display());
             remove_all(deps_dir)?;
