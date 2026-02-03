@@ -15,7 +15,7 @@ prompt = false
 
 dev-essential = {}
 dev-redox = {}
-llvm-common = {}
+llvm21-common = {}
 mate-common = {}
 redox-tests = {}
 x11-minimal = {}
