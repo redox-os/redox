@@ -222,12 +222,19 @@ pub fn build(
         };
     }
 
-    if !check_source && stage_pkgars.iter().all(|file| file.is_file()) {
-        if cli_verbose {
-            log_to_pty!(logger, "DEBUG: using cached build, not checking source");
+    if !check_source {
+        let stage_present = if cook_config.clean_target {
+            stage_pkgars.iter().all(|file| file.is_file())
+        } else {
+            stage_dirs.iter().all(|file| file.is_dir())
+        };
+        if stage_present {
+            if cli_verbose {
+                log_to_pty!(logger, "DEBUG: using cached build, not checking source");
+            }
+            let auto_deps = make_auto_deps!()?;
+            return Ok((stage_dirs, auto_deps));
         }
-        let auto_deps = make_auto_deps!()?;
-        return Ok((stage_dirs, auto_deps));
     }
 
     let mut source_modified = modified_dir_ignore_git(source_dir).unwrap_or(SystemTime::UNIX_EPOCH);
@@ -518,9 +525,20 @@ fn build_deps_dir(
         let sysroot_modified = modified_dir(&tags_dir).unwrap_or(SystemTime::UNIX_EPOCH);
         if sysroot_modified < source_modified
             || sysroot_modified < deps_modified
-            || dep_pkgars
-                .iter()
-                .any(|(pkg, _)| !tags_dir.join(pkg.as_str()).is_file())
+            || !check_files_present(
+                &tags_dir,
+                &dep_pkgars
+                    .iter()
+                    .map(|(name, _)| {
+                        // TODO: without_host should just return as_str
+                        if name.is_host() {
+                            &name.as_str()["host:".len()..]
+                        } else {
+                            name.as_str()
+                        }
+                    })
+                    .collect(),
+            )?
         {
             log_to_pty!(logger, "DEBUG: updating '{}'", deps_dir.display());
             remove_all(deps_dir)?;

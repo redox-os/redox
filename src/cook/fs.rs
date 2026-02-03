@@ -1,5 +1,6 @@
 use serde::Serialize;
 use std::{
+    collections::BTreeSet,
     fs,
     io::{self, Write},
     path::{Path, PathBuf},
@@ -187,6 +188,32 @@ pub fn modified_dir_ignore_git(dir: &Path) -> Result<SystemTime, String> {
             err
         )
     })
+}
+
+pub fn check_files_present(dir: &Path, expected_files: &BTreeSet<&str>) -> Result<bool, String> {
+    let entries = fs::read_dir(dir)
+        .map_err(|err| format!("failed to get list files of '{}': {:?}", dir.display(), err))?;
+
+    let mut matches = 0;
+    for entry_res in entries {
+        let entry = entry_res
+            .map_err(|err| format!("failed to get file entry of '{}': {:?}", dir.display(), err))?;
+
+        let filename = entry.file_name();
+        let Some(filename) = filename.to_str() else {
+            continue;
+        };
+
+        if expected_files.contains(&filename) {
+            matches += 1
+        } else if filename.starts_with('.') {
+            continue;
+        } else {
+            return Ok(false);
+        }
+    }
+
+    Ok(matches == expected_files.len())
 }
 
 pub fn rename(src: &Path, dst: &Path) -> Result<(), String> {
