@@ -222,12 +222,19 @@ pub fn build(
         };
     }
 
-    if !check_source && stage_pkgars.iter().all(|file| file.is_file()) {
-        if cli_verbose {
-            log_to_pty!(logger, "DEBUG: using cached build, not checking source");
+    if !check_source {
+        let stage_present = if cook_config.clean_target {
+            stage_pkgars.iter().all(|file| file.is_file())
+        } else {
+            stage_dirs.iter().all(|file| file.is_dir())
+        };
+        if stage_present {
+            if cli_verbose {
+                log_to_pty!(logger, "DEBUG: using cached build, not checking source");
+            }
+            let auto_deps = make_auto_deps!()?;
+            return Ok((stage_dirs, auto_deps));
         }
-        let auto_deps = make_auto_deps!()?;
-        return Ok((stage_dirs, auto_deps));
     }
 
     let mut source_modified = modified_dir_ignore_git(source_dir).unwrap_or(SystemTime::UNIX_EPOCH);
