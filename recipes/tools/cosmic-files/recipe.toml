@@ -10,17 +10,9 @@ dependencies = [
 ]
 script = """
 DYNAMIC_INIT
-export GETTEXT_DIR="${COOKBOOK_SYSROOT}"
-# Hack to link libiconv, which gettext-sys does not link
-"${COOKBOOK_CARGO}" rustc \
-    --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
-    --release \
-    --bin cosmic-files \
-    --no-default-features \
-    --features desktop \
-    -- \
-    -L "${COOKBOOK_SYSROOT}/lib" \
-    -C link-arg="-liconv"
+export GETTEXT_DIR="${COOKBOOK_SYSROOT}/usr"
+cookbook_cargo --no-default-features
+
 mkdir -pv "${COOKBOOK_STAGE}/usr/bin/"
 cp -v "target/${TARGET}/release/cosmic-files" "${COOKBOOK_STAGE}/usr/bin/"
 mkdir -pv "${COOKBOOK_STAGE}/usr/share/ui/apps/"

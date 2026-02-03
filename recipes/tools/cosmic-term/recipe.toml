@@ -4,9 +4,14 @@ branch = "master"
 
 [build]
 template = "custom"
+dependencies = [
+    "gettext",
+]
 script = """
 DYNAMIC_INIT
+export GETTEXT_DIR="${COOKBOOK_SYSROOT}/usr"
 cookbook_cargo --no-default-features
+
 mkdir -pv "${COOKBOOK_STAGE}/usr/share/ui/apps"
 cp -v "${COOKBOOK_RECIPE}/manifest" "${COOKBOOK_STAGE}/usr/share/ui/apps/10_cosmic-term"
 #TODO: install with just?

@@ -6,21 +6,13 @@ branch = "master"
 template = "custom"
 dependencies = [
     "gettext",
-    "libiconv",
     "libxkbcommon",
 ]
 script = """
 DYNAMIC_INIT
-export GETTEXT_DIR="${COOKBOOK_SYSROOT}"
-# Hack to link libiconv, which gettext-sys does not link
-"${COOKBOOK_CARGO}" rustc \
-    --manifest-path "${COOKBOOK_SOURCE}/cosmic-settings/Cargo.toml" \
-    --release \
-    --bin cosmic-settings \
-    --no-default-features \
-    -- \
-    -L "${COOKBOOK_SYSROOT}/lib" \
-    -C link-arg="-liconv"
+export GETTEXT_DIR="${COOKBOOK_SYSROOT}/usr"
+(COOKBOOK_SOURCE+="/cosmic-settings" cookbook_cargo --no-default-features)
+
 mkdir -pv "${COOKBOOK_STAGE}/usr/bin/"
 cp -v "target/${TARGET}/release/cosmic-settings" "${COOKBOOK_STAGE}/usr/bin/"
 #TODO: install with just?
