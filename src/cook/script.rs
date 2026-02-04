@@ -2,12 +2,6 @@ pub(crate) static SHARED_PRESCRIPT: &str = r#"
 # Build dynamically
 function DYNAMIC_INIT {
     COOKBOOK_AUTORECONF="autoreconf"
-    autotools_recursive_regenerate() {
-        for f in $(find . -name configure.ac -o -name configure.in -type f | sort); do
-            echo "* autotools regen in '$(dirname $f)'..."
-            ( cd "$(dirname "$f")" && "${COOKBOOK_AUTORECONF}" -fvi "$@" -I${COOKBOOK_HOST_SYSROOT}/share/aclocal )
-        done
-    }
 
     case "${TARGET}" in
         "i586-unknown-redox" | "riscv64gc-unknown-redox")
@@ -43,6 +37,13 @@ function DYNAMIC_INIT {
     export LDFLAGS="-Wl,-rpath-link,${COOKBOOK_SYSROOT}/lib -L${COOKBOOK_SYSROOT}/lib"
     export RUSTFLAGS="-C target-feature=-crt-static"
     export COOKBOOK_DYNAMIC=1
+}
+
+autotools_recursive_regenerate() {
+    for f in $(find . -name configure.ac -o -name configure.in -type f | sort); do
+        echo "* autotools regen in '$(dirname $f)'..."
+        ( cd "$(dirname "$f")" && "${COOKBOOK_AUTORECONF}" -fvi "$@" -I${COOKBOOK_HOST_SYSROOT}/share/aclocal )
+    done
 }
 
 # Build both dynamically and statically
