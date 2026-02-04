@@ -2,7 +2,6 @@
 tar = "https://download.gnome.org/sources/libxklavier/5.3/libxklavier-5.3.tar.xz"
 blake3 = "4811b8e069faef364b0cdd230dd7e42bc4afc279cb15282b68c11e89518c8930"
 script = """
-DYNAMIC_INIT
 autotools_recursive_regenerate
 """
 

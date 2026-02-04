@@ -2,7 +2,6 @@
 tar = "https://www.x.org/releases/individual/lib/libfontenc-1.1.8.tar.xz"
 blake3 = "6ab127a335f7cb4892566e59448d91e9ec43ac522f31f97a3c94350f0a3ecaf4"
 script = """
-DYNAMIC_INIT
 autotools_recursive_regenerate
 """
 

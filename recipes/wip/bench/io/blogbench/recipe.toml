@@ -3,7 +3,6 @@
 [source]
 tar = "https://github.com/jedisct1/Blogbench/releases/download/1.2/blogbench-1.2.tar.bz2"
 script = """
-DYNAMIC_INIT
 autotools_recursive_regenerate
 """
 [build]

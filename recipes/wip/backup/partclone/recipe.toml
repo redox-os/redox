@@ -4,7 +4,6 @@ git = "https://github.com/Thomas-Tsai/partclone"
 rev = "0.3.40"
 shallow_clone = true
 script = """
-DYNAMIC_INIT
 autotools_recursive_regenerate
 """
 [build]

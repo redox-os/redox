@@ -2,7 +2,6 @@
 tar = "https://www.x.org/releases/individual/lib/xcb-util-wm-0.4.2.tar.xz"
 blake3 = "4cf6b0e204e12eb6b824c939404fc5ad63d61cb94679e8adf5670207802bc738"
 script = """
-DYNAMIC_INIT
 autotools_recursive_regenerate
 """
 

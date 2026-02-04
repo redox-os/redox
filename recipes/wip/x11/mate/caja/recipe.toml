@@ -2,7 +2,6 @@
 tar = "https://github.com/mate-desktop/caja/releases/download/v1.26.4/caja-1.26.4.tar.xz"
 blake3 = "a70f5ce8dcb038d78346b385b2abd4d29a3e13c99b368a617c38107a9e725617"
 script = """
-DYNAMIC_INIT
 autotools_recursive_regenerate
 """
 

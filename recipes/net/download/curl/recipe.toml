@@ -15,7 +15,6 @@ script = """
 DYNAMIC_INIT
 rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 GNU_CONFIG_GET config.sub
-DYNAMIC_INIT
 autotools_recursive_regenerate
 COOKBOOK_CONFIGURE="./configure"
 COOKBOOK_CONFIGURE_FLAGS+=(

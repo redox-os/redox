@@ -5,7 +5,6 @@ patches = [
     "redox.patch"
 ]
 script = """
-DYNAMIC_INIT
 autotools_recursive_regenerate
 """
 

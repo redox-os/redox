@@ -2,7 +2,6 @@
 tar = "https://gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.55.tar.bz2"
 blake3 = "6c363dd8c6bcf2601dd5ff3b11fa2f699baa2aae40de2acd92461af0fd8178f0"
 script = """
-DYNAMIC_INIT
 autotools_recursive_regenerate
 """
 

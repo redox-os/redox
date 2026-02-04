@@ -3,7 +3,6 @@
 tar = "https://downloads.sourceforge.net/libtirpc/libtirpc-1.3.6.tar.bz2"
 blake3 = "3ca1feefee3a216bb82bba35dfb455cac8524b8d8404767b01772f3b8fd00eea"
 script = """
-DYNAMIC_INIT
 autotools_recursive_regenerate
 """
 

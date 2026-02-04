@@ -2,7 +2,6 @@
 tar = "https://github.com/xiph/ogg/releases/download/v1.3.4/libogg-1.3.4.tar.xz"
 blake3 = "1cffbe7c498555ddfdb1390d7a38179c4bead6129ea37b1b1d54f3a76b816304"
 script = """
-DYNAMIC_INIT
 autotools_recursive_regenerate
 """
 

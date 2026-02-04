@@ -2,7 +2,6 @@
 tar = "https://www.x.org/releases/individual/lib/libXrandr-1.5.4.tar.xz"
 blake3 = "c107a47d9c4329996d74d7a1ab8d254a2cf3aecea1575d7e146da9a06b762081"
 script = """
-DYNAMIC_INIT
 autotools_recursive_regenerate
 """
 
