@@ -3,7 +3,6 @@
 tar = "https://openbox.org/dist/openbox/openbox-3.6.1.tar.xz"
 blake3 = "6bf434e52e04a9cfcd67c11cb9105b93fe2055dca49f1bed2c105fd117e88ef4"
 script = """
-DYNAMIC_INIT
 autotools_recursive_regenerate
 """
 

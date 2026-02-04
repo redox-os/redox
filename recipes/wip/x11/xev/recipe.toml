@@ -2,7 +2,6 @@
 tar = "https://www.x.org/releases/individual/app/xev-1.2.6.tar.xz"
 blake3 = "883347a6db32fb4cf6bc97906ca1dacf1c67b7b84bd2abef9c6c5fc20abea647"
 script = """
-DYNAMIC_INIT
 autotools_recursive_regenerate
 """
 

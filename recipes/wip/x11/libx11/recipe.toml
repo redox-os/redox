@@ -2,7 +2,6 @@
 tar = "https://www.x.org/releases/individual/lib/libX11-1.8.12.tar.xz"
 blake3 = "5bf1c64733322b6a90d9bce8d2bd2d8117a4950955caa00d0cd7974d42571d1e"
 script = """
-DYNAMIC_INIT
 autotools_recursive_regenerate
 """
 

@@ -2,7 +2,6 @@
 tar = "https://www.x.org/releases/individual/lib/libXdamage-1.1.6.tar.xz"
 blake3 = "d3d75f2656027288f87b9ddda8bf019862c63c6e4aeadd92f45870df6c2a7ce9"
 script = """
-DYNAMIC_INIT
 autotools_recursive_regenerate
 """
 

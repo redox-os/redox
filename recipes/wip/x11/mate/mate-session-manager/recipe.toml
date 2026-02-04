@@ -2,7 +2,6 @@
 tar = "https://github.com/mate-desktop/mate-session-manager/releases/download/v1.28.0/mate-session-manager-1.28.0.tar.xz"
 blake3 = "c76fd3064f4697180006cc2562a0ac55ddfa40b4029047f58c8dcc790606a9a6"
 script = """
-DYNAMIC_INIT
 autotools_recursive_regenerate
 """
 

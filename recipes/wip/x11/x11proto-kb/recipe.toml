@@ -2,7 +2,6 @@
 tar = "https://www.x.org/releases/individual/proto/kbproto-1.0.7.tar.bz2"
 blake3 = "2fba8d4a298bd6504c237afccc2059a3b9db6363f203824aebf2c0a167197625"
 script = """
-DYNAMIC_INIT
 autotools_recursive_regenerate
 """
 
