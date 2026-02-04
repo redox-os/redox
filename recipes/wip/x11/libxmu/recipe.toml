@@ -2,7 +2,6 @@
 tar = "https://www.x.org/releases/individual/lib/libXmu-1.2.1.tar.xz"
 blake3 = "466f7ab160c4e9f04866e9c895dbecb6a76ed1817ae16721d404c556d88f047e"
 script = """
-DYNAMIC_INIT
 autotools_recursive_regenerate
 """
 

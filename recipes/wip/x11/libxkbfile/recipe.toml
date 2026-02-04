@@ -2,7 +2,6 @@
 tar = "https://www.x.org/releases/individual/lib/libxkbfile-1.1.3.tar.xz"
 blake3 = "9566ee417df1127f21dd0e1fbcfcc14dacb366c07a1ec2de51f89af12535c06d"
 script = """
-DYNAMIC_INIT
 autotools_recursive_regenerate
 """
 

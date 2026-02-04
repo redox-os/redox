@@ -5,7 +5,6 @@ git = "https://gitlab.winehq.org/wine/wine"
 branch = "stable"
 shallow_clone = true
 script = """
-DYNAMIC_INIT
 autotools_recursive_regenerate
 """
 

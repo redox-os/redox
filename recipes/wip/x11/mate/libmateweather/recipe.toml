@@ -3,7 +3,6 @@
 tar = "https://github.com/mate-desktop/libmateweather/archive/c1c54a15545f13f3dabd2bcd303533d818905c7b.tar.gz"
 blake3 = "78c3873937bb90141386d31b6c6d3e585f9f2bde6069933abffdbd9a9161707a"
 script = """
-DYNAMIC_INIT
 autotools_recursive_regenerate
 """
 

@@ -2,7 +2,6 @@
 tar = "https://www.x.org/releases/individual/lib/libSM-1.2.6.tar.xz"
 blake3 = "fccedc1f9781bab20b0084557464099a7b793cd704d4bb702f200def4c96dcd8"
 script = """
-DYNAMIC_INIT
 autotools_recursive_regenerate
 """
 

@@ -3,7 +3,6 @@
 tar = "https://download.gnome.org/sources/librsvg/2.58/librsvg-2.58.5.tar.xz"
 blake3 = "15ccac6309992ced51128825e9c3ebeb041705aeb8371507ffc4cebb6a1e4ce5"
 script = """
-DYNAMIC_INIT
 autotools_recursive_regenerate
 """
 
