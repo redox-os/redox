@@ -1,0 +1,7 @@
+[package]
+dependencies = [
+    "clang21",
+    "llvm21",
+    "llvm21.runtime",
+    "lld21",
+]

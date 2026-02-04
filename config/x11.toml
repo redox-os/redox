@@ -12,29 +12,14 @@ filesystem_size = 2048
 # Package settings
 [packages]
 adwaita-icon-theme = {}
-caja = {}
 dbus = {}
 gtk3 = {}
-marco = {}
-mate-control-center = {}
-mate-icon-theme = {}
-mate-panel = {}
-mate-session-manager = {}
-mate-settings-daemon = {}
-mate-terminal = {}
+mate-common = {}
 mesa-demos-x11 = {}
 webkitgtk3 = {}
-xev = {}
-xeyes = {}
 #xfce4-panel = {}
 #xfwm4 = {}
-xinit = {}
-xkbcomp = {}
-xkbutils = {}
-xkeyboard-config = {}
-xserver-xorg = {}
-xserver-xorg-video-orbital = {}
-xterm = {}
+x11-full = {}
 zenity = {}
 
 [[files]]
