@@ -1,8 +1,6 @@
 pub(crate) static SHARED_PRESCRIPT: &str = r#"
 # Build dynamically
 function DYNAMIC_INIT {
-    COOKBOOK_AUTORECONF="autoreconf"
-
     case "${TARGET}" in
         "i586-unknown-redox" | "riscv64gc-unknown-redox")
             [ -z "${COOKBOOK_VERBOSE}" ] || echo "WARN: ${TARGET} does not support dynamic linking." >&2
@@ -39,6 +37,7 @@ function DYNAMIC_INIT {
     export COOKBOOK_DYNAMIC=1
 }
 
+COOKBOOK_AUTORECONF="autoreconf"
 autotools_recursive_regenerate() {
     for f in $(find . -name configure.ac -o -name configure.in -type f | sort); do
         echo "* autotools regen in '$(dirname $f)'..."
