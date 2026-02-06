@@ -3,6 +3,7 @@
 IMG_TAG?=$(shell git describe --tags)
 IMG_SEPARATOR?=_
 IMG_DIR?=build/img/$(ARCH)
+OS_TEST_DIR?=build/os-test/$(ARCH)
 
 # CI image target - build standard images
 # To leave out the build tag, set both IMG_TAG and IMG_SEPARATOR to null
@@ -25,13 +26,17 @@ ci-os-test: FORCE
 	make CONFIG_NAME=os-test unmount
 	rm -f "build/$(ARCH)/os-test/harddrive.img"
 	$(MAKE) CONFIG_NAME=os-test qemu gpu=no
+	rm -rf $(OS_TEST_DIR)
+	mkdir -p $(OS_TEST_DIR)
 	$(MAKE) CONFIG_NAME=os-test mount
+	cp -v build/$(ARCH)/os-test/filesystem/usr/share/os-test/html $(OS_TEST_DIR)
+	cp -v build/$(ARCH)/os-test/filesystem/usr/share/os-test/os-test.json $(OS_TEST_DIR)
 	tar \
 		--create \
 		--gzip \
-		--file "build/$(ARCH)/os-test/os-test.tar.gz" \
+		--file "$(OS_TEST_DIR)/out.tar.gz" \
 		--directory="build/$(ARCH)/os-test/filesystem/usr/share/os-test" \
-		html os-test.json out
+		out
 	$(MAKE) CONFIG_NAME=os-test unmount
 
 # CI packaging target
