@@ -264,7 +264,7 @@ pub fn fetch(recipe: &CookRecipe, logger: &PtyOut) -> Result<PathBuf, String> {
                     run_command(command, logger)?;
                 } else if !is_redox() {
                     //If patches exists, we have to drop it
-                    if patches.len() > 0 {
+                    if !patches.is_empty() {
                         let mut command = Command::new("git");
                         command.arg("-C").arg(&source_dir);
                         command.arg("reset").arg("--hard");
@@ -445,7 +445,7 @@ pub(crate) fn fetch_resolve_canon(
         return Err(format!("Infinite loop detected"));
     }
     if !canon_dir.exists() {
-        return Err(format!("'{dir}' is not exists.", dir = canon_dir.display()));
+        return Err(format!("'{dir}' does not exist.", dir = canon_dir.display()));
     }
     CookRecipe::from_path(canon_dir.as_path(), true, is_host)
         .map_err(|e| format!("Unable to load {dir}: {e:?}", dir = canon_dir.display()))
