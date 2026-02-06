@@ -3,15 +3,21 @@
 #TODO Consider adding `export RUSTFLAGS+="-C target-feature=-crt-static"` when adding language support
 #TODO configuration - https://docs.helix-editor.com/install.html#configuring-helixs-runtime-files
 [source]
-git = "https://gitlab.redox-os.org/redox-os/helix.git"
-branch = "redox"
+git = "https://github.com/greyshaman/helix.git"
+branch = "port-to-redoxos"
 
 [build]
 template = "custom"
 script = """
-export HELIX_DISABLE_AUTO_GRAMMAR_BUILD=1
-COOKBOOK_SOURCE+="/helix-term"
-cookbook_cargo
+DYNAMIC_INIT
+export CFLAGS="$CFLAGS -D__redox__"
+PACKAGE_PATH="helix-term" cookbook_cargo
 mv "${COOKBOOK_STAGE}/usr/bin/hx" "${COOKBOOK_STAGE}/usr/bin/helix"
 """
+# script = """
+# export HELIX_DISABLE_AUTO_GRAMMAR_BUILD=1
+# COOKBOOK_SOURCE+="/helix-term"
+# cookbook_cargo
+# mv "${COOKBOOK_STAGE}/usr/bin/hx" "${COOKBOOK_STAGE}/usr/bin/helix"
+# """
 
