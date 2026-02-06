@@ -308,7 +308,6 @@ zstd = {}
 #sdl2-gfx = {}
 #sm64ex = {}
 #spacecadetpinball = {}
-#termplay = {} # backtrace cannot find link.h
 #twin-commander = {}
 #ubuntu-wallpapers = {}
 #unibilium = {}
