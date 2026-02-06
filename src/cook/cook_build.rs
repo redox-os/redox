@@ -475,14 +475,20 @@ pub fn remove_stage_dir(stage_dir: &PathBuf) -> Result<(), String> {
     })
 }
 
-pub fn get_stage_dirs(features: &Vec<OptionalPackageRecipe>, target_dir: &Path) -> Vec<PathBuf> {
+/// Resolve the target directory, accounting for cross-compilation targets.
+fn resolve_cross_target_dir(target_dir: &Path) -> PathBuf {
     let mut target_dir = target_dir.to_path_buf();
+    // TODO: automatically pass COOKBOOK_CROSS_GNU_TARGET?
     if let Some(cross_target) = std::env::var("COOKBOOK_CROSS_TARGET").ok() {
-        if cross_target != "" {
-            // TODO: automatically pass COOKBOOK_CROSS_GNU_TARGET?
+        if !cross_target.is_empty() {
             target_dir = target_dir.join(cross_target)
         }
     }
+    target_dir
+}
+
+pub fn get_stage_dirs(features: &[OptionalPackageRecipe], target_dir: &Path) -> Vec<PathBuf> {
+    let target_dir = resolve_cross_target_dir(target_dir);
     let mut v = Vec::new();
     for f in features {
         v.push(target_dir.join(format!("stage.{}", f.name)));
@@ -493,14 +499,7 @@ pub fn get_stage_dirs(features: &Vec<OptionalPackageRecipe>, target_dir: &Path) 
 }
 
 pub fn get_build_dir(target_dir: &Path) -> PathBuf {
-    let mut target_dir = target_dir.to_path_buf();
-    if let Some(cross_target) = std::env::var("COOKBOOK_CROSS_TARGET").ok() {
-        if cross_target != "" {
-            // TODO: automatically pass COOKBOOK_CROSS_GNU_TARGET?
-            target_dir = target_dir.join(cross_target)
-        }
-    }
-    target_dir.join("build")
+    resolve_cross_target_dir(target_dir).join("build")
 }
 
 fn build_deps_dir(

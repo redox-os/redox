@@ -299,79 +299,47 @@ impl CookRecipe {
 
         let mut recipes = Vec::new();
         let mut recipes_set = BTreeSet::new();
+
+        // Helper to recurse into a dependency list and collect unique results
+        let mut collect_deps =
+            |deps: &[PackageName], collect_self_flag: bool, name: &PackageName| -> Result<(), PackageError> {
+                let dependencies = Self::new_recursive(
+                    deps,
+                    recurse_build_deps,
+                    recurse_dev_build_deps,
+                    recurse_package_deps,
+                    collect_build_deps,
+                    collect_package_deps,
+                    collect_self_flag,
+                    recursion - 1,
+                )
+                .map_err(|mut err| {
+                    err.append_recursion(name);
+                    err
+                })?;
+
+                for dependency in dependencies {
+                    if !recipes_set.contains(&dependency.name) {
+                        recipes_set.insert(dependency.name.clone());
+                        recipes.push(dependency);
+                    }
+                }
+                Ok(())
+            };
+
         for name in names {
             let recipe = Self::from_name(name.clone())?;
 
             if recurse_build_deps {
-                let dependencies = Self::new_recursive(
-                    &recipe.recipe.build.dependencies,
-                    recurse_build_deps,
-                    recurse_dev_build_deps,
-                    recurse_package_deps,
-                    collect_build_deps,
-                    collect_package_deps,
-                    collect_build_deps,
-                    recursion - 1,
-                )
-                .map_err(|mut err| {
-                    err.append_recursion(name);
-                    err
-                })?;
-
-                for dependency in dependencies {
-                    if !recipes_set.contains(&dependency.name) {
-                        recipes_set.insert(dependency.name.clone());
-                        recipes.push(dependency);
-                    }
-                }
+                collect_deps(&recipe.recipe.build.dependencies, collect_build_deps, name)?;
             }
 
             if recurse_dev_build_deps {
-                let dependencies = Self::new_recursive(
-                    &recipe.recipe.build.dev_dependencies,
-                    recurse_build_deps,
-                    recurse_dev_build_deps,
-                    recurse_package_deps,
-                    collect_build_deps,
-                    collect_package_deps,
-                    collect_build_deps,
-                    recursion - 1,
-                )
-                .map_err(|mut err| {
-                    err.append_recursion(name);
-                    err
-                })?;
-
-                for dependency in dependencies {
-                    if !recipes_set.contains(&dependency.name) {
-                        recipes_set.insert(dependency.name.clone());
-                        recipes.push(dependency);
-                    }
-                }
+                collect_deps(&recipe.recipe.build.dev_dependencies, collect_build_deps, name)?;
             }
 
             if recurse_package_deps {
-                let dependencies = Self::new_recursive(
-                    &recipe.recipe.package.dependencies,
-                    recurse_build_deps,
-                    recurse_dev_build_deps,
-                    recurse_package_deps,
-                    collect_build_deps,
-                    collect_package_deps,
-                    collect_package_deps,
-                    recursion - 1,
-                )
-                .map_err(|mut err| {
-                    err.append_recursion(name);
-                    err
-                })?;
-
-                for dependency in dependencies {
-                    if !recipes_set.contains(&dependency.name) {
-                        recipes_set.insert(dependency.name.clone());
-                        recipes.push(dependency);
-                    }
-                }
+                collect_deps(&recipe.recipe.package.dependencies, collect_package_deps, name)?;
             }
 
             if collect_self && !recipes_set.contains(&recipe.name) {
