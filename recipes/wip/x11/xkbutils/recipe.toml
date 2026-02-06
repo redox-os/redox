@@ -2,7 +2,6 @@
 tar = "https://www.x.org/releases/individual/app/xkbutils-1.0.6.tar.xz"
 blake3 = "f19c157f5eaad7c91ee101952e55b9fd991b060892ecb3e6d9a7b46fa1dbe587"
 script = """
-DYNAMIC_INIT
 autotools_recursive_regenerate
 """
 

@@ -4,7 +4,6 @@ tar = "https://www.x.org/releases/individual/driver/xf86-video-dummy-0.4.1.tar.x
 blake3 = "9b49296f62bf4d22345d87fc01f2a5571f941457c19d21c8800f8f6d2e64ae67"
 patches = ["redox.patch"]
 script = """
-DYNAMIC_INIT
 autotools_recursive_regenerate
 """
 

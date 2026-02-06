@@ -6,6 +6,7 @@ branch = "master"
 template = "custom"
 dependencies = [
     "gettext",
+    "libxkbcommon",
 ]
 script = """
 DYNAMIC_INIT

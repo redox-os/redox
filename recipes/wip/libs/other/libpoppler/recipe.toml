@@ -3,7 +3,6 @@
 tar = "https://poppler.freedesktop.org/poppler-25.08.0.tar.xz"
 blake3 = "0732ef20594d084ae3c24cb75079a2be347df78acac80fdcbd6149b8dce197d4"
 script = """
-DYNAMIC_INIT
 autotools_recursive_regenerate
 """
 

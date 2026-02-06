@@ -8,7 +8,6 @@
 tar = "https://sqlite.org/2025/sqlite-autoconf-3490200.tar.gz"
 blake3 = "96e071dc4f964311882334e927f017d8383915b1b140adcf308957dff213aa8c"
 script = """
-DYNAMIC_INIT
 autotools_recursive_regenerate
 """
 [build]

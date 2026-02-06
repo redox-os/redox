@@ -1,0 +1,11 @@
+[package]
+dependencies = [
+    "caja",
+    "marco",
+    "mate-control-center",
+    "mate-icon-theme",
+    "mate-panel",
+    "mate-session-manager",
+    "mate-settings-daemon",
+    "mate-terminal",
+]

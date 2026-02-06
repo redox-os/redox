@@ -2,7 +2,6 @@
 tar = "https://github.com/libexpat/libexpat/releases/download/R_2_5_0/expat-2.5.0.tar.xz"
 blake3 = "ea89dd9a5a2e48d5e44fed38554b36a8f2e365a5091a99d08e30bfb1c15dda5e"
 script = """
-DYNAMIC_INIT
 autotools_recursive_regenerate
 """
 
