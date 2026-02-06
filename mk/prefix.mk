@@ -36,6 +36,8 @@ prefix_clean:
 static_clean: | $(FSTOOLS_TAG)
 	$(MAKE) c.relibc
 	$(MAKE) c.base,base-initfs,extrautils,kernel,ion,pkgutils,redoxfs
+	$(MAKE) c.bash,luajit,gettext,openssl1,pcre2,sdl1,zstd,zlib,bzip2,xz
+	$(MAKE) c.expat,freetype,libffi,libiconv,libjpeg,liborbital,libpng,libxml2,ncurses,ncursesw
 
 $(PREFIX)/relibc-install: $(PREFIX)/rust-install | $(FSTOOLS_TAG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
