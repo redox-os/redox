@@ -29,7 +29,7 @@ ci-os-test: FORCE
 	rm -rf $(OS_TEST_DIR)
 	mkdir -p $(OS_TEST_DIR)
 	$(MAKE) CONFIG_NAME=os-test mount
-	cp -v build/$(ARCH)/os-test/filesystem/usr/share/os-test/html $(OS_TEST_DIR)
+	cp -rv build/$(ARCH)/os-test/filesystem/usr/share/os-test/html $(OS_TEST_DIR)
 	cp -v build/$(ARCH)/os-test/filesystem/usr/share/os-test/os-test.json $(OS_TEST_DIR)
 	tar \
 		--create \
