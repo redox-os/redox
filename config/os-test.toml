@@ -16,7 +16,10 @@ os-test-bins = {} # Provides source and cross-compiled binaries
 [[files]]
 path = "/usr/lib/init.d/30_console"
 data = """
+<<<<<<< HEAD
 export RUST_BACKTRACE full
+=======
+>>>>>>> afb7e28c (Add CI taret for os-test)
 os-test-runner
 shutdown
 """
