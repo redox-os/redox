@@ -21,6 +21,19 @@ server desktop demo: FORCE
 	cp "build/$(ARCH)/$@/harddrive.img" "$(IMG_DIR)/redox_$(@)$(IMG_SEPARATOR)$(IMG_TAG)_harddrive.img"
 	cp "build/$(ARCH)/$@/redox-live.iso" "$(IMG_DIR)/redox_$(@)$(IMG_SEPARATOR)$(IMG_TAG)_livedisk.iso"
 
+ci-os-test: FORCE
+	make CONFIG_NAME=os-test unmount
+	rm -f "build/$(ARCH)/os-test/harddrive.img"
+	$(MAKE) CONFIG_NAME=os-test qemu gpu=no
+	$(MAKE) CONFIG_NAME=os-test mount
+	tar \
+		--create \
+		--gzip \
+		--file "build/$(ARCH)/os-test/os-test.tar.gz" \
+		--directory="build/$(ARCH)/os-test/filesystem/usr/share/os-test" \
+		html os-test.json out
+	$(MAKE) CONFIG_NAME=os-test unmount
+
 # CI packaging target
 ci-pkg: prefix $(FSTOOLS_TAG) $(CONTAINER_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)

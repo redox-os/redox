@@ -1,0 +1,21 @@
+# Configuration for testing
+
+include = ["server.toml"]
+
+# General settings
+[general]
+# Filesystem size in MiB
+filesystem_size = 1024
+# Do not prompt if settings are not defined
+prompt = false
+
+# Package settings
+[packages]
+os-test-bins = {} # Provides source and cross-compiled binaries
+
+[[files]]
+path = "/usr/lib/init.d/30_console"
+data = """
+os-test-runner
+shutdown
+"""
