@@ -297,7 +297,7 @@ pub fn build(
             log_to_pty!(logger, "DEBUG: using cached sysroot");
         }
     }
-    if recipe.build.kind != BuildKind::Remote && !name.is_host() && dep_host_pkgars.len() > 0 {
+    if recipe.build.kind != BuildKind::Remote && !name.is_host() && !dep_host_pkgars.is_empty() {
         let updated = build_deps_dir(
             logger,
             &toolchain_dir,
@@ -313,7 +313,7 @@ pub fn build(
 
     let stage_dir = stage_dirs
         .last()
-        .expect("Should have atleast one stage dir");
+        .expect("Should have at least one stage dir");
     let build_dir = get_build_dir(target_dir);
     if !stage_dir.is_dir() {
         // Create stage.tmp
@@ -484,14 +484,20 @@ pub fn remove_stage_dir(stage_dir: &PathBuf) -> Result<(), String> {
     Ok(())
 }
 
-pub fn get_stage_dirs(features: &Vec<OptionalPackageRecipe>, target_dir: &Path) -> Vec<PathBuf> {
+/// Resolve the target directory, accounting for cross-compilation targets.
+fn resolve_cross_target_dir(target_dir: &Path) -> PathBuf {
     let mut target_dir = target_dir.to_path_buf();
+    // TODO: automatically pass COOKBOOK_CROSS_GNU_TARGET?
     if let Some(cross_target) = std::env::var("COOKBOOK_CROSS_TARGET").ok() {
-        if cross_target != "" {
-            // TODO: automatically pass COOKBOOK_CROSS_GNU_TARGET?
+        if !cross_target.is_empty() {
             target_dir = target_dir.join(cross_target)
         }
     }
+    target_dir
+}
+
+pub fn get_stage_dirs(features: &[OptionalPackageRecipe], target_dir: &Path) -> Vec<PathBuf> {
+    let target_dir = resolve_cross_target_dir(target_dir);
     let mut v = Vec::new();
     for f in features {
         v.push(target_dir.join(format!("stage.{}", f.name)));
@@ -502,14 +508,7 @@ pub fn get_stage_dirs(features: &Vec<OptionalPackageRecipe>, target_dir: &Path) 
 }
 
 pub fn get_build_dir(target_dir: &Path) -> PathBuf {
-    let mut target_dir = target_dir.to_path_buf();
-    if let Some(cross_target) = std::env::var("COOKBOOK_CROSS_TARGET").ok() {
-        if cross_target != "" {
-            // TODO: automatically pass COOKBOOK_CROSS_GNU_TARGET?
-            target_dir = target_dir.join(cross_target)
-        }
-    }
-    target_dir.join("build")
+    resolve_cross_target_dir(target_dir).join("build")
 }
 
 fn build_deps_dir(

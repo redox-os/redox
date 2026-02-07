@@ -295,7 +295,7 @@ pub fn serialize_and_write<T: Serialize>(file_path: &Path, content: &T) -> Resul
 pub fn offline_check_exists(path: &PathBuf) -> Result<(), String> {
     if !path.exists() {
         return Err(format!(
-            "'{path}' is not exist and unable to continue in offline mode",
+            "'{path}' does not exist and unable to continue in offline mode",
             path = path.display(),
         ))?;
     }
