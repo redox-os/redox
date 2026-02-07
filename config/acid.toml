@@ -1,26 +1,24 @@
-# Configuration to run the "acid" tests
+# Configuration for "acid" testing
 
-include = ["base.toml"]
+include = ["net.toml"]
 
 # General settings
 [general]
 # Filesystem size in MiB
-filesystem_size = 256
+filesystem_size = 1024
 
 # Package settings
 [packages]
 acid = {}
 coreutils = {}
 ion = {}
+rust = {}
 
 [[files]]
 path = "/usr/lib/init.d/10_acid"
 data = """
 export RUST_BACKTRACE full
-acid
-acid create_test
-acid switch
-acid tls
-acid thread
+cd /home/user/acid
+cargo test
 shutdown
 """

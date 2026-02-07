@@ -1,4 +1,4 @@
-# Configuration for testing
+# Configuration for "os-test" testing
 
 include = ["server.toml"]
 

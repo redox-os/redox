@@ -1,5 +1,9 @@
 [source]
 git = "https://gitlab.redox-os.org/redox-os/acid.git"
-
+shallow_clone = true
 [build]
-template = "cargo"
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}/home/user/acid"
+cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}/home/user/acid"
+"""
