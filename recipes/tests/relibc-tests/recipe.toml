@@ -1,9 +1,11 @@
+# Due to necessary write permission for compilation the filesystem path of source code installation is an exception
+# where the package manager can't switch between system-wide and user paths
 [source]
 same_as = "../../core/relibc"
 
 [build]
 template = "custom"
 script = """
-mkdir -pv "${COOKBOOK_STAGE}/share/relibc"
-cp -rv "${COOKBOOK_SOURCE}/tests" "${COOKBOOK_STAGE}/share/relibc-tests"
+mkdir -pv "${COOKBOOK_STAGE}/home/user/relibc-tests"
+cp -rv "${COOKBOOK_SOURCE}/tests" "${COOKBOOK_STAGE}/home/user/relibc-tests"
 """

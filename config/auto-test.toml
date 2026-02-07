@@ -1,0 +1,29 @@
+# Configuration for automated testing of essential test suites
+
+include = ["net.toml"]
+
+# General settings
+[general]
+# Filesystem size in MiB
+filesystem_size = 1024
+
+# Package settings
+[packages]
+acid = {}
+coreutils = {}
+ion = {}
+os-test-bins = {}
+relibc-tests-bins = {}
+rust = {}
+
+[[files]]
+path = "/usr/lib/init.d/30_console"
+data = """
+export RUST_BACKTRACE full
+cd /home/user/acid
+cargo test
+bash /root/relibc-tests/run.sh
+ion
+os-test-runner
+shutdown
+"""
