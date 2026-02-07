@@ -41,14 +41,14 @@ pub struct CookConfig {
 impl From<CookConfigOpt> for CookConfig {
     fn from(value: CookConfigOpt) -> Self {
         CookConfig {
-            offline: value.offline.unwrap(),
-            jobs: value.jobs.unwrap(),
-            tui: value.tui.unwrap(),
-            logs: value.logs.unwrap(),
-            nonstop: value.nonstop.unwrap(),
-            verbose: value.verbose.unwrap(),
-            clean_build: value.clean_build.unwrap(),
-            clean_target: value.clean_target.unwrap(),
+            offline: value.offline.unwrap_or_default(),
+            jobs: value.jobs.unwrap_or(1),
+            tui: value.tui.unwrap_or_default(),
+            logs: value.logs.unwrap_or_default(),
+            nonstop: value.nonstop.unwrap_or_default(),
+            verbose: value.verbose.unwrap_or_default(),
+            clean_build: value.clean_build.unwrap_or_default(),
+            clean_target: value.clean_target.unwrap_or_default(),
         }
     }
 }
@@ -68,11 +68,9 @@ static CONFIG: OnceLock<CookbookConfig> = OnceLock::new();
 pub fn init_config() {
     let mut config: CookbookConfig = if fs::exists("cookbook.toml").unwrap_or(false) {
         let toml_content = fs::read_to_string("cookbook.toml")
-            .map_err(|e| format!("Unable to read config: {:?}", e))
-            .unwrap();
+            .expect("Unable to read cookbook.toml");
         toml::from_str(&toml_content)
-            .map_err(|e| format!("Unable to parse config: {:?}", e))
-            .unwrap()
+            .expect("Unable to parse cookbook.toml")
     } else {
         CookbookConfig::default()
     };
@@ -89,7 +87,7 @@ pub fn init_config() {
         ));
     }
     if config.cook_opt.logs.is_none() {
-        config.cook_opt.logs = Some(extract_env("COOKBOOK_LOGS", config.cook_opt.tui.unwrap()));
+        config.cook_opt.logs = Some(extract_env("COOKBOOK_LOGS", config.cook_opt.tui.unwrap_or_default()));
     }
     if config.cook_opt.offline.is_none() {
         config.cook_opt.offline = Some(extract_env("COOKBOOK_OFFLINE", false));
@@ -157,7 +155,8 @@ pub fn translate_mirror(original_url: &str) -> String {
     }
 
     if let Some(prefix) = best_match_prefix {
-        let mirror_base = config.mirrors.get(prefix).unwrap();
+        // SAFETY: prefix was obtained from config.mirrors.keys() above
+        let mirror_base = config.mirrors.get(prefix).expect("mirror prefix missing from config");
         let suffix = &stripped_url[prefix.len()..];
         let ptotocol = &original_url[..(original_url.len() - stripped_url.len())];
         return format!("{}{}{}", ptotocol, mirror_base, suffix);

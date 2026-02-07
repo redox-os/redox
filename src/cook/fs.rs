@@ -95,7 +95,9 @@ fn move_dir_all_inner_fn<'a>(
     }
     for (src, srcrel, dst) in files {
         let path = dst.join(&srcrel);
-        fs::create_dir_all(&path.parent().unwrap())?;
+        if let Some(parent) = path.parent() {
+            fs::create_dir_all(parent)?;
+        }
         std::fs::rename(&src, &path)?;
     }
     Ok(())

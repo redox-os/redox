@@ -70,10 +70,16 @@ pub fn package(
         }
 
         if !package_file.is_file() {
+            let package_file_str = package_file.to_str().ok_or_else(|| {
+                format!("non-UTF-8 path: '{}'", package_file.display())
+            })?;
+            let stage_dir_str = stage_dir.to_str().ok_or_else(|| {
+                format!("non-UTF-8 path: '{}'", stage_dir.display())
+            })?;
             pkgar::create(
                 secret_path,
-                package_file.to_str().unwrap(),
-                stage_dir.to_str().unwrap(),
+                package_file_str,
+                stage_dir_str,
             )
             .map_err(|err| format!("failed to create pkgar archive: {:?}", err))?;
         }

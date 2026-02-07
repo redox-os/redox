@@ -438,14 +438,10 @@ pub(crate) fn fetch_resolve_canon(
     is_host: bool,
 ) -> Result<CookRecipe, String> {
     let canon_dir = Path::new(recipe_dir).join(same_as);
-    if canon_dir
+    let canon_str = canon_dir
         .to_str()
-        .unwrap()
-        .chars()
-        .filter(|c| *c == '/')
-        .count()
-        > 50
-    {
+        .ok_or_else(|| format!("non-UTF-8 path: '{}'", canon_dir.display()))?;
+    if canon_str.chars().filter(|c| *c == '/').count() > 50 {
         return Err(format!("Infinite loop detected"));
     }
     if !canon_dir.exists() {
@@ -538,7 +534,7 @@ pub fn fetch_remote(
         .file_name()
         .ok_or("Unable to get recipe name")?
         .to_str()
-        .unwrap();
+        .ok_or_else(|| format!("non-UTF-8 recipe name"))?;
 
     for package in packages {
         let (_, source_pkgar, source_toml) = package_source_paths(package, &target_dir);

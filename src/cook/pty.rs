@@ -18,11 +18,14 @@ pub use std::os::unix::io::RawFd;
 #[macro_export]
 macro_rules! log_to_pty {
     ($logger:expr, $($arg:tt)+) => {
-        if $logger.is_some() {
+        if let Some((_, writer)) = $logger.as_ref() {
             use std::io::Write;
-            let mut logfd = $logger.as_ref().unwrap().1.try_clone().unwrap();
-            let _ = logfd.write(format!($($arg)+).as_bytes());
-            let _ = logfd.write(&[b'\n']);
+            if let Ok(mut logfd) = writer.try_clone() {
+                let _ = logfd.write(format!($($arg)+).as_bytes());
+                let _ = logfd.write(&[b'\n']);
+            } else {
+                eprintln!($($arg)+);
+            }
         } else {
             eprintln!($($arg)+);
         }
