@@ -9,7 +9,7 @@ branch = "redox"
 
 [build]
 dependencies = [
-  "openssl1"
+  "openssl3"
 ]
 template = "custom"
 script = """

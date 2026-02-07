@@ -2,7 +2,7 @@
 tar = "https://ftp.gnu.org/gnu/wget/wget-1.21.4.tar.gz"
 [build]
 dependencies = [
-    "openssl1",
+    "openssl3",
 ]
 template = "configure"
 configureflags = [

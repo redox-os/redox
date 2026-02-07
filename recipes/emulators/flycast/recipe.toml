@@ -9,7 +9,7 @@ dependencies = [
     "liborbital",
     "mesa",
     "nghttp2",
-    "openssl1",
+    "openssl3",
     "sdl2",
     "zlib",
 ]

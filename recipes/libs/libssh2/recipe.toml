@@ -7,7 +7,7 @@ autotools_recursive_regenerate
 
 [build]
 template = "custom"
-dependencies = ["openssl1"]
+dependencies = ["openssl3"]
 script = """
 DYNAMIC_INIT
 cookbook_configure
