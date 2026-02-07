@@ -269,7 +269,12 @@ impl CookRecipe {
 
     pub fn from_path(dir: &Path, read_recipe: bool, is_host: bool) -> Result<Self, PackageError> {
         let file = dir.join("recipe.toml");
-        let mut name: PackageName = dir.file_name().unwrap().try_into()?;
+        let mut name: PackageName = dir
+            .file_name()
+            .ok_or_else(|| PackageError::PackageNameInvalid(
+                format!("failed to get file name from path '{}'", dir.display())
+            ))?
+            .try_into()?;
         if is_host {
             name = name.with_host();
         }

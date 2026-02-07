@@ -367,13 +367,17 @@ pub fn build(
         };
 
         let command = {
-            //TODO: remove unwraps
-            let cookbook_build = build_dir.canonicalize().unwrap();
-            let cookbook_recipe = recipe_dir.canonicalize().unwrap();
-            let cookbook_root = Path::new(".").canonicalize().unwrap();
-            let cookbook_stage = stage_dir_tmp.canonicalize().unwrap();
-            let cookbook_source = source_dir.canonicalize().unwrap();
-            let cookbook_sysroot = sysroot_dir.canonicalize().unwrap();
+            let canonicalize = |p: &Path| -> Result<PathBuf, String> {
+                p.canonicalize().map_err(|e| {
+                    format!("failed to canonicalize '{}': {}", p.display(), e)
+                })
+            };
+            let cookbook_build = canonicalize(&build_dir)?;
+            let cookbook_recipe = canonicalize(recipe_dir)?;
+            let cookbook_root = canonicalize(Path::new("."))?;
+            let cookbook_stage = canonicalize(&stage_dir_tmp)?;
+            let cookbook_source = canonicalize(source_dir)?;
+            let cookbook_sysroot = canonicalize(&sysroot_dir)?;
             let cookbook_toolchain = toolchain_dir.canonicalize().ok();
             let bash_args = if cli_verbose { "-ex" } else { "-e" };
             let mut command = if is_redox() {
@@ -545,7 +549,10 @@ fn build_deps_dir(
             let tag_file = tags_dir.join(name.without_host().as_str());
             fs::write(&tag_file, "")
                 .map_err(|e| format!("failed to write tag file {}: {:?}", tag_file.display(), e))?;
-            pkgar::extract(pkey_path, &archive_path, deps_dir_tmp.to_str().unwrap()).map_err(
+            let deps_dir_str = deps_dir_tmp.to_str().ok_or_else(|| {
+                format!("non-UTF-8 path: '{}'", deps_dir_tmp.display())
+            })?;
+            pkgar::extract(pkey_path, &archive_path, deps_dir_str).map_err(
                 |err| {
                     format!(
                         "failed to install '{}' in '{}': {:?}",
