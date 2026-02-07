@@ -14,7 +14,6 @@ coreutils = {}
 ion = {}
 os-test-bins = {}
 relibc-tests-bins = {}
-rust = {}
 
 [[files]]
 path = "/usr/lib/init.d/30_console"
