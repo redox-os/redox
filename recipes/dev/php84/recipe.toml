@@ -26,8 +26,7 @@ dependencies = [
     "libzip",
     "ncurses",
     "nghttp2",
-    "openssl1",
-    "openssl3", # put this after openssl1
+    "openssl3",
     "pcre",
     "sqlite3",
     "xz",

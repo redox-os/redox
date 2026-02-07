@@ -8,7 +8,7 @@ template = "cmake"
 dependencies = [
     #TODO: git fails to build when this is a dependency: "libpsl",
     "nghttp2",
-    "openssl1",
+    "openssl3",
     "zlib"
 ]
 cmakeflags = [

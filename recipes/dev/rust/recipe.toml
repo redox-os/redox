@@ -9,7 +9,7 @@ dependencies = [
     "llvm21",
     "zlib",
     "curl",
-    "openssl1",
+    "openssl3",
 ]
 dev-dependencies = [ 
     "llvm21.dev",

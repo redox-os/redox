@@ -9,7 +9,7 @@ patches = [
 template = "custom"
 dependencies = [
     "pcre",
-    "openssl1",
+    "openssl3",
     "zlib",
 ]
 script = """

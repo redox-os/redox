@@ -7,7 +7,7 @@ dependencies = [
     "liborbital",
     "libretro-super",
     "mesa",
-    "openssl1",
+    "openssl3",
     "sdl2",
     "zlib",
 ]

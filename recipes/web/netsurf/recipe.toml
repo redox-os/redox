@@ -13,7 +13,7 @@ dependencies = [
     "libjpeg",
     "libpng",
     "nghttp2",
-    "openssl1",
+    "openssl3",
     "sdl1",
     "zlib",
     "freetype2",
