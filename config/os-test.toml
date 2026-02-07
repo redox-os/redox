@@ -1,4 +1,4 @@
-# Configuration for testing
+# Configuration for "os-test" testing
 
 include = ["server.toml"]
 
@@ -16,6 +16,7 @@ os-test-bins = {} # Provides source and cross-compiled binaries
 [[files]]
 path = "/usr/lib/init.d/30_console"
 data = """
+export RUST_BACKTRACE full
 os-test-runner
 shutdown
 """
