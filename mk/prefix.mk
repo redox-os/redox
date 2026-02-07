@@ -10,6 +10,7 @@ GCC_TARGET=recipes/dev/gcc13/target/$(HOST_TARGET)/$(TARGET)
 LIBSTDCXX_TARGET=recipes/libs/libstdcxx-v3/target/$(TARGET)/$(HOST_TARGET)
 RELIBC_FREESTANDING_TARGET=recipes/core/relibc/target/$(TARGET)/$(HOST_TARGET)
 RELIBC_TARGET=recipes/core/relibc/target/$(TARGET)
+RUST_TARGET=recipes/dev/rust/target/$(HOST_TARGET)/$(TARGET)
 
 # official RISC-V support introduced in newer version
 UPSTREAM_RUSTC_VERSION=2025-11-15
@@ -20,13 +21,6 @@ export REDOXER_TOOLCHAIN=$(RUSTUP_TOOLCHAIN)
 PREFIX_CONFIG=CI=1 COOKBOOK_CLEAN_BUILD=true COOKBOOK_CLEAN_TARGET=false COOKBOOK_VERBOSE=true COOKBOOK_NONSTOP=false
 
 prefix: $(PREFIX)/sysroot
-
-PREFIX_STRIP=\
-	mkdir -p bin libexec "$(TARGET)/bin" && \
-	find bin libexec "$(TARGET)/bin" "$(TARGET)/lib" \
-		-type f \
-		-exec strip --strip-unneeded {} ';' \
-		2> /dev/null
 
 # Remove prefix builds but retain downloaded binaries
 prefix_clean:
@@ -39,7 +33,7 @@ static_clean: | $(FSTOOLS_TAG)
 	$(MAKE) c.bash,luajit,gettext,openssl1,pcre2,sdl1,zstd,zlib,bzip2,xz
 	$(MAKE) c.expat,freetype,libffi,libiconv,libjpeg,liborbital,libpng,libxml2,ncurses,ncursesw
 
-$(PREFIX)/relibc-install: $(PREFIX)/rust-install | $(FSTOOLS_TAG) $(CONTAINER_TAG)
+$(PREFIX)/relibc-install: $(PREFIX)/rust-install $(PREFIX)/gcc-install | $(FSTOOLS_TAG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
@@ -175,7 +169,7 @@ else
 	mv "$@.partial" "$@"
 endif
 
-$(PREFIX)/gcc-install: $(PREFIX)/relibc-freestanding-install $(PREFIX)/libtool-install | $(FSTOOLS_TAG) $(CONTAINER_TAG)
+$(PREFIX)/gcc-install: $(PREFIX)/relibc-freestanding-install | $(PREFIX)/libtool-install $(FSTOOLS_TAG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
@@ -312,41 +306,16 @@ endif
 # BUILD RUST ---------------------------------------------------
 else 
 
-$(ROOT)/rust/configure:
-	git submodule sync --recursive
-	git submodule update --progress --init --recursive --checkout rust
-
-$(PREFIX)/rust-install: $(ROOT)/rust/configure | $(PREFIX)/gcc-install $(PREFIX)/relibc-freestanding-install $(CONTAINER_TAG)
+$(PREFIX)/rust-install: | $(PREFIX)/libtool-install $(FSTOOLS_TAG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
 	@echo "\033[1;36;49mBuilding rust-install\033[0m"
-	rm -rf "$(PREFIX)/rust-build" "$@.partial" "$@"
-	mkdir -p "$(PREFIX)/rust-build"
-	cp -r "$(PREFIX)/gcc-install" "$@.partial"
-	cp -r "$(PREFIX)/relibc-freestanding-install/$(GNU_TARGET)" "$@.partial"
-	cd "$(PREFIX)/rust-build" && \
-	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
-	"$<" \
-		--prefix="/" \
-		--disable-docs \
-		--disable-download-ci-llvm \
-		--enable-cargo-native-static \
-		--enable-dist-src \
-		--enable-extended \
-		--enable-lld \
-		--enable-llvm-static-stdcpp \
-		--tools=cargo,src \
-		--target="$(HOST_TARGET),$(TARGET)" \
-		&& \
-	$(MAKE) -j `$(NPROC)` && \
-	rm -rf $(ROOT)/$@.partial/lib/rustlib/{components,install.log,rust-installer-version,uninstall.sh,manifest-*} "$(ROOT)/$@.partial/share/doc/rust" && \
-	$(MAKE) -j `$(NPROC)` install DESTDIR="$(ROOT)/$@.partial"
-	rm -rf "$(PREFIX)/rust-build"
-	mkdir -p "$@.partial/lib/rustlib/$(HOST_TARGET)/bin"
-	mkdir -p "$@.partial/lib/rustlib/$(HOST_TARGET)/lib"
-	cd "$@.partial" && find . -name *.old -exec rm {} ';' && $(PREFIX_STRIP)
-	touch "$@.partial"
+	rm -rf "$@.partial" "$@"
+	export PATH="$(ROOT)/$(PREFIX)/libtool-install/bin:$$PATH" \
+		$(PREFIX_CONFIG) COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_TARGET=$(TARGET) && \
+		./target/release/repo cook host:rust
+	cp -r "$(RUST_TARGET)/stage/usr/". "$@.partial"
 	mv "$@.partial" "$@"
 endif
 

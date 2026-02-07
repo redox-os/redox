@@ -1,0 +1,28 @@
+[llvm]
+download-ci-llvm = false
+static-libstdcpp = false
+link-shared = false
+
+[build]
+host = ["TARGET"]
+target = ["TARGET", "i586-unknown-redox", "x86_64-unknown-redox", "aarch64-unknown-redox", "riscv64gc-unknown-redox"]
+cargo-native-static = true
+submodules = false
+docs = false
+tools = ["cargo", "clippy", "rustfmt", "src"]
+extended = true
+verbose = 1
+
+[install]
+prefix = "install"
+sysconfdir = "etc"
+
+[rust]
+backtrace = false
+codegen-tests = false
+
+[target.aarch64-unknown-linux-gnu]
+llvm-config = "COOKBOOK_TOOLCHAIN/bin/llvm-config"
+
+[target.x86_64-unknown-linux-gnu]
+llvm-config = "COOKBOOK_TOOLCHAIN/bin/llvm-config"
