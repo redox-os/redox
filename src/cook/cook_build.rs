@@ -297,7 +297,7 @@ pub fn build(
             log_to_pty!(logger, "DEBUG: using cached sysroot");
         }
     }
-    if recipe.build.kind != BuildKind::Remote && !name.is_host() && dep_host_pkgars.len() > 0 {
+    if recipe.build.kind != BuildKind::Remote && !name.is_host() && !dep_host_pkgars.is_empty() {
         let updated = build_deps_dir(
             logger,
             &toolchain_dir,
@@ -313,7 +313,7 @@ pub fn build(
 
     let stage_dir = stage_dirs
         .last()
-        .expect("Should have atleast one stage dir");
+        .expect("Should have at least one stage dir");
     let build_dir = get_build_dir(target_dir);
     if !stage_dir.is_dir() {
         // Create stage.tmp

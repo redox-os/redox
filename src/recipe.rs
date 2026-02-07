@@ -1,8 +1,8 @@
 use std::{
     collections::BTreeSet,
-    convert::TryInto,
     fs,
     path::{Path, PathBuf},
+    sync::LazyLock,
 };
 
 use pkg::{PackageName, package::PackageError, recipes};
@@ -75,8 +75,9 @@ impl SourceRecipe {
                 patches: _,
                 script: _,
             } => {
-                let re = Regex::new(r"\d+\.\d+\.\d+").unwrap();
-                if let Some(arm) = re.captures(&tar) {
+                static VERSION_RE: LazyLock<Regex> =
+                    LazyLock::new(|| Regex::new(r"\d+\.\d+\.\d+").unwrap());
+                if let Some(arm) = VERSION_RE.captures(&tar) {
                     return Some(arm.get(0).unwrap().as_str().to_string());
                 }
                 None
