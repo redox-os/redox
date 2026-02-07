@@ -12,8 +12,7 @@ dependencies = [
     "x11proto",
     "xcb-proto",
 ]
-template = "custom"
-script = """
-DYNAMIC_INIT
-cookbook_configure
-"""
+template = "configure"
+configureflags = [
+    "--disable-devel-docs",
+]
