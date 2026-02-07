@@ -9,3 +9,6 @@ script = """
 mkdir -pv "${COOKBOOK_STAGE}/home/user/relibc-tests"
 cp -rv "${COOKBOOK_SOURCE}/tests" "${COOKBOOK_STAGE}/home/user/relibc-tests"
 """
+
+[package]
+dependencies = ["gcc13"]
