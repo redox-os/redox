@@ -58,6 +58,7 @@ expat = {}
 extrautils = {}
 ffmpeg6 = {}
 findutils = {}
+fish-shell = {}
 fontconfig = {}
 freedoom = {}
 freefont = {}
@@ -213,6 +214,7 @@ winit-wayland = {}
 xxhash = {}
 xz = {}
 zenity = {}
+zsh = {}
 zlib = {}
 zstd = {}
 
