@@ -841,16 +841,30 @@ fn handle_tree(
     }
 
     println!("");
-    println!(
-        "Estimated image size: {} of {} {}",
-        tree::format_size(total_size),
-        visited.len(),
-        if visited.len() == 1 {
-            "package"
-        } else {
-            "packages"
-        },
-    );
+    if is_build_tree {
+        println!(
+            "Build summary: {} need build, {} may rebuild, with total of {} {}",
+            total_size,
+            roots.len(),
+            visited.len(),
+            if visited.len() == 1 {
+                "recipe"
+            } else {
+                "recipes"
+            },
+        );
+    } else {
+        println!(
+            "Estimated image size: {} of {} {}",
+            tree::format_size(total_size),
+            visited.len(),
+            if visited.len() == 1 {
+                "package"
+            } else {
+                "packages"
+            },
+        );
+    }
 
     Ok(())
 }
