@@ -20,6 +20,9 @@ dependencies = [
     "liborbital",
     "libiconv"
 ]
+dev-dependencies = [
+    "host:gperf"
+]
 script = """
 DYNAMIC_INIT
 
