@@ -105,55 +105,50 @@ osx_macports()
         exit 1
     fi
 
-    install_macports_pkg "coreutils"
-    install_macports_pkg "findutils"
-    install_macports_pkg "gcc14"
-    install_macports_pkg "nasm"
-    install_macports_pkg "pkgconfig"
-    install_macports_pkg "osxfuse"
-    install_macports_pkg "x86_64-elf-gcc"
-    install_macports_pkg "cmake"
-    install_macports_pkg "ninja"
-    install_macports_pkg "po4a"
-    install_macports_pkg "findutils"
-    install_macports_pkg "texinfo"
     install_macports_pkg "autoconf"
-    install_macports_pkg "openssl3"
-    install_macports_pkg "openssl11"
+    install_macports_pkg "automake"
     install_macports_pkg "bison"
+    install_macports_pkg "cmake"
+    install_macports_pkg "coreutils"
     install_macports_pkg "curl"
-    install_macports_pkg "wget"
-    install_macports_pkg "file"
-    install_macports_pkg "flex"
-    install_macports_pkg "gperf"
+    install_macports_pkg "doxygen"
     install_macports_pkg "expat"
+    install_macports_pkg "file"
+    install_macports_pkg "findutils"
+    install_macports_pkg "flex"
+    install_macports_pkg "gcc14"
+    install_macports_pkg "gdb +multiarch"
+    install_macports_pkg "gmake"
     install_macports_pkg "gmp"
-    install_macports_pkg "libpng"
+    install_macports_pkg "gpatch"
+    install_macports_pkg "gperf"
     install_macports_pkg "jpeg"
+    install_macports_pkg "libpng"
     install_macports_pkg "libsdl12"
     install_macports_pkg "libsdl2_ttf"
     install_macports_pkg "libtool"
     install_macports_pkg "m4"
-    install_macports_pkg "ninja"
     install_macports_pkg "meson"
-    install_macports_pkg "python311"
+    install_macports_pkg "nasm"
+    install_macports_pkg "ninja"
+    install_macports_pkg "openssl11"
+    install_macports_pkg "openssl3"
+    install_macports_pkg "osxfuse"
+    install_macports_pkg "p5-html-parser"
+    install_macports_pkg "patchelf"
+    install_macports_pkg "perl5.24"
+    install_macports_pkg "pkgconfig"
+    install_macports_pkg "po4a"
+    install_macports_pkg "protobuf-c"
     install_macports_pkg "py37-mako"
+    install_macports_pkg "python311"
+    install_macports_pkg "scons"
+    install_macports_pkg "texinfo"
+    install_macports_pkg "unzip"
+    install_macports_pkg "wget"
+    install_macports_pkg "x86_64-elf-gcc"
     install_macports_pkg "xdg-utils"
     install_macports_pkg "zip"
-    install_macports_pkg "unzip"
-    install_macports_pkg "llvm-18"
-    install_macports_pkg "clang-18"
-    install_macports_pkg "perl5.24"
-    install_macports_pkg "p5-html-parser"
-    install_macports_pkg "doxygen"
-    install_macports_pkg "gpatch"
-    install_macports_pkg "patchelf"
-    install_macports_pkg "automake"
-    install_macports_pkg "scons"
-    install_macports_pkg "gmake"
-    install_macports_pkg "lua"
-    install_macports_pkg "protobuf-c"
-    install_macports_pkg "gdb +multiarch"
 }
 
 ############################################################################
@@ -179,51 +174,47 @@ osx_homebrew()
         exit 1
     fi
 
+    install_brew_pkg "ant"
+    install_brew_pkg "autoconf"
     install_brew_pkg "automake"
     install_brew_pkg "bison"
-    install_brew_pkg "gettext"
-    install_brew_pkg "libtool"
-    install_brew_pkg "make"
-    install_brew_pkg "nasm"
-    install_brew_pkg "gcc@14"
-    install_brew_pkg "pkg-config"
     install_brew_pkg "cmake"
-    install_brew_pkg "ninja"
-    install_brew_pkg "po4a"
-    install_brew_pkg "macfuse"
+    install_brew_pkg "curl"
+    install_brew_pkg "doxygen"
+    install_brew_pkg "expat"
     install_brew_pkg "findutils"
-    install_brew_pkg "texinfo"
+    install_brew_pkg "flex"
+    install_brew_pkg "gcc@14"
+    install_brew_pkg "gdb"
+    install_brew_pkg "gettext"
+    install_brew_pkg "gmp"
+    install_brew_pkg "gpatch"
+    install_brew_pkg "gperf"
+    install_brew_pkg "jpeg"
+    install_brew_pkg "libpng"
+    install_brew_pkg "libtool"
+    install_brew_pkg "llvm"
+    install_brew_pkg "m4"
+    install_brew_pkg "macfuse"
+    install_brew_pkg "make"
+    install_brew_pkg "meson"
+    install_brew_pkg "nasm"
+    install_brew_pkg "ninja"
     install_brew_pkg "openssl@1.1"
     install_brew_pkg "openssl@3.0"
-    install_brew_pkg "autoconf"
-    install_brew_pkg "curl"
-    install_brew_pkg "wget"
-    install_brew_pkg "flex"
-    install_brew_pkg "gperf"
-    install_brew_pkg "expat"
-    install_brew_pkg "gmp"
-    install_brew_pkg "libpng"
-    install_brew_pkg "jpeg"
+    install_brew_pkg "patchelf"
+    install_brew_pkg "perl"
+    install_brew_pkg "pkg-config"
+    install_brew_pkg "po4a"
+    install_brew_pkg "protobuf"
+    install_brew_pkg "python@3.11"
+    install_brew_pkg "scons"
     install_brew_pkg "sdl12-compat"
     install_brew_pkg "sdl2_ttf"
-    install_brew_pkg "perl"
-    install_brew_pkg "libtool"
-    install_brew_pkg "m4"
-    install_brew_pkg "ninja"
-    install_brew_pkg "meson"
-    install_brew_pkg "python@3.11"
-    install_brew_pkg "zip"
+    install_brew_pkg "texinfo"
     install_brew_pkg "unzip"
-    install_brew_pkg "llvm"
-    install_brew_pkg "doxygen"
-    install_brew_pkg "gpatch"
-    install_brew_pkg "patchelf"
-    install_brew_pkg "automake"
-    install_brew_pkg "scons"
-    install_brew_pkg "lua"
-    install_brew_pkg "ant"
-    install_brew_pkg "protobuf"
-    install_brew_pkg "gdb"
+    install_brew_pkg "wget"
+    install_brew_pkg "zip"
 
     install_brew_pkg "redox-os/gcc_cross_compilers/x86_64-elf-gcc" "x86_64-elf-gcc"
 }
@@ -250,52 +241,49 @@ freebsd()
         exit 1
     fi
 
-    install_freebsd_pkg "coreutils"
-    install_freebsd_pkg "findutils"
-    install_freebsd_pkg "gcc"
-    install_freebsd_pkg "nasm"
-    install_freebsd_pkg "pkgconf"
-    install_freebsd_pkg "fusefs-libs3"
-    install_freebsd_pkg "cmake"
-    install_freebsd_pkg "gmake"
-    install_freebsd_pkg "wget"
-    install_freebsd_pkg "openssl"
-    install_freebsd_pkg "texinfo"
-    install_freebsd_pkg "python"
-    install_freebsd_pkg "automake"
-    install_freebsd_pkg "gettext"
-    install_freebsd_pkg "bison"
-    install_freebsd_pkg "gperf"
     install_freebsd_pkg "autoconf"
+    install_freebsd_pkg "automake"
+    install_freebsd_pkg "bison"
+    install_freebsd_pkg "cmake"
+    install_freebsd_pkg "coreutils"
     install_freebsd_pkg "curl"
-    install_freebsd_pkg "file"
-    install_freebsd_pkg "flex"
+    install_freebsd_pkg "doxygen"
     install_freebsd_pkg "expat2"
+    install_freebsd_pkg "file"
+    install_freebsd_pkg "findutils"
+    install_freebsd_pkg "flex"
+    install_freebsd_pkg "fusefs-libs3"
+    install_freebsd_pkg "gcc"
+    install_freebsd_pkg "gdb"
+    install_freebsd_pkg "gettext"
+    install_freebsd_pkg "gmake"
     install_freebsd_pkg "gmp"
-    install_freebsd_pkg "png"
+    install_freebsd_pkg "gperf"
     install_freebsd_pkg "libjpeg-turbo"
-    install_freebsd_pkg "sdl12"
-    install_freebsd_pkg "sdl2_ttf"
-    install_freebsd_pkg "perl5.36"
-    install_freebsd_pkg "p5-HTML-Parser"
     install_freebsd_pkg "libtool"
     install_freebsd_pkg "m4"
-    install_freebsd_pkg "po4a"
-    install_freebsd_pkg "syslinux"
-    install_freebsd_pkg "ninja"
     install_freebsd_pkg "meson"
-    install_freebsd_pkg "xdg-utils"
-    install_freebsd_pkg "zip"
-    install_freebsd_pkg "unzip"
-    install_freebsd_pkg "llvm"
-    install_freebsd_pkg "doxygen"
+    install_freebsd_pkg "nasm"
+    install_freebsd_pkg "ninja"
+    install_freebsd_pkg "openssl"
+    install_freebsd_pkg "p5-HTML-Parser"
     install_freebsd_pkg "patch"
     install_freebsd_pkg "patchelf"
-    install_freebsd_pkg "automake"
-    install_freebsd_pkg "scons"
-    install_freebsd_pkg "lua54"
+    install_freebsd_pkg "perl5.36"
+    install_freebsd_pkg "pkgconf"
+    install_freebsd_pkg "png"
+    install_freebsd_pkg "po4a"
     install_freebsd_pkg "py-protobuf-compiler"
-    install_freebsd_pkg "gdb"
+    install_freebsd_pkg "python"
+    install_freebsd_pkg "scons"
+    install_freebsd_pkg "sdl12"
+    install_freebsd_pkg "sdl2_ttf"
+    install_freebsd_pkg "syslinux"
+    install_freebsd_pkg "texinfo"
+    install_freebsd_pkg "unzip"
+    install_freebsd_pkg "wget"
+    install_freebsd_pkg "xdg-utils"
+    install_freebsd_pkg "zip"
     set +x
 }
 
@@ -315,51 +303,47 @@ archLinux()
     fi
 
     echo "Detected Arch Linux"
-    packages="cmake \
-    fuse \
-    git \
-    gperf \
-    perl-html-parser \
-    nasm \
-    wget \
-    texinfo \
-    bison \
-    flex \
-    po4a \
+    packages="ant \
     autoconf \
+    automake \
+    bison \
+    cmake \
     curl \
+    doxygen \
+    expat \
     file \
+    flex \
+    fuse \
+    gdb \
+    git \
+    gmp \
+    gperf \
+    libjpeg-turbo \
+    libpng \
+    libtool \
+    m4 \
+    make \
+    meson \
+    nasm \
     patch \
     patchelf \
-    automake \
-    scons \
-    waf \
-    expat \
-    gmp \
-    libtool \
-    libpng \
-    libjpeg-turbo \
-    sdl12-compat \
-    m4 \
+    perl \
+    perl-html-parser \
     pkgconf \
     po4a \
-    syslinux \
-    meson \
+    protobuf \
     python \
     python-mako \
-    make \
-    xdg-utils \
-    zip \
-    unzip \
-    llvm \
-    clang \
-    perl \
-    doxygen \
-    lua \
-    ant \
-    protobuf \
     rsync \
-    gdb"
+    scons \
+    sdl12-compat \
+    syslinux \
+    texinfo \
+    unzip \
+    waf \
+    wget \
+    xdg-utils \
+    zip"
 
     if [ "$1" == "qemu" ]; then
         packages="$packages qemu-system-x86 qemu-system-arm qemu-system-riscv"
@@ -427,6 +411,7 @@ ubuntu()
     flex \
     fuse3 \
     g++ \
+    gdb-multiarch \
     genisoimage \
     git \
     git-lfs \
@@ -482,8 +467,7 @@ ubuntu()
     xxd \
     zip \
     zlib1g-dev \
-    zstd \
-    gdb-multiarch"
+    zstd"
     # Not availible for at least ARM hosts
     case "$host_arch" in
         x86*|i?86) pkgs="$pkgs libc6-dev-i386 syslinux-utils";;
@@ -564,64 +548,58 @@ fedora()
 
     # Use rpm -q <package> to check if it's already installed
     PKGS=$(for pkg in @development-tools \
-    file \
+    ant \
     autoconf \
-    vim \
+    automake \
     bison \
-    flex \
-    genisoimage \
-    gperf \
-    glibc-devel.i686 \
+    cmake \
+    curl \
+    doxygen \
     expat \
     expat-devel \
+    file \
+    flex \
     fuse-devel \
     fuse3-devel \
-    gmp-devel \
-    libpng-devel \
-    perl \
-    perl-HTML-Parser \
-    libtool \
-    libjpeg-turbo-devel \
-    SDL2_ttf-devel \
-    sdl12-compat-devel \
-    m4 \
-    nasm \
-    po4a \
-    syslinux \
-    texinfo \
-    ninja-build \
-    meson \
-    waf \
-    python3-mako \
-    make \
     gcc \
     gcc-c++ \
+    gdb \
+    genisoimage \
+    gettext-devel \
+    glibc-devel.i686 \
+    gmp-devel \
+    gperf \
+    help2man \
+    libjpeg-turbo-devel \
+    libpng-devel \
+    libtool \
+    lzip \
+    m4 \
+    make \
+    meson \
+    nasm \
+    ninja-build \
     openssl \
     patch \
     patchelf \
-    automake \
-    perl-Pod-Html \
+    perl \
     perl-FindBin \
-    gperf \
-    curl \
-    gettext-devel \
+    perl-HTML-Parser \
+    perl-Pod-Html \
     perl-Pod-Xhtml \
     pkgconf-pkg-config \
-    cmake \
-    llvm \
-    zip \
-    unzip \
-    lua \
-    luajit \
-    make \
-    clang \
-    doxygen \
-    ant \
+    po4a \
     protobuf-compiler \
-    zstd \
-    lzip \
-    help2man \
-    gdb ; do rpm -q $pkg > /dev/null || echo $pkg; done)
+    python3-mako \
+    SDL2_ttf-devel \
+    sdl12-compat-devel \
+    syslinux \
+    texinfo \
+    unzip \
+    vim \
+    waf \
+    zip \
+    zstd ; do rpm -q $pkg > /dev/null || echo $pkg; done)
     # If the list of packages is not empty, install missing
     COUNT=$(echo $PKGS | wc -w)
     if [ $COUNT -ne 0 ]; then
@@ -639,51 +617,47 @@ suse()
     echo "Detected SUSE Linux"
 
     packages=(
+    "ant"
+    "autoconf"
+    "automake"
+    "bison"
+    "cmake"
+    "curl"
+    "doxygen"
+    "file"
+    "flex"
+    "fuse-devel"
     "gcc"
     "gcc-c++"
-    "glibc-devel-32bit"
-    "nasm"
-    "make"
-    "fuse-devel"
-    "cmake"
-    "openssl"
-    "automake"
+    "gdb-multiarch"
     "gettext-tools"
-    "libtool"
-    "po4a"
-    "patch"
-    "flex"
-    "gperf"
-    "autoconf"
-    "bison"
-    "curl"
-    "wget"
-    "file"
-    "libexpat-devel"
+    "glibc-devel-32bit"
     "gmp-devel"
-    "libpng16-devel"
+    "gperf"
+    "libexpat-devel"
     "libjpeg8-devel"
-    "perl"
-    "perl-HTML-Parser"
+    "libpng16-devel"
+    "libtool"
     "m4"
+    "make"
+    "meson"
+    "nasm"
+    "ninja"
+    "openssl"
     "patch"
     "patchelf"
-    "scons"
+    "perl"
+    "perl-HTML-Parser"
     "pkgconf"
-    "syslinux-utils"
-    "ninja"
-    "meson"
+    "po4a"
+    "protobuf"
     "python-Mako"
+    "scons"
+    "syslinux-utils"
+    "unzip"
+    "wget"
     "xdg-utils"
     "zip"
-    "unzip"
-    "llvm"
-    "clang"
-    "doxygen"
-    "lua54"
-    "ant"
-    "protobuf"
-    "gdb-multiarch"
     )
 
     if [ -z "$(which git)" ]; then
@@ -844,33 +818,33 @@ solus()
 
     echo "Installing necessary build tools..."
     #if guards are not necessary with eopkg since it does nothing if latest version is already installed
-    sudo eopkg it fuse-devel \
-    git \
-    gcc \
-    g++ \
-    libgcc-32bit \
-    libstdc++-32bit \
-    nasm \
-    make \
-    cmake \
-    binutils-gold \
-    glibc-devel \
-    pkg-config \
-    fuse2-devel \
-    linux-headers \
-    rsync \
+    sudo eopkg it autoconf \
     automake \
-    autoconf \
-    m4 \
+    binutils-gold \
+    bison \
+    cmake \
+    flex \
+    fuse-devel \
+    fuse2-devel \
+    g++ \
+    gcc \
+    glibc-devel \
+    git \
+    gperf \
+    libgcc-32bit \
+    libpng-devel \
+    libstdc++-32bit \
     libtool-devel \
-    po4a \
+    linux-headers \
+    m4 \
+    make \
+    nasm \
     patch \
     patchelf \
-    bison \
-    flex \
-    gperf \
-    libpng-devel \
-    perl-html-parser
+    perl-html-parser \
+    pkg-config \
+    po4a \
+    rsync
 }
 
 ###############################################################################
