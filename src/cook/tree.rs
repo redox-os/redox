@@ -21,6 +21,7 @@ pub fn display_tree_entry(
     recipe_map: &HashMap<&PackageName, &CookRecipe>,
     prefix: &str,
     is_last: bool,
+    is_build_tree: bool,
     visited: &mut HashSet<PackageName>,
     total_size: &mut u64,
 ) -> anyhow::Result<()> {
@@ -29,6 +30,7 @@ pub fn display_tree_entry(
         recipe_map,
         prefix,
         is_last,
+        is_build_tree,
         visited,
         total_size,
         display_pkg_fn,
@@ -40,6 +42,7 @@ pub fn walk_tree_entry(
     recipe_map: &HashMap<&PackageName, &CookRecipe>,
     prefix: &str,
     is_last: bool,
+    is_build_tree: bool,
     visited: &mut HashSet<PackageName>,
     total_size: &mut u64,
     op: fn(&PackageName, &str, bool, &WalkTreeEntry) -> anyhow::Result<()>,
@@ -47,7 +50,7 @@ pub fn walk_tree_entry(
     let cook_recipe = match recipe_map.get(package_name) {
         Some(r) => r,
         None => {
-            // TODO: This is a dependency, but it's not in recipe list
+            // Data not provided, will not be processed by the build system
             op(package_name, prefix, is_last, &WalkTreeEntry::Missing)?;
             return Ok(());
         }
@@ -69,19 +72,28 @@ pub fn walk_tree_entry(
     }
 
     visited.insert(package_name.clone());
-    if let WalkTreeEntry::Built(_p, pkg_size) = &entry {
-        *total_size += pkg_size;
+    if is_build_tree {
+        if matches!(entry, WalkTreeEntry::NotBuilt) {
+            *total_size += 1;
+        }
+    } else {
+        if let WalkTreeEntry::Built(_p, pkg_size) = &entry {
+            *total_size += pkg_size;
+        }
     }
     let pkg_meta: Package;
 
     let mut all_deps_set: HashSet<&PackageName> = HashSet::new();
-    if let Ok(pkg_toml_str) = read_to_string(&pkg_toml) {
-        // more accurate with auto deps
-        pkg_meta = toml::from_str(&pkg_toml_str)
-            .context(format!("Unable to parse {}", pkg_toml.display()))?;
-        all_deps_set.extend(pkg_meta.depends.iter());
-    } else {
+    if is_build_tree {
+        all_deps_set.extend(cook_recipe.recipe.build.dependencies.iter());
         all_deps_set.extend(cook_recipe.recipe.package.dependencies.iter());
+    } else {
+        if let Ok(pkg_toml_str) = read_to_string(&pkg_toml) {
+            // more accurate with auto deps
+            pkg_meta = toml::from_str(&pkg_toml_str)
+                .context(format!("Unable to parse {}", pkg_toml.display()))?;
+            all_deps_set.extend(pkg_meta.depends.iter());
+        }
     }
 
     if all_deps_set.is_empty() {
@@ -97,6 +109,7 @@ pub fn walk_tree_entry(
             recipe_map,
             &format!("{}{}", prefix, child_prefix),
             i == deps_count - 1,
+            is_build_tree,
             visited,
             total_size,
             op,
@@ -116,7 +129,7 @@ pub fn display_pkg_fn(
         WalkTreeEntry::Built(_path_buf, size) => format!("[{}]", format_size(*size)),
         WalkTreeEntry::NotBuilt => "(not built)".to_string(),
         WalkTreeEntry::Deduped => "".to_string(),
-        WalkTreeEntry::Missing => "(dependency info missing)".to_string(),
+        WalkTreeEntry::Missing => "(omitted)".to_string(),
     };
     let line_prefix = if is_last { "└── " } else { "├── " };
     println!("{}{}{} {}", prefix, line_prefix, package_name, size_str);
