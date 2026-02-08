@@ -276,12 +276,12 @@ uid = 0
 gid = 0
 name = "root"
 home = "/root"
-shell = "/usr/bin/ion"
+shell = "/usr/bin/bash"
 
 [users.user]
 # Password is unset
 password = ""
-shell = "/usr/bin/ion"
+shell = "/usr/bin/bash"
 
 # Group settings
 [groups.sudo]
