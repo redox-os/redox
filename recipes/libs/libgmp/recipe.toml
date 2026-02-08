@@ -5,13 +5,10 @@
 [source]
 tar = "https://ftp.gnu.org/gnu/gmp/gmp-6.3.0.tar.xz"
 blake3 = "fffe4996713928ae19331c8ef39129e46d3bf5b7182820656fd4639435cd83a4"
-script = """
-autotools_recursive_regenerate
-"""
 
 [build]
 template = "custom"
 script = """
-DYNAMIC_INIT
+DYNAMIC_STATIC_INIT
 cookbook_configure
 """
