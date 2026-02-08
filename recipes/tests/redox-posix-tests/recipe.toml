@@ -5,8 +5,8 @@ git = "https://gitlab.redox-os.org/redox-os/redox-posix-tests.git"
 [build]
 template = "custom"
 script = """
-mkdir -pv "${COOKBOOK_STAGE}/share/redox-posix-tests"
-cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}/share/redox-posix-tests"
+mkdir -pv "${COOKBOOK_STAGE}/home/user/redox-posix-tests"
+cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}/home/user/redox-posix-tests"
 """
 
 [package]

@@ -1,0 +1,4 @@
+[source]
+same_as = "../acid"
+[build]
+template = "cargo"
