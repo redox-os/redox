@@ -1,3 +1,5 @@
+# Due to necessary write permission for compilation the filesystem path of source code installation is an exception
+# where the package manager can't switch between system-wide and user paths
 # TODO remove gnu-grep when extrautils grep supports grep -E
 [source]
 git = "https://gitlab.com/sortix/os-test"
@@ -5,8 +7,8 @@ git = "https://gitlab.com/sortix/os-test"
 [build]
 template = "custom"
 script = """
-mkdir -pv "${COOKBOOK_STAGE}/share/os-test"
-cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}/share/os-test"
+mkdir -pv "${COOKBOOK_STAGE}/home/user/os-test"
+cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}/home/user/os-test"
 """
 
 [package]
