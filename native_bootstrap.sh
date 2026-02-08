@@ -108,7 +108,6 @@ osx_macports()
     install_macports_pkg "autoconf"
     install_macports_pkg "automake"
     install_macports_pkg "bison"
-    install_macports_pkg "clang-18"
     install_macports_pkg "cmake"
     install_macports_pkg "coreutils"
     install_macports_pkg "curl"
@@ -128,8 +127,6 @@ osx_macports()
     install_macports_pkg "libsdl12"
     install_macports_pkg "libsdl2_ttf"
     install_macports_pkg "libtool"
-    install_macports_pkg "llvm-18"
-    install_macports_pkg "lua"
     install_macports_pkg "m4"
     install_macports_pkg "meson"
     install_macports_pkg "nasm"
@@ -197,7 +194,6 @@ osx_homebrew()
     install_brew_pkg "libpng"
     install_brew_pkg "libtool"
     install_brew_pkg "llvm"
-    install_brew_pkg "lua"
     install_brew_pkg "m4"
     install_brew_pkg "macfuse"
     install_brew_pkg "make"
@@ -265,8 +261,6 @@ freebsd()
     install_freebsd_pkg "gperf"
     install_freebsd_pkg "libjpeg-turbo"
     install_freebsd_pkg "libtool"
-    install_freebsd_pkg "llvm"
-    install_freebsd_pkg "lua54"
     install_freebsd_pkg "m4"
     install_freebsd_pkg "meson"
     install_freebsd_pkg "nasm"
@@ -313,7 +307,6 @@ archLinux()
     autoconf \
     automake \
     bison \
-    clang \
     cmake \
     curl \
     doxygen \
@@ -328,8 +321,6 @@ archLinux()
     libjpeg-turbo \
     libpng \
     libtool \
-    llvm \
-    lua \
     m4 \
     make \
     meson \
@@ -561,7 +552,6 @@ fedora()
     autoconf \
     automake \
     bison \
-    clang \
     cmake \
     curl \
     doxygen \
@@ -583,9 +573,6 @@ fedora()
     libjpeg-turbo-devel \
     libpng-devel \
     libtool \
-    llvm \
-    lua \
-    luajit \
     lzip \
     m4 \
     make \
@@ -634,7 +621,6 @@ suse()
     "autoconf"
     "automake"
     "bison"
-    "clang"
     "cmake"
     "curl"
     "doxygen"
@@ -652,8 +638,6 @@ suse()
     "libjpeg8-devel"
     "libpng16-devel"
     "libtool"
-    "llvm"
-    "lua54"
     "m4"
     "make"
     "meson"
