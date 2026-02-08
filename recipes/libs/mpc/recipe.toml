@@ -14,6 +14,6 @@ dependencies = [
     "libmpfr",
 ]
 script = """
-DYNAMIC_INIT
+DYNAMIC_STATIC_INIT
 cookbook_configure
 """
