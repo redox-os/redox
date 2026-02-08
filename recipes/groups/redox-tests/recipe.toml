@@ -1,6 +1,7 @@
 [package]
 dependencies = [
     "acid",
-    "resist",
+    "os-test",
+    "redox-posix-tests",
     "relibc-tests",
 ]
