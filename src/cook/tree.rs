@@ -72,8 +72,14 @@ pub fn walk_tree_entry(
     }
 
     visited.insert(package_name.clone());
-    if let WalkTreeEntry::Built(_p, pkg_size) = &entry {
-        *total_size += pkg_size;
+    if is_build_tree {
+        if matches!(entry, WalkTreeEntry::NotBuilt) {
+            *total_size += 1;
+        }
+    } else {
+        if let WalkTreeEntry::Built(_p, pkg_size) = &entry {
+            *total_size += pkg_size;
+        }
     }
     let pkg_meta: Package;
 
