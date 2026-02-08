@@ -48,7 +48,8 @@ const REPO_HELP_STR: &str = r#"
         clean     delete recipe artifacts
         push      extract package into sysroot
         find      find path of recipe packages
-        tree      show tree of recipe packages
+        cook-tree show tree of recipe build
+        push-tree show tree of recipe packages
     
     common flags:
         --cookbook=<cookbook_dir>  the "recipes" folder, default to $PWD/recipes
@@ -90,22 +91,23 @@ struct CliConfig {
 enum CliCommand {
     Fetch,
     Cook,
+    CookTree,
     Unfetch,
     Clean,
     Push,
-    Tree,
+    PushTree,
     Find,
 }
 
 impl CliCommand {
     pub fn is_informational(&self) -> bool {
-        *self == CliCommand::Tree || *self == CliCommand::Find
+        *self == CliCommand::PushTree || *self == CliCommand::CookTree || *self == CliCommand::Find
     }
     pub fn is_building(&self) -> bool {
-        *self == CliCommand::Fetch || *self == CliCommand::Cook
+        *self == CliCommand::Fetch || *self == CliCommand::Cook || *self == CliCommand::CookTree
     }
     pub fn is_pushing(&self) -> bool {
-        *self == CliCommand::Push || *self == CliCommand::Tree
+        *self == CliCommand::Push || *self == CliCommand::PushTree
     }
     pub fn is_cleaning(&self) -> bool {
         *self == CliCommand::Clean || *self == CliCommand::Unfetch
@@ -122,7 +124,8 @@ impl FromStr for CliCommand {
             "unfetch" => Ok(CliCommand::Unfetch),
             "clean" => Ok(CliCommand::Clean),
             "push" => Ok(CliCommand::Push),
-            "tree" => Ok(CliCommand::Tree),
+            "push-tree" => Ok(CliCommand::PushTree),
+            "cook-tree" => Ok(CliCommand::CookTree),
             "find" => Ok(CliCommand::Find),
             _ => Err(anyhow!("Unknown command '{}'\n{}\n", s, REPO_HELP_STR)),
         }
@@ -137,7 +140,8 @@ impl ToString for CliCommand {
             CliCommand::Unfetch => "unfetch".to_string(),
             CliCommand::Clean => "clean".to_string(),
             CliCommand::Push => "push".to_string(),
-            CliCommand::Tree => "tree".to_string(),
+            CliCommand::PushTree => "push-tree".to_string(),
+            CliCommand::CookTree => "cook-tree".to_string(),
             CliCommand::Find => "find".to_string(),
         }
     }
@@ -186,12 +190,12 @@ fn main_inner() -> anyhow::Result<()> {
         process::exit(1);
     }
 
-    let (config, command, recipe_names) = parse_args(args)?;
+    let (config, command, recipes) = parse_args(args)?;
     if command.is_building() {
         ident::init_ident();
     }
     if command == CliCommand::Cook && config.cook.tui {
-        if let Some((name, e)) = run_tui_cook(config.clone(), recipe_names.clone())? {
+        if let Some((name, e)) = run_tui_cook(config.clone(), recipes.clone())? {
             let _ = stderr().write(e.as_bytes());
             let _ = stderr().write(b"\n\n");
             print_failed(&command, &name);
@@ -199,17 +203,20 @@ fn main_inner() -> anyhow::Result<()> {
         } else {
             print_success(&command, None);
         }
-        return publish_packages(&recipe_names, &config.repo_dir);
+        return publish_packages(&recipes, &config.repo_dir);
     }
-    if command == CliCommand::Tree {
-        return handle_tree(&recipe_names, &config);
+    if command == CliCommand::PushTree {
+        return handle_tree(&recipes, false, &config);
+    }
+    if command == CliCommand::CookTree {
+        return handle_tree(&recipes, true, &config);
     }
     if command == CliCommand::Push {
-        return handle_push(&recipe_names, &config);
+        return handle_push(&recipes, &config);
     }
 
     let verbose = config.cook.verbose;
-    for recipe in &recipe_names {
+    for recipe in &recipes {
         match repo_inner(&config, &command, recipe) {
             Ok(_) => {
                 if !command.is_informational() {
@@ -234,14 +241,14 @@ fn main_inner() -> anyhow::Result<()> {
     }
 
     if command == CliCommand::Cook {
-        return publish_packages(&recipe_names, &config.repo_dir);
+        return publish_packages(&recipes, &config.repo_dir);
     }
 
-    if verbose && recipe_names.len() > 1 {
+    if verbose && recipes.len() > 1 {
         println!(
             "\nCommand '{}' completed for {} recipes.",
             command.to_string(),
-            recipe_names.len()
+            recipes.len()
         );
     }
     Ok(())
@@ -348,7 +355,8 @@ fn repo_inner(
         CliCommand::Unfetch => handle_clean(recipe, config, true, true)?,
         CliCommand::Clean => handle_clean(recipe, config, false, true)?,
         CliCommand::Push => unreachable!(),
-        CliCommand::Tree => unreachable!(),
+        CliCommand::PushTree => unreachable!(),
+        CliCommand::CookTree => unreachable!(),
         CliCommand::Find => println!("{}", recipe.dir.display()),
     })
 }
@@ -564,17 +572,21 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
                 CookRecipe::get_package_deps_recursive(&binary_recipe_names, true)?;
         }
 
-        let mut recipes = if command.is_building() {
-            CookRecipe::get_build_deps_recursive(&source_recipe_names, true)?
-        } else {
-            CookRecipe::from_list(source_recipe_names.clone())?
-        };
+        let mut recipes =
+            if command.is_building() || (command.is_pushing() && config.with_package_deps) {
+                // Pushing do not need dev deps, so does binary recipes at building
+                let include_dev = command.is_building();
+                CookRecipe::get_build_deps_recursive(&source_recipe_names, include_dev)?
+            } else {
+                CookRecipe::from_list(source_recipe_names.clone())?
+            };
 
-        let binary_recipes = if command.is_building() {
-            CookRecipe::get_build_deps_recursive(&binary_recipe_names, false)?
-        } else {
-            CookRecipe::from_list(binary_recipe_names.clone())?
-        };
+        let binary_recipes =
+            if command.is_building() || (command.is_pushing() && config.with_package_deps) {
+                CookRecipe::get_build_deps_recursive(&binary_recipe_names, false)?
+            } else {
+                CookRecipe::from_list(binary_recipe_names.clone())?
+            };
 
         let ignore_recipes = CookRecipe::from_list(ignore_recipe_names.clone())?;
 
@@ -607,8 +619,9 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
         if config.with_package_deps {
             recipe_names = CookRecipe::get_package_deps_recursive(&recipe_names, true)?;
         }
-        if command.is_building() {
-            CookRecipe::get_build_deps_recursive(&recipe_names, true)?
+        if command.is_building() || (command.is_pushing() && config.with_package_deps) {
+            let include_dev = command.is_building();
+            CookRecipe::get_build_deps_recursive(&recipe_names, include_dev)?
         } else {
             CookRecipe::from_list(recipe_names.clone())?
         }
@@ -758,6 +771,7 @@ fn handle_push(recipes: &Vec<CookRecipe>, config: &CliConfig) -> anyhow::Result<
                 &recipe_map,
                 "",
                 i == num_roots - 1,
+                false,
                 &mut visited,
                 &mut total_size,
                 handle_push_inner,
@@ -803,7 +817,11 @@ fn handle_push(recipes: &Vec<CookRecipe>, config: &CliConfig) -> anyhow::Result<
     Ok(())
 }
 
-fn handle_tree(recipes: &Vec<CookRecipe>, _config: &CliConfig) -> anyhow::Result<()> {
+fn handle_tree(
+    recipes: &Vec<CookRecipe>,
+    is_build_tree: bool,
+    _config: &CliConfig,
+) -> anyhow::Result<()> {
     let recipe_map: HashMap<&PackageName, &CookRecipe> =
         recipes.iter().map(|r| (&r.name, r)).collect();
     let mut total_size: u64 = 0;
@@ -816,22 +834,37 @@ fn handle_tree(recipes: &Vec<CookRecipe>, _config: &CliConfig) -> anyhow::Result
             &recipe_map,
             "",
             i == num_roots - 1,
+            is_build_tree,
             &mut visited,
             &mut total_size,
         )?;
     }
 
     println!("");
-    println!(
-        "Estimated image size: {} of {} {}",
-        tree::format_size(total_size),
-        visited.len(),
-        if visited.len() == 1 {
-            "package"
-        } else {
-            "packages"
-        },
-    );
+    if is_build_tree {
+        println!(
+            "Build summary: {} need build, {} may rebuild, with total of {} {}",
+            total_size,
+            roots.len(),
+            visited.len(),
+            if visited.len() == 1 {
+                "recipe"
+            } else {
+                "recipes"
+            },
+        );
+    } else {
+        println!(
+            "Estimated image size: {} of {} {}",
+            tree::format_size(total_size),
+            visited.len(),
+            if visited.len() == 1 {
+                "package"
+            } else {
+                "packages"
+            },
+        );
+    }
 
     Ok(())
 }
