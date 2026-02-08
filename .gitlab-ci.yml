@@ -7,12 +7,14 @@ stages:
   - lint
   - test
 
-fmt:
-  image: "rust:trixie"
-  stage: lint
+workflow:
   rules:
     - if: '$CI_COMMIT_BRANCH == "master" && $CI_PROJECT_NAMESPACE == "redox-os"'
     - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"'
+
+fmt:
+  image: "rust:trixie"
+  stage: lint
   script:
     - rustup component add rustfmt
     - cargo fmt -- --check
@@ -20,9 +22,6 @@ fmt:
 cargo-test:
   image: "rust:trixie"
   stage: lint
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "master" && $CI_PROJECT_NAMESPACE == "redox-os"'
-    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"'
   script:
     # TODO: we should omit fuse from cargo install chains
     - apt update && apt install -y fuse3 libfuse3-dev
@@ -31,9 +30,6 @@ cargo-test:
 img:
   image: "ubuntu:24.04"
   stage: test
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "master" && $CI_PROJECT_NAMESPACE == "redox-os"'
-    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"'
   before_script:
     # Disable the wget progress bar
     - echo 'show-progress = off' >> ~/.wgetrc
@@ -61,3 +57,27 @@ img:
       export PATH="$HOME/.cargo/bin:$PATH" &&
       bash podman/rustinstall.sh &&
       PODMAN_BUILD=0 REPO_BINARY=1 FSTOOLS_NO_MOUNT=1 COOKBOOK_VERBOSE=false make ci-img IMG_TAG=$CI_COMMIT_REF_NAME
+
+pkg:
+  image: "ubuntu:24.04"
+  stage: test
+  before_script:
+    # Disable the wget progress bar
+    - echo 'show-progress = off' >> ~/.wgetrc
+    - |
+      export DEBIAN_FRONTEND=noninteractive
+      apt-get update -qq &&
+      apt-get install -qq \
+          build-essential \
+          curl \
+          git \
+          nasm \
+          wget
+  script:
+    - |
+      export PATH="$HOME/.cargo/bin:$PATH" PODMAN_BUILD=0 &&
+      bash podman/rustinstall.sh &&
+      make CONFIG_NAME=ci repo-tree ARCH=x86_64 &&
+      make CONFIG_NAME=ci repo-tree ARCH=i586 &&
+      make CONFIG_NAME=ci repo-tree ARCH=aarch64 &&
+      make CONFIG_NAME=ci repo-tree ARCH=riscv64gc
