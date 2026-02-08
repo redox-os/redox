@@ -13,12 +13,20 @@ endif
 
 comma := ,
 
-# List all recipes in a tree fashion specified by the filesystem config
-tree: $(FSTOOLS_TAG) $(CONTAINER_TAG)
+# List all recipes in a cook-tree fashion specified by the filesystem config
+repo-tree: $(FSTOOLS_TAG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
-	@./target/release/repo tree $(COOKBOOK_OPTS) --with-package-deps
+	@./target/release/repo cook-tree $(COOKBOOK_OPTS) --with-package-deps
+endif
+
+# List all recipes in a push-tree fashion specified by the filesystem config
+image-tree: $(FSTOOLS_TAG) $(CONTAINER_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
+	@./target/release/repo push-tree $(COOKBOOK_OPTS) --with-package-deps
 endif
 
 # Fetch all recipes source or binary from filesystem config
@@ -67,7 +75,7 @@ else
 	./target/release/repo fetch $(foreach f,$(subst $(comma), ,$*),$(f)) $(COOKBOOK_OPTS)
 endif
 
-# Invoke repo.sh for one or more targets separated by comma
+# Invoke cook for one or more targets separated by comma
 r.%: prefix $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
@@ -75,6 +83,14 @@ else
 	export PATH="$(PREFIX_PATH):$$PATH" && \
 	export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
 	./target/release/repo cook $(foreach f,$(subst $(comma), ,$*),$(f)) $(COOKBOOK_OPTS)
+endif
+
+# Show what to cook
+rt.%: prefix $(FSTOOLS_TAG) FORCE
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
+	./target/release/repo cook-tree $(foreach f,$(subst $(comma), ,$*),$(f)) $(COOKBOOK_OPTS)
 endif
 
 MOUNTED_TAG=$(MOUNT_DIR)~
@@ -104,6 +120,18 @@ endif
 # Push compiled package with their package dependencies
 pp.%: $(FSTOOLS_TAG) FORCE
 	$(MAKE) p.$*,--with-package-deps
+
+# Show what to push
+pt.%: prefix $(FSTOOLS_TAG) FORCE
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
+	./target/release/repo push-tree $(foreach f,$(subst $(comma), ,$*),$(f)) $(COOKBOOK_OPTS)
+endif
+
+# Show what to push (with deps)
+ppt.%: prefix $(FSTOOLS_TAG) FORCE
+	$(MAKE) pt.$*,--with-package-deps
 
 # Push all recipes specified by the filesystem config
 push: $(FSTOOLS_TAG) FORCE
