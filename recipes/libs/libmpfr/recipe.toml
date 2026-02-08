@@ -11,6 +11,6 @@ dependencies = [
     "libgmp",
 ]
 script = """
-DYNAMIC_INIT
+DYNAMIC_STATIC_INIT
 cookbook_configure
 """
