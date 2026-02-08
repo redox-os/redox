@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/sohzm/jasonisnthappy"
+shallow_clone = true
+[build]
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_cargo_examples bench_all
+"""

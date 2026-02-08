@@ -1,0 +1,7 @@
+#TODO not compiled or tested
+#TODO determine minimum dependencies from meson log
+[source]
+git = "https://gitlab.gnome.org/fkinoshita/kana"
+shallow_clone = true
+[build]
+template = "meson"
