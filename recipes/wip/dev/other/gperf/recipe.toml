@@ -1,4 +1,4 @@
-#TODO compiled but not fully tested
+#TODO Promote
 [source]
 tar = "https://ftp.gnu.org/gnu/gperf/gperf-3.1.tar.gz"
 [build]

@@ -26,7 +26,6 @@ RUN apt-get update \
         git \
         git-lfs \
         gobject-introspection \
-        gperf \
         gtk-doc-tools \
         gtk-update-icon-cache \
         help2man \
