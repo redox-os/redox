@@ -22,7 +22,6 @@ export RUST_BACKTRACE full
 cd /home/user/acid
 cargo test
 bash /root/relibc-tests/run.sh
-ion
 os-test-runner
 shutdown
 """
