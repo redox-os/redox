@@ -250,6 +250,12 @@ else ifeq ($(gpu),virtio)
 	else
 		QEMUFLAGS+=-vga none -device virtio-gpu
 	endif
+else ifeq ($(gpu),virtio-sdl)
+	ifeq ($(VGA_SUPPORTED),yes)
+		QEMUFLAGS+=-vga none -device virtio-vga -display sdl,show-cursor=on
+	else
+		QEMUFLAGS+=-vga none -device virtio-gpu -display sdl,show-cursor=on
+	endif
 else ifeq ($(gpu),virtio-gl)
 	ifeq ($(VGA_SUPPORTED),yes)
 		QEMUFLAGS+=-display gtk,gl=on -vga none -device virtio-vga-gl
