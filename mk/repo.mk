@@ -122,7 +122,11 @@ pp.%: $(FSTOOLS_TAG) FORCE
 	$(MAKE) p.$*,--with-package-deps
 
 # Show what to push
+<<<<<<< HEAD
 pt.%: $(FSTOOLS_TAG) FORCE
+=======
+pt.%: prefix $(FSTOOLS_TAG) FORCE
+>>>>>>> e940c2cd (Accurate push with deps, separate tree command)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
