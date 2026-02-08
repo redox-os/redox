@@ -106,7 +106,7 @@ pub fn init_config() {
     if config.cook_opt.clean_target.is_none() {
         config.cook_opt.clean_target = Some(extract_env("COOKBOOK_CLEAN_TARGET", false));
     }
-    if config.mirrors.len() == 0 {
+    if config.mirrors.is_empty() {
         // The GNU FTP mirror below is automatically inserted for convenience
         // You can choose other mirrors by setting it on cookbook.toml
         config.mirrors.insert(
@@ -159,8 +159,8 @@ pub fn translate_mirror(original_url: &str) -> String {
     if let Some(prefix) = best_match_prefix {
         let mirror_base = config.mirrors.get(prefix).unwrap();
         let suffix = &stripped_url[prefix.len()..];
-        let ptotocol = &original_url[..(original_url.len() - stripped_url.len())];
-        return format!("{}{}{}", ptotocol, mirror_base, suffix);
+        let protocol = &original_url[..(original_url.len() - stripped_url.len())];
+        return format!("{}{}{}", protocol, mirror_base, suffix);
     }
 
     original_url.to_string()
