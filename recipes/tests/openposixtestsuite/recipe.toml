@@ -1,3 +1,5 @@
+# Due to necessary write permission for compilation the filesystem path of source code installation is an exception
+# where the package manager can't switch between system-wide and user paths
 [source]
 git = "https://gitlab.redox-os.org/redox-os/openposixtestsuite.git"
 branch = "redox"
@@ -5,8 +7,8 @@ branch = "redox"
 [build]
 template = "custom"
 script = """
-mkdir -pv "${COOKBOOK_STAGE}/share/openposixtestsuite"
-cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}/share/openposixtestsuite"
+mkdir -pv "${COOKBOOK_STAGE}/home/user/openposixtestsuite"
+cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}/home/user/openposixtestsuite"
 """
 
 [package]
