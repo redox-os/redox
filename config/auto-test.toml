@@ -1,4 +1,4 @@
-# Configuration for "acid" testing
+# Configuration for automated testing of essential test suites
 
 include = ["net.toml"]
 
@@ -12,12 +12,16 @@ filesystem_size = 1024
 acid = {}
 coreutils = {}
 ion = {}
+os-test-bins = {}
+relibc-tests-bins = {}
 
 [[files]]
-path = "/usr/lib/init.d/10_acid"
+path = "/usr/lib/init.d/30_console"
 data = """
 export RUST_BACKTRACE full
 cd /home/user/acid
 cargo test
+bash /root/relibc-tests/run.sh
+os-test-runner
 shutdown
 """
