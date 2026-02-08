@@ -1,12 +1,13 @@
 [source]
 git = "https://gitlab.redox-os.org/redox-os/binutils-gdb"
 branch = "redox-2.43.1"
+shallow_clone = true
 
 [build]
 template = "custom"
 dependencies = [
-#   "libgmp",
-#   "libmpfr",
+  "libgmp",
+  "libmpfr",
 # TODO: this zlib get linked when boostrapping binutils
 #    "zlib"
 ]

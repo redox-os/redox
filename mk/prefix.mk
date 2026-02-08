@@ -124,21 +124,22 @@ endif
 else
 
 # BUILD GCC ---------------------------------------------------
-$(PREFIX)/binutils-install: | $(FSTOOLS_TAG) $(CONTAINER_TAG)
+$(PREFIX)/binutils-install: | $(PREFIX)/libtool-install $(FSTOOLS_TAG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
 	@echo "\033[1;36;49mBuilding binutils-install\033[0m"
 	rm -rf "$@.partial" "$@"
 	mkdir -p "$@.partial"
-	export $(PREFIX_CONFIG) COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_TARGET=$(TARGET) COOKBOOK_CROSS_GNU_TARGET=$(GNU_TARGET) && \
+	export $(PREFIX_CONFIG) PATH="$(ROOT)/$(PREFIX)/libtool-install/bin:$$PATH" \
+		COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_TARGET=$(TARGET) COOKBOOK_CROSS_GNU_TARGET=$(GNU_TARGET) && \
 	./target/release/repo cook host:binutils-gdb 
 	cp -r "$(BINUTILS_TARGET)/stage/usr/". "$@.partial"
 	touch "$@.partial"
 	mv "$@.partial" "$@"
 endif
 
-$(PREFIX)/gcc-freestanding-install: $(PREFIX)/libtool-install $(PREFIX)/binutils-install | $(FSTOOLS_TAG) $(CONTAINER_TAG)
+$(PREFIX)/gcc-freestanding-install: $(PREFIX)/binutils-install | $(PREFIX)/libtool-install $(FSTOOLS_TAG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
