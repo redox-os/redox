@@ -1,4 +1,3 @@
-use anyhow::{anyhow, bail};
 use cookbook::WALK_DEPTH;
 use cookbook::cook::ident::{get_ident, init_ident};
 use cookbook::cook::{fetch, package as cook_package};
@@ -85,7 +84,7 @@ fn publish_packages(config: &CliConfig) -> anyhow::Result<()> {
 
     if recipe_list.len() == 0 {
         // Fail-Safe
-        bail!("Zero packages are passing the build");
+        anyhow::bail!("Zero packages are passing the build");
     }
 
     let mut appstream_sources: HashMap<String, PathBuf> = HashMap::new();
@@ -125,6 +124,7 @@ fn publish_packages(config: &CliConfig) -> anyhow::Result<()> {
                 fs::copy(&toml_src, &toml_dst)?;
             }
 
+            // TODO: Extract from pkgar instead to handle config.cook.clean_target == true
             if stage_dir.join("usr/share/metainfo").exists() {
                 appstream_sources.insert(recipe.name().to_string(), stage_dir.clone());
             }
@@ -141,10 +141,8 @@ fn publish_packages(config: &CliConfig) -> anyhow::Result<()> {
             .join("build")
             .join(&target)
             .join("appstream");
-        let appstream_pkg = repo_path.join("repo-appstream.pkgar");
 
         fs::remove_dir_all(&appstream_root).ok();
-        fs::remove_file(&appstream_pkg).ok();
         fs::create_dir_all(&appstream_root)?;
 
         if !appstream_sources.is_empty() {
@@ -159,17 +157,22 @@ fn publish_packages(config: &CliConfig) -> anyhow::Result<()> {
                 compose_cmd.arg(source_path);
             }
 
-            compose_cmd
-                .status()?
-                .success()
-                .then_some(())
-                .ok_or(anyhow!("appstreamcli failed"))?;
-
-            pkgar::create(
-                format!("{}/build/id_ed25519.toml", root),
-                &appstream_pkg,
-                &appstream_root,
-            )?;
+            let exit_status = compose_cmd.status()?;
+            if exit_status.success() {
+                let appstream_pkg = repo_path.join("repo-appstream.pkgar");
+                fs::remove_file(&appstream_pkg).ok();
+                pkgar::create(
+                    format!("{}/build/id_ed25519.toml", root),
+                    &appstream_pkg,
+                    &appstream_root,
+                )?;
+            } else {
+                eprintln!("\x1b[1;91;49mrepo - appstreamcli failed:\x1b[0m {exit_status:?}");
+                for (_recipe, source_path) in &appstream_sources {
+                    eprintln!("- {}", source_path.display());
+                }
+                eprintln!();
+            }
         }
     }
 
