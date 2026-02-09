@@ -122,7 +122,6 @@ You can contribute to the Redox documentation and code on the following reposito
 - [Build System Configuration](https://gitlab.redox-os.org/redox-os/redox) - Our main repository
 - [Orbital](https://gitlab.redox-os.org/redox-os/orbital) - Display Server and Window Manager
 - [pkgutils](https://gitlab.redox-os.org/redox-os/pkgutils) - Package Manager
-- [resist](https://gitlab.redox-os.org/redox-os/resist) - Redox System Interface Specifications and Tests (also has POSIX tests)
 - [acid](https://gitlab.redox-os.org/redox-os/acid) - Redox Test Suite
 - [relibc](https://gitlab.redox-os.org/redox-os/relibc) - Redox C Library
 - [libredox](https://gitlab.redox-os.org/redox-os/libredox) - Redox System Library
