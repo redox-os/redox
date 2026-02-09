@@ -1,0 +1,16 @@
+#TODO not compiled or tested
+[source]
+git = "https://gitlab.com/news-flash/news_flash_gtk"
+shallow_clone = true
+[build]
+template = "meson"
+dependencies = [
+    "gtk4",
+    "libadwaita",
+    "webkitgtk4",
+    "sqlite3",
+    "gettext",
+    "openssl3",
+    "clapper",
+]
+dev-dependencies = ["blueprint"]

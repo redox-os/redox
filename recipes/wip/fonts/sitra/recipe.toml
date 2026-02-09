@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+#TODO discover minimum dependencies from meson log
+[source]
+git = "https://github.com/sitraorg/sitra"
+rev = "af4cfcca680653aba93c44a384c134093e124e7c"
+shallow_clone = true
+[build]
+template = "meson"

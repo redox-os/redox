@@ -1,0 +1,14 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/Rafostar/clapper"
+rev = "0.10.0"
+shallow_clone = true
+[build]
+template = "meson"
+mesonflags = [
+    "-Dclapper=enabled",
+    "-Dclapper-gtk=enabled",
+    "-Dclapper-app=disabled",
+    "-Dintrospection=disabled",
+    "-Denhancers-loader=disabled",
+]
