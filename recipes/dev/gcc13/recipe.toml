@@ -33,6 +33,7 @@ COOKBOOK_CONFIGURE_FLAGS=(
     --disable-hosted-libstdcxx
     --with-sysroot
     --with-build-sysroot="${COOKBOOK_CROSS_SYSROOT:-$COOKBOOK_SYSROOT}"
+    --disable-bootstrap
 )
 else
 export CFLAGS_FOR_TARGET="${CPPFLAGS}" CXXFLAGS_FOR_TARGET="${CPPFLAGS}" LDFLAGS_FOR_TARGET="${LDFLAGS}"
