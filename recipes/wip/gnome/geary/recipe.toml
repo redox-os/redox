@@ -1,0 +1,18 @@
+#TODO not compiled or tested
+#TODO require pts3 and pts5 support in sqlite: https://gitlab.gnome.org/GNOME/geary/-/blob/main/BUILDING.md#dependencies
+[source]
+tar = "https://download.gnome.org/sources/geary/46/geary-46.0.tar.xz"
+[build]
+template = "meson"
+mesonflags = [
+    "-Dprofile=release",
+    "-Dlibunwind=disabled",
+    "-Dtnef=disabled",
+    "-Dvaladoc=disabled",
+]
+dependencies = [
+    "gtk3",
+    "webkitgtk3",
+    "sqlite3",
+]
+dev-dependencies = ["vala"]

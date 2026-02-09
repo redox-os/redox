@@ -1,0 +1,12 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/rafaelmardojai/blanket"
+rev = "0.8.0"
+shallow_clone = true
+[build]
+template = "meson"
+dependencies = [
+    "gstreamer",
+    "gtk4",
+    "libadwaita",
+]
