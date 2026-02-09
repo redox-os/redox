@@ -117,6 +117,12 @@ pub fn fetch_offline(recipe: &CookRecipe, logger: &PtyOut) -> Result<PathBuf, St
 pub fn fetch(recipe: &CookRecipe, check_source: bool, logger: &PtyOut) -> Result<PathBuf, String> {
     let recipe_dir = &recipe.dir;
     let source_dir = recipe_dir.join("source");
+    
+    // Use offline mode if static_source is enabled
+    if crate::config::get_config().cook.static_source {
+        return fetch_offline(recipe, logger);
+    }
+    
     match recipe.recipe.build.kind {
         BuildKind::None => {
             // the build function doesn't need source dir exists

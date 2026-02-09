@@ -24,6 +24,8 @@ pub struct CookConfigOpt {
     /// whether to always clean the target directory after building
     /// (deletes everything except pkgar files)
     pub clean_target: Option<bool>,
+    /// skip recipe source updates during fetch
+    pub static_source: Option<bool>,
 }
 
 #[derive(Debug, Default, Clone, Deserialize, PartialEq, Serialize)]
@@ -36,6 +38,7 @@ pub struct CookConfig {
     pub verbose: bool,
     pub clean_build: bool,
     pub clean_target: bool,
+    pub static_source: bool,
 }
 
 impl From<CookConfigOpt> for CookConfig {
@@ -49,6 +52,7 @@ impl From<CookConfigOpt> for CookConfig {
             verbose: value.verbose.unwrap(),
             clean_build: value.clean_build.unwrap(),
             clean_target: value.clean_target.unwrap(),
+            static_source: value.static_source.unwrap(),
         }
     }
 }
@@ -105,6 +109,9 @@ pub fn init_config() {
     }
     if config.cook_opt.clean_target.is_none() {
         config.cook_opt.clean_target = Some(extract_env("COOKBOOK_CLEAN_TARGET", false));
+    }
+    if config.cook_opt.static_source.is_none() {
+        config.cook_opt.static_source = Some(extract_env("COOKBOOK_STATIC_SOURCE", false));
     }
     if config.mirrors.len() == 0 {
         // The GNU FTP mirror below is automatically inserted for convenience
