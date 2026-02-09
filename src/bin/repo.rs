@@ -71,6 +71,7 @@ const REPO_HELP_STR: &str = r#"
         COOKBOOK_VERBOSE=true       print success/error on each recipe
         COOKBOOK_CLEAN_BUILD=false  remove build directory before building
         COOKBOOK_CLEAN_TARGET=false remove target directory after building
+        COOKBOOK_STATIC_SOURCE=false skip recipe source updates
         COOKBOOK_MAKE_JOBS=         override build jobs count from nproc
 "#;
 
