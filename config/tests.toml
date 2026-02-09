@@ -12,7 +12,6 @@ prompt = false
 # Package settings
 [packages]
 acid = {}
-resist = {}
 relibc-tests = {}
 os-test = {}
 openposixtestsuite = {}
