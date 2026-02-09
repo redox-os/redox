@@ -1,0 +1,18 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/GeopJr/Tuba#from-source
+[source]
+git = "https://github.com/GeopJr/Tuba"
+rev = "v0.10.3"
+shallow_clone = true
+[build]
+template = "meson"
+dependencies = [
+    "json-glib",
+    "libxml2",
+    "libgee",
+    "libsoup",
+    "libadwaita",
+    "libsecret",
+    "gtksourceview",
+]
+dev-dependencies = ["vala"]
