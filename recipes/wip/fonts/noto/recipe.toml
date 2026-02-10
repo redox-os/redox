@@ -1,0 +1,10 @@
+[source]
+git = "https://github.com/notofonts/notofonts.github.io"
+rev = "noto-monthly-release-2026.02.01"
+shallow_clone = true
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/fonts/Noto"
+cp -rv "${COOKBOOK_SOURCE}"/fonts/*/full/ttf/* "${COOKBOOK_STAGE}/usr/share/fonts/Noto"
+"""

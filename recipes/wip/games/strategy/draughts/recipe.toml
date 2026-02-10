@@ -1,0 +1,19 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/tobagin/Draughts"
+rev = "v2.2.0"
+shallow_clone = true
+[build]
+template = "meson"
+mesonflags = [
+    "-Dtests=false",
+]
+dependencies = [
+    "glib",
+    "gtk4",
+    "libadwaita",
+    "libgee",
+    "libsoup",
+    "json-glib",
+]
+dev-dependencies = ["host:blueprint"]
