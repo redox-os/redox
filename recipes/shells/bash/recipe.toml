@@ -12,7 +12,7 @@ dependencies = [
     "readline",
 ]
 script = """
-DYNAMIC_INIT
+# compiled statically
 COOKBOOK_CONFIGURE_FLAGS+=(
     ac_cv_func_wcwidth=no # TODO: add more wc functions and remove this
     bash_cv_func_sigsetjmp=no
@@ -23,4 +23,5 @@ COOKBOOK_CONFIGURE_FLAGS+=(
 COOKBOOK_MAKE_JOBS=1 # workaround for parallel make bugs
 cookbook_configure
 ln -s "bash" "${COOKBOOK_STAGE}/usr/bin/sh"
+cp -r "${COOKBOOK_RECIPE}/etc" "${COOKBOOK_STAGE}/etc"
 """

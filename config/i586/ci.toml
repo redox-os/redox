@@ -25,6 +25,7 @@ acid = {}
 base = {}
 base-initfs = {}
 bash = {}
+bash-completion = {}
 bootloader = {}
 bottom = {}
 ca-certificates = {}
