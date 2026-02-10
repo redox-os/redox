@@ -1,0 +1,20 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/libratbag/libratbag"
+rev = "v0.18"
+shallow_clone = true
+[build]
+template = "meson"
+mesonflags = [
+    "-Dtests=false",
+    "-Dlogind-provider=elogind",
+    "-Dsystemd=false",
+]
+dependencies = [
+    "elogind",
+    "eudev",
+    "libevdev",
+    "libunistring",
+    "json-glib",
+    "glib",
+]
