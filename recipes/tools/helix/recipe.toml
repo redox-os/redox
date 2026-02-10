@@ -22,13 +22,10 @@ cp -r ${COOKBOOK_SOURCE}/runtime/queries/* ${COOKBOOK_STAGE}/usr/lib/helix/runti
 cp -r ${COOKBOOK_SOURCE}/runtime/themes/* ${COOKBOOK_STAGE}/usr/lib/helix/runtime/themes/
 cp "${COOKBOOK_SOURCE}/runtime/tutor" ${COOKBOOK_STAGE}/usr/lib/helix/runtime/
 
-echo '#!/usr/bin/env ion' > ${COOKBOOK_STAGE}/usr/bin/hx
-echo 'export HELIX_RUNTIME=/usr/lib/helix/runtime' >> ${COOKBOOK_STAGE}/usr/bin/hx
-echo 'if test $len(@args) -eq 1' >> ${COOKBOOK_STAGE}/usr/bin/hx
-echo '   /usr/bin/helix' >> ${COOKBOOK_STAGE}/usr/bin/hx
-echo 'else' >> ${COOKBOOK_STAGE}/usr/bin/hx
-echo '   /usr/bin/helix @args[1..]' >> ${COOKBOOK_STAGE}/usr/bin/hx
-echo 'end' >> ${COOKBOOK_STAGE}/usr/bin/hx
+echo '#!/usr/bin/env bash' > "${COOKBOOK_STAGE}/usr/bin/hx"
+echo 'export HELIX_RUNTIME=/usr/lib/helix/runtime' >> "${COOKBOOK_STAGE}/usr/bin/hx"
+echo '/usr/bin/helix $@' >> "${COOKBOOK_STAGE}/usr/bin/hx"
+
 chmod +x ${COOKBOOK_STAGE}/usr/bin/hx
 """
 # script = """
