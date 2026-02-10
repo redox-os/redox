@@ -1,9 +1,8 @@
 [build]
 template = "custom"
 script = """
-mkdir -pv fonts "${COOKBOOK_STAGE}/usr/share/fonts/Noto-Sans-CJK"
+mkdir -pv "${COOKBOOK_BUILD}"/fonts "${COOKBOOK_STAGE}/usr/share/fonts/Noto-Sans-CJK"
 wget https://github.com/notofonts/noto-cjk/releases/download/Sans2.004/02_NotoSansCJK-TTF-VF.zip
-unzip 02_NotoSansCJK-TTF-VF.zip -d fonts
-mkdir -pv "${COOKBOOK_STAGE}/usr/share/fonts/Noto-Sans-CJK"
-cp -rv fonts/Variable/TTF/* "${COOKBOOK_STAGE}/usr/share/fonts/Noto-Sans-CJK"
+unzip "${COOKBOOK_BUILD}"/02_NotoSansCJK-TTF-VF.zip -d "${COOKBOOK_BUILD}"/fonts
+cp -rv "${COOKBOOK_BUILD}"/fonts/Variable/TTF/* "${COOKBOOK_STAGE}/usr/share/fonts/Noto-Sans-CJK"
 """

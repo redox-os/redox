@@ -3,9 +3,9 @@
 template = "custom"
 script = """
 mkdir -pv "${COOKBOOK_STAGE}/usr/bin/kotlin-dir"
-wget https://github.com/JetBrains/kotlin/releases/download/v2.3.0/kotlin-compiler-2.3.0.zip
-unzip kotlin-compiler-2.3.0.zip -d "${COOKBOOK_BUILD}"
-mv "${COOKBOOK_BUILD}/kotlin/*" "${COOKBOOK_STAGE}/usr/bin/kotlin-dir"
+wget https://github.com/JetBrains/kotlin/releases/download/v2.3.0/kotlin-compiler-2.3.0.zip "${COOKBOOK_BUILD}"
+unzip "${COOKBOOK_BUILD}"/kotlin-compiler-2.3.0.zip -d "${COOKBOOK_BUILD}"
+mv "${COOKBOOK_BUILD}"/kotlinc/* "${COOKBOOK_STAGE}/usr/bin/kotlin-dir"
 echo "/usr/bin/kotlin-dir/bin/kotlinc" > "${COOKBOOK_STAGE}"/usr/bin/kotlinc
 chmod a+x "${COOKBOOK_STAGE}"/usr/bin/kotlinc
 """

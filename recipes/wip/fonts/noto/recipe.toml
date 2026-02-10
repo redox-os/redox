@@ -5,6 +5,8 @@ shallow_clone = true
 [build]
 template = "custom"
 script = """
-mkdir -pv "${COOKBOOK_STAGE}/usr/share/fonts/Noto"
-cp -rv "${COOKBOOK_SOURCE}"/fonts/*/full/ttf/* "${COOKBOOK_STAGE}/usr/share/fonts/Noto"
+mkdir -pv "${COOKBOOK_STAGE}"/usr/share/fonts/Noto
+for f in "${COOKBOOK_SOURCE}"/fonts/*; do 
+echo cp -rv "${f}/full/ttf/* "${COOKBOOK_STAGE}/usr/share/fonts/Noto/$(basename ${f})/"
+done
 """
