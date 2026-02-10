@@ -1,0 +1,14 @@
+[source]
+tar = "https://src.fedoraproject.org/repo/pkgs/bash-completion/bash-completion-1.3.tar.bz2/a1262659b4bbf44dc9e59d034de505ec/bash-completion-1.3.tar.bz2"
+blake3 = "02014d743f403407f40fc05c2405c4bdce85c33a571d6b4b9a269369710c803f"
+
+[build]
+template = "configure"
+configureflags = [
+    "--prefix=/",
+]
+
+[package]
+dependencies = [
+    "sed",
+]
