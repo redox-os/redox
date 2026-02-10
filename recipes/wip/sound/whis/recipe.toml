@@ -1,0 +1,17 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/frankdierolf/whis"
+shallow_clone = true
+[build]
+template = "custom"
+dependencies = [
+    "libvulkan",
+    "vulkan-headers",
+    "shaderc",
+]
+script = """
+DYNAMIC_INIT
+cookbook_cargo_packages whis-cli
+"""
+[package]
+dependencies = ["vulkan-tools"]

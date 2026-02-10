@@ -1,0 +1,16 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/Soundux/Soundux"
+rev = "0.2.7"
+shallow_clone = true
+[build]
+template = "cmake"
+dependencies = [
+    "pipewire",
+    "libpulse",
+    "webkitgtk4",
+    "openssl3",
+    "libx11",
+    "libxi",
+    "libappindicator",
+]
