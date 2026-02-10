@@ -1,0 +1,8 @@
+[build]
+template = "custom"
+script = """
+mkdir -pv fonts "${COOKBOOK_STAGE}/usr/share/fonts/Noto-Serif-CJK"
+wget https://github.com/notofonts/noto-cjk/releases/download/Serif2.003/03_NotoSerifCJK-TTF-VF.zip
+unzip 03_NotoSerifCJK-TTF-VF.zip -d fonts
+cp -rv fonts/Variable/TTF/* "${COOKBOOK_STAGE}/usr/share/fonts/Noto-Serif-CJK"
+"""
