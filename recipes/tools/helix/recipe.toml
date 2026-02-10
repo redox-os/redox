@@ -1,10 +1,10 @@
 #TODO signal handling is disabled, it should be re-enabled when Redox is ready
-#TODO language files are not built, only the "hx" editor is built
-#TODO Consider adding `export RUSTFLAGS+="-C target-feature=-crt-static"` when adding language support
+#TODO language files are not built for fennel and crstalline langauges
 #TODO configuration - https://docs.helix-editor.com/install.html#configuring-helixs-runtime-files
 [source]
 git = "https://github.com/greyshaman/helix.git"
 branch = "port-to-redoxos"
+patches = ["disable_problem_grammar.patch"]
 
 [build]
 template = "custom"
@@ -13,6 +13,23 @@ DYNAMIC_INIT
 export CFLAGS="$CFLAGS -D__redox__"
 PACKAGE_PATH="helix-term" cookbook_cargo
 mv "${COOKBOOK_STAGE}/usr/bin/hx" "${COOKBOOK_STAGE}/usr/bin/helix"
+mkdir -p "${COOKBOOK_STAGE}/usr/lib/helix/runtime/grammars"
+mkdir -p "${COOKBOOK_STAGE}/usr/lib/helix/runtime/queries"
+mkdir -p "${COOKBOOK_STAGE}/usr/lib/helix/runtime/themes"
+echo "show runtime grammars dir content"
+cp ${COOKBOOK_SOURCE}/runtime/grammars/*.so ${COOKBOOK_STAGE}/usr/lib/helix/runtime/grammars/
+cp -r ${COOKBOOK_SOURCE}/runtime/queries/* ${COOKBOOK_STAGE}/usr/lib/helix/runtime/queries/
+cp -r ${COOKBOOK_SOURCE}/runtime/themes/* ${COOKBOOK_STAGE}/usr/lib/helix/runtime/themes/
+cp "${COOKBOOK_SOURCE}/runtime/tutor" ${COOKBOOK_STAGE}/usr/lib/helix/runtime/
+
+echo '#!/usr/bin/env ion' > ${COOKBOOK_STAGE}/usr/bin/hx
+echo 'export HELIX_RUNTIME=/usr/lib/helix/runtime' >> ${COOKBOOK_STAGE}/usr/bin/hx
+echo 'if test $len(@args) -eq 1' >> ${COOKBOOK_STAGE}/usr/bin/hx
+echo '   /usr/bin/helix' >> ${COOKBOOK_STAGE}/usr/bin/hx
+echo 'else' >> ${COOKBOOK_STAGE}/usr/bin/hx
+echo '   /usr/bin/helix @args[1..]' >> ${COOKBOOK_STAGE}/usr/bin/hx
+echo 'end' >> ${COOKBOOK_STAGE}/usr/bin/hx
+chmod +x ${COOKBOOK_STAGE}/usr/bin/hx
 """
 # script = """
 # export HELIX_DISABLE_AUTO_GRAMMAR_BUILD=1
