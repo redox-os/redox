@@ -1,9 +1,0 @@
-#TODO not compiled or tested
-[source]
-git = "https://github.com/cosmic-utils/camera"
-shallow_clone = true
-[build]
-template = "cargo"
-dependencies = [
-    "gstreamer",
-]
