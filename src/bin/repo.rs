@@ -524,17 +524,17 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
                 continue;
             };
             let rule = match recipe_config {
-                PackageConfig::Build(rule) => rule,
+                PackageConfig::Build(rule) => {
+                    special_rules.insert(recipe_name.clone(), rule.to_string());
+                    rule
+                }
                 _ => default_rule,
             };
 
             if rule == "source" || rule == "local" {
-                source_names.push(recipe_name.clone());
+                source_names.push(recipe_name);
             } else if rule == "binary" {
-                binary_names.push(recipe_name.clone());
-            }
-            if rule != "source" && rule != "binary" {
-                special_rules.insert(recipe_name, rule.to_string());
+                binary_names.push(recipe_name);
             }
         }
         source_names = CookRecipe::get_all_deps_names_recursive(&source_names, true)?;
