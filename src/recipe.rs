@@ -181,6 +181,10 @@ impl BuildRecipe {
     }
 
     pub fn set_as_remote(&mut self) {
+        if self.kind == BuildKind::None {
+            // BuildKind::Remote won't handle remote meta-packages
+            return;
+        }
         self.kind = BuildKind::Remote;
         self.dev_dependencies = Vec::new();
     }
