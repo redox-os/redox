@@ -39,10 +39,11 @@ ifeq ($(PODMAN_BUILD),1)
 else
 	@echo "\033[1;36;49mBuilding relibc-install\033[0m"
 	rm -rf "$@.partial" "$@"
-	cp -r "$(PREFIX)/rust-install" "$@.partial"
-	rm -rf "$@.partial/$(TARGET)/include/"*
-	cp -r "$(PREFIX)/rust-install/$(GNU_TARGET)/include/c++" "$@.partial/$(GNU_TARGET)/include/c++"
-	cp -r "$(PREFIX)/rust-install/lib/rustlib/$(HOST_TARGET)/lib/" "$@.partial/lib/rustlib/$(HOST_TARGET)/"
+	mkdir "$@.partial"
+	cp -r "$(PREFIX)/gcc-install/". "$@.partial"
+	cp -r "$(PREFIX)/rust-install/". "$@.partial"
+	rm -rf "$@.partial/$(GNU_TARGET)/include/"*
+	cp -r "$(PREFIX)/gcc-install/$(GNU_TARGET)/include/c++" "$@.partial/$(GNU_TARGET)/include/c++"
 	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
 	export CARGO="env -u CARGO cargo" $(PREFIX_CONFIG) && \
 	./target/release/repo cook relibc
