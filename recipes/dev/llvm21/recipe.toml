@@ -59,8 +59,6 @@ COOKBOOK_CMAKE_FLAGS+=(
     -DUNIX=1
 )
 
-# Native tablegen build fails with too many jobs, limit to 16
-COOKBOOK_MAKE_JOBS="$(( ${COOKBOOK_MAKE_JOBS} > 16 ? 16 : ${COOKBOOK_MAKE_JOBS} ))"
 COOKBOOK_SOURCE="$COOKBOOK_SOURCE/llvm"
 cookbook_cmake
 """
