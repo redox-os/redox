@@ -8,8 +8,8 @@ template = "cmake"
 dependencies = [
     #TODO: git fails to build when this is a dependency: "libpsl",
     "nghttp2",
-    "openssl1",
-    "zlib"
+    "openssl3",
+    "zlib",
 ]
 cmakeflags = [
     "-DCURL_DISABLE_FTP=On",
