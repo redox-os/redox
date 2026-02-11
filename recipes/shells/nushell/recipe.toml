@@ -6,7 +6,7 @@ patches = ["redox.patch"]
 
 [build]
 dependencies = [
-  "openssl1"
+  "openssl3"
 ]
 template = "custom"
 script = """

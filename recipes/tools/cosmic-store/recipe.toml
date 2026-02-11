@@ -7,7 +7,7 @@ template = "custom"
 dependencies = [
     "gettext",
     "libxkbcommon",
-    "openssl1",
+    "openssl3",
 ]
 script = """
 DYNAMIC_INIT
