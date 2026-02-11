@@ -420,8 +420,6 @@ ubuntu()
     help2man \
     intltool \
     libc6-dev-i386 \
-    libexpat-dev \
-    libfontconfig1-dev \
     libfuse3-dev \
     libgdk-pixbuf2.0-bin \
     libglib2.0-dev-bin \
@@ -430,7 +428,6 @@ ubuntu()
     libjpeg-dev \
     libmpfr-dev \
     libparse-yapp-perl \
-    libpng-dev \
     libsdl1.2-dev \
     libsdl2-ttf-dev \
     llvm \
@@ -466,7 +463,6 @@ ubuntu()
     xutils-dev \
     xxd \
     zip \
-    zlib1g-dev \
     zstd"
     # Not availible for at least ARM hosts
     case "$host_arch" in
