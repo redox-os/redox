@@ -30,6 +30,7 @@ automake = {}
 base = {}
 base-initfs = {}
 bash = {}
+bash-completion = {}
 binutils = {}
 bootloader = {}
 bottom = {}
