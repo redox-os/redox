@@ -598,7 +598,14 @@ fn build_auto_deps(
     let auto_deps_path = target_dir.join("auto_deps.toml");
     if auto_deps_path.is_file() && !cook_config.clean_target {
         if modified(&auto_deps_path)? < modified_all(stage_dirs, modified)? {
-            remove_all(&auto_deps_path)?
+            if cook_config.verbose {
+                log_to_pty!(logger, "DEBUG: updating {}", auto_deps_path.display());
+            }
+            remove_all(&auto_deps_path)?;
+        } else {
+            if cook_config.verbose {
+                log_to_pty!(logger, "DEBUG: Using cached auto deps");
+            }
         }
     }
 
