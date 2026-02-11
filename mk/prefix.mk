@@ -59,7 +59,54 @@ $(PREFIX)/relibc-install.tar.gz: $(PREFIX)/relibc-install
 		--directory="$<" \
 		.
 
-# TODO: move this behind PREFIX_BINARY=0 when compiled prefix has it
+
+$(PREFIX)/sysroot: $(PREFIX)/relibc-install $(CONTAINER_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
+	rm -rf "$@"
+	cp -r "$(PREFIX)/relibc-install/" "$@"
+# adapt path for libtoolize
+	sed 's|/usr/share|$(ROOT)/$@/share|g' "$@/bin/libtoolize.orig" > "$@/bin/libtoolize"
+	chmod 0755 "$@/bin/libtoolize"
+	touch "$@"
+endif
+
+# PREFIX_BINARY ---------------------------------------------------
+ifeq ($(PREFIX_BINARY),1)
+
+$(PREFIX)/rust-install.tar.gz: | $(CONTAINER_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
+	mkdir -p "$(@D)"
+	wget -O $@.partial "https://static.redox-os.org/toolchain/$(HOST_TARGET)/$(TARGET)/rust-install.tar.gz"
+	mv $@.partial $@
+endif
+
+$(PREFIX)/gcc-install.tar.gz: | $(CONTAINER_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
+	mkdir -p "$(@D)"
+	wget -O $@.partial "https://static.redox-os.org/toolchain/$(HOST_TARGET)/$(TARGET)/gcc-install.tar.gz"
+	mv $@.partial $@
+endif
+
+$(PREFIX)/rust-install: $(PREFIX)/rust-install.tar.gz $(CONTAINER_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
+	rm -rf "$@.partial" "$@"
+	mkdir -p "$@.partial"
+	tar --extract --file "$<" --directory "$@.partial" --no-same-owner --strip-components=1
+	touch "$@.partial"
+	mv "$@.partial" "$@"
+endif
+
+else
+
+# BUILD GCC ---------------------------------------------------
 $(PREFIX)/libtool-install: | $(FSTOOLS_TAG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
@@ -78,46 +125,6 @@ else
 	mv "$@.partial" "$@"
 endif
 
-$(PREFIX)/sysroot: $(PREFIX)/relibc-install $(PREFIX)/libtool-install $(CONTAINER_TAG)
-ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) make $@
-else
-	rm -rf "$@"
-	cp -r "$(PREFIX)/relibc-install/" "$@"
-	cp -r "$(PREFIX)/libtool-install/". "$@"
-# adapt path for libtoolize
-	sed 's|/usr/share|$(ROOT)/$@/share|g' "$@/bin/libtoolize.orig" > "$@/bin/libtoolize"
-	chmod 0755 "$@/bin/libtoolize"
-	touch "$@"
-endif
-
-# PREFIX_BINARY ---------------------------------------------------
-ifeq ($(PREFIX_BINARY),1)
-
-$(PREFIX)/rust-install.tar.gz: | $(CONTAINER_TAG)
-ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) make $@
-else
-	mkdir -p "$(@D)"
-	#TODO: figure out why rust-install.tar.gz is missing /lib/rustlib/$(HOST_TARGET)/lib
-	wget -O $@.partial "https://static.redox-os.org/toolchain/$(HOST_TARGET)/$(TARGET)/relibc-install.tar.gz"
-	mv $@.partial $@
-endif
-
-$(PREFIX)/rust-install: $(PREFIX)/rust-install.tar.gz $(CONTAINER_TAG)
-ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) make $@
-else
-	rm -rf "$@.partial" "$@"
-	mkdir -p "$@.partial"
-	tar --extract --file "$<" --directory "$@.partial" --no-same-owner --strip-components=1
-	touch "$@.partial"
-	mv "$@.partial" "$@"
-endif
-
-else
-
-# BUILD GCC ---------------------------------------------------
 $(PREFIX)/binutils-install: | $(PREFIX)/libtool-install $(FSTOOLS_TAG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
@@ -283,14 +290,13 @@ else
 	mv $@.partial $@
 endif
 
-$(PREFIX)/rust-install: $(PREFIX)/gcc-install $(PREFIX)/rustc-install.tar.xz $(PREFIX)/cargo-install.tar.xz $(PREFIX)/rust-std-host-install.tar.xz $(PREFIX)/rust-std-target-install.tar.xz $(PREFIX)/rust-src-install.tar.xz
+$(PREFIX)/rust-install: $(PREFIX)/rustc-install.tar.xz $(PREFIX)/cargo-install.tar.xz $(PREFIX)/rust-std-host-install.tar.xz $(PREFIX)/rust-std-target-install.tar.xz $(PREFIX)/rust-src-install.tar.xz
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
 	@echo "\033[1;36;49mBuilding rust-install\033[0m"
 	rm -rf "$@.partial" "$@"
 	mkdir -p "$@.partial"
-	cp -r "$(PREFIX)/gcc-install/". "$@.partial"
 	tar --extract --file "$(PREFIX)/rustc-install.tar.xz" -C "$@.partial" rustc-nightly-$(HOST_TARGET)/rustc/ --strip-components=2
 	tar --extract --file "$(PREFIX)/cargo-install.tar.xz" --directory "$@.partial" cargo-nightly-$(HOST_TARGET)/cargo/ --strip-components=2
 	tar --extract --file "$(PREFIX)/rust-std-host-install.tar.xz" --directory "$@.partial" rust-std-nightly-$(HOST_TARGET)/rust-std-$(HOST_TARGET)/ --strip-components=2
