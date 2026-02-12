@@ -10,6 +10,7 @@ GCC_TARGET=recipes/dev/gcc13/target/$(HOST_TARGET)/$(TARGET)
 LIBSTDCXX_TARGET=recipes/libs/libstdcxx-v3/target/$(TARGET)/$(HOST_TARGET)
 RELIBC_FREESTANDING_TARGET=recipes/core/relibc/target/$(TARGET)/$(HOST_TARGET)
 RELIBC_TARGET=recipes/core/relibc/target/$(TARGET)
+LLVM_TARGET=recipes/dev/llvm21/target/$(HOST_TARGET)/$(TARGET)
 RUST_TARGET=recipes/dev/rust/target/$(HOST_TARGET)/$(TARGET)
 
 # official RISC-V support introduced in newer version
@@ -332,8 +333,9 @@ else
 	rm -rf "$@.partial" "$@"
 	export PATH="$(ROOT)/$(PREFIX)/libtool-install/bin:$$PATH" \
 		$(PREFIX_CONFIG) COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_TARGET=$(TARGET) && \
-		./target/release/repo cook host:rust
+		./target/release/repo cook host:llvm21 host:rust
 	cp -r "$(RUST_TARGET)/stage/usr/". "$@.partial"
+	cp -r "$(LLVM_TARGET)/stage/usr/". "$@.partial"
 	mv "$@.partial" "$@"
 endif
 

@@ -1,7 +1,8 @@
 [llvm]
 download-ci-llvm = false
 static-libstdcpp = false
-link-shared = false
+# shared with lld
+link-shared = true
 
 [build]
 host = ["TARGET"]
