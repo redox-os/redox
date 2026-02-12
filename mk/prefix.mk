@@ -337,6 +337,9 @@ else
 	cp -r "$(RUST_TARGET)/stage/usr/". "$@.partial"
 	cp -r "$(LLVM_TARGET)/stage/usr/". "$@.partial"
 	mv "$@.partial" "$@"
+# TODO: Cache from RUST_TARGET and LLVM_TARGET is currently not cleared.
+# TIP: If you're developing std for rust, remove COOKBOOK_CLEAN_BUILD=true 
+#      at the top of this file so your next rust build reuses the build cache
 endif
 
 endif
