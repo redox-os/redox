@@ -56,6 +56,7 @@ CONTAINERFILE?=podman/redox-base-containerfile
 # Per host variables
 NPROC=nproc
 SED=sed
+FIND=find
 
 ifneq ($(PODMAN_BUILD),1)
 FSTOOLS_IN_PODMAN=0
@@ -106,9 +107,11 @@ ifeq ($(UNAME),Darwin)
 	FUMOUNT=umount
 	NPROC=sysctl -n hw.ncpu
 	SED=gsed
+	FIND=gfind
 	VB_AUDIO=coreaudio
 	VBM=/Applications/VirtualBox.app/Contents/MacOS/VBoxManage
 else ifeq ($(UNAME),FreeBSD)
+	FIND=gfind
 	FUMOUNT=sudo umount
 	VB_AUDIO=pulse # To check, will probably be OSS on most setups
 	VBM=VBoxManage
@@ -172,7 +175,7 @@ endif
 
 REPO_TAG=$(BUILD)/repo.tag
 FSTOOLS_TAG=build/fstools.tag
-export BOARD
+export BOARD FIND
 
 ifeq ($(SCCACHE_BUILD),1)
 	export CC_WRAPPER:=sccache

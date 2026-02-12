@@ -9,17 +9,26 @@ dependencies = [
     "llvm21",
     "zlib",
     "curl",
-    "openssl1",
+    "openssl3",
 ]
 dev-dependencies = [ 
     "llvm21.dev",
     "llvm21.runtime",
+    "lld21",
     "host:llvm21",
     "host:llvm21.dev",
     "host:llvm21.runtime",
 ]
 
 script = """
+if [ "${COOKBOOK_HOST_SYSROOT}" = "/usr" ]; then
+
+cat ${COOKBOOK_RECIPE}/config-bootstrap.toml > config.toml
+sed -i "s|TARGET|${TARGET}|g" config.toml
+sed -i "s|COOKBOOK_TOOLCHAIN|${COOKBOOK_TOOLCHAIN}|g" config.toml
+
+else
+
 DYNAMIC_INIT
 # Linker flags for stage2 compiler (host -> target)
 export LDFLAGS_x86_64_unknown_redox="${LDFLAGS}" # LLVM
@@ -36,12 +45,14 @@ export RUSTFLAGS_BOOTSTRAP="\
 export CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_RUSTFLAGS="${RUSTFLAGS_BOOTSTRAP}"
 export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_RUSTFLAGS="${RUSTFLAGS_BOOTSTRAP}"
 
-# Don't poison the stage1 compiler (host -> host)
-unset AR AS CC CXX LD LDFLAGS NM OBJCOPY OBJDUMP RANLIB READELF RUSTFLAGS STRIP
-
 cat ${COOKBOOK_RECIPE}/config.toml > config.toml
 sed -i "s|COOKBOOK_SYSROOT|${COOKBOOK_SYSROOT}|g" config.toml
 sed -i "s|COOKBOOK_TOOLCHAIN|${COOKBOOK_TOOLCHAIN}|g" config.toml
+
+fi
+
+# Don't poison the stage1 compiler (host -> host)
+unset AR AS CC CXX LD LDFLAGS NM OBJCOPY OBJDUMP RANLIB READELF RUSTFLAGS CARGO_ENCODED_RUSTFLAGS STRIP
 
 python3 "${COOKBOOK_SOURCE}/x.py" install \
     --config config.toml \
@@ -50,6 +61,18 @@ python3 "${COOKBOOK_SOURCE}/x.py" install \
 mkdir -p "${COOKBOOK_STAGE}"/usr
 rsync -av --delete "${COOKBOOK_BUILD}"/install/* "${COOKBOOK_STAGE}"/usr/
 rm -rf "${COOKBOOK_STAGE}"/usr/lib/rustlib/*.log
+
+# workaround for rust.lld, needed by e.g. compiling bootloader
+# https://github.com/rust-lang/rust/issues/143076#issuecomment-3011710678
+LLD_DIR="${COOKBOOK_STAGE}/usr/lib/rustlib/$TARGET/bin"
+mkdir -p $LLD_DIR/gcc-ld
+cp ${COOKBOOK_SYSROOT}/usr/bin/lld $LLD_DIR/rust-lld
+ln -s rust-lld $LLD_DIR/wasm-component-ld
+ln -s ../rust-lld $LLD_DIR/gcc-ld/ld.lld
+ln -s ../rust-lld $LLD_DIR/gcc-ld/ld64.lld
+ln -s ../rust-lld $LLD_DIR/gcc-ld/lld-link
+ln -s ../rust-lld $LLD_DIR/gcc-ld/wasm-ld
+ln -s ../../../libLLVM.so.21.1 $LLD_DIR/../lib/libLLVM.so.21.1
 """
 
 [[optional-packages]]

@@ -18,6 +18,16 @@ script = """
 DYNAMIC_INIT
 ARCH="$(echo "${TARGET}" | cut -d - -f1)"
 
+case "${ARCH}" in
+    x86 | x86_64) LLVM_TARGETS_TO_BUILD="X86";;
+    aarch64) LLVM_TARGETS_TO_BUILD="AArch64";;
+    riscv64gc) LLVM_TARGETS_TO_BUILD="RISCV";;
+esac
+
+if [ "${COOKBOOK_HOST_SYSROOT}" = "/usr" ]; then
+    LLVM_TARGETS_TO_BUILD="X86;AArch64;RISCV"
+fi
+
 # This just build the LLVM library and tools just enough for Rust, to build the rest of LLVM see
 # https://github.com/llvm/llvm-zorg/blob/main/zorg/buildbot/builders/annotated/standalone-build.sh
 
@@ -28,6 +38,7 @@ COOKBOOK_CMAKE_FLAGS+=(
     -DLLVM_INSTALL_UTILS=On
     -DLLVM_TOOL_LLVM_COV_BUILD=On
     -DLLVM_TOOL_LLVM_PROFDATA_BUILD=On
+    -DLLVM_TARGETS_TO_BUILD="$LLVM_TARGETS_TO_BUILD"
 
 # the rest of options that shared to clang
     -DCROSS_TOOLCHAIN_FLAGS_NATIVE="-DCMAKE_TOOLCHAIN_FILE=$(realpath "${COOKBOOK_RECIPE}/native.cmake")"
@@ -43,14 +54,11 @@ COOKBOOK_CMAKE_FLAGS+=(
     -DLLVM_INCLUDE_TESTS=Off
     -DLLVM_OPTIMIZED_TABLEGEN=On
     -DLLVM_TARGET_ARCH=$ARCH
-    -DLLVM_TARGETS_TO_BUILD="X86;AArch64"
     -DLLVM_TOOLS_INSTALL_DIR=bin
     -DLLVM_UTILS_INSTALL_DIR=bin
     -DUNIX=1
 )
 
-# Native tablegen build fails with too many jobs, limit to 16
-COOKBOOK_MAKE_JOBS="$(( ${COOKBOOK_MAKE_JOBS} > 16 ? 16 : ${COOKBOOK_MAKE_JOBS} ))"
 COOKBOOK_SOURCE="$COOKBOOK_SOURCE/llvm"
 cookbook_cmake
 """

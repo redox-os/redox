@@ -86,7 +86,7 @@ else
 endif
 
 # Show what to cook
-rt.%: prefix $(FSTOOLS_TAG) FORCE
+rt.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
@@ -122,7 +122,7 @@ pp.%: $(FSTOOLS_TAG) FORCE
 	$(MAKE) p.$*,--with-package-deps
 
 # Show what to push
-pt.%: prefix $(FSTOOLS_TAG) FORCE
+pt.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
