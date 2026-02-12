@@ -1,4 +1,4 @@
-# X11 configuration
+# Wayland configuration
 
 include = ["desktop.toml"]
 
