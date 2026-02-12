@@ -9,7 +9,7 @@ patches = [
 
 [build]
 dependencies = [
-  "openssl1",
+  "openssl3",
   "zlib",
 ]
 template = "custom"
