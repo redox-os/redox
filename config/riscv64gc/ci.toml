@@ -314,4 +314,5 @@ zlib = {}
 # webkitgtk3 = {}
 # winit = {}
 # xxhash = {}
+# zoxide = {} # untested
 # zstd = {}
