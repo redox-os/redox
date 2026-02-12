@@ -215,6 +215,7 @@ winit-wayland = {}
 xxhash = {}
 xz = {}
 zenity = {}
+zoxide = {}
 zsh = {}
 zlib = {}
 zstd = {}
