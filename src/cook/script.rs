@@ -94,8 +94,7 @@ export CARGO_TARGET_DIR="${COOKBOOK_BUILD}/target"
 
 # This adds the sysroot includes for most C compilation
 #TODO: check paths for spaces!
-export CFLAGS="-I${COOKBOOK_SYSROOT}/include"
-export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include"
+export CPPFLAGS="$CPPFLAGS -I${COOKBOOK_SYSROOT}/include"
 
 # This adds the sysroot libraries and compiles binaries statically for most C compilation
 #TODO: check paths for spaces!
@@ -121,7 +120,6 @@ then
     install_flags=--debug
     build_flags=
     build_type=debug
-    export CFLAGS="${CFLAGS} -g"
     export CPPFLAGS="${CPPFLAGS} -g"
 fi
 
@@ -229,6 +227,12 @@ set(CMAKE_SYSTEM_NAME ${SYSTEM_NAME})
 set(CMAKE_SYSTEM_PROCESSOR ${arch})
 EOF
 
+    if [ "$target" = "$TARGET" ]
+    then
+        echo "set(CMAKE_C_FLAGS \"${CFLAGS} ${CPPFLAGS}\")" >> $file
+        echo "set(CMAKE_CXX_FLAGS \"${CFLAGS} ${CPPFLAGS}\")" >> $file
+    fi
+
     if [ -n "${CC_WRAPPER}" ]
     then
         echo "set(CMAKE_C_COMPILER_LAUNCHER ${CC_WRAPPER})" >> $file
@@ -291,9 +295,9 @@ function cookbook_meson {
     echo "[properties]" >> cross_file.txt
     echo "needs_exe_wrapper = true" >> cross_file.txt
     echo "sys_root = '${COOKBOOK_SYSROOT}'" >> cross_file.txt
-    echo "c_args = [$(printf "'%s', " $CFLAGS | sed 's/, $//')]" >> cross_file.txt
-    echo "cpp_args = [$(printf "'%s', " $CPPFLAGS | sed 's/, $//')]" >> cross_file.txt
-    echo "c_link_args = [$(printf "'%s', " $LDFLAGS | sed 's/, $//')]" >> cross_file.txt
+    echo "c_args = [$(printf "'%s', " "$CFLAGS $CPPFLAGS" | sed 's/, $//')]" >> cross_file.txt
+    echo "cpp_args = [$(printf "'%s', " "$CXXFLAGS $CPPFLAGS" | sed 's/, $//')]" >> cross_file.txt
+    echo "c_link_args = [$(printf "'%s', " "$LDFLAGS" | sed 's/, $//')]" >> cross_file.txt
 
     unset AR
     unset AS
