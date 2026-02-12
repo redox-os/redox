@@ -10,6 +10,8 @@ GCC_TARGET=recipes/dev/gcc13/target/$(HOST_TARGET)/$(TARGET)
 LIBSTDCXX_TARGET=recipes/libs/libstdcxx-v3/target/$(TARGET)/$(HOST_TARGET)
 RELIBC_FREESTANDING_TARGET=recipes/core/relibc/target/$(TARGET)/$(HOST_TARGET)
 RELIBC_TARGET=recipes/core/relibc/target/$(TARGET)
+LLVM_TARGET=recipes/dev/llvm21/target/$(HOST_TARGET)/$(TARGET)
+RUST_TARGET=recipes/dev/rust/target/$(HOST_TARGET)/$(TARGET)
 
 # official RISC-V support introduced in newer version
 UPSTREAM_RUSTC_VERSION=2025-11-15
@@ -20,13 +22,6 @@ export REDOXER_TOOLCHAIN=$(RUSTUP_TOOLCHAIN)
 PREFIX_CONFIG=CI=1 COOKBOOK_CLEAN_BUILD=true COOKBOOK_CLEAN_TARGET=false COOKBOOK_VERBOSE=true COOKBOOK_NONSTOP=false
 
 prefix: $(PREFIX)/sysroot
-
-PREFIX_STRIP=\
-	mkdir -p bin libexec "$(TARGET)/bin" && \
-	find bin libexec "$(TARGET)/bin" "$(TARGET)/lib" \
-		-type f \
-		-exec strip --strip-unneeded {} ';' \
-		2> /dev/null
 
 # Remove prefix builds but retain downloaded binaries
 prefix_clean:
@@ -39,16 +34,17 @@ static_clean: | $(FSTOOLS_TAG)
 	$(MAKE) c.bash,luajit,gettext,openssl1,pcre2,sdl1,zstd,zlib,bzip2,xz
 	$(MAKE) c.expat,freetype,libffi,libiconv,libjpeg,liborbital,libpng,libxml2,ncurses,ncursesw
 
-$(PREFIX)/relibc-install: $(PREFIX)/rust-install | $(FSTOOLS_TAG) $(CONTAINER_TAG)
+$(PREFIX)/relibc-install: $(PREFIX)/rust-install $(PREFIX)/gcc-install | $(FSTOOLS_TAG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
 	@echo "\033[1;36;49mBuilding relibc-install\033[0m"
 	rm -rf "$@.partial" "$@"
-	cp -r "$(PREFIX)/rust-install" "$@.partial"
-	rm -rf "$@.partial/$(TARGET)/include/"*
-	cp -r "$(PREFIX)/rust-install/$(GNU_TARGET)/include/c++" "$@.partial/$(GNU_TARGET)/include/c++"
-	cp -r "$(PREFIX)/rust-install/lib/rustlib/$(HOST_TARGET)/lib/" "$@.partial/lib/rustlib/$(HOST_TARGET)/"
+	mkdir "$@.partial"
+	cp -r "$(PREFIX)/gcc-install/". "$@.partial"
+	cp -r "$(PREFIX)/rust-install/". "$@.partial"
+	rm -rf "$@.partial/$(GNU_TARGET)/include/"*
+	cp -r "$(PREFIX)/gcc-install/$(GNU_TARGET)/include/c++" "$@.partial/$(GNU_TARGET)/include/c++"
 	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
 	export CARGO="env -u CARGO cargo" $(PREFIX_CONFIG) && \
 	./target/release/repo cook relibc
@@ -65,7 +61,65 @@ $(PREFIX)/relibc-install.tar.gz: $(PREFIX)/relibc-install
 		--directory="$<" \
 		.
 
-# TODO: move this behind PREFIX_BINARY=0 when compiled prefix has it
+
+$(PREFIX)/sysroot: $(PREFIX)/relibc-install $(CONTAINER_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
+	rm -rf "$@"
+	cp -r "$(PREFIX)/relibc-install/" "$@"
+# adapt path for libtoolize
+	sed 's|/usr/share|$(ROOT)/$@/share|g' "$@/bin/libtoolize.orig" > "$@/bin/libtoolize"
+	chmod 0755 "$@/bin/libtoolize"
+	touch "$@"
+endif
+
+# PREFIX_BINARY ---------------------------------------------------
+ifeq ($(PREFIX_BINARY),1)
+
+$(PREFIX)/rust-install.tar.gz: | $(CONTAINER_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
+	mkdir -p "$(@D)"
+	wget -O $@.partial "https://static.redox-os.org/toolchain/$(HOST_TARGET)/$(TARGET)/rust-install.tar.gz"
+	mv $@.partial $@
+endif
+
+$(PREFIX)/gcc-install.tar.gz: | $(CONTAINER_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
+	mkdir -p "$(@D)"
+	wget -O $@.partial "https://static.redox-os.org/toolchain/$(HOST_TARGET)/$(TARGET)/gcc-install.tar.gz"
+	mv $@.partial $@
+endif
+
+$(PREFIX)/gcc-install: $(PREFIX)/gcc-install.tar.gz $(CONTAINER_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
+	rm -rf "$@.partial" "$@"
+	mkdir -p "$@.partial"
+	tar --extract --file "$<" --directory "$@.partial" --no-same-owner --strip-components=1
+	touch "$@.partial"
+	mv "$@.partial" "$@"
+endif
+
+$(PREFIX)/rust-install: $(PREFIX)/rust-install.tar.gz $(CONTAINER_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
+	rm -rf "$@.partial" "$@"
+	mkdir -p "$@.partial"
+	tar --extract --file "$<" --directory "$@.partial" --no-same-owner --strip-components=1
+	touch "$@.partial"
+	mv "$@.partial" "$@"
+endif
+
+else
+
+# BUILD GCC ---------------------------------------------------
 $(PREFIX)/libtool-install: | $(FSTOOLS_TAG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
@@ -84,46 +138,6 @@ else
 	mv "$@.partial" "$@"
 endif
 
-$(PREFIX)/sysroot: $(PREFIX)/relibc-install $(PREFIX)/libtool-install $(CONTAINER_TAG)
-ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) make $@
-else
-	rm -rf "$@"
-	cp -r "$(PREFIX)/relibc-install/" "$@"
-	cp -r "$(PREFIX)/libtool-install/". "$@"
-# adapt path for libtoolize
-	sed 's|/usr/share|$(ROOT)/$@/share|g' "$@/bin/libtoolize.orig" > "$@/bin/libtoolize"
-	chmod 0755 "$@/bin/libtoolize"
-	touch "$@"
-endif
-
-# PREFIX_BINARY ---------------------------------------------------
-ifeq ($(PREFIX_BINARY),1)
-
-$(PREFIX)/rust-install.tar.gz: | $(CONTAINER_TAG)
-ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) make $@
-else
-	mkdir -p "$(@D)"
-	#TODO: figure out why rust-install.tar.gz is missing /lib/rustlib/$(HOST_TARGET)/lib
-	wget -O $@.partial "https://static.redox-os.org/toolchain/$(HOST_TARGET)/$(TARGET)/relibc-install.tar.gz"
-	mv $@.partial $@
-endif
-
-$(PREFIX)/rust-install: $(PREFIX)/rust-install.tar.gz $(CONTAINER_TAG)
-ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) make $@
-else
-	rm -rf "$@.partial" "$@"
-	mkdir -p "$@.partial"
-	tar --extract --file "$<" --directory "$@.partial" --no-same-owner --strip-components=1
-	touch "$@.partial"
-	mv "$@.partial" "$@"
-endif
-
-else
-
-# BUILD GCC ---------------------------------------------------
 $(PREFIX)/binutils-install: | $(PREFIX)/libtool-install $(FSTOOLS_TAG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
@@ -175,7 +189,7 @@ else
 	mv "$@.partial" "$@"
 endif
 
-$(PREFIX)/gcc-install: $(PREFIX)/relibc-freestanding-install $(PREFIX)/libtool-install | $(FSTOOLS_TAG) $(CONTAINER_TAG)
+$(PREFIX)/gcc-install: $(PREFIX)/relibc-freestanding-install | $(PREFIX)/libtool-install $(FSTOOLS_TAG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
@@ -289,14 +303,13 @@ else
 	mv $@.partial $@
 endif
 
-$(PREFIX)/rust-install: $(PREFIX)/gcc-install $(PREFIX)/rustc-install.tar.xz $(PREFIX)/cargo-install.tar.xz $(PREFIX)/rust-std-host-install.tar.xz $(PREFIX)/rust-std-target-install.tar.xz $(PREFIX)/rust-src-install.tar.xz
+$(PREFIX)/rust-install: $(PREFIX)/rustc-install.tar.xz $(PREFIX)/cargo-install.tar.xz $(PREFIX)/rust-std-host-install.tar.xz $(PREFIX)/rust-std-target-install.tar.xz $(PREFIX)/rust-src-install.tar.xz
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
 	@echo "\033[1;36;49mBuilding rust-install\033[0m"
 	rm -rf "$@.partial" "$@"
 	mkdir -p "$@.partial"
-	cp -r "$(PREFIX)/gcc-install/". "$@.partial"
 	tar --extract --file "$(PREFIX)/rustc-install.tar.xz" -C "$@.partial" rustc-nightly-$(HOST_TARGET)/rustc/ --strip-components=2
 	tar --extract --file "$(PREFIX)/cargo-install.tar.xz" --directory "$@.partial" cargo-nightly-$(HOST_TARGET)/cargo/ --strip-components=2
 	tar --extract --file "$(PREFIX)/rust-std-host-install.tar.xz" --directory "$@.partial" rust-std-nightly-$(HOST_TARGET)/rust-std-$(HOST_TARGET)/ --strip-components=2
@@ -312,42 +325,21 @@ endif
 # BUILD RUST ---------------------------------------------------
 else 
 
-$(ROOT)/rust/configure:
-	git submodule sync --recursive
-	git submodule update --progress --init --recursive --checkout rust
-
-$(PREFIX)/rust-install: $(ROOT)/rust/configure | $(PREFIX)/gcc-install $(PREFIX)/relibc-freestanding-install $(CONTAINER_TAG)
+$(PREFIX)/rust-install: | $(PREFIX)/libtool-install $(FSTOOLS_TAG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
 	@echo "\033[1;36;49mBuilding rust-install\033[0m"
-	rm -rf "$(PREFIX)/rust-build" "$@.partial" "$@"
-	mkdir -p "$(PREFIX)/rust-build"
-	cp -r "$(PREFIX)/gcc-install" "$@.partial"
-	cp -r "$(PREFIX)/relibc-freestanding-install/$(GNU_TARGET)" "$@.partial"
-	cd "$(PREFIX)/rust-build" && \
-	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
-	"$<" \
-		--prefix="/" \
-		--disable-docs \
-		--disable-download-ci-llvm \
-		--enable-cargo-native-static \
-		--enable-dist-src \
-		--enable-extended \
-		--enable-lld \
-		--enable-llvm-static-stdcpp \
-		--tools=cargo,src \
-		--target="$(HOST_TARGET),$(TARGET)" \
-		&& \
-	$(MAKE) -j `$(NPROC)` && \
-	rm -rf $(ROOT)/$@.partial/lib/rustlib/{components,install.log,rust-installer-version,uninstall.sh,manifest-*} "$(ROOT)/$@.partial/share/doc/rust" && \
-	$(MAKE) -j `$(NPROC)` install DESTDIR="$(ROOT)/$@.partial"
-	rm -rf "$(PREFIX)/rust-build"
-	mkdir -p "$@.partial/lib/rustlib/$(HOST_TARGET)/bin"
-	mkdir -p "$@.partial/lib/rustlib/$(HOST_TARGET)/lib"
-	cd "$@.partial" && find . -name *.old -exec rm {} ';' && $(PREFIX_STRIP)
-	touch "$@.partial"
+	rm -rf "$@.partial" "$@"
+	export PATH="$(ROOT)/$(PREFIX)/libtool-install/bin:$$PATH" \
+		$(PREFIX_CONFIG) COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_TARGET=$(TARGET) && \
+		./target/release/repo cook host:llvm21 host:rust
+	cp -r "$(RUST_TARGET)/stage/usr/". "$@.partial"
+	cp -r "$(LLVM_TARGET)/stage/usr/". "$@.partial"
 	mv "$@.partial" "$@"
+# TODO: Cache from RUST_TARGET and LLVM_TARGET is currently not cleared.
+# TIP: If you're developing std for rust, remove COOKBOOK_CLEAN_BUILD=true 
+#      at the top of this file so your next rust build reuses the build cache
 endif
 
 endif
