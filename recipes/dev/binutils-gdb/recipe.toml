@@ -6,9 +6,8 @@ shallow_clone = true
 [build]
 template = "custom"
 dependencies = [
-# These cannot autotools_recursive_regenerate until after toolchain is built
-#  "libgmp",
-#  "libmpfr",
+  "libgmp",
+  "libmpfr",
 # TODO: this zlib get linked when boostrapping binutils
 #    "zlib"
 ]
