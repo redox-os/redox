@@ -13,6 +13,7 @@ dependencies = [
 dev-dependencies = [
     "host:xz",
     "host:libarchive",  # workaround for cmake error
+    "host:zstd"
 ]
 script = """
 DYNAMIC_INIT
@@ -58,6 +59,15 @@ COOKBOOK_CMAKE_FLAGS+=(
     -DLLVM_UTILS_INSTALL_DIR=bin
     -DUNIX=1
 )
+
+if [ "${COOKBOOK_HOST_SYSROOT}" = "/usr" ]; then
+# avoid linking as much as possible during bootstrapping
+    COOKBOOK_CMAKE_FLAGS+=(
+        -DLLVM_ENABLE_LIBXML2=Off
+        -DLLVM_ENABLE_ZLIB=Off
+        -DLLVM_USE_STATIC_ZSTD=On
+    )
+fi
 
 COOKBOOK_SOURCE="$COOKBOOK_SOURCE/llvm"
 cookbook_cmake
