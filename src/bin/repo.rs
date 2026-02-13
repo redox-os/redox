@@ -576,6 +576,26 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
             if command.is_building() || (command.is_pushing() && config.with_package_deps) {
                 // Pushing do not need dev deps, so does binary recipes at building
                 let include_dev = command.is_building();
+                if include_dev && default_rule == "source" {
+                    // let's cover a very specific case, binary -> source -> binary -> dev
+                    // in this case, we need to move that "source" to "binary", because
+                    // that would include dev from its binary child, which is unnecessary
+                    let mut i = 0;
+                    while i < source_recipe_names.len() {
+                        let name = &source_recipe_names[i];
+                        match special_rules.get(name) {
+                            Some(s) if s.as_str() == "source" => {
+                                if binary_names.contains(name) {
+                                    let bin = source_recipe_names.remove(i);
+                                    binary_recipe_names.push(bin);
+                                    continue;
+                                }
+                            }
+                            _ => {}
+                        }
+                        i += 1;
+                    }
+                }
                 CookRecipe::get_build_deps_recursive(&source_recipe_names, include_dev)?
             } else {
                 CookRecipe::from_list(source_recipe_names.clone())?
@@ -611,6 +631,11 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
                 (false, true) => "binary",
                 (false, false) => default_rule,
             };
+            if recipe.name.is_host() && rule == "binary" {
+                // host recipe binaries is currently not supported
+                continue;
+            }
+
             recipe.apply_filesystem_config(rule)?;
         }
 
