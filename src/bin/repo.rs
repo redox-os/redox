@@ -631,6 +631,11 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
                 (false, true) => "binary",
                 (false, false) => default_rule,
             };
+            if recipe.name.is_host() && rule == "binary" {
+                // host recipe binaries is currently not supported
+                continue;
+            }
+
             recipe.apply_filesystem_config(rule)?;
         }
 
