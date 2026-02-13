@@ -6,7 +6,7 @@ patches = [
 [build]
 template = "custom"
 script = """
-DYNAMIC_INIT
+DYNAMIC_STATIC_INIT
 rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 ${COOKBOOK_MAKE}
 ${COOKBOOK_MAKE} install DESTDIR="${COOKBOOK_STAGE}" prefix="/usr"

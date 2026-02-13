@@ -7,7 +7,7 @@ shallow_clone = true
 [build]
 template = "custom"
 dependencies = [
-    "zlib",
+    "zstd",
     "libxml2",
 ]
 dev-dependencies = [
@@ -39,6 +39,7 @@ COOKBOOK_CMAKE_FLAGS+=(
     -DLLVM_TOOL_LLVM_COV_BUILD=On
     -DLLVM_TOOL_LLVM_PROFDATA_BUILD=On
     -DLLVM_TARGETS_TO_BUILD="$LLVM_TARGETS_TO_BUILD"
+    -DLLVM_ENABLE_ZLIB=Off
 
 # the rest of options that shared to clang
     -DCROSS_TOOLCHAIN_FLAGS_NATIVE="-DCMAKE_TOOLCHAIN_FILE=$(realpath "${COOKBOOK_RECIPE}/native.cmake")"
@@ -58,6 +59,14 @@ COOKBOOK_CMAKE_FLAGS+=(
     -DLLVM_UTILS_INSTALL_DIR=bin
     -DUNIX=1
 )
+
+if [ "${COOKBOOK_HOST_SYSROOT}" = "/usr" ]; then
+# avoid linking as much as possible during bootstrapping
+    COOKBOOK_CMAKE_FLAGS+=(
+        -DLLVM_ENABLE_LIBXML2=Off
+        -DLLVM_USE_STATIC_ZSTD=On
+    )
+fi
 
 COOKBOOK_SOURCE="$COOKBOOK_SOURCE/llvm"
 cookbook_cmake
