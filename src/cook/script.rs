@@ -271,6 +271,19 @@ COOKBOOK_MESON_FLAGS=(
     -Dprefix=/usr
 )
 function cookbook_meson {
+    # TODO: do this in rust, to handle path spaces as well
+    function format_flags {
+        local flags=($1)
+        local formatted=""
+        for i in "${!flags[@]}"; do
+            formatted+="'${flags[$i]}'"
+            if [ $i -lt $((${#flags[@]} - 1)) ]; then
+                formatted+=", "
+            fi
+        done
+        echo "$formatted"
+    }
+
     echo "[binaries]" > cross_file.txt
     echo "c = [$(printf "'%s', " $CC | sed 's/, $//')]"  >> cross_file.txt
     echo "cpp = [$(printf "'%s', " $CXX | sed 's/, $//')]" >> cross_file.txt
@@ -287,30 +300,19 @@ function cookbook_meson {
     echo "cpu = '$(echo "${TARGET}" | cut -d - -f1)'" >> cross_file.txt
     echo "endian = 'little'" >> cross_file.txt
 
-    echo "[paths]" >> cross_file.txt
+    echo "[built-in options]" >> cross_file.txt
     echo "prefix = '/usr'" >> cross_file.txt
     echo "libdir = 'lib'" >> cross_file.txt
     echo "bindir = 'bin'" >> cross_file.txt
+    echo "c_args = [$(format_flags "$CFLAGS $CPPFLAGS")]" >> cross_file.txt
+    echo "cpp_args = [$(format_flags "$CXXFLAGS $CPPFLAGS")]" >> cross_file.txt
+    echo "c_link_args = [$(format_flags "$LDFLAGS")]" >> cross_file.txt
 
     echo "[properties]" >> cross_file.txt
     echo "needs_exe_wrapper = true" >> cross_file.txt
     echo "sys_root = '${COOKBOOK_SYSROOT}'" >> cross_file.txt
-    echo "c_args = [$(printf "'%s', " "$CFLAGS $CPPFLAGS" | sed 's/, $//')]" >> cross_file.txt
-    echo "cpp_args = [$(printf "'%s', " "$CXXFLAGS $CPPFLAGS" | sed 's/, $//')]" >> cross_file.txt
-    echo "c_link_args = [$(printf "'%s', " "$LDFLAGS" | sed 's/, $//')]" >> cross_file.txt
 
-    unset AR
-    unset AS
-    unset CC
-    unset CXX
-    unset LD
-    unset NM
-    unset OBJCOPY
-    unset OBJDUMP
-    unset PKG_CONFIG
-    unset RANLIB
-    unset READELF
-    unset STRIP
+    unset AR AS CC CXX LD NM OBJCOPY OBJDUMP PKG_CONFIG RANLIB READELF STRIP
 
     "${COOKBOOK_MESON}" setup \
         "${COOKBOOK_SOURCE}" \
