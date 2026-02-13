@@ -9,6 +9,15 @@ blake3 = "fffe4996713928ae19331c8ef39129e46d3bf5b7182820656fd4639435cd83a4"
 [build]
 template = "custom"
 script = """
+# libgmp fails to regenerate autotools when building for host toolchain
+# To workaround this, the source is copied to the build dir and autotools is
+# only regenerated when not building for the host
+rsync -a --delete "${COOKBOOK_SOURCE}/" ./
+COOKBOOK_SOURCE="${COOKBOOK_BUILD}"
+if [ "$TARGET" != "$COOKBOOK_HOST_TARGET" ]; then
+    autotools_recursive_regenerate
+fi
+
 DYNAMIC_STATIC_INIT
 cookbook_configure
 """
