@@ -1,8 +1,10 @@
 #TODO compiled but not tested
 [source]
 git = "https://github.com/colored-rs/colored"
+shallow_clone = true
 [build]
 template = "custom"
 script = """
+DYNAMIC_INIT
 cookbook_cargo_examples control custom_colors dynamic_colors most_simple nested_colors
 """

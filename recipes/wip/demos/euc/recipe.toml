@@ -1,8 +1,11 @@
 #TODO minifb crate error
 [source]
 git = "https://github.com/zesterer/euc"
+shallow_clone = true
 [build]
 template = "custom"
 script = """
-cookbook_cargo_examples spinning_cube teapot texture_mapping triangle wireframes
+DYNAMIC_INIT
+cookbook_cargo_examples spinning_cube teapot texture_mapping \
+triangle wireframes
 """

@@ -1,11 +1,14 @@
-#TODO can't find the fontconfig files
+#TODO not compiled or tested
 [source]
 git = "https://github.com/SamiPerttu/fundsp"
+shallow_clone = true
 [build]
 template = "custom"
 dependencies = [
     "fontconfig",
 ]
 script = """
-cookbook_cargo_examples beep file grain grain2 keys network optimize peek plot sequence type
+DYNAMIC_INIT
+cookbook_cargo_examples beep file grain grain2 keys network \
+optimize peek plot sequence type
 """

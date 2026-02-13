@@ -1,9 +1,11 @@
-#TODO write a script that can use multiple examples and the "monospace-font" flag
+#TODO not compiled or tested
 [source]
 git = "https://github.com/ardaku/fonterator"
+shallow_clone = true
 [build]
 template = "custom"
 script = """
+DYNAMIC_INIT
 recipe="$(basename "${COOKBOOK_RECIPE}")"
 examples="main directions image raster"
 for example in "${examples}"
@@ -12,7 +14,7 @@ for example in "${examples}"
             --manifest-path "${COOKBOOK_SOURCE}/${PACKAGE_PATH}/Cargo.toml" \
             --example "${example}" \
             --release \
-           --features "monospace-font"
+            --features "monospace-font"
         mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
         cp -v \
             "target/${TARGET}/${build_type}/examples/${example}" \

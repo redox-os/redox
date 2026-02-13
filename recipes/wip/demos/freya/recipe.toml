@@ -1,13 +1,15 @@
 #TODO not compiled or tested
 [source]
 git = "https://github.com/marc2332/freya"
+shallow_clone = true
 [build]
 template = "custom"
 dependencies = [
-    "openssl1",
+    "openssl3",
     "gtk3",
 ]
 script = """
+DYNAMIC_INIT
 cookbook_cargo_examples animated_position animated_tabs animation \
 button camera checkbox clock counter drag drag_drop dynamic_theme \
 file_explorer frameless_window gradient graph highlight image image_viewer \

@@ -1,17 +1,11 @@
 #TODO fix the script
 [source]
 git = "https://github.com/Wayoung7/firework-rs"
+shallow_clone = true
 [build]
 template = "custom"
 script = """
-package=firework-rs
-"${COOKBOOK_CARGO}" build \
-            --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
-            --package "${package}" \
-            --release
-        mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
-        cp -v \
-            "target/${TARGET}/release/${package}" \
-            "${COOKBOOK_STAGE}/usr/bin/${package}"
+DYNAMIC_INIT
+cookbook_cargo_packages firework-rs
 cookbook_cargo_examples fountain heart vortex
 """
