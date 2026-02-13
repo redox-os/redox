@@ -45,6 +45,13 @@ COOKBOOK_CMAKE_FLAGS+=(
     -DUNIX=1
 )
 
+if [ "${COOKBOOK_HOST_SYSROOT}" = "/usr" ]; then
+# avoid linking as much as possible during bootstrapping
+    COOKBOOK_CMAKE_FLAGS+=(
+        -DLLVM_USE_STATIC_ZSTD=On
+    )
+fi
+
 COOKBOOK_SOURCE="$COOKBOOK_SOURCE/lld"
 
 cookbook_cmake
