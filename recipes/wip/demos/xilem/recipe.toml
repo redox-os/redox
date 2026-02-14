@@ -1,8 +1,10 @@
 #TODO xilem_core crate error
 [source]
 git = "https://github.com/linebender/xilem"
+shallow_clone = true
 [build]
 template = "custom"
 script = """
+DYNAMIC_INIT
 cookbook_cargo_examples components
 """

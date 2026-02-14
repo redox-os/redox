@@ -1,8 +1,15 @@
-#TODO probably wrong script, see https://github.com/p-e-w/ternimal#building
+#TODO not compiled or tested
+#TODO add condition script for multiarch compilation
+# build instructions: https://github.com/p-e-w/ternimal#building
 [source]
 git = "https://github.com/p-e-w/ternimal"
+shallow_clone = true
 [build]
 template = "custom"
 script = """
-rustc -O "${COOKBOOK_SOURCE}"/ternimal.rs
+DYNAMIC_INIT
+cp -v "${COOKBOOK_SOURCE}"/ternimal.rs "${COOKBOOK_BUILD}"
+rustc -O "${COOKBOOK_BUILD}"/ternimal.rs --target x86_64-unknown-redox
+mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
+cp -v "${COOKBOOK_BUILD}"/ternimal "${COOKBOOK_STAGE}/usr/bin"
 """

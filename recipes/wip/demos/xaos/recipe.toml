@@ -1,10 +1,13 @@
-#TODO missing script for QMake, see https://github.com/xaos-project/XaoS/wiki/Developer's-Guide#build-instructions-for-version-43
+#TODO not compiled or tested
+#TODO determine minimum dependencies from cmake log
+# build instructions: https://github.com/xaos-project/XaoS/wiki/Developer's-Guide#build-instructions-for-version-433
 [source]
 git = "https://github.com/xaos-project/XaoS"
-rev = "7f36177f32a23eea88911afb90878046912d7e2d"
+rev = "release-4.3.4"
+shallow_clone = true
 [build]
-template = "custom"
-dependencies = [
-    "qt6-base",
-    "mesa",
-]
+template = "cmake"
+#dependencies = [
+#    "qt6-base",
+#    "mesa",
+#]

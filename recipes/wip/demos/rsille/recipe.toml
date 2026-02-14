@@ -1,9 +1,11 @@
 #TODO compiled but not tested
 [source]
 git = "https://github.com/nidhoggfgg/rsille"
+shallow_clone = true
 [build]
 template = "custom"
 script = """
+DYNAMIC_INIT
 cookbook_cargo_examples anime-mix obj-mix cube cube-colorful
 recipe="$(basename "${COOKBOOK_RECIPE}")"
     for example in imgille

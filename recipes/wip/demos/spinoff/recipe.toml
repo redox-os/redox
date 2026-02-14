@@ -1,8 +1,10 @@
 #TODO compiled but not tested
 [source]
 git = "https://github.com/ad4mx/spinoff"
+shallow_clone = true
 [build]
 template = "custom"
 script = """
+DYNAMIC_INIT
 cookbook_cargo_examples simple stop_and_persist stream
 """

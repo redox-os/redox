@@ -1,8 +1,10 @@
 #TODO glutin crate error
 [source]
 git = "https://github.com/QuantumBadger/Speedy2D"
+shallow_clone = true
 [build]
 template = "custom"
 script = """
+DYNAMIC_INIT
 cookbook_cargo_examples animation hello_world moving_text
 """

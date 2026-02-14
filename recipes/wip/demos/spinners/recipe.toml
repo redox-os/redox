@@ -1,8 +1,11 @@
 #TODO compiled but not tested
 [source]
 git = "https://github.com/FGRibreau/spinners"
+shallow_clone = true
 [build]
 template = "custom"
 script = """
-cookbook_cargo_examples cycle simple stop_persist stop_symbol timer
+DYNAMIC_INIT
+cookbook_cargo_examples cycle simple stop_persist \
+stop_symbol timer
 """

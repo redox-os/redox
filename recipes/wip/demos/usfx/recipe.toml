@@ -1,6 +1,7 @@
 #TODO not compiled or tested
 [source]
 git = "https://github.com/tversteeg/usfx"
+shallow_clone = true
 [build]
 template = "custom"
 dependencies = [
@@ -8,5 +9,6 @@ dependencies = [
     "sdl2",
 ]
 script = """
+DYNAMIC_INIT
 cookbook_cargo_examples cpal music sdl2
 """
