@@ -4,25 +4,17 @@ blake3 = "5c95d48f5b9150f4a06d8acac12c25edaac956007df95a3bf527df02a5908f0e"
 patches = [
 	"redox.patch"
 ]
-script = """
-autotools_recursive_regenerate
-"""
-
 [build]
-template = "custom"
+template = "meson"
 dependencies = [
 	"expat",
 	"freetype2",
 	"libpng",
 	"zlib",
 ]
-script = """
-DYNAMIC_INIT
-COOKBOOK_CONFIGURE_FLAGS+=(
-    --disable-docs \
-    ac_cv_func_XML_SetDoctypeDeclHandler=yes
-)
-export V=1
-export LIBS="-lpng -lz"
-cookbook_configure
-"""
+dev-dependencies = [
+	"host:gperf"
+]
+mesonflags = [
+	"-Ddoc=disabled"
+]
