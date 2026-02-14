@@ -1,5 +1,10 @@
-#TODO missing script for building, see https://github.com/libsigcplusplus/libsigcplusplus#building-from-a-release-tarball
+#TODO not compiled or tested
+# build instructions: https://github.com/libsigcplusplus/libsigcplusplus#building-from-a-release-tarball
 [source]
-tar = "https://download.gnome.org/sources/libsigc++/3.6/libsigc%2B%2B-3.6.0.tar.xz"
+tar = "https://github.com/libsigcplusplus/libsigcplusplus/releases/download/3.8.0/libsigc++-3.8.0.tar.xz"
 [build]
-template = "custom"
+template = "meson"
+mesonflags = [
+    "-Dbuild-manual=false",
+    "-Dbuild-tests=false",
+]
