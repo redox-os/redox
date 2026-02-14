@@ -1,8 +1,10 @@
 #TODO midir crate error
 [source]
 git = "https://github.com/PolyMeilex/Neothesia"
+shallow_clone = true
 [build]
 template = "custom"
 script = """
+DYNAMIC_INIT
 cookbook_cargo_packages neothesia
 """

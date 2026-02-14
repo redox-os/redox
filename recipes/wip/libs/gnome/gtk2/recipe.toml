@@ -9,7 +9,6 @@ dependencies = [
     "glib",
     "pango",
     "gdk-pixbuf",
-    "atk",
     "cairo",
     "gobject-introspection",
 ]

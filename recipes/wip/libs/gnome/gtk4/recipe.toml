@@ -1,9 +1,16 @@
 #TODO not compiled or tested
 # build instructions: https://docs.gtk.org/gtk4/building.html
 [source]
-tar = "https://download.gnome.org/sources/gtk/4.11/gtk-4.11.2.tar.xz"
+tar = "https://download.gnome.org/sources/gtk/4.20/gtk-4.20.3.tar.xz"
 [build]
 template = "meson"
+mesonflags = [
+    "-Dwayland-backend=false",
+    "-Dintrospection=false",
+    "-Dprofile=default",
+    "-Dbuild-testsuite=false",
+    "-Dbuild-tests=false",
+]
 dependencies = [
     "glib",
     "gdk-pixbuf",
@@ -11,7 +18,6 @@ dependencies = [
     "cairo",
     "libepoxy",
     "atk",
-    "gobject-introspection",
     "shared-mime-info",
     "graphene",
     "libxkbcommon",

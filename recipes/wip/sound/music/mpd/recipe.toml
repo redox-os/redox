@@ -4,3 +4,9 @@
 tar = "https://www.musicpd.org/download/mpd/0.24/mpd-0.24.6.tar.xz"
 [build]
 template = "meson"
+mesonflags = [
+    "-Ddocumentation=disabled",
+    "-Dhtml_manual=false",
+    "-Dmanpages=false",
+    "-Dlibfuzzer=false",
+]

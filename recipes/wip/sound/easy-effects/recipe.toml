@@ -1,15 +1,18 @@
-#TODO missing dependencies - https://github.com/wwmm/easyeffects#effects-available
-#TODO build instructions - https://github.com/wwmm/easyeffects/wiki/Installation-from-Source
+#TODO not compiled or tested
+#TODO discover minimum dependencies from cmake log
+# dependencies: https://github.com/wwmm/easyeffects#effects-available
+# build instructions: https://github.com/wwmm/easyeffects/wiki/Installation-from-Source
 [source]
 git = "https://github.com/wwmm/easyeffects"
-rev = "4c35ba8c385723fdefc81ad8fcb816eb965fe1d8"
+rev = "v8.1.2"
+shallow_clone = true
 [build]
-template = "custom"
-dependencies = [
-    "libsamplerate",
-    "libsndfile",
-    "fftw",
-    "speexdsp",
-    "nohnmann-json",
-    "tbb",
-]
+template = "cmake"
+#dependencies = [
+#    "libsamplerate",
+#    "libsndfile",
+#    "fftw",
+#    "speexdsp",
+#    "nohnmann-json",
+#    "tbb",
+#]

@@ -1,14 +1,15 @@
-#TODO make the fftw dependency work
+#TODO not compiled or tested
 [source]
 git = "https://github.com/karlstav/cava"
-rev = "81211e9e16302312ee4322a99840c110bce0e13d"
-[build]
-template = "custom"
-dependencies = [
-    "ncurses",
-    "fftw",
-]
+rev = "0.10.7"
+shallow_clone = true
 script = """
-export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include/ncurses"
-cookbook_configure
+autotools_recursive_regenerate
 """
+[build]
+template = "configure"
+dependencies = [
+    "ncursesw",
+    "fftw",
+    "iniparser",
+]

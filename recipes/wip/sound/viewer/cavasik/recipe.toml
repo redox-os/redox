@@ -2,11 +2,12 @@
 [source]
 git = "https://github.com/TheWisker/Cavasik"
 rev = "v3.2.0"
+shallow_clone = true
 [build]
 template = "meson"
+[package]
 dependencies = [
+    "cava",
     "gtk4",
     "libadwaita",
 ]
-[package]
-dependencies = ["cava"]

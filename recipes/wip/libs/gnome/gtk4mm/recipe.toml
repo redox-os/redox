@@ -4,8 +4,9 @@
 tar = "https://download.gnome.org/sources/gtkmm/4.13/gtkmm-4.13.2.tar.xz"
 [build]
 template = "meson"
+mesonflags = ["-Dbuild-tests=false"]
 dependencies = [
-    "libsigc++",
+    "libsigcpp",
     "gtk4",
     "glibmm",
     "cairomm116+",
