@@ -1,8 +1,10 @@
 #TODO compiled but not tested
 [source]
 git = "https://github.com/schell/renderling"
+shallow_clone = true
 [build]
 template = "custom"
 script = """
+DYNAMIC_INIT
 cookbook_cargo_packages example
 """

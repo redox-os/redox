@@ -1,8 +1,11 @@
 #TODO webbrowser crate error
 [source]
 git = "https://github.com/parasyte/pixels"
+shallow_clone = true
 [build]
 template = "custom"
 script = """
-cookbook_cargo_packages conway invaders minimal-egui minimal-winit tiny-skia-winit
+DYNAMIC_INIT
+cookbook_cargo_packages conway invaders minimal-egui \
+minimal-winit tiny-skia-winit
 """

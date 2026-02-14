@@ -1,8 +1,11 @@
 #TODO compiled but not tested
 [source]
 git = "https://github.com/not-fl3/macroquad"
+shallow_clone = true
 [build]
 template = "custom"
 script = """
-cookbook_cargo_examples 3d basic_shapes camera first_person particles_example platformer shadertoy snake text ui
+DYNAMIC_INIT
+cookbook_cargo_examples 3d basic_shapes camera first_person \
+particles_example platformer shadertoy snake text ui
 """

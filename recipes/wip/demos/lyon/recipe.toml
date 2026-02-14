@@ -1,10 +1,11 @@
 #TODO compiled but not tested
-#TODO fix the packaging
 #TODO move to the "graphics" category
 [source]
 git = "https://github.com/nical/lyon"
+shallow_clone = true
 [build]
 template = "custom"
 script = """
+DYNAMIC_INIT
 cookbook_cargo_packages lyon_cli wgpu-example svg-rendering-example
 """

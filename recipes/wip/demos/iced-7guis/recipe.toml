@@ -1,5 +1,6 @@
-#TODO require rustc 1.80.1
+#TODO not compiled or tested
 [source]
 git = "https://github.com/dcampbell24/iced_7guis"
+shallow_clone = true
 [build]
 template = "cargo"

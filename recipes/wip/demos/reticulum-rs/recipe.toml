@@ -1,9 +1,11 @@
 #TODO not compiled or tested
-# the protobuf compiler needs to be installed
+# require protobuf
 [source]
 git = "https://github.com/BeechatNetworkSystemsLtd/Reticulum-rs"
+shallow_clone = true
 [build]
 template = "custom"
 script = """
+DYNAMIC_INIT
 cookbook_cargo_examples tcp_client kaonic_client
 """

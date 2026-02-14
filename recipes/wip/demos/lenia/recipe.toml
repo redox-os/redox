@@ -1,5 +1,6 @@
 #TODO winit crate error (after cargo update)
 [source]
 git = "https://github.com/BirdbrainEngineer/lenia"
+shallow_clone = true
 [build]
 template = "cargo"

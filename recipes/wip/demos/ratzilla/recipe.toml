@@ -1,9 +1,11 @@
 #TODO compiled but not tested
 [source]
 git = "https://github.com/orhun/ratzilla"
+shallow_clone = true
 [build]
 template = "custom"
 script = """
+DYNAMIC_INIT
 recipe="$(basename "${COOKBOOK_RECIPE}")"
 function build_from_dir {
     prog_name=$1

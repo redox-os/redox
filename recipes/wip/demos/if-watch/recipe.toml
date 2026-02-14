@@ -1,8 +1,10 @@
 #TODO require the "smol" feature flag
 [source]
 git = "https://github.com/mxinden/if-watch"
+shallow_clone = true
 [build]
 template = "custom"
 script = """
-cookbook_cargo_examples if_watch
+DYNAMIC_INIT
+cookbook_cargo --example if_watch -F smol
 """
