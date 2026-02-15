@@ -148,6 +148,7 @@ pub struct BuildRecipe {
 pub struct PackageRecipe {
     pub dependencies: Vec<PackageName>,
     pub version: Option<String>,
+    pub description: Option<String>,
 }
 
 #[derive(Debug, Clone, Default, Deserialize, PartialEq, Serialize)]
