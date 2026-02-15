@@ -12,6 +12,7 @@
 .devcontainer/
 # Cookbook
 /repo
+/web
 /cookbook.toml
 source
 source.tmp

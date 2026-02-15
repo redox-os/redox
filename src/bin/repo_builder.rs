@@ -2,6 +2,7 @@ use cookbook::WALK_DEPTH;
 use cookbook::cook::ident::{get_ident, init_ident};
 use cookbook::cook::{fetch, package as cook_package};
 use cookbook::recipe::CookRecipe;
+use cookbook::web::{CliWebConfig, generate_web};
 use pkg::package::{Repository, SourceIdentifier};
 use pkg::{Package, PackageName, recipes};
 use std::collections::{BTreeMap, BTreeSet, HashMap};
@@ -29,18 +30,22 @@ struct CliConfig {
     repo_dir: PathBuf,
     appstream: bool,
     recipe_list: Vec<String>,
+    web: Option<CliWebConfig>,
 }
 
 impl CliConfig {
     fn parse_args() -> Result<Self, std::io::Error> {
         let mut args = env::args().skip(1);
-        let repo_dir = args
-            .next()
-            .expect("Usage: repo_builder <REPO_DIR> <recipe1> <recipe2> ...");
+        let repo_dir = PathBuf::from(
+            args.next()
+                .expect("Usage: repo_builder <REPO_DIR> <recipe1> <recipe2> ..."),
+        );
+        let web = CliWebConfig::parse_args();
         Ok(CliConfig {
-            repo_dir: PathBuf::from(repo_dir),
+            repo_dir,
             appstream: env::var("COOKBOOK_APPSTREAM").ok().as_deref() == Some("true"),
             recipe_list: args.collect(),
+            web,
         })
     }
 }
@@ -268,12 +273,17 @@ fn publish_packages(config: &CliConfig) -> anyhow::Result<()> {
         packages.insert(package_name, version_str.to_string());
     }
 
-    let output = toml::to_string(&Repository {
+    let repository = Repository {
         packages,
         outdated_packages,
-    })?;
+    };
+
+    let output = toml::to_string(&repository)?;
     let mut output_file = File::create(&repo_toml_path)?;
     output_file.write_all(output.as_bytes())?;
 
+    if let Some(conf) = &config.web {
+        generate_web(&repository.packages.keys().cloned().collect(), conf);
+    }
     Ok(())
 }
