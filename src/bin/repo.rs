@@ -63,15 +63,17 @@ const REPO_HELP_STR: &str = r#"
         --repo-binary              override recipes config to use repo_binary
 
     cook env and their defaults:
-        CI=                         set to any value to disable TUI
-        COOKBOOK_LOGS=              whether to capture build logs (default is !CI)
-        COOKBOOK_OFFLINE=false      prevent internet access if possible
+        CI=                          set to any value to disable TUI
+        COOKBOOK_LOGS=               whether to capture build logs (default is !CI)
+        COOKBOOK_OFFLINE=false       prevent internet access if possible
                                         ignored when command "fetch" is used
-        COOKBOOK_NONSTOP=false      keep running even a recipe build failed
-        COOKBOOK_VERBOSE=true       print success/error on each recipe
-        COOKBOOK_CLEAN_BUILD=false  remove build directory before building
-        COOKBOOK_CLEAN_TARGET=false remove target directory after building
-        COOKBOOK_MAKE_JOBS=         override build jobs count from nproc
+        COOKBOOK_NONSTOP=false       keep running even a recipe build failed
+        COOKBOOK_VERBOSE=true        print success/error on each recipe
+        COOKBOOK_CLEAN_BUILD=false   remove build directory before building
+        COOKBOOK_CLEAN_TARGET=false  remove target directory after building
+        COOKBOOK_WRITE_FILETREE=false whether to write stage files tree
+        COOKBOOK_MAKE_JOBS=          override build jobs count from nproc
+        COOKBOOK_WEB=false           whether to generate package web files
 "#;
 
 #[derive(Clone)]
@@ -698,16 +700,20 @@ fn handle_cook(
     package(&recipe, &stage_dirs, &auto_deps, logger)
         .map_err(|err| anyhow!("failed to package: {:?}", err))?;
 
-    if config.cook.clean_target {
+    if config.cook.clean_target || config.cook.write_filetree {
         let stage_dirs = get_stage_dirs(&recipe.recipe.optional_packages, &target_dir);
         for stage_dir in stage_dirs {
             if stage_dir.is_dir() {
-                let mut stage_files_buf = String::new();
-                tree::walk_file_tree(&stage_dir, "", &mut stage_files_buf)
-                    .context("failed to walk stage files tree")?;
-                fs::write(stage_dir.with_added_extension("files"), stage_files_buf)
-                    .context("unable to write stage files")?;
-                fs::remove_dir_all(&stage_dir).context("failed to remove stage dir")?;
+                if config.cook.write_filetree {
+                    let mut stage_files_buf = String::new();
+                    tree::walk_file_tree(&stage_dir, "", &mut stage_files_buf)
+                        .context("failed to walk stage files tree")?;
+                    fs::write(stage_dir.with_added_extension("files"), stage_files_buf)
+                        .context("unable to write stage files")?;
+                }
+                if config.cook.clean_target {
+                    fs::remove_dir_all(&stage_dir).context("failed to remove stage dir")?;
+                }
             }
         }
     }
