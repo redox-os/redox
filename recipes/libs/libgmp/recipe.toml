@@ -16,6 +16,9 @@ rsync -a --delete "${COOKBOOK_SOURCE}/" ./
 COOKBOOK_SOURCE="${COOKBOOK_BUILD}"
 if [ "$TARGET" != "$COOKBOOK_HOST_TARGET" ]; then
     autotools_recursive_regenerate
+    # need to invoke configure in specific way to make shared libs work
+    ./configure --host="${GNU_TARGET}" --prefix="/usr"
+    COOKBOOK_CONFIGURE=true
 fi
 
 DYNAMIC_STATIC_INIT
