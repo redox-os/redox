@@ -1,7 +1,16 @@
 diff -ruwN source/configure source-new/configure
 --- source/configure	2022-11-06 04:13:26.000000000 +0700
-+++ source-new/configure	2025-09-17 21:14:28.163192730 +0700
-@@ -6386,7 +6386,7 @@
++++ source-new/configure	2026-02-17 13:42:38.449890407 +0700
+@@ -3480,8 +3480,6 @@
+ echo $ECHO_N "checking if $CXX works... $ECHO_C" >&6
+ 
+ 		save_CPPFLAGS="$CPPFLAGS"
+-		eval cf_includedir=${includedir}
+-		CPPFLAGS="$CPPFLAGS -I${cf_includedir}"
+ 
+ cat >"conftest.$ac_ext" <<_ACEOF
+ #line 3487 "configure"
+@@ -6386,7 +6384,7 @@
  		fi
  		cf_cv_rm_so_locs=yes
  		;;
