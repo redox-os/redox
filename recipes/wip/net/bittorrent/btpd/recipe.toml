@@ -3,6 +3,7 @@
 [source]
 git = "https://github.com/btpd/btpd"
 rev = "a3a10dfe1ece4a726530353a7b208c0cb4ff7e0d"
+shallow_clone = true
 [build]
 template = "configure"
 dependencies = [

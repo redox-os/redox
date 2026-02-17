@@ -1,8 +1,7 @@
 #TODO update the mio crate to 0.8.x
 [source]
 git = "https://github.com/lemunozm/termchat"
+shallow_clone = true
 [build]
-template = "custom"
-script = """
-cookbook_cargo --all-features
-"""
+template = "cargo"
+cargoflags = "--all-features"

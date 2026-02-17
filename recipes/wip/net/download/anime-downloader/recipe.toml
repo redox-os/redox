@@ -1,5 +1,6 @@
 #TODO not compiled or tested
 [source]
 git = "https://github.com/B0SEmc/Anime-Downloader"
+shallow_clone = true
 [build]
 template = "cargo"
