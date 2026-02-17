@@ -21,7 +21,7 @@ prompt = false
 
 # Normal packages below
 
-acid = {}
+# acid = {} # will include rust and llvm21
 base = {}
 base-initfs = {}
 bash = {}
