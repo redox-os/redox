@@ -1,0 +1,10 @@
+#TODO not tested
+[source]
+git = "https://github.com/luanti-org/minetest_game"
+shallow_clone = true
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}"/usr/share/luanti/games/minetest_game
+cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}"/usr/share/luanti/games/minetest_game
+"""
