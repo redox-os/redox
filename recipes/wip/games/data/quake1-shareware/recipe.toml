@@ -1,9 +1,12 @@
-# TODO:
-# * Requires unarchivers
+# TODO: not tested
 
 [build]
 template = "custom"
-dependencies = ["lhasa", "unzrip"]
+dev-dependencies = [
+    "host:lhasa",
+    "host:unzrip",
+    "host:7-zip",
+]
 script = """
 curl -O "https://github.com/Jason2Brownlee/QuakeOfficialArchive/raw/refs/heads/main/bin/quake106.zip"
 sha256sum -c quake106.zip.sha
