@@ -67,13 +67,10 @@ do
     fi
 done
 
-mkdir -pv "${COOKBOOK_STAGE}/etc/pcid"
-cp -v "${COOKBOOK_SOURCE}/drivers/initfs.toml" "${COOKBOOK_STAGE}/etc/pcid/initfs.toml"
-
-mkdir -pv "${COOKBOOK_STAGE}/etc/pcid.d"
+mkdir -pv "${COOKBOOK_STAGE}/lib/pcid.d"
 ${FIND} "${COOKBOOK_SOURCE}/drivers" -maxdepth 3 -type f -name 'config.toml' | while read conf
 do
     driver="$(basename "$(dirname "$conf")")"
-    cp -v "$conf" "${COOKBOOK_STAGE}/etc/pcid.d/$driver.toml"
+    cp -v "$conf" "${COOKBOOK_STAGE}/lib/pcid.d/$driver.toml"
 done
 """
