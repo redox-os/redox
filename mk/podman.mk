@@ -14,6 +14,20 @@ else
 PODMAN_VOLUME_FLAG=
 endif
 
+# Cache layers to redox-os docker hub
+PODMAN_CACHE=
+PODMAN_CACHE_PATH=docker.io/redoxos/$(IMAGE_TAG)
+
+PODMAN_CACHE_PULL?=1
+ifeq ($(PODMAN_CACHE_PULL),1)
+PODMAN_CACHE+=--cache-from=$(PODMAN_CACHE_PATH)
+endif
+
+PODMAN_CACHE_PUSH?=0
+ifeq ($(PODMAN_CACHE_PUSH),1)
+PODMAN_CACHE+=--cache-to=$(PODMAN_CACHE_PATH)
+endif
+
 ## Podman Home Directory
 PODMAN_HOME=$(ROOT)/build/podman
 ## Podman command with its many arguments
@@ -58,14 +72,16 @@ ifeq ($(PODMAN_BUILD),1)
 	-podman image rm --force $(IMAGE_TAG) || true
 	mkdir -p $(PODMAN_HOME)
 	@echo "Building Podman image. This may take some time."
-	cat $(CONTAINERFILE) | podman build --file - $(PODMAN_VOLUMES) --tag $(IMAGE_TAG)
-	$(PODMAN_RUN) bash -e podman/rustinstall.sh
+	cat $(CONTAINERFILE) | podman build --file - $(PODMAN_VOLUMES) $(PODMAN_CACHE) --tag $(IMAGE_TAG)
 	mkdir -p build
 	touch $@
 	@echo "Podman ready!"
 else
 	@echo PODMAN_BUILD=$(PODMAN_BUILD), container not required.
 endif
+
+container_push: build/container.tag
+	podman push $(IMAGE_TAG) $(PODMAN_CACHE_PATH)
 
 KERNEL_PATH := recipes/core/kernel
 KERNEL_PATH_SOURCE := $(ROOT)/$(KERNEL_PATH)/source
