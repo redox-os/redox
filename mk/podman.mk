@@ -7,7 +7,7 @@ IMAGE_TAG?=redox-base
 CONTAINER_WORKDIR?=/mnt/redox
 
 ## Flag passed to the Podman volumes. :Z can be used only with SELinux
-USE_SELINUX=1
+USE_SELINUX?=1
 ifeq ($(USE_SELINUX),1)
 PODMAN_VOLUME_FLAG=:Z
 else
