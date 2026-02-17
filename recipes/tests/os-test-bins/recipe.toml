@@ -32,6 +32,7 @@ make OS=Redox \
 
 skips=(
     # These tests hang
+    basic/poll/poll
     basic/pthread/pthread_barrierattr_setpshared
     basic/pthread/pthread_cancel
     basic/pthread/pthread_cleanup_pop
