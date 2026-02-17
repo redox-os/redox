@@ -1,11 +1,10 @@
 #TODO not compiled or tested
 [source]
 git = "https://github.com/RainbowCookie32/rusty-psn"
+shallow_clone = true
 [build]
-template = "custom"
+template = "cargo"
+cargoflags = "--features cli"
 dependencies = [
-    "openssl1",
+    "openssl3",
 ]
-script = """
-cookbook_cargo --features cli
-"""
