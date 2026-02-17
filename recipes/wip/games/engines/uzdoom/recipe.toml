@@ -1,0 +1,24 @@
+#TODO not compiled or tested
+#TODO determine minumum dependencies from cmake log
+# build instructions: https://github.com/UZDoom/UZDoom/wiki/Compilation#linux
+[source]
+git = "https://github.com/UZDoom/UZDoom"
+branch = "4.14.3"
+shallow_clone = true
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DHAVE_VULKAN=OFF",
+    "-DHAVE_GLES2=OFF",
+]
+dependencies = [
+    "sdl2",
+    #"mesa",
+    #"mesa-glu",
+    "openal",
+    "bzip2",
+    "openmp",
+    #"libvpx",
+    #"libwebp",
+    #"zmusic",
+]
