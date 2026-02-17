@@ -66,18 +66,17 @@ case "${TARGET}" in
 esac
 
 rm -rf "${COOKBOOK_BUILD}/initfs"
-mkdir -p "${COOKBOOK_BUILD}/initfs/etc"
+mkdir -p "${COOKBOOK_BUILD}/initfs/lib/init.d"
 
-cp "${COOKBOOK_SOURCE}/init.rc" "${COOKBOOK_BUILD}/initfs/etc/init.rc"
-cp "${COOKBOOK_SOURCE}/init_drivers.rc" "${COOKBOOK_BUILD}/initfs/etc/init_drivers.rc"
-if [ -e ${COOKBOOK_SOURCE}/${TARGET}/init_drivers.rc.${BOARD} ]; then
-    cp "${COOKBOOK_SOURCE}/${TARGET}/init_drivers.rc.${BOARD}" "${COOKBOOK_BUILD}/initfs/etc/init_drivers.rc"
-elif [ -e ${COOKBOOK_SOURCE}/${TARGET}/init_drivers.rc ]; then
-    cp "${COOKBOOK_SOURCE}/${TARGET}/init_drivers.rc" "${COOKBOOK_BUILD}/initfs/etc/init_drivers.rc"
+cp "${COOKBOOK_SOURCE}/init.d"/* "${COOKBOOK_BUILD}/initfs/lib/init.d/"
+if [ -e ${COOKBOOK_SOURCE}/init.d.${TARGET}/40_drivers.${BOARD} ]; then
+    cp "${COOKBOOK_SOURCE}/init.d.${TARGET}/40_drivers.${BOARD}" "${COOKBOOK_BUILD}/initfs/lib/init.d/40_drivers"
+elif [ -e ${COOKBOOK_SOURCE}/init.d.${TARGET}/40_drivers ]; then
+    cp "${COOKBOOK_SOURCE}/init.d.${TARGET}/40_drivers" "${COOKBOOK_BUILD}/initfs/lib/init.d/40_drivers"
 fi
 
-mkdir -pv "${COOKBOOK_BUILD}/initfs/etc/pcid"
-cp -v "${COOKBOOK_SOURCE}/drivers/initfs.toml" "${COOKBOOK_BUILD}/initfs/etc/pcid/initfs.toml"
+mkdir -pv "${COOKBOOK_BUILD}/initfs/lib/pcid.d"
+cp -v "${COOKBOOK_SOURCE}/drivers/initfs.toml" "${COOKBOOK_BUILD}/initfs/lib/pcid.d/initfs.toml"
 
 export CARGO_PROFILE_RELEASE_OPT_LEVEL=s
 export CARGO_PROFILE_RELEASE_PANIC=abort
