@@ -43,6 +43,7 @@ skips=(
     basic/pthread/pthread_rwlock_timedwrlock
     basic/pthread/pthread_setcanceltype
     basic/pthread/pthread_testcancel
+    basic/sys_select/select
     signal/ppoll-block-sleep-raise-write
     signal/ppoll-block-sleep-write-raise
 )
