@@ -2,11 +2,12 @@
 # build instructions: https://i2pd.readthedocs.io/en/latest/devs/building/unix/
 [source]
 git = "https://github.com/PurpleI2P/i2pd"
-rev = "beffdb9fe175a93164bd88ee0fafe1a22595ed15"
+rev = "2.59.0"
+shallow_clone = true
 [build]
 template = "cmake"
 dependencies = [
     "boost",
-    "openssl1",
+    "openssl3",
     "zlib",
 ]

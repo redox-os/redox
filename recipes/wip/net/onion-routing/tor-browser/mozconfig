@@ -1,0 +1,24 @@
+mk_add_options MOZ_OBJDIR=COOKBOOK_BUILD
+ac_add_options --target=TARGET
+ac_add_options --disable-debug
+ac_add_options --disable-tests
+ac_add_options --disable-audio-backends
+ac_add_options --disable-crashreporter
+ac_add_options --disable-updater
+ac_add_options --disable-dbus
+ac_add_options --disable-gecko-profiler
+ac_add_options --disable-profiling
+ac_add_options --disable-dmd # dark matter detector
+ac_add_options --without-wasm-sandboxed-libraries # need clang wasi
+
+# TODO: cairo-gtk3-x11-wayland or separate cairo-gtk3-wayland-only
+ac_add_options --enable-default-toolkit=cairo-gtk3-x11-only
+ac_add_options --enable-bootstrap=-clang # only use our clang
+ac_add_options --enable-optimize
+ac_add_options --with-system-nspr
+ac_add_options --with-gl-provider=EGL
+
+export MOZ_REQUIRE_SIGNING=
+export MOZ_TELEMETRY_REPORTING=
+export CC="TARGET_CC"
+export CXX="TARGET_CXX"

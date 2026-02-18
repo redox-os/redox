@@ -1,20 +1,17 @@
 #TODO camino crate error
+# broken since https://github.com/http-server-rs/http-server/pull/461
+# because it needs https://trunkrs.dev to work
 [source]
 git = "https://github.com/http-server-rs/http-server"
-# Broken since https://github.com/http-server-rs/http-server/pull/461
-# because it needs https://trunkrs.dev to work
-rev = "9ffa604de326e013330bced8e36dd7a6945ecb9f"
 shallow_clone = true
 
 [build]
 template = "custom"
 dependencies = [
-    "openssl1",
+    "openssl3",
 ]
 script = """
 DYNAMIC_INIT
-export OPENSSL_DIR="${COOKBOOK_SYSROOT}"
-export OPENSSL_STATIC="true"
 "${COOKBOOK_CARGO}" build \
         --manifest-path "${COOKBOOK_SOURCE}/crates/file-explorer-plugin/Cargo.toml" \
         --locked ${build_flags} --lib

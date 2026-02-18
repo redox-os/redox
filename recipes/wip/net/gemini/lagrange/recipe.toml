@@ -1,16 +1,17 @@
 #TODO not compiled or tested
 # build instructions: https://github.com/skyjake/lagrange#how-to-compile
-#TODO mpg123 dependency broken
 [source]
-tar = "https://git.skyjake.fi/gemini/lagrange/releases/download/v1.19.3/lagrange-1.19.3.tar.gz"
+tar = "https://git.skyjake.fi/gemini/lagrange/releases/download/v1.19.4/lagrange-1.19.4.tar.gz"
 [build]
 template = "cmake"
 cmakeflags = [
+    "-DENABLE_GAMEPAD=OFF",
+    "-DENABLE_POPUP_MENUS=OFF",
     "-DENABLE_MPG123=OFF"
 ]
 dependencies = [
     "sdl2",
-    "openssl1",
+    "openssl3",
     "zlib",
     "harfbuzz",
     "pcre",

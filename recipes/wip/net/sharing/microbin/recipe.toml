@@ -1,5 +1,7 @@
 #TODO not compiled or tested
 [source]
 git = "https://github.com/szabodanika/microbin"
+shallow_clone = true
 [build]
+DYNAMIC_INIT
 template = "cargo"

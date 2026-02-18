@@ -1,23 +1,69 @@
-#TODO probably wrong template, see see https://firefox-source-docs.mozilla.org/setup/linux_build.html#build
+#TODO patches for quinn-udp crate, switch into git fork
+# mach: https://firefox-source-docs.mozilla.org/setup/linux_build.html
 [source]
-tar = "https://dist.torproject.org/torbrowser/13.0.1/src-firefox-tor-browser-115.4.0esr-13.0-1-build2.tar.xz"
+tar = "https://dist.torproject.org/torbrowser/15.0.6/src-firefox-tor-browser-140.7.1esr-15.0-1-build1.tar.xz"
 [build]
-template = "configure"
+template = "custom"
 dependencies = [
-    "fontconfig",
-    "atk",
-    "cairo",
+    # "fontconfig",
+    # "atk",
+    # "cairo",
     "dbus",
-    "libffi",
-    "freetype2",
-    "gdk-pixbuf",
-    "glib",
+    # "libffi",
+    # "freetype2",
+    # "gdk-pixbuf",
+    # "glib",
     "gtk3",
     "pango",
-    "sqlite3",
-    "nss-nspr",
-    "startup-notification",
-    "zlib",
-    "libvpx",
-    "ffmpeg6",
+    "libxkbcommon-x11",
+    "libice",
+    "mesa-x11",
+    "x11proto-kb",
+    "xcb-proto",
+    "xextproto",
+    "nspr",
+    "libxrandr",
+    "libsm",
+# TODO: Should separate clang library and runtime 
+    "clang21"
+    # "sqlite3",
+    # "nss-nspr",
+    # "startup-notification",
+    # "zlib",
+    # "ffmpeg6",
+    # "expat",
+    # "libepoxy",
+    # "pipewire",
 ]
+dev-dependencies = [
+    "host:llvm21",
+    "host:llvm21.dev",
+    "host:llvm21.runtime",
+    "host:clang21",
+]
+script = """
+DYNAMIC_INIT
+
+cat ${COOKBOOK_RECIPE}/mozconfig > mozconfig
+sed -i "s|COOKBOOK_BUILD|${COOKBOOK_BUILD}|g" mozconfig
+sed -i "s|TARGET_CC|${CC}|g" mozconfig
+sed -i "s|TARGET_CXX|${CXX}|g" mozconfig
+sed -i "s|TARGET|${TARGET}|g" mozconfig
+export MOZCONFIG="${COOKBOOK_BUILD}/mozconfig"
+export PYTHONDONTWRITEBYTECODE=1
+unset CC_WRAPPER
+if [[ -z "$CI" ]]; then export MACH_NO_TERMINAL_FOOTER=1; fi;
+
+# clang-sys specifics
+PREFIX_INCLUDE="$COOKBOOK_HOST_SYSROOT/$TARGET/include"
+export CLANGFLAGS="-I $PREFIX_INCLUDE/c++/13.2.0 -I $PREFIX_INCLUDE/c++/13.2.0/$TARGET -I $PREFIX_INCLUDE/c++/13.2.0/backward"
+export CLANGFLAGS="$CLANGFLAGS -I $PREFIX_INCLUDE -I $COOKBOOK_SYSROOT/lib/clang/21/include -D__redox__"
+export BINDGEN_EXTRA_CLANG_ARGS_x86_64_unknown_redox="-target x86_64-unknown-redox -nostdinc $CLANGFLAGS"
+export LLVM_CONFIG_PATH="$COOKBOOK_TOOLCHAIN/bin/llvm-config"
+
+# Don't poison the stage1 compiler (host -> host)
+unset AR AS CC CXX LD LDFLAGS NM OBJCOPY OBJDUMP RANLIB READELF RUSTFLAGS STRIP
+
+(cd ${COOKBOOK_SOURCE} && ./mach build)
+rsync -a ./dist ${COOKBOOK_STAGE}
+"""

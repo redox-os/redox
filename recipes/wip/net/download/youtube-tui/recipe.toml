@@ -1,9 +1,10 @@
-#TODO openssl error
+#TODO not compiled or tested
 [source]
 git = "https://github.com/Siriusmart/youtube-tui"
+shallow_clone = true
 [build]
 template = "cargo"
 cargoflags = "--no-default-features"
 dependencies = [
-    "openssl1",
+    "openssl3",
 ]

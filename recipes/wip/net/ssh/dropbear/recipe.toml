@@ -2,6 +2,7 @@
 [source]
 git = "https://gitlab.redox-os.org/tfinnegan937/dropbear.git"
 rev = "4c6828d39f988712cf4d2a64c7acf15d76f24aa9"
+shallow_clone = true
 [build]
 template = "configure"
 configureflags = [
@@ -14,6 +15,6 @@ configureflags = [
     "--disable-wtmpx",
 ]
 dependencies = [
-    "openssl1",
+    "openssl3",
     "zlib"
 ]

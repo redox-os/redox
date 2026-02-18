@@ -1,15 +1,17 @@
-#TODO make dependencies work
+#TODO not compiled or tested
+#TODO discover minimum dependencies from gnu autotools log
+# build instructions: https://gitlab.com/gnuwget/wget2#build-requirements
 [source]
-tar = "https://ftp.gnu.org/gnu/wget/wget2-2.0.1.tar.gz"
+tar = "https://ftp.gnu.org/gnu/wget/wget2-2.2.1.tar.gz"
 [build]
 template = "configure"
-dependencies = [
-    "gettext",
-    "libiconv",
-    "zlib",
-    "pcre",
-    "gnutls",
-    "bzip2",
-    "xz",
-    "zstd",
-]
+# dependencies = [
+#     "gettext",
+#     "libiconv",
+#     "zlib",
+#     "pcre",
+#     "gnutls3",
+#     "bzip2",
+#     "xz",
+#     "zstd",
+# ]

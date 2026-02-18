@@ -1,8 +1,10 @@
 #TODO async-tar and rustix crates error
 [source]
 git = "https://github.com/magic-wormhole/magic-wormhole.rs"
+shallow_clone = true
 [build]
 template = "custom"
 script = """
+DYNAMIC_INIT
 cookbook_cargo_packages magic-wormhole
 """

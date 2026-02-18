@@ -2,6 +2,11 @@
 # build instructions: https://gitlab.gnome.org/World/warp#meson
 [source]
 git = "https://gitlab.gnome.org/World/warp"
-rev = "1daa60691aa1a697acaff55450dcccb085023fc7"
+shallow_clone = true
 [build]
 template = "meson"
+dependencies = [
+    "glib",
+    "gtk4",
+    "libadwaita",
+]

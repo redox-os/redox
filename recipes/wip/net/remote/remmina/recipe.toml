@@ -4,10 +4,11 @@
 [source]
 git = "https://gitlab.com/Remmina/Remmina"
 rev = "2a455eadd6462457d08c2d066c5c245e0dee3bf9"
+shallow_clone = true
 [build]
 template = "cmake"
 dependencies = [
-    "openssl1",
+    "openssl3",
     "libxml2",
     "gstreamer",
     "ffmpeg6",

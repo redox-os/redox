@@ -1,5 +1,6 @@
 #TODO signal-hook crate error
 [source]
 git = "https://github.com/static-web-server/static-web-server"
+shallow_clone = true
 [build]
 template = "cargo"
