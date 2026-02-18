@@ -11,7 +11,8 @@ dependencies = [
 script = """
 DYNAMIC_INIT
 export GETTEXT_DIR="${COOKBOOK_SYSROOT}/usr"
-cookbook_cargo --no-default-features
+#TODO: drop patched rustix after upstream release
+cookbook_cargo --no-default-features --config 'patch.crates-io.rustix.git = "https://github.com/bytecodealliance/rustix"'
 
 mkdir -pv "${COOKBOOK_STAGE}/usr/share/ui/apps"
 cp -v "${COOKBOOK_RECIPE}/manifest" "${COOKBOOK_STAGE}/usr/share/ui/apps/30_cosmic-edit"
