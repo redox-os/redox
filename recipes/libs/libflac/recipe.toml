@@ -1,8 +1,19 @@
 [source]
-tar = "https://github.com/xiph/flac/releases/download/1.4.2/flac-1.4.2.tar.xz"
-blake3 = "d165b9a18eb83b6f6e9993cc2074547566df706fc61464eb17ff088fd0c88104"
+tar = "https://github.com/xiph/flac/releases/download/1.5.0/flac-1.5.0.tar.xz"
+blake3 = "2adca3cd8da4b577ebb9c12e73c91cf6f6a7feb7485b3f003853b82710bada84"
+script = """
+autotools_recursive_regenerate
+"""
+
 [build]
-template = "configure"
+template = "custom"
 dependencies = [
     "libogg",
 ]
+script = """
+DYNAMIC_INIT
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --with-ogg="${COOKBOOK_SYSROOT}"
+)
+cookbook_configure
+"""
