@@ -127,6 +127,7 @@ netutils = {}
 neverball = {}
 nghttp2 = {}
 nginx = {}
+nodejs-21 = {}
 nushell = {}
 onefetch = {}
 openjazz = {}
