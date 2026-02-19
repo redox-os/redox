@@ -56,16 +56,17 @@ data = """
 unset DISPLAY
 export COSMIC_BACKEND=winit
 export LD_DEBUG=all
+export RUST_BACKTRACE=full
 export RUST_LOG=debug
 
 # For cosmic-comp (more features)
-#cosmic-comp wayland-session
+cosmic-comp wayland-session
 
 # For smallvil (easier to debug)
-export WAYLAND_DISPLAY=wayland-1
-smallvil_smallvil &
-sleep 2
-wayland-session
+#export WAYLAND_DISPLAY=wayland-1
+#smallvil_smallvil &
+#sleep 2
+#wayland-session
 """
 
 [[files]]
