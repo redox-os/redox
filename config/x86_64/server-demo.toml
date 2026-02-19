@@ -36,13 +36,6 @@ website = {}
 
 
 [[files]]
-# Undocumented usage of rsdctl, pointing to notifications dir
-path = "/usr/lib/init.d/19_rustyd"
-data = """
-export RSDCTL_ADDR /var/run/rustysd/control.socket
-"""
-
-[[files]]
 path = "/usr/lib/init.d/98_keygen_sh"
 data = """
 bash /root/keygen.sh
@@ -51,7 +44,8 @@ bash /root/keygen.sh
 [[files]]
 path = "/usr/lib/init.d/99_rustysd"
 data = """
-rustysd --conf /etc/rustysd
+# Undocumented usage of rsdctl, pointing to notifications dir
+RSDCTL_ADDR=/var/run/rustysd/control.socket rustysd --conf /etc/rustysd
 """
 
 [[files]]
@@ -307,9 +301,9 @@ data = """
 # > sudo bash server.sh
 #
 # The server will start port 22 (ssh), 80 (static web) and 8081 (php)
-# If you use the Redox OS build system, starting QEMU with `net=redir` 
+# If you use the Redox OS build system, starting QEMU with `net=redir`
 #   should expose those port to 8022, 8080 and 8081.
 # Try logging in to console via SSH with `ssh user@localhost -p 8022`
-# 
+#
 ##############################################################################
 """

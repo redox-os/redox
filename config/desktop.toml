@@ -30,11 +30,7 @@ shared-mime-info = {}
 path = "/usr/lib/init.d/20_orbital"
 data = """
 notify audiod
-export BROWSER /bin/netsurf-fb
-export VT 3
-nowait orbital orblogin launcher
-unset BROWSER
-unset VT
+nowait BROWSER=/bin/netsurf-fb VT=3 orbital orblogin launcher
 """
 
 # Override console config to not switch to VT 2

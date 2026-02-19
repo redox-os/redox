@@ -27,7 +27,6 @@ xkeyboard-config = {}
 [[files]]
 path = "/usr/lib/init.d/10_wayland_env"
 data = """
-export XDG_RUNTIME_DIR /tmp/run/user/0
 #TODO: mkdir -p not working
 mkdir -p /tmp/run
 mkdir -p /tmp/run/user
@@ -40,11 +39,7 @@ glib-compile-schemas /usr/share/glib-2.0/schemas/
 path = "/usr/lib/init.d/20_orbital"
 data = """
 notify audiod
-export BROWSER /bin/netsurf-fb
-export VT 3
-nowait orbital orbital-wayland
-unset BROWSER
-unset VT
+nowait BROWSER=/bin/netsurf-fb VT=3 orbital orbital-wayland
 """
 
 [[files]]
@@ -52,6 +47,8 @@ path = "/usr/bin/orbital-wayland"
 mode = 0o755
 data = """
 #!/usr/bin/env bash
+
+export XDG_RUNTIME_DIR /tmp/run/user/0
 
 unset DISPLAY
 export COSMIC_BACKEND=winit
