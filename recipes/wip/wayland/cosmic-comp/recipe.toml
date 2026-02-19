@@ -7,11 +7,15 @@ branch = "redox"
 template = "custom"
 dependencies = [
     "libffi",
+    #"libgbm",
+    #"libinput",
     "libwayland",
     "libxkbcommon",
+    "mesa",
+    "pixman",
+    "seatd",
 ]
 script = """
 DYNAMIC_INIT
-export RUSTFLAGS="${RUSTFLAGS}"
-cookbook_cargo --no-default-features
+cookbook_cargo --no-default-features --config 'profile.release.lto = "thin"'
 """
