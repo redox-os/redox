@@ -12,6 +12,8 @@ RELIBC_FREESTANDING_TARGET=recipes/core/relibc/target/$(TARGET)/$(HOST_TARGET)
 RELIBC_TARGET=recipes/core/relibc/target/$(TARGET)
 LLVM_TARGET=recipes/dev/llvm21/target/$(HOST_TARGET)/$(TARGET)
 RUST_TARGET=recipes/dev/rust/target/$(HOST_TARGET)/$(TARGET)
+CLANG_TARGET=recipes/dev/clang21/target/$(HOST_TARGET)/$(TARGET)
+LLD_TARGET=recipes/dev/lld21/target/$(HOST_TARGET)/$(TARGET)
 
 # official RISC-V support introduced in newer version
 UPSTREAM_RUSTC_VERSION=2025-11-15
@@ -323,7 +325,7 @@ endif
 endif
 
 # BUILD RUST ---------------------------------------------------
-else 
+else
 
 $(PREFIX)/rust-install: | $(PREFIX)/libtool-install $(FSTOOLS_TAG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
@@ -337,7 +339,7 @@ else
 	cp -r "$(RUST_TARGET)/stage/usr/". "$@.partial"
 	cp -r "$(LLVM_TARGET)/stage/usr/". "$@.partial"
 	mv "$@.partial" "$@"
-# TODO: Cache from RUST_TARGET and LLVM_TARGET is currently not cleared.
+# TODO: Cache from RUST_TARGET is currently not cleared.
 # TIP: If you're developing std for rust, remove COOKBOOK_CLEAN_BUILD=true 
 #      at the top of this file so your next rust build reuses the build cache
 endif
@@ -351,4 +353,32 @@ $(PREFIX)/rust-install.tar.gz: $(PREFIX)/rust-install
 		--file "$@" \
 		--directory="$<" \
 		.
+
+# BUILD CLANG ---------------------------------------------------
+$(PREFIX)/clang-install: | $(PREFIX)/rust-install $(PREFIX)/libtool-install $(FSTOOLS_TAG) $(CONTAINER_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
+	@echo "\033[1;36;49mBuilding clang-install\033[0m"
+	rm -rf "$@.partial" "$@"
+	export PATH="$(ROOT)/$(PREFIX)/libtool-install/bin:$$PATH" \
+		$(PREFIX_CONFIG) COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_TARGET=$(TARGET) && \
+		./target/release/repo cook host:llvm21 host:clang21 host:lld21
+# skipping dev, while llvm libraries is already in rust
+	cp -r "$(LLVM_TARGET)/stage.runtime/usr/". "$@.partial"
+	cp -r "$(CLANG_TARGET)/stage/usr/". "$@.partial"
+	cp -r "$(LLD_TARGET)/stage/usr/". "$@.partial"
+	mv "$@.partial" "$@"
+# no longer needed, delete build files to save disk space
+	rm -rf $(LLVM_TARGET) $(CLANG_TARGET) $(LLD_TARGET)
+endif
+
+$(PREFIX)/clang-install.tar.gz: $(PREFIX)/clang-install
+	tar \
+		--create \
+		--gzip \
+		--file "$@" \
+		--directory="$<" \
+		.
+
 endif
