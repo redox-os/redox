@@ -1,4 +1,4 @@
-#TODO: does not work
+#TODO: performance issues, no keyboard input
 [source]
 git = "https://github.com/jackpot51/cosmic-comp"
 branch = "redox"
