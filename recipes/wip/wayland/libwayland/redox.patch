@@ -1,25 +1,3 @@
-diff -ruwN source-old/cursor/os-compatibility.c source/cursor/os-compatibility.c
---- source-old/cursor/os-compatibility.c	2025-07-06 06:11:26.000000000 -0600
-+++ source/cursor/os-compatibility.c	2025-11-13 13:00:31.354126754 -0700
-@@ -79,12 +79,18 @@
- #ifdef HAVE_MKOSTEMP
- 	fd = mkostemp(tmpname, O_CLOEXEC);
- 	if (fd >= 0)
-+		fprintf(stderr, "ignoring unlink of %s\n", tmpname);
-+	/*TODO: keep node around after unlink
- 		unlink(tmpname);
-+	*/
- #else
- 	fd = mkstemp(tmpname);
- 	if (fd >= 0) {
- 		fd = set_cloexec_or_close(fd);
-+		fprintf(stderr, "ignoring unlink of %s\n", tmpname);
-+		/*TODO: keep node around after unlink
- 		unlink(tmpname);
-+		*/
- 	}
- #endif
- 
 diff -ruwN source-old/meson.build source/meson.build
 --- source-old/meson.build	2025-07-06 06:11:26.000000000 -0600
 +++ source/meson.build	2025-11-13 12:08:42.512612558 -0700
