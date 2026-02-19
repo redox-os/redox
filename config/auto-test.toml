@@ -18,7 +18,14 @@ relibc-tests-bins = {}
 [[files]]
 path = "/usr/lib/init.d/30_console"
 data = """
-export RUST_BACKTRACE full
+ion /usr/lib/run_tests.ion
+"""
+
+[[files]]
+path = "/usr/lib/run_tests.ion"
+data = """
+#!/usr/bin/env ion
+export RUST_BACKTRACE=full
 cd /home/user/acid
 cargo test
 bash /root/relibc-tests/run.sh
