@@ -57,11 +57,13 @@ else
 	$(MAKE) PREFIX_BINARY=0 \
 		"prefix/$(TARGET)/gcc-install.tar.gz" \
 		"prefix/$(TARGET)/relibc-install.tar.gz" \
-		"prefix/$(TARGET)/rust-install.tar.gz"
+		"prefix/$(TARGET)/rust-install.tar.gz" \
+		"prefix/$(TARGET)/clang-install.tar.gz"
 	rm -rf "build/toolchain/$(HOST_TARGET)/$(TARGET)"
 	mkdir -p "build/toolchain/$(HOST_TARGET)/$(TARGET)"
 	cp "prefix/$(TARGET)/gcc-install.tar.gz" "build/toolchain/$(HOST_TARGET)/$(TARGET)/gcc-install.tar.gz"
 	cp "prefix/$(TARGET)/relibc-install.tar.gz" "build/toolchain/$(HOST_TARGET)/$(TARGET)/relibc-install.tar.gz"
 	cp "prefix/$(TARGET)/rust-install.tar.gz" "build/toolchain/$(HOST_TARGET)/$(TARGET)/rust-install.tar.gz"
+	cp "prefix/$(TARGET)/clang-install.tar.gz" "build/toolchain/$(HOST_TARGET)/$(TARGET)/clang-install.tar.gz"
 	cd "build/toolchain/$(HOST_TARGET)/$(TARGET)" && sha256sum -b * > SHA256SUM
 endif
