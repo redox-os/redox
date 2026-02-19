@@ -17,6 +17,7 @@ cosmic-comp = {}
 gtk3 = {}
 libxcursor = {}
 mesa = {}
+"pop-icon-theme.cursors" = {}
 smallvil = {}
 softbuffer-wayland = {}
 wayland-rs = {}
@@ -24,17 +25,7 @@ wayland-rs = {}
 winit-wayland = {}
 xkeyboard-config = {}
 
-[[files]]
-path = "/usr/lib/init.d/10_wayland_env"
-data = """
-#TODO: mkdir -p not working
-mkdir -p /tmp/run
-mkdir -p /tmp/run/user
-mkdir -p /tmp/run/user/0
-glib-compile-schemas /usr/share/glib-2.0/schemas/
-"""
-
-# Overridden to launch smallvil instead of orblogin
+# Overridden to launch wayland compositor instead of orblogin
 [[files]]
 path = "/usr/lib/init.d/20_orbital"
 data = """
@@ -48,13 +39,25 @@ mode = 0o755
 data = """
 #!/usr/bin/env bash
 
-export XDG_RUNTIME_DIR /tmp/run/user/0
+set -ex
 
+# Prepare environment
 unset DISPLAY
 export COSMIC_BACKEND=winit
 export LD_DEBUG=all
 export RUST_BACKTRACE=full
 export RUST_LOG=debug
+export XCURSOR_THEME=Pop
+export XDG_RUNTIME_DIR=/tmp/run/user/0
+
+# Create XDG runtime directory
+#TODO: mkdir -p not working
+mkdir -p /tmp/run
+mkdir -p /tmp/run/user
+mkdir -p /tmp/run/user/0
+
+# Compile glib schemas
+glib-compile-schemas /usr/share/glib-2.0/schemas/
 
 # For cosmic-comp (more features)
 cosmic-comp wayland-session
@@ -72,17 +75,20 @@ mode = 0o755
 data = """
 #!/usr/bin/env bash
 
+set -ex
+
 #env G_MAIN_POLL_DEBUG=1 G_MESSAGES_DEBUG=all LD_DEBUG=all WEBKIT_DEBUG=all MiniBrowser&
 printenv
 #wayland-rs_simple_window
 #winit-wayland_window
-softbuffer-wayland_animation
+#softbuffer-wayland_animation
+gtk3-widget-factory
 """
 
 [[files]]
 path = "/etc/gtk-3.0/settings.ini"
 data = """
 [Settings]
-gtk-cursor-theme-name = "Adwaita"
-gtk-icon-theme-name = "Adwaita"
+gtk-cursor-theme-name = "Pop"
+gtk-icon-theme-name = "Cosmic"
 """
