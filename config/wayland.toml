@@ -13,13 +13,14 @@ filesystem_size = 2048
 [packages]
 adwaita-icon-theme = {}
 bash = {}
+cosmic-comp = {}
 gtk3 = {}
 libxcursor = {}
 mesa = {}
 smallvil = {}
 softbuffer-wayland = {}
 wayland-rs = {}
-webkitgtk3 = {}
+#webkitgtk3 = {}
 winit-wayland = {}
 xkeyboard-config = {}
 
@@ -27,7 +28,10 @@ xkeyboard-config = {}
 path = "/usr/lib/init.d/10_wayland_env"
 data = """
 export XDG_RUNTIME_DIR /tmp/run/user/0
-mkdir -p $XDG_RUNTIME_DIR
+#TODO: mkdir -p not working
+mkdir -p /tmp/run
+mkdir -p /tmp/run/user
+mkdir -p /tmp/run/user/0
 export WAYLAND_DISPLAY wayland-1
 glib-compile-schemas /usr/share/glib-2.0/schemas/
 """
@@ -52,10 +56,12 @@ data = """
 
 export LD_DEBUG=all
 export RUST_LOG=debug
-smallvil_smallvil &
+unset DISPLAY
+cosmic-comp &
+#smallvil_smallvil &
 sleep 2
-env G_MAIN_POLL_DEBUG=1 G_MESSAGES_DEBUG=all LD_DEBUG=all WEBKIT_DEBUG=all MiniBrowser&
-#softbuffer-wayland_animation &
+#env G_MAIN_POLL_DEBUG=1 G_MESSAGES_DEBUG=all LD_DEBUG=all WEBKIT_DEBUG=all MiniBrowser&
+softbuffer-wayland_animation &
 #wayland-rs_simple_window &
 #winit-wayland_window &
 """
