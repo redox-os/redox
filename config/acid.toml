@@ -16,7 +16,14 @@ ion = {}
 [[files]]
 path = "/usr/lib/init.d/10_acid"
 data = """
-export RUST_BACKTRACE full
+ion /usr/lib/run_acid.ion
+"""
+
+[[files]]
+path = "/usr/lib/run_acid.ion"
+data = """
+#!/usr/bin/env ion
+export RUST_BACKTRACE=full
 cd /home/user/acid
 cargo test
 shutdown

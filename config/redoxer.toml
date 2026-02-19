@@ -25,23 +25,25 @@ dhcpd
 """
 
 [[files]]
-path = "/usr/lib/init.d/20_env"
+path = "/usr/lib/init.d/30_redoxer"
 data = """
-echo
-echo ## preparing environment ##
-export GROUPS 0
-export HOME /root
-export HOST redox
-export SHELL /bin/sh
-export UID 0
-export USER root
-cd /root
-env
+ion /usr/lib/run_redoxer.ion
 """
 
 [[files]]
-path = "/usr/lib/init.d/30_redoxer"
+path = "/usr/lib/run_redoxer.ion"
 data = """
+#!/usr/bin/env ion
+echo
+echo ## preparing environment ##
+export GROUPS=0
+export HOME=/root
+export HOST=redox
+export SHELL=/bin/sh
+export UID=0
+export USER=root
+cd /root
+env
 echo
 echo ## running redoxer ##
 redoxerd
