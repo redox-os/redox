@@ -32,7 +32,6 @@ export XDG_RUNTIME_DIR /tmp/run/user/0
 mkdir -p /tmp/run
 mkdir -p /tmp/run/user
 mkdir -p /tmp/run/user/0
-export WAYLAND_DISPLAY wayland-1
 glib-compile-schemas /usr/share/glib-2.0/schemas/
 """
 
@@ -54,16 +53,32 @@ mode = 0o755
 data = """
 #!/usr/bin/env bash
 
+unset DISPLAY
+export COSMIC_BACKEND=winit
 export LD_DEBUG=all
 export RUST_LOG=debug
-unset DISPLAY
-cosmic-comp &
-#smallvil_smallvil &
+
+# For cosmic-comp (more features)
+#cosmic-comp wayland-session
+
+# For smallvil (easier to debug)
+export WAYLAND_DISPLAY=wayland-1
+smallvil_smallvil &
 sleep 2
+wayland-session
+"""
+
+[[files]]
+path = "/usr/bin/wayland-session"
+mode = 0o755
+data = """
+#!/usr/bin/env bash
+
 #env G_MAIN_POLL_DEBUG=1 G_MESSAGES_DEBUG=all LD_DEBUG=all WEBKIT_DEBUG=all MiniBrowser&
-softbuffer-wayland_animation &
-#wayland-rs_simple_window &
-#winit-wayland_window &
+printenv
+#wayland-rs_simple_window
+#winit-wayland_window
+softbuffer-wayland_animation
 """
 
 [[files]]
