@@ -1,4 +1,4 @@
-#TODO: does not compile
+#TODO: does not work
 [source]
 git = "https://github.com/jackpot51/cosmic-comp"
 branch = "redox"
@@ -7,8 +7,7 @@ branch = "redox"
 template = "custom"
 dependencies = [
     "libffi",
-    #"libgbm",
-    #"libinput",
+    #TODO: requires evdev and some udev implementation: "libinput",
     "libwayland",
     "libxkbcommon",
     "mesa",
