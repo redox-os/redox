@@ -1,5 +1,19 @@
-#TODO compiled but not tested
+#TODO promote
 [source]
-tar = "https://downloads.xiph.org/releases/opus/opus-1.5.1.tar.gz"
+tar = "https://downloads.xiph.org/releases/opus/opus-1.6.1.tar.gz"
+blake3 = "874bd7d28e24f10d88105c7d846a2e5bf085284af91a0ee36b05674a8f78e759"
+script = """
+autotools_recursive_regenerate
+"""
+
 [build]
-template = "configure"
+template = "custom"
+script = """
+DYNAMIC_INIT
+# Redox does not support any of the aarch64 run-time cpu capability detection
+# APIs supported by libopus
+case "${TARGET}" in
+    aarch64-*-redox) COOKBOOK_CONFIGURE_FLAGS+=(--disable-rtcd);;
+esac
+cookbook_configure
+"""
