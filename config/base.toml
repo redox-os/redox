@@ -35,7 +35,7 @@ nowait sudo --daemon
 [[files]]
 path = "/usr/lib/init.d/00_drivers"
 data = """
-pcid-spawner /etc/pcid.d/
+pcid-spawner
 """
 
 [[files]]
