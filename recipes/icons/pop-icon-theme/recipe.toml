@@ -1,12 +1,18 @@
 [source]
 git = "https://github.com/pop-os/icon-theme.git"
 shallow_clone = true
+
 [build]
 template = "custom"
 script = """
 meson setup -Dprefix=/ . "${COOKBOOK_SOURCE}"
 env DESTDIR="${COOKBOOK_STAGE}" meson install
-#TODO: reduce cursors folder size: https://github.com/pop-os/icon-theme/issues/136
-rm -rf "${COOKBOOK_STAGE}/share/icons/Pop/cursors"
-rm -rf "${COOKBOOK_STAGE}/share/icons/Pop/cursor.theme"
 """
+
+[[optional-packages]]
+name = "cursors"
+files = [
+    "share/icons/Pop/cursors**",
+    "share/icons/Pop/cursor.theme",
+]
+
