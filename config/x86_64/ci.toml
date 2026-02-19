@@ -145,6 +145,7 @@ orbutils = {}
 orbutils-background = {}
 orbutils-launcher = {}
 orbutils-orblogin = {}
+os-test-bins = {}
 osdemo = {}
 patch = {}
 patchelf = {}
