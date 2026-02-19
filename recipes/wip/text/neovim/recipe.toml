@@ -1,4 +1,5 @@
-#TODO mostly work, kinda slow, can't quit (signal issues?)
+#TODO working with workarounds on SIGCHLD
+#TODO no documentation
 [source]
 git = "https://github.com/neovim/neovim"
 rev = "v0.11.5"
@@ -37,6 +38,9 @@ cookbook_cmake
 
 # needed to workaround bootstrapping process
 cp ./lib/libnlua0.so ${COOKBOOK_STAGE}/usr/lib/nvim/
+patchelf --replace-needed \
+  "${COOKBOOK_SYSROOT}/usr/lib/liblpeg.so" \
+  'liblpeg.so.1' ${COOKBOOK_STAGE}/usr/lib/nvim/libnlua0.so
 
 else
 

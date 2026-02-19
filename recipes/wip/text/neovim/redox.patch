@@ -1,7 +1,8 @@
-diff -ruwN source/runtime/CMakeLists.txt source-new/runtime/CMakeLists.txt
---- source/runtime/CMakeLists.txt	2025-07-13 01:34:12.000000000 +0700
-+++ source-new/runtime/CMakeLists.txt	2025-09-16 14:46:20.134790482 +0700
-@@ -24,37 +24,6 @@
+diff --git a/runtime/CMakeLists.txt b/runtime/CMakeLists.txt
+index d103b5f4..37d9444e 100644
+--- a/runtime/CMakeLists.txt
++++ b/runtime/CMakeLists.txt
+@@ -24,37 +24,6 @@ add_custom_command(OUTPUT ${GENERATED_SYN_VIM}
  
  file(GLOB PACKAGES CONFIGURE_DEPENDS ${PROJECT_SOURCE_DIR}/runtime/pack/dist/opt/*)
  
@@ -39,7 +40,7 @@ diff -ruwN source/runtime/CMakeLists.txt source-new/runtime/CMakeLists.txt
  set(BUILDDOCFILES)
  foreach(DF ${DOCFILES})
    get_filename_component(F ${DF} NAME)
-@@ -65,8 +34,6 @@
+@@ -65,8 +34,6 @@ add_custom_command(OUTPUT ${GENERATED_HELP_TAGS}
    COMMAND ${CMAKE_COMMAND} -E remove_directory doc
    COMMAND ${CMAKE_COMMAND} -E copy_directory
      ${PROJECT_SOURCE_DIR}/runtime/doc doc
@@ -48,7 +49,7 @@ diff -ruwN source/runtime/CMakeLists.txt source-new/runtime/CMakeLists.txt
    DEPENDS
      nvim_bin
      nvim_runtime_deps
-@@ -78,7 +45,6 @@
+@@ -78,7 +45,6 @@ add_custom_target(
    DEPENDS
      ${GENERATED_SYN_VIM}
      ${GENERATED_HELP_TAGS}
@@ -56,21 +57,22 @@ diff -ruwN source/runtime/CMakeLists.txt source-new/runtime/CMakeLists.txt
  )
  
  # CMake is painful here.  It will create the destination using the user's
-@@ -88,10 +54,6 @@
+@@ -87,10 +53,6 @@ add_custom_target(
+ # seems like the best compromise.  If we create it, then everyone can see it.
  # If it's preexisting, leave it alone.
  
- install_helper(
+-install_helper(
 -  FILES ${GENERATED_HELP_TAGS} ${BUILDDOCFILES}
 -  DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/nvim/runtime/doc)
 -
--install_helper(
+ install_helper(
    FILES ${GENERATED_SYN_VIM}
    DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/nvim/runtime/syntax/vim)
- 
-diff -ruwN source/src/nvim/CMakeLists.txt source-new/src/nvim/CMakeLists.txt
---- source/src/nvim/CMakeLists.txt	2025-07-13 01:34:12.000000000 +0700
-+++ source-new/src/nvim/CMakeLists.txt	2025-09-16 16:07:40.327319085 +0700
-@@ -93,19 +93,6 @@
+diff --git a/src/nvim/CMakeLists.txt b/src/nvim/CMakeLists.txt
+index 4a8fe4c6..55a9ede1 100644
+--- a/src/nvim/CMakeLists.txt
++++ b/src/nvim/CMakeLists.txt
+@@ -93,19 +93,6 @@ if(NOT MSVC)
  endif()
  
  # -fstack-protector breaks Mingw-w64 builds
@@ -90,7 +92,7 @@ diff -ruwN source/src/nvim/CMakeLists.txt source-new/src/nvim/CMakeLists.txt
  
  # Compiler specific options
  if(MSVC)
-@@ -145,9 +132,6 @@
+@@ -145,9 +132,6 @@ endif()
  # Platform specific options
  if(UNIX)
    target_link_libraries(main_lib INTERFACE m)
@@ -100,9 +102,27 @@ diff -ruwN source/src/nvim/CMakeLists.txt source-new/src/nvim/CMakeLists.txt
  endif()
  
  if(CMAKE_SYSTEM_NAME MATCHES "Windows")
-diff -ruwN source/src/nvim/os/os_defs.h source-new/src/nvim/os/os_defs.h
---- source/src/nvim/os/os_defs.h	2025-07-13 01:34:12.000000000 +0700
-+++ source-new/src/nvim/os/os_defs.h	2025-09-16 13:45:00.379142388 +0700
+diff --git a/src/nvim/main.c b/src/nvim/main.c
+index 5c1e415c..fa6fa859 100644
+--- a/src/nvim/main.c
++++ b/src/nvim/main.c
+@@ -698,6 +698,12 @@ void getout(int exitval)
+   assert(!ui_client_channel_id);
+   exiting = true;
+ 
++  // parent doesn't notice SIGCHILD
++  pid_t ppid = getppid();
++  if (ppid > 1) {
++      kill(ppid, SIGKILL); 
++  }
++
+   // make sure startuptimes have been flushed
+   time_finish();
+ 
+diff --git a/src/nvim/os/os_defs.h b/src/nvim/os/os_defs.h
+index db575e00..b42cee2a 100644
+--- a/src/nvim/os/os_defs.h
++++ b/src/nvim/os/os_defs.h
 @@ -28,6 +28,8 @@
  
  #if !defined(NAME_MAX) && defined(_XOPEN_NAME_MAX)
@@ -112,3 +132,24 @@ diff -ruwN source/src/nvim/os/os_defs.h source-new/src/nvim/os/os_defs.h
  #endif
  
  #define BASENAMELEN (NAME_MAX - 5)
+diff --git a/src/nvim/os/shell.c b/src/nvim/os/shell.c
+index 7dff8a1b..ebc61542 100644
+--- a/src/nvim/os/shell.c
++++ b/src/nvim/os/shell.c
+@@ -880,7 +880,16 @@ static int do_os_system(char **argv, const char *input, size_t len, char **outpu
+   MultiQueue *events = multiqueue_new_child(main_loop.events);
+   proc->events = events;
+   proc->argv = argv;
++#ifdef __redox__
++  msg_puts("Shell execution is disabled until https://gitlab.redox-os.org/redox-os/redox/-/issues/1762 closed and this workaround removed\n");
++  loop_poll_events(&main_loop, 0);
++  multiqueue_free(events);
++  return -1;
++  int status = -1;
++#else
+   int status = proc_spawn(proc, has_input, true, true);
++#endif
++
+   if (status) {
+     loop_poll_events(&main_loop, 0);
+     // Failed, probably 'shell' is not executable.
