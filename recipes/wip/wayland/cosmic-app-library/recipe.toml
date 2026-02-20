@@ -1,0 +1,16 @@
+[source]
+git = "https://github.com/jackpot51/cosmic-app-library"
+branch = "redox"
+
+[build]
+template = "custom"
+dependencies = [
+    "gettext",
+    "libwayland",
+    "libxkbcommon",
+]
+script = """
+DYNAMIC_INIT
+export GETTEXT_DIR="${COOKBOOK_SYSROOT}/usr"
+cookbook_cargo --no-default-features
+"""
