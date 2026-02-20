@@ -9,6 +9,6 @@ patches = [
 template = "custom"
 script = """
 DYNAMIC_INIT
-PACKAGE_PATH=cli cookbook_cargo
+PACKAGE_PATH=cli cookbook_cargo --config 'patch.crates-io.rustix.git = "https://github.com/bytecodealliance/rustix"'
 cookbook_cmake "${COOKBOOK_SOURCE}"/lib
 """
