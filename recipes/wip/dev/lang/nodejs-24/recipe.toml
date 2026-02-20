@@ -1,6 +1,6 @@
 #TODO requires stdc++20
 [source]
-tar = "https://nodejs.org/dist/v24.5.0/node-v24.9.0.tar.xz"
+tar = "https://nodejs.org/dist/v24.9.0/node-v24.9.0.tar.xz"
 blake3 = "c710713c9144dc2dfadaef1d180b295d85edd9945513017fc700af68eb08a251"
 patches = ["01_redox.patch"]
 
