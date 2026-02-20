@@ -13,9 +13,12 @@ filesystem_size = 2048
 [packages]
 adwaita-icon-theme = {}
 bash = {}
+cosmic-app-library = {}
 cosmic-comp = {}
 gtk3 = {}
+libcosmic-wayland = {}
 libxcursor = {}
+iced-wayland = {}
 mesa = {}
 "pop-icon-theme.cursors" = {}
 smallvil = {}
@@ -44,6 +47,7 @@ set -ex
 # Prepare environment
 unset DISPLAY
 export COSMIC_BACKEND=winit
+export HOME=/root
 export LD_DEBUG=all
 export RUST_BACKTRACE=full
 export RUST_LOG=debug
@@ -82,7 +86,10 @@ printenv
 #wayland-rs_simple_window
 #winit-wayland_window
 #softbuffer-wayland_animation
-gtk3-widget-factory
+#iced-wayland_sctk_lazy
+libcosmic-wayland_application
+#gtk3-widget-factory
+#cosmic-app-library run
 """
 
 [[files]]
