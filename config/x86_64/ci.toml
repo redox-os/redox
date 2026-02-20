@@ -121,6 +121,7 @@ nano = {}
 nasm = {}
 ncurses = {}
 ncursesw = {}
+neovim = {}
 netdb = {}
 netsurf = {}
 netutils = {}
