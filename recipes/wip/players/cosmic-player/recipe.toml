@@ -21,6 +21,7 @@ DYNAMIC_INIT
     --release \
     --bin cosmic-player \
     --no-default-features \
+    --config 'patch.crates-io.rustix.git = "https://github.com/bytecodealliance/rustix"' \
     -- \
     -C link-args="-lgmodule-2.0 -lffi -liconv -lpcre2-8 -lz"
 mkdir -pv "${COOKBOOK_STAGE}/usr/bin/"

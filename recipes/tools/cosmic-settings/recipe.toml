@@ -11,7 +11,7 @@ dependencies = [
 script = """
 DYNAMIC_INIT
 export GETTEXT_DIR="${COOKBOOK_SYSROOT}/usr"
-(COOKBOOK_SOURCE+="/cosmic-settings" cookbook_cargo --no-default-features)
+(COOKBOOK_SOURCE+="/cosmic-settings" cookbook_cargo --no-default-features --config 'patch.crates-io.rustix.git = "https://github.com/bytecodealliance/rustix"')
 
 mkdir -pv "${COOKBOOK_STAGE}/usr/bin/"
 cp -v "target/${TARGET}/release/cosmic-settings" "${COOKBOOK_STAGE}/usr/bin/"
