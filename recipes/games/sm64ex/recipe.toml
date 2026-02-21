@@ -19,7 +19,7 @@ cp -v "${COOKBOOK_RECIPE}/baserom.us.z64" baserom.us.z64
 #TODO: do this in cook instead
 unset AR AS CC CXX LD NM OBJCOPY OBJDUMP RANLIB READELF STRIP
 
-export REDOX_CFLAGS="${CFLAGS}"
+export REDOX_CFLAGS="${CFLAGS} -I${COOKBOOK_SYSROOT}/include"
 export REDOX_LDFLAGS="${LDFLAGS}"
 unset CFLAGS LDFLAGS
 
