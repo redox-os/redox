@@ -35,7 +35,7 @@ path = "/usr/lib/run_redoxer.ion"
 data = """
 #!/usr/bin/env ion
 echo
-echo ## preparing environment ##
+echo "## preparing environment ##"
 export GROUPS=0
 export HOME=/root
 export HOST=redox
@@ -45,6 +45,6 @@ export USER=root
 cd /root
 env
 echo
-echo ## running redoxer ##
+echo "## running redoxer ##"
 redoxerd
 """
