@@ -8,7 +8,6 @@ dependencies = [
     "gnu-make",
     "gnu-grep",
     "ripgrep",
-    "libffi",
     "rustpython",
     "lua54",
     "nasm",

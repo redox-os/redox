@@ -16,13 +16,9 @@ periodictable = {}
 intel-one-mono = {}
 
 # Shell Apps
-bottom = {}
-curl = {}
-git = {}
 gnu-grep = {}
 htop = {}
 ripgrep = {}
-sodium = {}
 terminfo = {}
 vim = {}
 
@@ -36,7 +32,7 @@ sopwith = {}
 # syobonaction = {} # linking errors
 
 # Demos
-acid = {}
+auto-test = {}
 # nushell = {}
 orbclient = {}
 pixelcannon = {}

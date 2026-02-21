@@ -11,11 +11,5 @@ prompt = false
 
 # Package settings
 [packages]
-acid = {}
-relibc-tests = {}
-os-test = {}
-openposixtestsuite = {}
-redox-posix-tests = {}
-vttest = {}
+redox-tests = {}
 benchmarks = {}
-hello-redox = {}
