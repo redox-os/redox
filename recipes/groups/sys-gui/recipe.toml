@@ -1,2 +1,6 @@
 [package]
-dependencies = ["orbital","orbdata","orbutils",]
+dependencies = [
+    "orbital",
+    "orbdata",
+    "orbutils",
+]
