@@ -1,4 +1,5 @@
 # Configuration for automated testing of essential test suites
+# Smaller test suites are executed first to catch possible bugs or regressions faster
 
 include = ["net.toml"]
 
@@ -9,11 +10,7 @@ filesystem_size = 1024
 
 # Package settings
 [packages]
-acid = {}
-coreutils = {}
-ion = {}
-os-test-bins = {}
-relibc-tests-bins = {}
+auto-test = {}
 
 [[files]]
 path = "/usr/lib/init.d/30_console"

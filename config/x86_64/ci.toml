@@ -13,6 +13,7 @@ prompt = false
 
 # Meta-packages below
 
+auto-test = {}
 dev-essential = {}
 dev-redox = {}
 llvm21-common = {}
@@ -170,6 +171,7 @@ redox-games = {}
 redoxfs = {}
 relibc = {}
 relibc-tests = {}
+relibc-tests-bins = {}
 ripgrep = {}
 rodioplay = {}
 rs-nes = {}

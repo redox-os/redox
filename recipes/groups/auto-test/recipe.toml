@@ -1,0 +1,17 @@
+# Meta-package for automated testing of essential test suites
+# Smaller test suites are executed first to catch possible bugs or regressions faster
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
+cp -rv "${COOKBOOK_RECIPE}/auto-test.ion" "${COOKBOOK_STAGE}/usr/bin/auto-test"
+chmod a+x "${COOKBOOK_STAGE}/usr/bin/auto-test"
+"""
+[package]
+dependencies = [
+    "acid",
+    "coreutils",
+    "ion",
+    "os-test-bins",
+    "relibc-tests-bin",
+]

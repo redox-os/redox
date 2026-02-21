@@ -1,7 +1,14 @@
 [package]
 dependencies = [
     "acid",
+    "acid-bins",
+    "auto-test",
+    "hello-redox",
     "os-test",
+    "os-test-bins",
+    "openposixtestsuite",
     "redox-posix-tests",
     "relibc-tests",
+    "relibc-tests-bins",
+    "vttest",
 ]
