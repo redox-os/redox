@@ -15,9 +15,6 @@ dev-dependencies = [
     "llvm21.dev",
     "llvm21.runtime",
     "lld21",
-    "host:llvm21",
-    "host:llvm21.dev",
-    "host:llvm21.runtime",
 ]
 
 script = """

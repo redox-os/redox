@@ -14,8 +14,6 @@ dependencies = [
 ]
 dev-dependencies = [
     "llvm21.dev",
-    "host:llvm21.dev",
-    "host:llvm21.runtime",
     "host:libarchive",  # workaround for cmake error
 ]
 script = """
@@ -41,7 +39,6 @@ export CLANGFLAGS="-I $PREFIX_INCLUDE/c++/13.2.0 -I $PREFIX_INCLUDE/c++/13.2.0/$
 #Mozjs specifics
 unset CC_WRAPPER
 export CARGO_MAKEFLAGS="-j $COOKBOOK_MAKE_JOBS" CCACHE="sccache"
-unset CC_WRAPPER
 
 PACKAGE_PATH="ports/servoshell" cookbook_cargo
 
