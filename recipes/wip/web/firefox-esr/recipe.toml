@@ -37,12 +37,6 @@ dependencies = [
     # "libepoxy",
     # "pipewire",
 ]
-dev-dependencies = [
-    "host:llvm21",
-    "host:llvm21.dev",
-    "host:llvm21.runtime",
-    "host:clang21",
-]
 script = """
 DYNAMIC_INIT
 
