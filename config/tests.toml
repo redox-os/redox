@@ -11,7 +11,8 @@ prompt = false
 
 # Package settings
 [packages]
-acid = {}
+acid-bins = {}
+auto-test = {}
 relibc-tests = {}
 os-test = {}
 openposixtestsuite = {}

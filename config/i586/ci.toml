@@ -13,6 +13,7 @@ prompt = false
 
 # Meta-packages below
 
+# auto-test = {}
 # dev-essential = {}
 # dev-redox = {}
 # redox-tests = {}
@@ -21,7 +22,8 @@ prompt = false
 
 # Normal packages below
 
-# acid = {} # will include rust and llvm21
+# acid = {} # rust require dynamic linking
+acid-bins = {}
 base = {}
 base-initfs = {}
 bash = {}
@@ -281,6 +283,7 @@ zlib = {}
 # redox-fatfs = {}
 # redox-games = {}
 # relibc-tests = {}
+# relibc-tests-bins = {}
 # rodioplay = {}
 # rs-nes = {}
 # rsync = {}
