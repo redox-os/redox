@@ -36,7 +36,7 @@ static_clean: | $(FSTOOLS_TAG)
 	$(MAKE) c.bash,luajit,gettext,openssl1,pcre2,sdl1,zstd,zlib,bzip2,xz
 	$(MAKE) c.expat,freetype2,libffi,libiconv,libjpeg,liborbital,libpng,libxml2,ncurses,ncursesw
 
-$(PREFIX)/relibc-install: $(PREFIX)/rust-install $(PREFIX)/gcc-install | $(FSTOOLS_TAG) $(CONTAINER_TAG)
+$(PREFIX)/relibc-install: $(PREFIX)/clang-install $(PREFIX)/rust-install $(PREFIX)/gcc-install | $(FSTOOLS_TAG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
@@ -45,6 +45,7 @@ else
 	mkdir "$@.partial"
 	cp -r "$(PREFIX)/gcc-install/". "$@.partial"
 	cp -r "$(PREFIX)/rust-install/". "$@.partial"
+	cp -r "$(PREFIX)/clang-install/". "$@.partial"
 	rm -rf "$@.partial/$(GNU_TARGET)/include/"*
 	cp -r "$(PREFIX)/gcc-install/$(GNU_TARGET)/include/c++" "$@.partial/$(GNU_TARGET)/include/c++"
 	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
@@ -254,6 +255,7 @@ $(PREFIX_RUST_VERSION_TAG):
 	rm -f "$(PREFIX)"/rust-std-host-install.tar.xz
 	rm -f "$(PREFIX)"/rust-std-target-install.tar.xz
 	rm -f "$(PREFIX)"/rust-src-install.tar.xz:
+	mkdir -p "$(@D)"
 	touch $@
 
 $(PREFIX)/rustc-install.tar.xz: | $(PREFIX_RUST_VERSION_TAG)
@@ -364,7 +366,10 @@ else
 	export PATH="$(ROOT)/$(PREFIX)/libtool-install/bin:$$PATH" \
 		$(PREFIX_CONFIG) COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_TARGET=$(TARGET) && \
 		./target/release/repo cook host:llvm21 host:clang21 host:lld21
-# skipping dev, while llvm libraries is already in rust
+# skipping dev, llvm libraries is already in rust if building
+ifeq ($(PREFIX_USE_UPSTREAM_RUST_COMPILER),1)
+	cp -r "$(LLVM_TARGET)/stage/usr/". "$@.partial"
+endif
 	cp -r "$(LLVM_TARGET)/stage.runtime/usr/". "$@.partial"
 	cp -r "$(CLANG_TARGET)/stage/usr/". "$@.partial"
 	cp -r "$(LLD_TARGET)/stage/usr/". "$@.partial"

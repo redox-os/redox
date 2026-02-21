@@ -15,8 +15,3 @@ dependencies = [
     "kerberos5",
     "zlib",
 ]
-dev-dependencies = [
-    "host:clang21",
-    "host:lld21",
-    "host:llvm21.dev",
-]

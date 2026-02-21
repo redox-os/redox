@@ -10,10 +10,6 @@ dev-dependencies = [
     "libstdcxx", # no idea
     "llvm21.dev",
     "llvm21.runtime",
-    "host:llvm21",
-    "host:llvm21.dev",
-    "host:llvm21.runtime",
-    "host:clang21", # for clang-tblgen
     "host:xz",
     "host:libarchive",  # workaround for cmake error
 ]
@@ -26,7 +22,6 @@ generate_cookbook_cmake_file $COOKBOOK_HOST_TARGET "" "$COOKBOOK_TOOLCHAIN" nati
 COOKBOOK_CMAKE_FLAGS+=(
     -DLLVM_ROOT="${COOKBOOK_SYSROOT}"
     -DCLANG_LINK_CLANG_DYLIB=ON
-    -DLLVM_TABLEGEN_EXE=${COOKBOOK_TOOLCHAIN}/bin/llvm-tblgen
     -DLIBCLANG_BUILD_STATIC=1
     -DLLVM_BUILD_UTILS=On
 
@@ -52,6 +47,8 @@ COOKBOOK_SOURCE="$COOKBOOK_SOURCE/clang"
 
 if [ "$TARGET" = "$COOKBOOK_HOST_TARGET" ]; then
 
+    COOKBOOK_CMAKE_FLAGS+=( -DLLVM_TABLEGEN_EXE=${COOKBOOK_TOOLCHAIN}/bin/llvm-tblgen )
+
     "${COOKBOOK_CMAKE}" "${COOKBOOK_SOURCE}" \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INSTALL_INCLUDEDIR=include \
@@ -75,7 +72,8 @@ else
 
     COOKBOOK_CMAKE_FLAGS+=(
         -DCROSS_TOOLCHAIN_FLAGS_NATIVE="-DCMAKE_TOOLCHAIN_FILE=$(realpath native.cmake)"
-        -DCLANG_TABLEGEN_EXE=${COOKBOOK_TOOLCHAIN}/bin/clang-tblgen
+        -DCLANG_TABLEGEN_EXE=${COOKBOOK_HOST_SYSROOT}/bin/clang-tblgen
+        -DLLVM_TABLEGEN_EXE=${COOKBOOK_HOST_SYSROOT}/bin/llvm-tblgen
     )
     cookbook_cmake
 
