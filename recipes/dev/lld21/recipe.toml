@@ -10,11 +10,6 @@ dependencies = [
 dev-dependencies = [
     "llvm21.dev",
     "llvm21.runtime",
-    "host:llvm21",
-    "host:llvm21.dev",
-    "host:llvm21.runtime",
-    "host:xz",
-    "host:libarchive",  # workaround for cmake error
 ]
 script = """
 DYNAMIC_INIT
@@ -22,10 +17,15 @@ ARCH="$(echo "${TARGET}" | cut -d - -f1)"
 
 generate_cookbook_cmake_file $COOKBOOK_HOST_TARGET "" "$COOKBOOK_TOOLCHAIN" native.cmake
 
+if [ "$TARGET" = "$COOKBOOK_HOST_TARGET" ]; then
+COOKBOOK_CMAKE_FLAGS+=( -DLLVM_TABLEGEN_EXE=${COOKBOOK_TOOLCHAIN}/bin/llvm-tblgen )
+else
+COOKBOOK_CMAKE_FLAGS+=( -DLLVM_TABLEGEN_EXE=${COOKBOOK_HOST_SYSROOT}/bin/llvm-tblgen )
+fi
+
 COOKBOOK_CMAKE_FLAGS+=(
     -DLLVM_ROOT="${COOKBOOK_SYSROOT}"
     -DCROSS_TOOLCHAIN_FLAGS_NATIVE="-DCMAKE_TOOLCHAIN_FILE=$(realpath native.cmake)"
-    -DLLVM_TABLEGEN_EXE=${COOKBOOK_TOOLCHAIN}/bin/llvm-tblgen
 
 # the shared options from llvm
     -DCMAKE_CXX_FLAGS="--std=gnu++11"

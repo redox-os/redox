@@ -2,16 +2,15 @@
 
 # This script wraps llvm-config that intended for cross compiling to Redox.
 # Because we can't run llvm-config compiled to Redox, we wrap it here.
-# Any recipes that calls this script must have "host:llvm.runtime" available.
 
 import os
 import sys
 import subprocess
 
-LLVM_CONFIG = "/usr/bin/llvm-config" 
+LLVM_CONFIG = "/bin/llvm-config" 
 
 def main():
-    toolchain_path = os.environ.get("COOKBOOK_TOOLCHAIN")
+    toolchain_path = os.environ.get("COOKBOOK_HOST_SYSROOT")
     sysroot_path = os.environ.get("COOKBOOK_SYSROOT")
 
     if not toolchain_path or not sysroot_path:
