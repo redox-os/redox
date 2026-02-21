@@ -12,6 +12,10 @@ dependencies = [
     "mesa",
     "zlib",
 ]
+dev-dependencies = [
+    "llvm21.dev",
+    "host:libarchive",  # workaround for cmake error
+]
 script = """
 DYNAMIC_INIT
 

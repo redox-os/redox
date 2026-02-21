@@ -10,6 +10,8 @@ dependencies = [
 dev-dependencies = [
     "llvm21.dev",
     "llvm21.runtime",
+    "host:xz",
+    "host:libarchive",  # workaround for cmake error
 ]
 script = """
 DYNAMIC_INIT
