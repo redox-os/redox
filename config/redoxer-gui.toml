@@ -12,6 +12,6 @@ orbital = {}
 path = "/usr/lib/init.d/30_redoxer"
 data = """
 echo
-echo ## running redoxer in orbital ##
+echo "## running redoxer in orbital ##"
 nowait VT=3 orbital redoxerd
 """
