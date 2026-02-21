@@ -13,6 +13,7 @@ prompt = false
 
 # Meta-packages below
 
+# auto-test = {}
 # dev-essential = {}
 # dev-redox = {}
 # redox-tests = {}
@@ -22,6 +23,7 @@ prompt = false
 # Normal packages below
 
 acid = {}
+acid-bins = {}
 base = {}
 base-initfs = {}
 bash = {}
@@ -286,6 +288,7 @@ zstd = {}
 # redox-fatfs = {}
 # redox-games = {}
 # relibc-tests = {}
+# relibc-tests-bins = {}
 # rodioplay = {}
 # rs-nes = {}
 # rsync = {}
