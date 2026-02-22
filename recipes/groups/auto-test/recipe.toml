@@ -13,5 +13,5 @@ dependencies = [
     "coreutils",
     "ion",
     "os-test-bins",
-    "relibc-tests-bin",
+    "relibc-tests-bins",
 ]
