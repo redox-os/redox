@@ -986,10 +986,11 @@ dependencies = [
 [[package]]
 name = "redoxer"
 version = "0.2.62"
-source = "git+https://gitlab.redox-os.org/redox-os/redoxer.git#6bd1e4ddbcbc2d1facf70afd870335b870b19bb7"
+source = "git+https://gitlab.redox-os.org/redox-os/redoxer.git#1e193d68f329ecb20c75c41f190d58047f675db8"
 dependencies = [
  "anyhow",
  "dirs",
+ "sha2",
 ]
 
 [[package]]

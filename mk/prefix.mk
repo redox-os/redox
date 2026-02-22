@@ -52,6 +52,9 @@ else
 	export CARGO="env -u CARGO cargo" $(PREFIX_CONFIG) && \
 	./target/release/repo cook relibc
 	cp -r "$(RELIBC_TARGET)/stage/usr/". "$@.partial/$(GNU_TARGET)"
+	mkdir -p "$@.partial/$(GNU_TARGET)/usr"
+	ln -s "../include" "$@.partial/$(GNU_TARGET)/usr/include"
+	ln -s "../lib" "$@.partial/$(GNU_TARGET)/usr/lib"
 	touch "$@.partial"
 	mv "$@.partial" "$@"
 endif

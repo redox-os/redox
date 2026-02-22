@@ -1,3 +1,6 @@
+// Scripts here is executed using "cookbook_redoxer env" where CC, RUSTFLAGS, etc. defined.
+// Look up redoxer env script if you want to see how they work.
+
 pub(crate) static SHARED_PRESCRIPT: &str = r#"
 # Build dynamically
 function DYNAMIC_INIT {
@@ -32,7 +35,7 @@ function DYNAMIC_INIT {
     )
 
     # TODO: check paths for spaces
-    export LDFLAGS="-Wl,-rpath-link,${COOKBOOK_SYSROOT}/lib -L${COOKBOOK_SYSROOT}/lib"
+    export LDFLAGS="${USER_LDFLAGS}-Wl,-rpath-link,${COOKBOOK_SYSROOT}/lib -L${COOKBOOK_SYSROOT}/lib"
     export RUSTFLAGS="-C target-feature=-crt-static -L native=${COOKBOOK_SYSROOT}/lib -C link-arg=-Wl,-rpath-link,${COOKBOOK_SYSROOT}/lib"
     export COOKBOOK_DYNAMIC=1
 }
@@ -94,11 +97,12 @@ export CARGO_TARGET_DIR="${COOKBOOK_BUILD}/target"
 
 # This adds the sysroot includes for most C compilation
 #TODO: check paths for spaces!
-export CPPFLAGS="$CPPFLAGS -I${COOKBOOK_SYSROOT}/include"
+export CPPFLAGS="${CPPFLAGS:+$CPPFLAGS }-I${COOKBOOK_SYSROOT}/include"
 
 # This adds the sysroot libraries and compiles binaries statically for most C compilation
 #TODO: check paths for spaces!
-export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib --static"
+USER_LDFLAGS="${LDFLAGS:+$LDFLAGS }"
+export LDFLAGS="${USER_LDFLAGS}-L${COOKBOOK_SYSROOT}/lib --static"
 
 # These ensure that pkg-config gets the right flags from the sysroot
 if [ "${TARGET}" != "${COOKBOOK_HOST_TARGET}" ]
