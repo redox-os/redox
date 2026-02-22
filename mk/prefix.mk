@@ -228,7 +228,7 @@ else
 	cp -r "$(PREFIX)/libtool-install/". "$@.partial"
 	@#TODO: how to make this not conflict with libc?
 	rm -f "$@.partial/lib/gcc/$(GNU_TARGET)/13.2.0/include/limits.h"
-# libgcc and bare features of libstdcxx
+# libgcc and freestanding libstdcxx
 	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
 	$(MAKE) -C "$(ROOT)/$(GCC_TARGET)/build" all-target-libgcc all-target-libstdc++-v3 && \
 	$(MAKE) -C "$(ROOT)/$(GCC_TARGET)/build" install-target-libgcc install-target-libstdc++-v3 DESTDIR="$(ROOT)/$@-build.partial/usr"
@@ -239,15 +239,11 @@ else
 	@#TODO: generates wrong lib path for libtool
 	rm -f "$@.partial"/$(GNU_TARGET)/lib/libstdc++.la
 	rm -f "$@.partial"/$(GNU_TARGET)/lib/libsupc++.la
-# fully featured libstdcxx, not supported for targets only supporting static linking
-ifneq ($(TARGET),riscv64gc-unknown-redox)
-ifneq ($(TARGET),i586-unknown-redox)
+# hosted libstdcxx
 	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
 	export $(PREFIX_CONFIG) "COOKBOOK_HOST_SYSROOT=$(ROOT)/$@.partial" COOKBOOK_CROSS_TARGET=$(HOST_TARGET) && \
 	rm -rf "$(LIBSTDCXX_TARGET)/stage" && ./target/release/repo cook libstdcxx-v3
 	cp -r "$(LIBSTDCXX_TARGET)/stage/usr/". "$@.partial/$(GNU_TARGET)"
-endif
-endif
 	rm -rf "$@-build.partial"
 	touch "$@.partial"
 	mv "$@.partial" "$@"

@@ -11,6 +11,11 @@ COOKBOOK_CONFIGURE_FLAGS+=(
     --enable-libstdcxx-threads
 )
 
+# TODO: Investigate why mutex is not available in riscv64
+if [ "${TARGET}" = "riscv64gc-unknown-redox" ]; then
+COOKBOOK_CONFIGURE_FLAGS+=( --without-libstdcxx-zoneinfo )
+fi
+
 CPPINCLUDE="${COOKBOOK_HOST_SYSROOT}/$TARGET/include/c++/13.2.0"
 export CPPFLAGS+=" -I${CPPINCLUDE} -I${CPPINCLUDE}/$TARGET/bits"
 COOKBOOK_CONFIGURE="${COOKBOOK_SOURCE}/libstdc++-v3/configure"
