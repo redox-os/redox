@@ -23,61 +23,25 @@ cargo-test:
   image: "rust:trixie"
   stage: lint
   script:
-    # TODO: we should omit fuse from cargo install chains
-    - apt update && apt install -y fuse3 libfuse3-dev
     - cargo test --locked
 
 img:
-  image: "ubuntu:24.04"
+  image: "redoxos/redox-base"
   stage: test
-  before_script:
-    # Disable the wget progress bar
-    - echo 'show-progress = off' >> ~/.wgetrc
-    - |
-      export DEBIAN_FRONTEND=noninteractive
-      apt-get update -qq &&
-      apt-get install -qq \
-          bison \
-          build-essential \
-          curl \
-          flex \
-          fuse3 \
-          git \
-          libfuse-dev \
-          nasm \
-          pkg-config \
-          texinfo \
-          wget \
-          help2man \
-          autoconf \
-          automake \
-          zstd
   script:
     - |
       export PATH="$HOME/.cargo/bin:$PATH" &&
-      bash podman/rustinstall.sh &&
-      PODMAN_BUILD=0 REPO_BINARY=1 FSTOOLS_NO_MOUNT=1 COOKBOOK_VERBOSE=false make ci-img IMG_TAG=$CI_COMMIT_REF_NAME
+      (curl "https://sh.rustup.rs" -sSf | sh -s -- -y --default-toolchain stable --profile minimal ) &&
+      cargo install cbindgen &&
+      PODMAN_BUILD=0 SKIP_CHECK_TOOLS=1 REPO_BINARY=1 FSTOOLS_NO_MOUNT=1 COOKBOOK_VERBOSE=false make ci-img IMG_TAG=$CI_COMMIT_REF_NAME
 
 pkg:
-  image: "ubuntu:24.04"
+  image: "rust:trixie"
   stage: test
-  before_script:
-    # Disable the wget progress bar
-    - echo 'show-progress = off' >> ~/.wgetrc
-    - |
-      export DEBIAN_FRONTEND=noninteractive
-      apt-get update -qq &&
-      apt-get install -qq \
-          build-essential \
-          curl \
-          git \
-          nasm \
-          wget
   script:
     - |
       export PATH="$HOME/.cargo/bin:$PATH" PODMAN_BUILD=0 &&
-      bash podman/rustinstall.sh &&
-      make CONFIG_NAME=ci repo-tree ARCH=x86_64 &&
-      make CONFIG_NAME=ci repo-tree ARCH=i586 &&
-      make CONFIG_NAME=ci repo-tree ARCH=aarch64 &&
-      make CONFIG_NAME=ci repo-tree ARCH=riscv64gc
+      make CONFIG_NAME=ci SKIP_CHECK_TOOLS=1 repo-tree ARCH=x86_64 &&
+      make CONFIG_NAME=ci SKIP_CHECK_TOOLS=1 repo-tree ARCH=i586 &&
+      make CONFIG_NAME=ci SKIP_CHECK_TOOLS=1 repo-tree ARCH=aarch64 &&
+      make CONFIG_NAME=ci SKIP_CHECK_TOOLS=1 repo-tree ARCH=riscv64gc

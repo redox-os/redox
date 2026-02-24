@@ -2,19 +2,21 @@
 
 fstools: $(FSTOOLS_TAG) $(FSTOOLS)
 
+GOING_TO_PODMAN_AGAIN?=0
+
 # These tools run inside Podman if it is used, or on the host if Podman is not used
 $(FSTOOLS): | prefix $(CONTAINER_TAG) $(FSTOOLS_TAG)
 ifeq ($(PODMAN_BUILD),1)
 ifeq ($(FSTOOLS_IN_PODMAN),1)
 	$(PODMAN_RUN) make $@
 else
-	$(MAKE) $@ PODMAN_BUILD=0 SKIP_CHECK_TOOLS=1
+	$(MAKE) $@ PODMAN_BUILD=0 SKIP_CHECK_TOOLS=1 GOING_TO_PODMAN_AGAIN=1
 endif
 else
 	rm -rf $@ $@.partial
 	mkdir -p $@.partial
 	ln -s ../../recipes $@.partial/recipes
-	$(MAKE) fstools_fetch PODMAN_BUILD=$(SKIP_CHECK_TOOLS)
+	$(MAKE) fstools_fetch PODMAN_BUILD=$(GOING_TO_PODMAN_AGAIN)
 
 	# Compile installer and redoxfs for host (may be outside of podman container)
 	cd $@.partial && \
