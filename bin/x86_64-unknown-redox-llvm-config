@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
 # This script wraps llvm-config that intended for cross compiling to Redox.
-# Because we can't run llvm-config compiled to Redox, we wrap it here.
+# Because we can't run llvm-config compiled to Redox, we wrap it here
+# and filter out architectures that do not match the current $TARGET.
 
 import os
 import sys
@@ -9,13 +10,46 @@ import subprocess
 
 LLVM_CONFIG = "/bin/llvm-config" 
 
+# name of (--targets-built, --components prefix, --libs prefix)
+ARCH_MAP = {
+    "x86_64":    ("X86", "x86", "X86"),
+    "i586":      ("X86", "x86", "X86"),
+    "aarch64":   ("AArch64", "aarch64", "AArch64"),
+    "riscv64gc": ("RISCV", "riscv", "RISCV"),
+}
+
+ALL_ARCH_COMPS = ["x86", "aarch64", "riscv"]
+ALL_ARCH_LIBS = ["X86", "AArch64", "RISCV"]
+
+def is_unwanted_arch(item, allowed_prefix, all_prefixes, is_lib=False):
+    matched_arch = None
+    for arch in all_prefixes:
+        # libraries e.g., -lLLVMX86CodeGen / libLLVMAArch64Desc.a
+        if is_lib and f"LLVM{arch}" in item:
+            matched_arch = arch
+            break
+        # components e.g., x86codegen, aarch64desc
+        elif not is_lib and item.startswith(arch):
+            matched_arch = arch
+            break
+            
+    if matched_arch and matched_arch != allowed_prefix:
+        return True
+        
+    return False
+
 def main():
     toolchain_path = os.environ.get("COOKBOOK_HOST_SYSROOT")
     sysroot_path = os.environ.get("COOKBOOK_SYSROOT")
+    target_triple = os.environ.get("TARGET")
 
-    if not toolchain_path or not sysroot_path:
-        print(f"Error: COOKBOOK_TOOLCHAIN or COOKBOOK_SYSROOT not set", file=sys.stderr)
+    if not toolchain_path or not sysroot_path or not target_triple:
+        print("Error: COOKBOOK_HOST_SYSROOT or COOKBOOK_SYSROOT or TARGET not set", file=sys.stderr)
         sys.exit(1)
+
+    target_arch = target_triple.split('-')[0] if target_triple else ""
+    mapped_archs = ARCH_MAP.get(target_arch)
+    target_built_name, comp_prefix, lib_prefix = mapped_archs
 
     cmd = [toolchain_path + LLVM_CONFIG] + sys.argv[1:]
 
@@ -34,17 +68,36 @@ def main():
     if result.returncode != 0:
         sys.exit(result.returncode)
 
-    output = result.stdout
+    output = result.stdout.strip()
+    
+    args_set = set(sys.argv[1:])
 
-    if sys.argv[1] in ["--bindir"]:
+    if "--bindir" in args_set:
         output = toolchain_path + "/usr/bin"
-    else: #if sys.argv[1] in ["--cppflags", "--cxxflags", "--includedir", "--ldflags", "--libdir", "--libfiles"]
+        
+    elif "--targets-built" in args_set:
+        output = target_built_name
+        
+    elif "--components" in args_set:
+        components = output.split()
+        filtered = [c for c in components if not is_unwanted_arch(c, comp_prefix, ALL_ARCH_COMPS, is_lib=False)]
+        output = " ".join(filtered)
+        
+    elif "--libs" in args_set:
+        libs = output.split()
+        filtered = [l for l in libs if not is_unwanted_arch(l, lib_prefix, ALL_ARCH_LIBS, is_lib=True)]
+        output = " ".join(filtered)
+        
+        # if "--ldflags" in args_set:
         src = toolchain_path.rstrip(os.sep)
         dst = sysroot_path.rstrip(os.sep)
-        
+        output = output.replace(src, dst)
+    else: 
+        src = toolchain_path.rstrip(os.sep)
+        dst = sysroot_path.rstrip(os.sep)
         output = output.replace(src, dst)
 
-    print(output, end='')
+    print(output + '\n', end='')
 
 if __name__ == "__main__":
     main()
