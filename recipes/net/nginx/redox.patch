@@ -1,3 +1,29 @@
+diff -ruwN source/auto/cc/clang source-new/auto/cc/clang
+--- source/auto/cc/clang	2025-04-23 18:48:54.000000000 +0700
++++ source-new/auto/cc/clang	2026-02-24 07:55:59.340299231 +0700
+@@ -88,9 +88,6 @@
+     CFLAGS="$CFLAGS -Wno-deprecated-declarations"
+ fi
+ 
+-# stop on warning
+-CFLAGS="$CFLAGS -Werror"
+-
+ # debug
+ CFLAGS="$CFLAGS -g"
+ 
+diff -ruwN source/auto/cc/gcc source-new/auto/cc/gcc
+--- source/auto/cc/gcc	2025-04-23 18:48:54.000000000 +0700
++++ source-new/auto/cc/gcc	2026-02-24 07:56:03.156908192 +0700
+@@ -165,9 +165,6 @@
+ esac
+ 
+ 
+-# stop on warning
+-CFLAGS="$CFLAGS -Werror"
+-
+ # debug
+ CFLAGS="$CFLAGS -g"
+ 
 diff -ruwN source/auto/feature source-new/auto/feature
 --- source/auto/feature	2025-04-23 18:48:54.000000000 +0700
 +++ source-new/auto/feature	2025-09-16 02:44:58.617532926 +0700
