@@ -8,9 +8,8 @@ experimental-targets = ""
 host = ["x86_64-unknown-redox"]
 target = ["x86_64-unknown-redox"]
 submodules = false
-# TODO: enable rustdoc and others
 docs = false
-tools = ["cargo", "clippy", "rustfmt", "src"]
+tools = ["cargo", "clippy", "rustdoc", "rustfmt", "src"]
 extended = true
 verbose = 1
 

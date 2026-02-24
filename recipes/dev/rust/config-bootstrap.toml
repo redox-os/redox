@@ -10,7 +10,7 @@ target = ["TARGET", "i586-unknown-redox", "x86_64-unknown-redox", "aarch64-unkno
 cargo-native-static = true
 submodules = false
 docs = false
-tools = ["cargo", "clippy", "rustfmt", "src"]
+tools = ["cargo", "clippy", "rustdoc", "rustfmt", "src"]
 extended = true
 verbose = 1
 

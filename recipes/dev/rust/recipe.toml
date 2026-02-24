@@ -37,14 +37,14 @@ export CARGO_TARGET_X86_64_UNKNOWN_REDOX_RUSTFLAGS="\
 cat "${COOKBOOK_ROOT}/bin/x86_64-unknown-redox-llvm-config" > "${COOKBOOK_SYSROOT}/bin/llvm-config"
 # Linker flags for stage1 compiler (host -> host)
 export RUSTFLAGS_BOOTSTRAP="\
--Clink-args=-L${COOKBOOK_TOOLCHAIN}/lib \
--Clink-args=-Wl,-rpath-link,${COOKBOOK_TOOLCHAIN}/lib"
+-Clink-args=-L${COOKBOOK_HOST_SYSROOT}/lib \
+-Clink-args=-Wl,-rpath-link,${COOKBOOK_HOST_SYSROOT}/lib"
 export CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_RUSTFLAGS="${RUSTFLAGS_BOOTSTRAP}"
 export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_RUSTFLAGS="${RUSTFLAGS_BOOTSTRAP}"
 
 cat ${COOKBOOK_RECIPE}/config.toml > config.toml
 sed -i "s|COOKBOOK_SYSROOT|${COOKBOOK_SYSROOT}|g" config.toml
-sed -i "s|COOKBOOK_TOOLCHAIN|${COOKBOOK_TOOLCHAIN}|g" config.toml
+sed -i "s|COOKBOOK_TOOLCHAIN|${COOKBOOK_HOST_SYSROOT}|g" config.toml
 
 fi
 

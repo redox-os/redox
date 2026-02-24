@@ -385,10 +385,11 @@ else
 	export PATH="$(ROOT)/$(PREFIX)/libtool-install/bin:$$PATH" \
 		$(PREFIX_CONFIG) COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_TARGET=$(TARGET) && \
 		./target/release/repo cook host:llvm21 host:clang21 host:lld21
-# skipping dev, llvm libraries is already in rust if building
+# llvm libraries is already in rust if building
 ifeq ($(PREFIX_USE_UPSTREAM_RUST_COMPILER),1)
 	cp -r "$(LLVM_TARGET)/stage/usr/". "$@.partial"
 endif
+	cp -r "$(LLVM_TARGET)/stage.dev/usr/". "$@.partial"
 	cp -r "$(LLVM_TARGET)/stage.runtime/usr/". "$@.partial"
 	cp -r "$(CLANG_TARGET)/stage/usr/". "$@.partial"
 	cp -r "$(LLD_TARGET)/stage/usr/". "$@.partial"
