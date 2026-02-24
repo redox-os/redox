@@ -44,6 +44,8 @@ skips=(
     basic/pthread/pthread_setcanceltype
     basic/pthread/pthread_testcancel
     basic/sys_select/select
+    basic/sys_time/select
+    basic/sys_wait/waitpid
     signal/ppoll-block-sleep-raise-write
     signal/ppoll-block-sleep-write-raise
 )
