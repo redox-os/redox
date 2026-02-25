@@ -20,6 +20,7 @@ sed = {}
 [[files]]
 path = "/usr/lib/init.d/10_net"
 data = """
+requires_weak 00_drivers
 notify smolnetd
 dhcpd
 """
@@ -27,6 +28,7 @@ dhcpd
 [[files]]
 path = "/usr/lib/init.d/30_redoxer"
 data = """
+requires_weak 10_net
 ion /usr/lib/run_redoxer.ion
 """
 

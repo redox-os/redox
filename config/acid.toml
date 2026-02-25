@@ -16,6 +16,7 @@ ion = {}
 [[files]]
 path = "/usr/lib/init.d/10_acid"
 data = """
+requires_weak 00_drivers
 ion /usr/lib/run_acid.ion
 """
 

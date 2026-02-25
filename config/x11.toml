@@ -25,6 +25,7 @@ zenity = {}
 [[files]]
 path = "/usr/lib/init.d/10_dbus"
 data = """
+requires_weak 10_net
 bash /usr/bin/start-dbus.sh
 """
 
@@ -46,6 +47,7 @@ dbus-daemon --system
 [[files]]
 path = "/usr/lib/init.d/10_xenv"
 data = """
+requires_weak 10_net
 glib-compile-schemas /usr/share/glib-2.0/schemas/
 """
 
@@ -53,6 +55,7 @@ glib-compile-schemas /usr/share/glib-2.0/schemas/
 [[files]]
 path = "/usr/lib/init.d/20_orbital"
 data = """
+requires_weak 10_dbus 10_xenv
 notify audiod
 nowait BROWSER=/bin/netsurf-fb VT=3 orbital orbital-x11
 """
@@ -120,6 +123,7 @@ mate-session&
 [[files]]
 path = "/usr/lib/init.d/30_console"
 data = """
+requires_weak 20_orbital
 nowait DISPLAY=:0 getty 2
 nowait DISPLAY=:0 getty /scheme/debug/no-preserve -J
 """

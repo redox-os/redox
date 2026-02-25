@@ -17,6 +17,7 @@ kibi = {}
 [[files]]
 path = "/usr/lib/init.d/30_console"
 data = """
+requires_weak 00_drivers
 inputd -A 2
 nowait getty 2
 nowait getty /scheme/debug/no-preserve -J

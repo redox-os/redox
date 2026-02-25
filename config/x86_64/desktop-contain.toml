@@ -17,6 +17,7 @@ include = ["../desktop.toml"]
 [[files]]
 path = "/usr/lib/init.d/20_orbital"
 data = """
+requires_weak 10_net
 notify audiod
 nowait VT=3 orbital contain_orblogin launcher
 """
@@ -25,6 +26,7 @@ nowait VT=3 orbital contain_orblogin launcher
 [[files]]
 path = "/usr/lib/init.d/30_console"
 data = """
+requires_weak 20_orbital
 nowait getty --contain 2
 nowait getty --contain /scheme/debug/no-preserve -J
 """

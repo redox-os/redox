@@ -38,12 +38,14 @@ website = {}
 [[files]]
 path = "/usr/lib/init.d/98_keygen_sh"
 data = """
+requires_weak 10_net
 bash /root/keygen.sh
 """
 
 [[files]]
 path = "/usr/lib/init.d/99_rustysd"
 data = """
+requires_weak 98_keygen_sh
 # Undocumented usage of rsdctl, pointing to notifications dir
 RSDCTL_ADDR=/var/run/rustysd/control.socket rustysd --conf /etc/rustysd
 """

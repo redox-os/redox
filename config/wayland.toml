@@ -32,6 +32,7 @@ xkeyboard-config = {}
 [[files]]
 path = "/usr/lib/init.d/20_orbital"
 data = """
+requires_weak 10_net
 notify audiod
 nowait BROWSER=/bin/netsurf-fb VT=3 orbital orbital-wayland
 """

@@ -35,6 +35,7 @@ nowait sudo --daemon
 [[files]]
 path = "/usr/lib/init.d/00_drivers"
 data = """
+requires_weak 00_base
 pcid-spawner
 """
 

@@ -12,6 +12,7 @@ llvm20 = {}
 [[files]]
 path = "/usr/lib/init.d/99_gen_llvm-config-generate"
 data = """
+requires_weak 00_drivers
 bash /usr/bin/llvm-config-generate
 """
 

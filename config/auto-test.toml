@@ -15,6 +15,7 @@ auto-test = {}
 [[files]]
 path = "/usr/lib/init.d/30_console"
 data = """
+requires_weak 10_net
 ion /usr/lib/run_tests.ion
 """
 
