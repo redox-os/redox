@@ -8,6 +8,9 @@ template = "custom"
 script = """
 DYNAMIC_STATIC_INIT
 rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+# TODO: fPIC is the default on linux but not on redox and
+#       required by llvm21 as zstd statically linked there
+export CPPFLAGS="$CPPFLAGS -fPIC"
 ${COOKBOOK_MAKE}
 ${COOKBOOK_MAKE} install DESTDIR="${COOKBOOK_STAGE}" prefix="/usr"
 """

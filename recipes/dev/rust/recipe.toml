@@ -35,6 +35,8 @@ export CARGO_TARGET_X86_64_UNKNOWN_REDOX_RUSTFLAGS="\
 -Clink-args=-lz -Clink-args=-lzstd"
 # Hack for Rust errorneusly running `llvm-config --version` on cross compiled llvm-config
 cat "${COOKBOOK_ROOT}/bin/x86_64-unknown-redox-llvm-config" > "${COOKBOOK_SYSROOT}/bin/llvm-config"
+# Hack for Rust stage1 being dynamically linked with LLVM in prefix toolchain
+export LD_LIBRARY_PATH="${COOKBOOK_HOST_SYSROOT}/lib:${LD_LIBRARY_PATH}"
 # Linker flags for stage1 compiler (host -> host)
 export RUSTFLAGS_BOOTSTRAP="\
 -Clink-args=-L${COOKBOOK_HOST_SYSROOT}/lib \

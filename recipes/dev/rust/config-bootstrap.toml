@@ -1,7 +1,6 @@
 [llvm]
 download-ci-llvm = false
 static-libstdcpp = false
-# shared with lld
 link-shared = true
 
 [build]
