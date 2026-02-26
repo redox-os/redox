@@ -380,13 +380,14 @@ pub fn build(
             let cookbook_sysroot = sysroot_dir.canonicalize().unwrap();
             let cookbook_toolchain = toolchain_dir.canonicalize().ok();
             let bash_args = if cli_verbose { "-ex" } else { "-e" };
-            let mut command = if is_redox() {
-                let mut command = Command::new("bash");
+            let local_redoxer = Path::new("target/release/cookbook_redoxer");
+            let mut command = if is_redox() && !local_redoxer.is_file() {
+                let mut command = Command::new("cookbook_redoxer");
                 command.arg(bash_args);
-                command.env("COOKBOOK_REDOXER", "cargo");
+                command.env("COOKBOOK_REDOXER", "cookbook_redoxer");
                 command
             } else {
-                let cookbook_redoxer = Path::new("target/release/cookbook_redoxer")
+                let cookbook_redoxer = local_redoxer
                     .canonicalize()
                     .unwrap_or(PathBuf::from("/bin/false"));
                 let mut command = Command::new(&cookbook_redoxer);

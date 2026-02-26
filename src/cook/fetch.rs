@@ -489,10 +489,11 @@ pub(crate) fn fetch_cargo(
         source_dir = source_dir.join(package_path);
     }
 
-    let mut command = if is_redox() {
-        Command::new("cargo")
+    let local_redoxer = Path::new("target/release/cookbook_redoxer");
+    let mut command = if is_redox() && !local_redoxer.is_file() {
+        Command::new("cookbook_redoxer")
     } else {
-        let cookbook_redoxer = Path::new("target/release/cookbook_redoxer")
+        let cookbook_redoxer = local_redoxer
             .canonicalize()
             .unwrap_or(PathBuf::from("cargo"));
         Command::new(&cookbook_redoxer)

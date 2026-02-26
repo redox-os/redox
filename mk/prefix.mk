@@ -50,7 +50,7 @@ else
 	cp -r "$(PREFIX)/gcc-install/$(GNU_TARGET)/include/c++" "$@.partial/$(GNU_TARGET)/include/c++"
 	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
 	export CARGO="env -u CARGO cargo" $(PREFIX_CONFIG) && \
-	./target/release/repo cook relibc
+	$(REPO_BIN) cook relibc
 	cp -r "$(RELIBC_TARGET)/stage/usr/". "$@.partial/$(GNU_TARGET)"
 	mkdir -p "$@.partial/$(GNU_TARGET)/usr"
 	ln -s "../include" "$@.partial/$(GNU_TARGET)/usr/include"
@@ -82,6 +82,9 @@ endif
 
 # PREFIX_BINARY ---------------------------------------------------
 ifeq ($(PREFIX_BINARY),1)
+
+# PREFIX_BINARY FOR LINUX -----------------------------------------
+ifneq ($(HOSTED_REDOX),1)
 
 $(PREFIX)/gcc-install.tar.gz: | $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
@@ -143,6 +146,150 @@ else
 	mv "$@.partial" "$@"
 endif
 
+# PREFIX_BINARY FOR REDOX -----------------------------------------
+else
+
+$(PREFIX)/id_ed25519.pub.toml: | $(CONTAINER_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
+	mkdir -p "$(@D)"
+	wget -O $@.partial "https://static.redox-os.org/pkg/id_ed25519.pub.toml"
+	mv $@.partial $@
+endif
+
+$(PREFIX)/libtool.pkgar: $(PREFIX)/id_ed25519.pub.toml | $(CONTAINER_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
+	mkdir -p "$(@D)"
+	wget -O $@.partial "https://static.redox-os.org/pkg/$(TARGET)/libtool.pkgar"
+	mv $@.partial $@
+endif
+
+$(PREFIX)/gcc13.pkgar: $(PREFIX)/id_ed25519.pub.toml | $(CONTAINER_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
+	mkdir -p "$(@D)"
+	wget -O $@.partial "https://static.redox-os.org/pkg/$(TARGET)/gcc13.pkgar"
+	mv $@.partial $@
+endif
+
+$(PREFIX)/libgcc.pkgar: $(PREFIX)/id_ed25519.pub.toml | $(CONTAINER_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
+	mkdir -p "$(@D)"
+	wget -O $@.partial "https://static.redox-os.org/pkg/$(TARGET)/libgcc.pkgar"
+	mv $@.partial $@
+endif
+
+$(PREFIX)/libstdcxx.pkgar: $(PREFIX)/id_ed25519.pub.toml | $(CONTAINER_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
+	mkdir -p "$(@D)"
+	wget -O $@.partial "https://static.redox-os.org/pkg/$(TARGET)/libstdcxx.pkgar"
+	mv $@.partial $@
+endif
+
+$(PREFIX)/gcc13.cxx.pkgar: $(PREFIX)/id_ed25519.pub.toml | $(CONTAINER_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
+	mkdir -p "$(@D)"
+	wget -O $@.partial "https://static.redox-os.org/pkg/$(TARGET)/gcc13.cxx.pkgar"
+	mv $@.partial $@
+endif
+
+$(PREFIX)/rust.pkgar: $(PREFIX)/id_ed25519.pub.toml | $(CONTAINER_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
+	mkdir -p "$(@D)"
+	wget -O $@.partial "https://static.redox-os.org/pkg/$(TARGET)/rust.pkgar"
+	mv $@.partial $@
+endif
+
+$(PREFIX)/llvm21.pkgar: $(PREFIX)/id_ed25519.pub.toml | $(CONTAINER_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
+	mkdir -p "$(@D)"
+	wget -O $@.partial "https://static.redox-os.org/pkg/$(TARGET)/llvm21.pkgar"
+	mv $@.partial $@
+endif
+
+$(PREFIX)/llvm21.runtime.pkgar: $(PREFIX)/id_ed25519.pub.toml | $(CONTAINER_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
+	mkdir -p "$(@D)"
+	wget -O $@.partial "https://static.redox-os.org/pkg/$(TARGET)/llvm21.runtime.pkgar"
+	mv $@.partial $@
+endif
+
+$(PREFIX)/clang21.pkgar: $(PREFIX)/id_ed25519.pub.toml | $(CONTAINER_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
+	mkdir -p "$(@D)"
+	wget -O $@.partial "https://static.redox-os.org/pkg/$(TARGET)/clang21.pkgar"
+	mv $@.partial $@
+endif
+
+$(PREFIX)/lld21.pkgar: $(PREFIX)/id_ed25519.pub.toml | $(CONTAINER_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
+	mkdir -p "$(@D)"
+	wget -O $@.partial "https://static.redox-os.org/pkg/$(TARGET)/lld21.pkgar"
+	mv $@.partial $@
+endif
+
+
+$(PREFIX)/gcc-install: $(PREFIX)/gcc13.pkgar $(PREFIX)/gcc13.cxx.pkgar $(PREFIX)/libgcc.pkgar $(PREFIX)/libstdcxx.pkgar $(CONTAINER_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
+	rm -rf "$@.partial" "$@"
+	mkdir -p "$@.partial"
+	pkgar extract --pkey $(PREFIX)/id_ed25519.pub.toml --archive "$(PREFIX)/gcc13.pkgar" "$@.partial"
+	pkgar extract --pkey $(PREFIX)/id_ed25519.pub.toml --archive "$(PREFIX)/gcc13.cxx.pkgar" "$@.partial"
+	pkgar extract --pkey $(PREFIX)/id_ed25519.pub.toml --archive "$(PREFIX)/libgcc.pkgar" "$@.partial"
+	pkgar extract --pkey $(PREFIX)/id_ed25519.pub.toml --archive "$(PREFIX)/libstdcxx.pkgar" "$@.partial"
+	touch "$@.partial"
+	mv "$@.partial" "$@"
+endif
+
+$(PREFIX)/rust-install: $(PREFIX)/llvm21.pkgar $(PREFIX)/rust.pkgar $(CONTAINER_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
+	rm -rf "$@.partial" "$@"
+	mkdir -p "$@.partial"
+	pkgar extract --pkey $(PREFIX)/id_ed25519.pub.toml --archive "$(PREFIX)/llvm21.pkgar" "$@.partial"
+	pkgar extract --pkey $(PREFIX)/id_ed25519.pub.toml --archive "$(PREFIX)/rust.pkgar" "$@.partial"
+	touch "$@.partial"
+	mv "$@.partial" "$@"
+endif
+
+$(PREFIX)/clang-install: $(PREFIX)/llvm21.runtime.pkgar $(PREFIX)/clang21.pkgar $(PREFIX)/lld21.pkgar $(CONTAINER_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
+	rm -rf "$@.partial" "$@"
+	mkdir -p "$@.partial"
+	pkgar extract --pkey $(PREFIX)/id_ed25519.pub.toml --archive "$(PREFIX)/llvm21.runtime.pkgar" "$@.partial"
+	pkgar extract --pkey $(PREFIX)/id_ed25519.pub.toml --archive "$(PREFIX)/clang21.pkgar" "$@.partial"
+	pkgar extract --pkey $(PREFIX)/id_ed25519.pub.toml --archive "$(PREFIX)/lld21.pkgar" "$@.partial"
+	touch "$@.partial"
+	mv "$@.partial" "$@"
+endif
+
+endif
+
 else
 
 # BUILD GCC ---------------------------------------------------
@@ -154,7 +301,7 @@ else
 	rm -rf "$@.partial" "$@"
 	mkdir -p "$@.partial"
 	export $(PREFIX_CONFIG) COOKBOOK_HOST_SYSROOT=/usr && \
-	./target/release/repo cook host:libtool
+	$(REPO_BIN) cook host:libtool
 	cp -r "$(LIBTOOL_TARGET)/stage/usr/". "$@.partial"
 	mv "$@.partial/bin/libtoolize" "$@.partial/bin/libtoolize.orig"
 # adapt path for libtoolize
@@ -173,7 +320,7 @@ else
 	mkdir -p "$@.partial"
 	export $(PREFIX_CONFIG) PATH="$(ROOT)/$(PREFIX)/libtool-install/bin:$$PATH" \
 		COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_TARGET=$(TARGET) COOKBOOK_CROSS_GNU_TARGET=$(GNU_TARGET) && \
-	./target/release/repo cook host:binutils-gdb 
+	$(REPO_BIN) cook host:binutils-gdb 
 	cp -r "$(BINUTILS_TARGET)/stage/usr/". "$@.partial"
 	touch "$@.partial"
 	mv "$@.partial" "$@"
@@ -189,7 +336,7 @@ else
 	export $(PREFIX_CONFIG) PATH="$(ROOT)/$(PREFIX)/libtool-install/bin:$(ROOT)/$(PREFIX)/binutils-install/bin:$$PATH" \
 		COOKBOOK_LIBTOOL_DIR=$(ROOT)/$(PREFIX)/libtool-install COOKBOOK_CROSS_TARGET=$(TARGET) COOKBOOK_CROSS_GNU_TARGET=$(GNU_TARGET) \
 		COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_SYSROOT=$(ROOT)/$(PREFIX)/relibc-freestanding-install/$(GNU_TARGET) && \
-	./target/release/repo cook host:gcc13
+	$(REPO_BIN) cook host:gcc13
 	cp -r "$(GCC_TARGET)/stage/usr/". "$@.partial"
 	cp -r "$(GCC_TARGET)/stage.cxx/usr/". "$@.partial"
 	cp -r "$(PREFIX)/binutils-install/". "$@.partial"
@@ -209,7 +356,7 @@ else
 	export PATH="$(ROOT)/$(PREFIX)/gcc-freestanding-install/bin:$$PATH" && \
 	export CC_$(subst -,_,$(TARGET))="$(GNU_TARGET)-gcc -isystem $(ROOT)/$@.partial/$(GNU_TARGET)/include" LINKFLAGS="" && \
 	export $(PREFIX_CONFIG) COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_TARGET=$(HOST_TARGET) && \
-	./target/release/repo cook relibc
+	$(REPO_BIN) cook relibc
 	cp -r "$(RELIBC_FREESTANDING_TARGET)/stage/usr/". "$@.partial/$(GNU_TARGET)"
 	touch "$@.partial"
 	mv "$@.partial" "$@"
@@ -245,7 +392,7 @@ else
 # hosted libstdcxx
 	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
 	export $(PREFIX_CONFIG) "COOKBOOK_HOST_SYSROOT=$(ROOT)/$@.partial" COOKBOOK_CROSS_TARGET=$(HOST_TARGET) && \
-	rm -rf "$(LIBSTDCXX_TARGET)/stage" && ./target/release/repo cook libstdcxx-v3
+	rm -rf "$(LIBSTDCXX_TARGET)/stage" && $(REPO_BIN) cook libstdcxx-v3
 	cp -r "$(LIBSTDCXX_TARGET)/stage/usr/". "$@.partial/$(GNU_TARGET)"
 	rm -rf "$@-build.partial"
 	touch "$@.partial"
@@ -356,7 +503,7 @@ else
 	rm -rf "$@.partial" "$@"
 	export PATH="$(ROOT)/$(PREFIX)/libtool-install/bin:$$PATH" \
 		$(PREFIX_CONFIG) COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_TARGET=$(TARGET) && \
-		./target/release/repo cook host:llvm21 host:rust
+		$(REPO_BIN) cook host:llvm21 host:rust
 	cp -r "$(RUST_TARGET)/stage/usr/". "$@.partial"
 	cp -r "$(LLVM_TARGET)/stage/usr/". "$@.partial"
 	mv "$@.partial" "$@"
@@ -384,7 +531,7 @@ else
 	rm -rf "$@.partial" "$@"
 	export PATH="$(ROOT)/$(PREFIX)/libtool-install/bin:$$PATH" \
 		$(PREFIX_CONFIG) COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_TARGET=$(TARGET) && \
-		./target/release/repo cook host:llvm21 host:clang21 host:lld21
+		$(REPO_BIN) cook host:llvm21 host:clang21 host:lld21
 # llvm libraries is already in rust if building
 ifeq ($(PREFIX_USE_UPSTREAM_RUST_COMPILER),1)
 	cp -r "$(LLVM_TARGET)/stage/usr/". "$@.partial"

@@ -2,5 +2,8 @@
 git = "https://gitlab.redox-os.org/redox-os/pkgar.git"
 
 [build]
-template = "cargo"
-package_path = "pkgar"
+template = "custom"
+script = """
+DYNAMIC_INIT
+PACKAGE_PATH="pkgar" cookbook_cargo --features "cli"
+"""

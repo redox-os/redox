@@ -32,7 +32,7 @@ fstools_fetch: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
-	./target/release/repo fetch installer redoxfs
+	$(REPO_BIN) fetch installer redoxfs
 endif
 
 $(FSTOOLS_TAG): $(CONTAINER_TAG)

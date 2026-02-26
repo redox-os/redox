@@ -882,18 +882,24 @@ redox()
 
     echo "Installing necessary build tools..."
     
-    # Core development packages that are likely available on Redox
-    # This list is conservative and only includes essentials
+    # Core development packages that are available on x86_64 Redox
+    # This list is based on list of "cookbook" and "dev-essential" recipe
     packages="autoconf \
     automake \
+    cbindgen \
     expat \
     gcc13 \
+    gcc13.cxx \
+    git \
+    gnu-grep \
     gnu-make \
+    installer \
     libgmp \
     libjpeg \
     libpng \
     nasm \
     patch \
+    pkgar \
     pkg-config \
     rust \
     rustpython \
@@ -955,6 +961,10 @@ usage()
 #############################################################
 cargoInstall()
 {
+    if is_os_redox ; then
+        # in redox OS, cargo is not based on rustup. Packages are managed by pkg
+        return 0
+    fi
     if [[ "`cargo +stable install --list`" != *"$1 v$2"* ]]; then
         cargo +stable install --force --version "$2" "$1"
     else
@@ -970,6 +980,10 @@ cargoInstall()
 #############################################################################
 rustInstall()
 {
+    if is_os_redox ; then
+        # in redox OS, rustup is not available. Packages are managed by pkg
+        return 0
+    fi
     noninteractive=$1
     # Check to see if multirust is installed, we don't want it messing with rustup
     # In the future we can probably remove this but I believe it's good to have for now

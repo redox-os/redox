@@ -11,19 +11,21 @@ cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}/home/user/cookbook"
 """
 
 [package]
+# Dependencies below does not include Rust / GCC
+#   because it will be downloaded as prefix binary.
 dependencies = [
-    # TODO: When rust working, use this
-    # "dev-essential",
     "autoconf",
     "automake",
-    "gcc13",
-    "gcc13.cxx",
     "git",
+    "cbindgen",
+    "gnu-binutils",
+    "gnu-grep",
     "gnu-make",
-    "libtool",
-    "patch",
+    "installer",
+    "nasm",
     "pkg-config",
     "pkgar",
+    "rustpython",
     "sed",
     "wget",
 ]

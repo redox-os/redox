@@ -46,7 +46,7 @@ ifeq ($(PODMAN_BUILD),1)
 else
 	$(HOST_CARGO) build --manifest-path Cargo.toml --release
 	export CI=1 COOKBOOK_LOGS=true COOKBOOK_CLEAN_BUILD=true PATH="$(PREFIX_PATH):$$PATH" COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
-	./target/release/repo cook --with-package-deps "--filesystem=config/$(ARCH)/ci.toml"
+	$(REPO_BIN) cook --with-package-deps "--filesystem=config/$(ARCH)/ci.toml"
 endif
 
 # CI toolchain
