@@ -14,7 +14,6 @@ binary=hickory-dns
             --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
             --bin "${binary}" \
             --release
-            --all-features
         mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
         cp -v \
             "target/${TARGET}/release/${binary}" \
