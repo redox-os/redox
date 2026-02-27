@@ -1,0 +1,8 @@
+[source]
+git = "https://github.com/void-linux/musl-obstack"
+script = """
+./bootstrap.sh
+"""
+
+[build]
+template = "configure"
