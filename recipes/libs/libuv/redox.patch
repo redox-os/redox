@@ -148,7 +148,7 @@ diff -ruwN source/src/unix/proctitle.c source-new/src/unix/proctitle.c
 diff -ruwN source/src/unix/redox.c source-new/src/unix/redox.c
 --- source/src/unix/redox.c	1970-01-01 07:00:00.000000000 +0700
 +++ source-new/src/unix/redox.c	2025-10-10 11:18:29.028345924 +0700
-@@ -0,0 +1,102 @@
+@@ -0,0 +1,104 @@
 +/* Copyright libuv contributors. All rights reserved.
 +  *
 +  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -210,6 +210,7 @@ diff -ruwN source/src/unix/redox.c source-new/src/unix/redox.c
 +}
 +
 +int uv_interface_addresses(uv_interface_address_t** addresses, int* count) {
++  *count = 0;
 +  return 0;
 +}
 +
@@ -245,6 +246,7 @@ diff -ruwN source/src/unix/redox.c source-new/src/unix/redox.c
 +
 +
 +int uv_cpu_info(uv_cpu_info_t** cpu_infos, int* count) {
++  *count = 0;
 +  return 0;
 +}
 +
