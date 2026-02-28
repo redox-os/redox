@@ -35,11 +35,16 @@ else
 	$(REPO_BIN) fetch installer redoxfs
 endif
 
+CARGO_OFFLINE_FLAG=
+ifeq ($(REPO_OFFLINE),1)
+CARGO_OFFLINE_FLAG=--offline
+endif
+
 $(FSTOOLS_TAG): $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
-	$(HOST_CARGO) build --manifest-path Cargo.toml --release --locked
+	$(HOST_CARGO) build --manifest-path Cargo.toml --release --locked $(CARGO_OFFLINE_FLAG)
 	mkdir -p $(@D)
 	touch $@
 endif

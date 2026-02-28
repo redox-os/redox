@@ -39,6 +39,14 @@ else
 	$(REPO_BIN) fetch $(COOKBOOK_OPTS) --with-package-deps
 endif
 
+# Fetch Cargo dependencies for the cookbook tool (needed for REPO_OFFLINE=1 builds)
+cargo-fetch: FORCE
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
+	$(HOST_CARGO) fetch --manifest-path Cargo.toml --locked
+endif
+
 # Find recipe for one or more targets separated by comma
 find.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
