@@ -29,7 +29,6 @@ function DYNAMIC_INIT {
     COOKBOOK_MESON_FLAGS=(
         --buildtype release
         --wrap-mode nofallback
-        --strip
         -Ddefault_library=shared
         -Dprefix=/usr
     )
@@ -69,7 +68,6 @@ function DYNAMIC_STATIC_INIT {
         COOKBOOK_MESON_FLAGS=(
             --buildtype release
             --wrap-mode nofallback
-            --strip
             -Ddefault_library=both
             -Dprefix=/usr
         )
@@ -270,7 +268,6 @@ COOKBOOK_MESON="meson"
 COOKBOOK_MESON_FLAGS=(
     --buildtype release
     --wrap-mode nofallback
-    --strip
     -Ddefault_library=static
     -Dprefix=/usr
 )
