@@ -157,7 +157,7 @@ function cookbook_cargo_examples {
         mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
         cp -v \
             "target/${TARGET}/${build_type}/examples/${example}" \
-            "${COOKBOOK_STAGE}/usr/bin/${recipe}_${example}"
+            "${COOKBOOK_STAGE}/usr/bin/${recipe}-${example}"
     done
 }
 
@@ -173,7 +173,7 @@ function cookbook_cargo_packages {
         mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
         cp -v \
             "target/${TARGET}/${build_type}/${package}" \
-            "${COOKBOOK_STAGE}/usr/bin/${recipe}_${package}"
+            "${COOKBOOK_STAGE}/usr/bin/${recipe}-${package}"
     done
 }
 
