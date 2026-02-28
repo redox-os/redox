@@ -54,6 +54,12 @@ COOKBOOK_CONFIGURE_FLAGS+=(
 )
 fi
 
+if [ "${CROSS_GNU_TARGET}" != "i586-unknown-redox" ]; then
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --enable-frame-pointer
+)
+fi
+
 COOKBOOK_CONFIGURE_FLAGS+=(
     --target="${CROSS_GNU_TARGET}"
     --with-linker-hash-style=gnu
@@ -64,7 +70,6 @@ COOKBOOK_CONFIGURE_FLAGS+=(
 #   --with-system-zlib
     --enable-host-shared
     --enable-threads=posix
-    --enable-frame-pointer
     --enable-libstdcxx-threads
     --with-bugurl="https://gitlab.redox-os.org/redox-os/gcc/-/issues"
 )
