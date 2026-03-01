@@ -87,12 +87,12 @@ ifeq ($(PREFIX_BINARY),1)
 # PREFIX_BINARY FOR LINUX -----------------------------------------
 ifneq ($(HOSTED_REDOX),1)
 
-$(PREFIX)/gcc-install.tar.gz: | $(CONTAINER_TAG)
+$(PREFIX)/%.tar.gz: | $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
 	mkdir -p "$(@D)"
-	wget -O $@.partial "https://static.redox-os.org/toolchain/$(HOST_TARGET)/$(TARGET)/gcc-install.tar.gz"
+	wget -O $@.partial "https://static.redox-os.org/toolchain/$(HOST_TARGET)/$(TARGET)/$(@F)"
 	mv $@.partial $@
 endif
 
@@ -107,15 +107,6 @@ else
 	mv "$@.partial" "$@"
 endif
 
-$(PREFIX)/rust-install.tar.gz: | $(CONTAINER_TAG)
-ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) make $@
-else
-	mkdir -p "$(@D)"
-	wget -O $@.partial "https://static.redox-os.org/toolchain/$(HOST_TARGET)/$(TARGET)/rust-install.tar.gz"
-	mv $@.partial $@
-endif
-
 $(PREFIX)/rust-install: $(PREFIX)/rust-install.tar.gz $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
@@ -125,15 +116,6 @@ else
 	tar --extract --file "$<" --directory "$@.partial" --no-same-owner --strip-components=1
 	touch "$@.partial"
 	mv "$@.partial" "$@"
-endif
-
-$(PREFIX)/clang-install.tar.gz: | $(CONTAINER_TAG)
-ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) make $@
-else
-	mkdir -p "$(@D)"
-	wget -O $@.partial "https://static.redox-os.org/toolchain/$(HOST_TARGET)/$(TARGET)/clang-install.tar.gz"
-	mv $@.partial $@
 endif
 
 $(PREFIX)/clang-install: $(PREFIX)/clang-install.tar.gz $(CONTAINER_TAG)
@@ -159,93 +141,12 @@ else
 	mv $@.partial $@
 endif
 
-$(PREFIX)/libtool.pkgar: $(PREFIX)/id_ed25519.pub.toml | $(CONTAINER_TAG)
+$(PREFIX)/%.pkgar: $(PREFIX)/id_ed25519.pub.toml | $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
 	mkdir -p "$(@D)"
-	wget -O $@.partial "https://static.redox-os.org/pkg/$(TARGET)/libtool.pkgar"
-	mv $@.partial $@
-endif
-
-$(PREFIX)/gcc13.pkgar: $(PREFIX)/id_ed25519.pub.toml | $(CONTAINER_TAG)
-ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) make $@
-else
-	mkdir -p "$(@D)"
-	wget -O $@.partial "https://static.redox-os.org/pkg/$(TARGET)/gcc13.pkgar"
-	mv $@.partial $@
-endif
-
-$(PREFIX)/libgcc.pkgar: $(PREFIX)/id_ed25519.pub.toml | $(CONTAINER_TAG)
-ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) make $@
-else
-	mkdir -p "$(@D)"
-	wget -O $@.partial "https://static.redox-os.org/pkg/$(TARGET)/libgcc.pkgar"
-	mv $@.partial $@
-endif
-
-$(PREFIX)/libstdcxx.pkgar: $(PREFIX)/id_ed25519.pub.toml | $(CONTAINER_TAG)
-ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) make $@
-else
-	mkdir -p "$(@D)"
-	wget -O $@.partial "https://static.redox-os.org/pkg/$(TARGET)/libstdcxx.pkgar"
-	mv $@.partial $@
-endif
-
-$(PREFIX)/gcc13.cxx.pkgar: $(PREFIX)/id_ed25519.pub.toml | $(CONTAINER_TAG)
-ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) make $@
-else
-	mkdir -p "$(@D)"
-	wget -O $@.partial "https://static.redox-os.org/pkg/$(TARGET)/gcc13.cxx.pkgar"
-	mv $@.partial $@
-endif
-
-$(PREFIX)/rust.pkgar: $(PREFIX)/id_ed25519.pub.toml | $(CONTAINER_TAG)
-ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) make $@
-else
-	mkdir -p "$(@D)"
-	wget -O $@.partial "https://static.redox-os.org/pkg/$(TARGET)/rust.pkgar"
-	mv $@.partial $@
-endif
-
-$(PREFIX)/llvm21.pkgar: $(PREFIX)/id_ed25519.pub.toml | $(CONTAINER_TAG)
-ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) make $@
-else
-	mkdir -p "$(@D)"
-	wget -O $@.partial "https://static.redox-os.org/pkg/$(TARGET)/llvm21.pkgar"
-	mv $@.partial $@
-endif
-
-$(PREFIX)/llvm21.runtime.pkgar: $(PREFIX)/id_ed25519.pub.toml | $(CONTAINER_TAG)
-ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) make $@
-else
-	mkdir -p "$(@D)"
-	wget -O $@.partial "https://static.redox-os.org/pkg/$(TARGET)/llvm21.runtime.pkgar"
-	mv $@.partial $@
-endif
-
-$(PREFIX)/clang21.pkgar: $(PREFIX)/id_ed25519.pub.toml | $(CONTAINER_TAG)
-ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) make $@
-else
-	mkdir -p "$(@D)"
-	wget -O $@.partial "https://static.redox-os.org/pkg/$(TARGET)/clang21.pkgar"
-	mv $@.partial $@
-endif
-
-$(PREFIX)/lld21.pkgar: $(PREFIX)/id_ed25519.pub.toml | $(CONTAINER_TAG)
-ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) make $@
-else
-	mkdir -p "$(@D)"
-	wget -O $@.partial "https://static.redox-os.org/pkg/$(TARGET)/lld21.pkgar"
+	wget -O $@.partial "https://static.redox-os.org/pkg/$(TARGET)/$(@F)"
 	mv $@.partial $@
 endif
 
@@ -321,7 +222,7 @@ else
 	mkdir -p "$@.partial"
 	export $(PREFIX_CONFIG) PATH="$(ROOT)/$(PREFIX)/libtool-install/bin:$$PATH" \
 		COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_TARGET=$(TARGET) COOKBOOK_CROSS_GNU_TARGET=$(GNU_TARGET) && \
-	$(REPO_BIN) cook host:binutils-gdb 
+	$(REPO_BIN) cook host:binutils-gdb
 	cp -r "$(BINUTILS_TARGET)/stage/usr/". "$@.partial"
 	touch "$@.partial"
 	mv "$@.partial" "$@"
@@ -509,7 +410,7 @@ else
 	cp -r "$(LLVM_TARGET)/stage/usr/". "$@.partial"
 	mv "$@.partial" "$@"
 # TODO: Cache from RUST_TARGET is currently not cleared.
-# TIP: If you're developing std for rust, remove COOKBOOK_CLEAN_BUILD=true 
+# TIP: If you're developing std for rust, remove COOKBOOK_CLEAN_BUILD=true
 #      at the top of this file so your next rust build reuses the build cache
 endif
 
