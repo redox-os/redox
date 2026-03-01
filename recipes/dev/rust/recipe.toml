@@ -28,13 +28,14 @@ else
 
 DYNAMIC_INIT
 # Linker flags for stage2 compiler (host -> target)
-export LDFLAGS_x86_64_unknown_redox="${LDFLAGS}" # LLVM
-export CARGO_TARGET_X86_64_UNKNOWN_REDOX_RUSTFLAGS="\
+ARCH="${TARGET%%-*}"
+export LDFLAGS_${ARCH}_unknown_redox="${LDFLAGS}" # LLVM
+export CARGO_TARGET_${ARCH}_UNKNOWN_REDOX_RUSTFLAGS="\
 -Clink-args=-L${COOKBOOK_SYSROOT}/lib \
 -Clink-args=-Wl,-rpath-link,${COOKBOOK_SYSROOT}/lib \
 -Clink-args=-lz -Clink-args=-lzstd"
 # Hack for Rust errorneusly running `llvm-config --version` on cross compiled llvm-config
-cat "${COOKBOOK_ROOT}/bin/x86_64-unknown-redox-llvm-config" > "${COOKBOOK_SYSROOT}/bin/llvm-config"
+cat "${COOKBOOK_ROOT}/bin/${TARGET}-llvm-config" > "${COOKBOOK_SYSROOT}/bin/llvm-config"
 # Hack for Rust stage1 being dynamically linked with LLVM in prefix toolchain
 export LD_LIBRARY_PATH="${COOKBOOK_HOST_SYSROOT}/lib:${LD_LIBRARY_PATH}"
 # Linker flags for stage1 compiler (host -> host)
@@ -47,6 +48,8 @@ export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_RUSTFLAGS="${RUSTFLAGS_BOOTSTRAP}"
 cat ${COOKBOOK_RECIPE}/config.toml > config.toml
 sed -i "s|COOKBOOK_SYSROOT|${COOKBOOK_SYSROOT}|g" config.toml
 sed -i "s|COOKBOOK_TOOLCHAIN|${COOKBOOK_HOST_SYSROOT}|g" config.toml
+sed -i "s|COOKBOOK_TARGET|${TARGET}|g" config.toml
+sed -i "s|COOKBOOK_GNU_TARGET|${GNU_TARGET}|g" config.toml
 
 fi
 
