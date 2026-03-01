@@ -372,15 +372,6 @@ $(BUILD)/qemu_uboot.rom:
 qemu: qemu-deps
 	$(QEMU) $(QEMUFLAGS)
 
-# You probably want to use disk=no when using the *_extra targets
-qemu_extra: qemu-deps
-	$(QEMU) $(QEMUFLAGS) \
-		-drive file=$(EXTRA_DISK),format=raw
-
-qemu_nvme_extra: qemu-deps
-	$(QEMU) $(QEMUFLAGS) \
-		-drive file=$(EXTRA_DISK),format=raw,if=none,id=drv1 -device nvme,drive=drv1,serial=NVME_EXTRA
-
 #additional steps for $(DISK) are required!!!
 qemu_raspi: qemu-deps
 	$(QEMU) -M raspi3b -smp 4,cores=1 \
