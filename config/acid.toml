@@ -1,6 +1,6 @@
 # Configuration for "acid" testing
 
-include = ["net.toml"]
+include = ["base.toml"]
 
 # General settings
 [general]

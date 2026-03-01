@@ -15,6 +15,8 @@ bootloader = {}
 kernel = {}
 libgcc = {}
 libstdcxx = {}
+netdb = {}
+netutils = {}
 relibc = {}
 userutils = {}
 uutils = {}
@@ -37,6 +39,15 @@ path = "/usr/lib/init.d/00_drivers"
 data = """
 requires_weak 00_base
 pcid-spawner
+"""
+
+## Network init
+[[files]]
+path = "/usr/lib/init.d/10_net"
+data = """
+requires_weak 00_drivers
+notify smolnetd
+nowait dhcpd
 """
 
 [[files]]
@@ -86,6 +97,31 @@ schemes = [
 [[files]]
 path = "/etc/hostname"
 data = "redox"
+
+## Default net configuration (optimized for QEMU)
+[[files]]
+path = "/etc/net/dns"
+data = """
+9.9.9.9
+"""
+
+[[files]]
+path = "/etc/net/ip"
+data = """
+10.0.2.15
+"""
+
+[[files]]
+path = "/etc/net/ip_router"
+data = """
+10.0.2.2
+"""
+
+[[files]]
+path = "/etc/net/ip_subnet"
+data = """
+255.255.255.0
+"""
 
 # https://www.freedesktop.org/software/systemd/man/latest/os-release.html
 [[files]]

@@ -1,7 +1,7 @@
 # Configuration for automated testing of essential test suites
 # Smaller test suites are executed first to catch possible bugs or regressions faster
 
-include = ["net.toml"]
+include = ["base.toml"]
 
 # General settings
 [general]

@@ -1,6 +1,6 @@
 # Minimal desktop configuration
 
-include = ["minimal-net.toml"]
+include = ["minimal.toml"]
 
 # General settings
 [general]
