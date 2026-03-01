@@ -42,14 +42,15 @@ const REPO_HELP_STR: &str = r#"
     Usage: repo <command> [flags] <recipe1> <recipe2> ...
 
     command list:
-        fetch     download recipe sources
-        cook      build recipe packages
-        unfetch   delete recipe sources
-        clean     delete recipe artifacts
-        push      extract package into sysroot
-        find      find path of recipe packages
-        cook-tree show tree of recipe build
-        push-tree show tree of recipe packages
+        fetch        download recipe sources
+        cook         build recipe packages
+        unfetch      delete recipe sources
+        clean        delete recipe artifacts
+        clean-target delete recipe artifacts for one target
+        push         extract package into sysroot
+        find         find path of recipe packages
+        cook-tree    show tree of recipe build
+        push-tree    show tree of recipe packages
     
     common flags:
         --cookbook=<cookbook_dir>  the "recipes" folder, default to $PWD/recipes
@@ -96,6 +97,7 @@ enum CliCommand {
     CookTree,
     Unfetch,
     Clean,
+    CleanTarget,
     Push,
     PushTree,
     Find,
@@ -112,7 +114,9 @@ impl CliCommand {
         *self == CliCommand::Push || *self == CliCommand::PushTree
     }
     pub fn is_cleaning(&self) -> bool {
-        *self == CliCommand::Clean || *self == CliCommand::Unfetch
+        *self == CliCommand::Clean
+            || *self == CliCommand::CleanTarget
+            || *self == CliCommand::Unfetch
     }
 }
 
@@ -125,6 +129,7 @@ impl FromStr for CliCommand {
             "cook" => Ok(CliCommand::Cook),
             "unfetch" => Ok(CliCommand::Unfetch),
             "clean" => Ok(CliCommand::Clean),
+            "clean-target" => Ok(CliCommand::CleanTarget),
             "push" => Ok(CliCommand::Push),
             "push-tree" => Ok(CliCommand::PushTree),
             "cook-tree" => Ok(CliCommand::CookTree),
@@ -141,6 +146,7 @@ impl ToString for CliCommand {
             CliCommand::Cook => "cook".to_string(),
             CliCommand::Unfetch => "unfetch".to_string(),
             CliCommand::Clean => "clean".to_string(),
+            CliCommand::CleanTarget => "clean-target".to_string(),
             CliCommand::Push => "push".to_string(),
             CliCommand::PushTree => "push-tree".to_string(),
             CliCommand::CookTree => "cook-tree".to_string(),
@@ -354,8 +360,9 @@ fn repo_inner(
             let _ = th.join();
             result?;
         }
-        CliCommand::Unfetch => handle_clean(recipe, config, true, true)?,
-        CliCommand::Clean => handle_clean(recipe, config, false, true)?,
+        CliCommand::Unfetch | CliCommand::Clean | CliCommand::CleanTarget => {
+            handle_clean(recipe, config, command)?
+        }
         CliCommand::Push => unreachable!(),
         CliCommand::PushTree => unreachable!(),
         CliCommand::CookTree => unreachable!(),
@@ -734,15 +741,17 @@ fn handle_nonstop_fail(recipe: &CookRecipe) -> anyhow::Result<()> {
 fn handle_clean(
     recipe: &CookRecipe,
     _config: &CliConfig,
-    source: bool,
-    target: bool,
+    command: &CliCommand,
 ) -> anyhow::Result<()> {
-    let dir = recipe.dir.join("target");
-    if dir.exists() && target {
+    let mut dir = recipe.dir.join("target");
+    if matches!(*command, CliCommand::CleanTarget) {
+        dir = dir.join(redoxer::target())
+    }
+    if dir.exists() {
         fs::remove_dir_all(&dir).context(format!("failed to delete {}", dir.display()))?;
     }
     let dir = recipe.dir.join("source");
-    if dir.exists() && source {
+    if dir.exists() && matches!(*command, CliCommand::Unfetch) {
         fs::remove_dir_all(&dir).context(format!("failed to delete {}", dir.display()))?;
     }
     Ok(())
