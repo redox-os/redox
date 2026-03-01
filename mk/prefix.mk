@@ -304,21 +304,12 @@ $(PREFIX_RUST_VERSION_TAG):
 	mkdir -p "$(@D)"
 	touch $@
 
-$(PREFIX)/rustc-install.tar.xz: | $(PREFIX_RUST_VERSION_TAG)
+$(PREFIX)/rustc-install.tar.xz $(PREFIX)/cargo-install.tar.xz: $(PREFIX)/%-install.tar.xz: | $(PREFIX_RUST_VERSION_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
 	mkdir -p "$(@D)"
-	wget -O $@.partial "https://static.rust-lang.org/dist/$(UPSTREAM_RUSTC_VERSION)/rustc-nightly-$(HOST_TARGET).tar.xz"
-	mv $@.partial $@
-endif
-
-$(PREFIX)/cargo-install.tar.xz: | $(PREFIX_RUST_VERSION_TAG)
-ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) make $@
-else
-	mkdir -p "$(@D)"
-	wget -O $@.partial "https://static.rust-lang.org/dist/$(UPSTREAM_RUSTC_VERSION)/cargo-nightly-$(HOST_TARGET).tar.xz"
+	wget -O $@.partial "https://static.rust-lang.org/dist/$(UPSTREAM_RUSTC_VERSION)/$*-nightly-$(HOST_TARGET).tar.xz"
 	mv $@.partial $@
 endif
 
