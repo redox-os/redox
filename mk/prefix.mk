@@ -96,29 +96,7 @@ else
 	mv $@.partial $@
 endif
 
-$(PREFIX)/gcc-install: $(PREFIX)/gcc-install.tar.gz $(CONTAINER_TAG)
-ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) make $@
-else
-	rm -rf "$@.partial" "$@"
-	mkdir -p "$@.partial"
-	tar --extract --file "$<" --directory "$@.partial" --no-same-owner --strip-components=1
-	touch "$@.partial"
-	mv "$@.partial" "$@"
-endif
-
-$(PREFIX)/rust-install: $(PREFIX)/rust-install.tar.gz $(CONTAINER_TAG)
-ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) make $@
-else
-	rm -rf "$@.partial" "$@"
-	mkdir -p "$@.partial"
-	tar --extract --file "$<" --directory "$@.partial" --no-same-owner --strip-components=1
-	touch "$@.partial"
-	mv "$@.partial" "$@"
-endif
-
-$(PREFIX)/clang-install: $(PREFIX)/clang-install.tar.gz $(CONTAINER_TAG)
+$(PREFIX)/gcc-install $(PREFIX)/rust-install $(PREFIX)/clang-install: %: %.tar.gz $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
