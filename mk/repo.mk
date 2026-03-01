@@ -230,6 +230,29 @@ ucrp.%: $(FSTOOLS_TAG) FORCE
 	$(MAKE) ucr.$*
 	$(MAKE) p.$*
 
+export TEST_ARGS?=
+
+# Run a recipe executable inside Redox (use e.recipe,executable for recipes with multiple binaries)
+# Set TEST_ARGS to pass arguments, e.g. TEST_ARGS="--help" make e.ion
+e.%: $(FSTOOLS_TAG) FORCE
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@ TEST_ARGS="$(TEST_ARGS)"
+else
+	$(eval RECIPE_NAME := $(firstword $(subst $(comma), ,$*)))
+	$(eval EXEC_NAME := $(or $(word 2,$(subst $(comma), ,$*)),$(RECIPE_NAME)))
+	$(eval RECIPE_DIR := $(shell $(REPO_BIN) find $(RECIPE_NAME) 2>/dev/null | grep ^recipes | head -1))
+	@if [ -z "$(RECIPE_DIR)" ]; then \
+		echo "recipe '$(RECIPE_NAME)' not found"; exit 1; \
+	fi
+	$(eval STAGE_DIR := $(RECIPE_DIR)/target/$(TARGET)/stage)
+	$(eval BIN_PATH := $(shell $(FIND) $(STAGE_DIR) -type f -name "$(EXEC_NAME)" 2>/dev/null | head -1))
+	@if [ -z "$(BIN_PATH)" ]; then \
+		echo "executable '$(EXEC_NAME)' not found in stage, run 'make r.$(RECIPE_NAME)' first"; \
+		exit 1; \
+	fi
+	TESTBIN="$(BIN_PATH) $(TEST_ARGS)" $(MAKE) qemu redoxer=yes
+endif
+
 export DEBUG_BIN?=
 
 # Debug a statically linked program with gdbgui, for example: debug.drivers-initfs DEBUG_BIN=pcid
