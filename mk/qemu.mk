@@ -8,6 +8,7 @@ VGA_SUPPORTED=no
 
 ifeq ($(ARCH),i586)
 	audio?=ac97
+	disk?=ata
 	gpu?=vga
 	uefi=no
 	VGA_SUPPORTED=yes
@@ -104,7 +105,6 @@ else ifeq ($(ARCH),riscv64gc)
 	QEMU_SMP?=4
 	QEMU_MEM?=2048
 	QEMU_CPU=max
-	disk?=nvme
 	PFLASH0=$(firstword \
 		$(wildcard /usr/share/qemu-efi-riscv64/RISCV_VIRT_CODE.fd) \
 		$(wildcard /usr/share/edk2/riscv/RISCV_VIRT_CODE.fd) \
@@ -265,7 +265,7 @@ else ifeq ($(gpu),virtio-gl)
 endif
 
 EXTRA_DISK=$(BUILD)/extra.img
-disk?=ata
+disk?=nvme
 ifeq ($(disk),ata)
 	# For i386, ata will use ided
 	# For aarch64 and x86_64, ata will use ahcid
