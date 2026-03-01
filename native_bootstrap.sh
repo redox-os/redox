@@ -404,6 +404,7 @@ ubuntu()
     clang \
     cmake \
     curl \
+    default-jre-headless \
     dos2unix \
     doxygen \
     expect \
