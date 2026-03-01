@@ -1,6 +1,6 @@
 # Configuration file for QEMU
 
-QEMU=SDL_VIDEO_X11_DGAMOUSE=0 qemu-system-$(QEMU_ARCH)
+QEMU=qemu-system-$(QEMU_ARCH)
 QEMUFLAGS=-d guest_errors -name "Redox OS $(ARCH)"
 netboot?=no
 redoxer?=no
