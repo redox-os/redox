@@ -64,17 +64,17 @@ FSTOOLS_IN_PODMAN=0
 HOST_TARGET := $(shell env -u RUSTUP_TOOLCHAIN rustc -vV | grep host | cut -d: -f2 | tr -d " ")
 # x86_64 linux hosts have all toolchains
 ifeq ($(PREFIX_BINARY),1)
-ifneq ($(HOST_TARGET),x86_64-unknown-linux-gnu)
-	ifeq ($(ARCH),aarch64)
-		# aarch64 linux hosts have aarch64 toolchain
-		ifneq ($(HOST_TARGET),aarch64-unknown-linux-gnu)
-            $(info The $(ARCH) binary prefix is only built for x86_64 and aarch64 Linux hosts)
-			PREFIX_BINARY=0
-		endif
-	else
-        $(info The $(ARCH) binary prefix is only built for x86_64 Linux hosts)
+ifeq ($(HOST_TARGET),aarch64-unknown-linux-gnu)
+	ifneq ($(ARCH),aarch64)
+	ifneq ($(ARCH),x86_64)
+		$(info The $(ARCH) binary prefix is only built for x86_64 Linux hosts)
 		PREFIX_BINARY=0
 	endif
+	endif
+else ifeq ($(HOST_TARGET),x86_64-unknown-linux-gnu)
+else
+	$(info The $(ARCH) binary prefix is only built for Linux hosts)
+	PREFIX_BINARY=0
 endif
 endif
 endif
