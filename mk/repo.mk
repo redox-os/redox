@@ -61,7 +61,7 @@ ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
 	$(REPO_BIN) clean relibc
-	rm -rf $(PREFIX)/relibc-install $(PREFIX)/sysroot $(REPO_TAG)
+	rm -rf $(PREFIX)/relibc-install $(PREFIX)/sysroot
 	@echo "\033[1;36;49mSysroot cleaned\033[0m"
 endif
 

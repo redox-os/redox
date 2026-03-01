@@ -25,16 +25,17 @@ PREFIX_CONFIG=CI=1 COOKBOOK_CLEAN_BUILD=true COOKBOOK_CLEAN_TARGET=false COOKBOO
 
 prefix: $(PREFIX)/sysroot
 
-# Remove prefix builds but retain downloaded binaries
+# Remove prefix builds and downloads
 prefix_clean:
-	rm -rf $(PREFIX)/sysroot $(PREFIX)/*-install
+	rm -rf $(PREFIX)
 
 # Remove relibc in sysroot and all statically linked recipes
 static_clean: | $(FSTOOLS_TAG)
 	$(MAKE) c.relibc
 	$(MAKE) c.base,base-initfs,extrautils,kernel,ion,pkgutils,redoxfs
-	$(MAKE) c.bash,luajit,gettext,openssl1,pcre2,sdl1,zstd,zlib,bzip2,xz
+	$(MAKE) c.bash,luajit,gettext,openssl1,openssl3,pcre2,sdl1,zstd,zlib,bzip2,xz
 	$(MAKE) c.expat,freetype2,libffi,libiconv,libjpeg,liborbital,libpng,libxml2,ncurses,ncursesw
+	rm -rf $(REPO_TAG)
 
 $(PREFIX)/relibc-install: $(PREFIX)/clang-install $(PREFIX)/rust-install $(PREFIX)/gcc-install | $(FSTOOLS_TAG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
