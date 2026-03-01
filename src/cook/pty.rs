@@ -1,6 +1,6 @@
 use anyhow::{Error, bail};
-use filedescriptor::FileDescriptor;
 use libc::{self, winsize};
+use std::fs::File;
 use std::io::{Read, Write};
 use std::os::fd::FromRawFd;
 use std::os::unix::io::AsRawFd;
@@ -135,10 +135,10 @@ fn openpty(size: PtySize) -> anyhow::Result<(UnixMasterPty, UnixSlavePty)> {
     }
 
     let master = UnixMasterPty {
-        fd: PtyFd(unsafe { FileDescriptor::from_raw_fd(master) }),
+        fd: PtyFd(unsafe { File::from_raw_fd(master) }),
     };
     let slave = UnixSlavePty {
-        fd: PtyFd(unsafe { FileDescriptor::from_raw_fd(slave) }),
+        fd: PtyFd(unsafe { File::from_raw_fd(slave) }),
     };
 
     // Ensure that these descriptors will get closed when we execute
@@ -168,16 +168,11 @@ impl UnixPtySystem {
     }
 }
 
-struct PtyFd(pub FileDescriptor);
+struct PtyFd(pub File);
 impl std::ops::Deref for PtyFd {
-    type Target = FileDescriptor;
-    fn deref(&self) -> &FileDescriptor {
+    type Target = File;
+    fn deref(&self) -> &File {
         &self.0
-    }
-}
-impl std::ops::DerefMut for PtyFd {
-    fn deref_mut(&mut self) -> &mut FileDescriptor {
-        &mut self.0
     }
 }
 
@@ -249,8 +244,8 @@ impl PtyFd {
         unsafe {
             cmd
                 // .stdin(self.as_stdio()?)
-                .stdout(self.as_stdio()?)
-                .stderr(self.as_stdio()?)
+                .stdout(self.try_clone()?)
+                .stderr(self.try_clone()?)
                 .pre_exec(move || {
                     // Clean up a few things before we exec the program
                     // Clear out any potentially problematic signal
