@@ -1,13 +1,11 @@
 [llvm]
 download-ci-llvm = false
 static-libstdcpp = false
-targets = "X86"
-experimental-targets = ""
 link-shared = true
 
 [build]
-host = ["x86_64-unknown-redox"]
-target = ["x86_64-unknown-redox"]
+host = ["COOKBOOK_TARGET"]
+target = ["COOKBOOK_TARGET"]
 submodules = false
 docs = false
 tools = ["cargo", "clippy", "rustdoc", "rustfmt", "src"]
@@ -22,11 +20,11 @@ sysconfdir = "etc"
 backtrace = false
 codegen-tests = false
 
-[target.x86_64-unknown-redox]
-cc = "x86_64-unknown-redox-gcc"
-cxx = "x86_64-unknown-redox-g++"
-ar = "x86_64-unknown-redox-ar"
-linker = "x86_64-unknown-redox-gcc"
+[target.COOKBOOK_TARGET]
+cc = "COOKBOOK_GNU_TARGET-gcc"
+cxx = "COOKBOOK_GNU_TARGET-g++"
+ar = "COOKBOOK_GNU_TARGET-ar"
+linker = "COOKBOOK_GNU_TARGET-gcc"
 rpath = false
 crt-static = false
 llvm-config = "COOKBOOK_SYSROOT/bin/llvm-config"
