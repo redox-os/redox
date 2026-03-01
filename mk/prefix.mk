@@ -172,6 +172,14 @@ endif
 
 else
 
+$(PREFIX)/%.tar.gz: $(PREFIX)/%
+	tar \
+		--create \
+		--gzip \
+		--file "$@" \
+		--directory="$<" \
+		.
+
 # BUILD GCC ---------------------------------------------------
 $(PREFIX)/libtool-install: | $(FSTOOLS_TAG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
@@ -281,14 +289,6 @@ else
 	rm -rf $(BINUTILS_TARGET) $(LIBTOOL_TARGET) $(GCC_TARGET) $(LIBSTDCXX_TARGET) $(RELIBC_FREESTANDING_TARGET)
 endif
 
-$(PREFIX)/gcc-install.tar.gz: $(PREFIX)/gcc-install
-	tar \
-		--create \
-		--gzip \
-		--file "$@" \
-		--directory="$<" \
-		.
-
 # RUST FROM UPSTREAM COMPILER ---------------------------------------------------
 ifeq ($(PREFIX_USE_UPSTREAM_RUST_COMPILER),1)
 
@@ -394,14 +394,6 @@ endif
 
 endif
 
-$(PREFIX)/rust-install.tar.gz: $(PREFIX)/rust-install
-	tar \
-		--create \
-		--gzip \
-		--file "$@" \
-		--directory="$<" \
-		.
-
 # BUILD CLANG ---------------------------------------------------
 $(PREFIX)/clang-install: | $(PREFIX)/rust-install $(PREFIX)/libtool-install $(FSTOOLS_TAG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
@@ -424,13 +416,5 @@ endif
 # no longer needed, delete build files to save disk space
 	rm -rf $(LLVM_TARGET) $(CLANG_TARGET) $(LLD_TARGET)
 endif
-
-$(PREFIX)/clang-install.tar.gz: $(PREFIX)/clang-install
-	tar \
-		--create \
-		--gzip \
-		--file "$@" \
-		--directory="$<" \
-		.
 
 endif
