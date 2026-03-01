@@ -29,6 +29,14 @@ else
 	@$(REPO_BIN) push-tree $(COOKBOOK_OPTS) --with-package-deps
 endif
 
+# Clean specific target to all recipes, similar to repo_clean but more specific
+repo_clean_target: $(FSTOOLS_TAG) FORCE
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
+	$(REPO_BIN) clean-target --all
+endif
+
 # Fetch all recipes source or binary from filesystem config
 fetch: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
