@@ -60,6 +60,7 @@ else ifeq ($(ARCH),aarch64)
 	ifeq ($(BOARD),raspi3bp)
 		QEMU_KERNEL=$(BUILD)/raspi3bp_uboot.rom
 		disk?=sdcard
+		gpu=none
 		QEMU_MACHINE:=raspi3b
 		QEMU_SMP:=4
 		QEMU_MEM:=1024
@@ -371,9 +372,3 @@ $(BUILD)/qemu_uboot.rom:
 
 qemu: qemu-deps
 	$(QEMU) $(QEMUFLAGS)
-
-#additional steps for $(DISK) are required!!!
-qemu_raspi: qemu-deps
-	$(QEMU) -M raspi3b -smp 4,cores=1 \
-		-kernel $(FIRMWARE) \
-		-serial stdio -display none
