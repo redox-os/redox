@@ -275,8 +275,6 @@ symlink = true
 password = "password"
 uid = 0
 gid = 0
-name = "root"
-home = "/root"
 shell = "/usr/bin/ion"
 
 [users.user]
