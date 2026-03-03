@@ -30,10 +30,7 @@ DYNAMIC_INIT
 # Linker flags for stage2 compiler (host -> target)
 ARCH="${TARGET%%-*}"
 export LDFLAGS_${ARCH}_unknown_redox="${LDFLAGS}" # LLVM
-export CARGO_TARGET_${ARCH}_UNKNOWN_REDOX_RUSTFLAGS="\
--Clink-args=-L${COOKBOOK_SYSROOT}/lib \
--Clink-args=-Wl,-rpath-link,${COOKBOOK_SYSROOT}/lib \
--Clink-args=-lz -Clink-args=-lzstd"
+export CARGO_TARGET_${ARCH^^}_UNKNOWN_REDOX_RUSTFLAGS="${RUSTFLAGS}" # Rust
 # Hack for Rust errorneusly running `llvm-config --version` on cross compiled llvm-config
 cat "${COOKBOOK_ROOT}/bin/${TARGET}-llvm-config" > "${COOKBOOK_SYSROOT}/bin/llvm-config"
 # Hack for Rust stage1 being dynamically linked with LLVM in prefix toolchain
