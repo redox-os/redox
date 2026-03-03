@@ -79,7 +79,6 @@ orbdata = {}
 orbital = {}
 orbterm = {}
 orbutils = {}
-orbutils-background = {}
 orbutils-launcher = {}
 orbutils-orblogin = {}
 patch = {}

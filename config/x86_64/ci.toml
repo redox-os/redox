@@ -146,7 +146,6 @@ orbdata = {}
 orbital = {}
 orbterm = {}
 orbutils = {}
-orbutils-background = {}
 orbutils-launcher = {}
 orbutils-orblogin = {}
 os-test-bins = {}
