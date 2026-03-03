@@ -32,7 +32,11 @@ ifeq ($(ARCH),i686)
 endif
 ## Select filesystem config
 ifeq ($(BOARD),)
+ifeq ($(wildcard config/$(ARCH)/$(CONFIG_NAME).toml),)
+FILESYSTEM_CONFIG?=config/$(CONFIG_NAME).toml
+else
 FILESYSTEM_CONFIG?=config/$(ARCH)/$(CONFIG_NAME).toml
+endif
 else
 FILESYSTEM_CONFIG?=config/$(ARCH)/$(BOARD)/$(CONFIG_NAME).toml
 endif

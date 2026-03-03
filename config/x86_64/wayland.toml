@@ -1,3 +1,0 @@
-# Wayland configuration
-
-include = ["../wayland.toml"]
