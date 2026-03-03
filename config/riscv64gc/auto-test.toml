@@ -1,3 +1,0 @@
-# Configuration for automated testing of essential test suites
-
-include = ["../auto-test.toml"]
