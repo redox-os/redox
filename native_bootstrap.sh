@@ -121,7 +121,6 @@ osx_macports()
     install_macports_pkg "gmake"
     install_macports_pkg "gmp"
     install_macports_pkg "gpatch"
-    install_macports_pkg "gperf"
     install_macports_pkg "jpeg"
     install_macports_pkg "libpng"
     install_macports_pkg "libsdl12"
@@ -189,7 +188,6 @@ osx_homebrew()
     install_brew_pkg "gettext"
     install_brew_pkg "gmp"
     install_brew_pkg "gpatch"
-    install_brew_pkg "gperf"
     install_brew_pkg "jpeg"
     install_brew_pkg "libpng"
     install_brew_pkg "libtool"
@@ -258,7 +256,6 @@ freebsd()
     install_freebsd_pkg "gettext"
     install_freebsd_pkg "gmake"
     install_freebsd_pkg "gmp"
-    install_freebsd_pkg "gperf"
     install_freebsd_pkg "libjpeg-turbo"
     install_freebsd_pkg "libtool"
     install_freebsd_pkg "m4"
@@ -317,7 +314,6 @@ archLinux()
     gdb \
     git \
     gmp \
-    gperf \
     libjpeg-turbo \
     libpng \
     libtool \
@@ -415,7 +411,6 @@ ubuntu()
     genisoimage \
     git \
     git-lfs \
-    gperf \
     gtk-doc-tools \
     help2man \
     intltool \
@@ -564,7 +559,6 @@ fedora()
     gettext-devel \
     glibc-devel.i686 \
     gmp-devel \
-    gperf \
     help2man \
     libjpeg-turbo-devel \
     libpng-devel \
@@ -629,7 +623,6 @@ suse()
     "gettext-tools"
     "glibc-devel-32bit"
     "gmp-devel"
-    "gperf"
     "libexpat-devel"
     "libjpeg8-devel"
     "libpng16-devel"
@@ -826,7 +819,6 @@ solus()
     gcc \
     glibc-devel \
     git \
-    gperf \
     libgcc-32bit \
     libpng-devel \
     libstdc++-32bit \
