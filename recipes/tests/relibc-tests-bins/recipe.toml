@@ -35,7 +35,7 @@ else
     fi
 fi
 
-if [ -n "TESTBIN" ]; then
+if [ -n "$TESTBIN" ]; then
 if [[ -f "${EXPECTSRC}/$TESTBIN.stdout" ]]; then
 "${COOKBOOK_REDOXER}" write-exec sh -c "cd /root/relibc-tests; relibc-tests ./$TESTBIN"
 else
