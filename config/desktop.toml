@@ -22,3 +22,5 @@ patchelf = {}
 pop-icon-theme = {}
 rustpython = {}
 shared-mime-info = {}
+# orbterm from desktop-minimal should be ignored
+orbterm = "ignore"
