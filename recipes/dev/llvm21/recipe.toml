@@ -8,11 +8,6 @@ shallow_clone = true
 template = "custom"
 dependencies = [
     "zstd",
-    "libxml2",
-]
-dev-dependencies = [
-    "host:xz",
-    "host:libarchive",  # workaround for cmake error
 ]
 script = """
 DYNAMIC_INIT
@@ -41,6 +36,7 @@ COOKBOOK_CMAKE_FLAGS+=(
     -DLLVM_TARGETS_TO_BUILD="$LLVM_TARGETS_TO_BUILD"
     -DLLVM_ENABLE_ZLIB=Off
     -DLLVM_USE_STATIC_ZSTD=On
+    -DLLVM_ENABLE_LIBXML2=Off
 
 # the rest of options that shared to clang
     -DCROSS_TOOLCHAIN_FLAGS_NATIVE="-DCMAKE_TOOLCHAIN_FILE=$(realpath "${COOKBOOK_RECIPE}/native.cmake")"
@@ -60,13 +56,6 @@ COOKBOOK_CMAKE_FLAGS+=(
     -DLLVM_UTILS_INSTALL_DIR=bin
     -DUNIX=1
 )
-
-if [ "${COOKBOOK_HOST_SYSROOT}" = "/usr" ]; then
-# avoid linking as much as possible during bootstrapping
-    COOKBOOK_CMAKE_FLAGS+=(
-        -DLLVM_ENABLE_LIBXML2=Off
-    )
-fi
 
 COOKBOOK_SOURCE="$COOKBOOK_SOURCE/llvm"
 cookbook_cmake
