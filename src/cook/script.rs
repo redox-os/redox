@@ -37,6 +37,7 @@ function DYNAMIC_INIT {
     export LDFLAGS="${USER_LDFLAGS}-Wl,-rpath-link,${COOKBOOK_SYSROOT}/lib -L${COOKBOOK_SYSROOT}/lib"
     export RUSTFLAGS="-C target-feature=-crt-static -L native=${COOKBOOK_SYSROOT}/lib -C link-arg=-Wl,-rpath-link,${COOKBOOK_SYSROOT}/lib"
     export COOKBOOK_DYNAMIC=1
+    reexport_flags
 }
 
 COOKBOOK_AUTORECONF="autoreconf"
@@ -102,6 +103,14 @@ export CPPFLAGS="${CPPFLAGS:+$CPPFLAGS }-I${COOKBOOK_SYSROOT}/include"
 USER_LDFLAGS="${LDFLAGS:+$LDFLAGS }"
 export LDFLAGS="${USER_LDFLAGS}-L${COOKBOOK_SYSROOT}/lib --static"
 
+# This reexport C variables into custom build script that can be consumed by cc crate
+function reexport_flags {
+    target=${TARGET//-/_}
+    export CFLAGS_${target}="${CFLAGS:+$CFLAGS }${CPPFLAGS}"
+    export CXXFLAGS_${target}="${CXXFLAGS:+$CXXFLAGS }${CPPFLAGS}"
+    export LDFLAGS_${target}="${LDFLAGS}"
+}
+
 # These ensure that pkg-config gets the right flags from the sysroot
 if [ "${TARGET}" != "${COOKBOOK_HOST_TARGET}" ]
 then
@@ -130,6 +139,8 @@ then
 build_flags+=" --offline"
 install_flags+=" --offline"
 fi
+
+reexport_flags
 
 # cargo template
 COOKBOOK_CARGO="${COOKBOOK_REDOXER}"
