@@ -37,7 +37,10 @@ function DYNAMIC_INIT {
     export LDFLAGS="${USER_LDFLAGS}-Wl,-rpath-link,${COOKBOOK_SYSROOT}/lib -L${COOKBOOK_SYSROOT}/lib"
     export RUSTFLAGS="-C target-feature=-crt-static -L native=${COOKBOOK_SYSROOT}/lib -C link-arg=-Wl,-rpath-link,${COOKBOOK_SYSROOT}/lib"
     export COOKBOOK_DYNAMIC=1
-    reexport_flags
+
+    if [ function = $(type -t reexport_flags) ]; then
+        reexport_flags
+    fi
 }
 
 COOKBOOK_AUTORECONF="autoreconf"
