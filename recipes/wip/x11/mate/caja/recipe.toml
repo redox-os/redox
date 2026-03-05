@@ -16,4 +16,6 @@ template = "custom"
 script = """
 DYNAMIC_INIT
 cookbook_configure
+# TODO: conflict with shared-mime-info
+rm -f ${COOKBOOK_STAGE}/usr/share/mime/mime.cache
 """

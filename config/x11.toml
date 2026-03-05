@@ -16,7 +16,7 @@ dbus = {}
 gtk3 = {}
 mate-common = {}
 mesa-demos-x11 = {}
-webkitgtk3 = {}
+#webkitgtk3 = {} # not compiling
 #xfce4-panel = {}
 #xfwm4 = {}
 x11-full = {}
@@ -68,6 +68,10 @@ data = """
 
 set -ex
 
+# for ice authority and pixbuf
+export HOME=/home/root
+export XDG_DATA_DIRS=/usr/share
+
 # Generate config file
 WIDTH="$((0x$(grep FRAMEBUFFER_WIDTH /scheme/sys/env | cut -d '=' -f 2)))"
 HEIGHT="$((0x$(grep FRAMEBUFFER_HEIGHT /scheme/sys/env | cut -d '=' -f 2)))"
@@ -115,6 +119,8 @@ set -ex
 
 xterm&
 sleep 1
+
+gdk-pixbuf-query-loaders --update-cache
 mate-session&
 """
 

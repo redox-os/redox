@@ -1,6 +1,6 @@
 diff -ruwN glib-2.87.0/fuzzing/fuzz_resolver.c source/fuzzing/fuzz_resolver.c
---- glib-2.87.0/fuzzing/fuzz_resolver.c	2025-11-03 05:42:10.000000000 -0700
-+++ source/fuzzing/fuzz_resolver.c	2026-01-15 18:35:07.058788231 -0700
+--- glib-2.87.0/fuzzing/fuzz_resolver.c	2025-11-03 19:42:10.000000000 +0700
++++ source/fuzzing/fuzz_resolver.c	2026-02-19 13:53:45.717898735 +0700
 @@ -29,7 +29,7 @@
                   gint          rrtype)
  {
@@ -11,8 +11,8 @@ diff -ruwN glib-2.87.0/fuzzing/fuzz_resolver.c source/fuzzing/fuzz_resolver.c
  
    /* Data too long? */
 diff -ruwN glib-2.87.0/gio/gcredentialsprivate.h source/gio/gcredentialsprivate.h
---- glib-2.87.0/gio/gcredentialsprivate.h	2025-11-03 05:42:10.000000000 -0700
-+++ source/gio/gcredentialsprivate.h	2026-01-15 18:35:07.058963309 -0700
+--- glib-2.87.0/gio/gcredentialsprivate.h	2025-11-03 19:42:10.000000000 +0700
++++ source/gio/gcredentialsprivate.h	2026-02-19 13:53:45.717995965 +0700
 @@ -104,7 +104,7 @@
   */
  #undef G_CREDENTIALS_HAS_PID
@@ -23,8 +23,8 @@ diff -ruwN glib-2.87.0/gio/gcredentialsprivate.h source/gio/gcredentialsprivate.
  #define G_CREDENTIALS_USE_LINUX_UCRED 1
  #define G_CREDENTIALS_NATIVE_TYPE G_CREDENTIALS_TYPE_LINUX_UCRED
 diff -ruwN glib-2.87.0/gio/glocalfile.c source/gio/glocalfile.c
---- glib-2.87.0/gio/glocalfile.c	2025-11-03 05:42:10.000000000 -0700
-+++ source/gio/glocalfile.c	2026-01-15 18:35:07.058984475 -0700
+--- glib-2.87.0/gio/glocalfile.c	2025-11-03 19:42:10.000000000 +0700
++++ source/gio/glocalfile.c	2026-02-19 13:53:45.718204283 +0700
 @@ -47,6 +47,10 @@
  #include <sys/mount.h>
  #endif
@@ -37,8 +37,8 @@ diff -ruwN glib-2.87.0/gio/glocalfile.c source/gio/glocalfile.c
  #define O_BINARY 0
  #endif
 diff -ruwN glib-2.87.0/gio/gnetworking.h.in source/gio/gnetworking.h.in
---- glib-2.87.0/gio/gnetworking.h.in	2025-11-03 05:42:10.000000000 -0700
-+++ source/gio/gnetworking.h.in	2026-01-15 18:35:07.059494095 -0700
+--- glib-2.87.0/gio/gnetworking.h.in	2025-11-03 19:42:10.000000000 +0700
++++ source/gio/gnetworking.h.in	2026-02-19 13:53:45.718380100 +0700
 @@ -40,13 +40,17 @@
  #include <netdb.h>
  #include <netinet/in.h>
@@ -57,6 +57,19 @@ diff -ruwN glib-2.87.0/gio/gnetworking.h.in source/gio/gnetworking.h.in
  @NAMESER_COMPAT_INCLUDE@
  
  #ifndef __GI_SCANNER__
+diff -ruwN glib-2.87.0/gio/gsocket.c source/gio/gsocket.c
+--- glib-2.87.0/gio/gsocket.c	2025-11-03 19:42:10.000000000 +0700
++++ source/gio/gsocket.c	2026-03-05 11:29:00.807439664 +0700
+@@ -3133,7 +3133,8 @@
+ 	{
+ 	  int errsv = get_socket_errno ();
+ 
+-	  if (errsv == EINTR)
++    // TODO: uds connect() in redox is blocking
++	  if (errsv == EINTR || errsv == EAGAIN)
+ 	    continue;
+ 
+ #ifndef G_OS_WIN32
 diff -ruwN glib-2.87.0/gio/gthreadedresolver.c source/gio/gthreadedresolver.c
 --- glib-2.87.0/gio/gthreadedresolver.c	2025-11-03 05:42:10.000000000 -0700
 +++ source/gio/gthreadedresolver.c	2026-01-15 18:35:07.059664185 -0700
@@ -154,8 +167,8 @@ diff -ruwN glib-2.87.0/gio/gunixmounts.c source/gio/gunixmounts.c
  #else
  #error No g_get_mount_table() implementation for system
 diff -ruwN glib-2.87.0/gio/meson.build source/gio/meson.build
---- glib-2.87.0/gio/meson.build	2025-11-03 05:42:10.000000000 -0700
-+++ source/gio/meson.build	2026-01-15 18:35:07.060812870 -0700
+--- glib-2.87.0/gio/meson.build	2025-11-03 19:42:10.000000000 +0700
++++ source/gio/meson.build	2026-02-19 13:53:45.718994535 +0700
 @@ -18,7 +18,7 @@
  
  gnetworking_h_nameser_compat_include = ''
@@ -175,8 +188,8 @@ diff -ruwN glib-2.87.0/gio/meson.build source/gio/meson.build
    res_query_test = '''#include <resolv.h>
                        int main (int argc, char ** argv) {
 diff -ruwN glib-2.87.0/gio/tests/gdbus-server-auth.c source/gio/tests/gdbus-server-auth.c
---- glib-2.87.0/gio/tests/gdbus-server-auth.c	2025-11-03 05:42:10.000000000 -0700
-+++ source/gio/tests/gdbus-server-auth.c	2026-01-15 18:35:07.061075904 -0700
+--- glib-2.87.0/gio/tests/gdbus-server-auth.c	2025-11-03 19:42:10.000000000 +0700
++++ source/gio/tests/gdbus-server-auth.c	2026-02-19 13:53:45.719091042 +0700
 @@ -243,7 +243,7 @@
      }
    else    /* We should prefer EXTERNAL whenever it is allowed. */
@@ -187,8 +200,8 @@ diff -ruwN glib-2.87.0/gio/tests/gdbus-server-auth.c source/gio/tests/gdbus-serv
         * on Linux. */
        g_assert_cmpint (uid, ==, getuid ());
 diff -ruwN glib-2.87.0/glib/glib-unix.c source/glib/glib-unix.c
---- glib-2.87.0/glib/glib-unix.c	2025-11-03 05:42:10.000000000 -0700
-+++ source/glib/glib-unix.c	2026-01-15 18:35:07.061343737 -0700
+--- glib-2.87.0/glib/glib-unix.c	2025-11-03 19:42:10.000000000 +0700
++++ source/glib/glib-unix.c	2026-02-19 13:53:45.719219012 +0700
 @@ -74,6 +74,10 @@
  #include <sys/user.h>
  #endif  /* defined (__FreeBSD__ )*/
@@ -222,8 +235,8 @@ diff -ruwN glib-2.87.0/glib/glib-unix.c source/glib/glib-unix.c
    #error "g_unix_fd_query_path() not supported on this platform"
  #endif
 diff -ruwN glib-2.87.0/glib/gstrfuncs.c source/glib/gstrfuncs.c
---- glib-2.87.0/glib/gstrfuncs.c	2025-11-03 05:42:10.000000000 -0700
-+++ source/glib/gstrfuncs.c	2026-01-15 19:15:21.406736293 -0700
+--- glib-2.87.0/glib/gstrfuncs.c	2025-11-03 19:42:10.000000000 +0700
++++ source/glib/gstrfuncs.c	2026-02-19 13:53:45.719384853 +0700
 @@ -707,7 +707,7 @@
  
    gchar *fail_pos;

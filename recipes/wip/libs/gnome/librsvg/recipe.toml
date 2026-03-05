@@ -22,4 +22,5 @@ script = """
 DYNAMIC_INIT
 export GDK_PIXBUF_QUERYLOADERS="/usr/lib/$(cc -dumpmachine)/gdk-pixbuf-2.0/gdk-pixbuf-query-loaders"
 cookbook_configure --disable-introspection
+mv ${COOKBOOK_STAGE}/${COOKBOOK_SYSROOT}/usr/lib/gdk-pixbuf-2.0 ${COOKBOOK_STAGE}/usr/lib/gdk-pixbuf-2.0
 """
