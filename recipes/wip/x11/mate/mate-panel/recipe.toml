@@ -16,6 +16,10 @@ dependencies = [
     "libsm",
     "libwnck3",
 ]
+dev-dependencies = [
+    "host:itstool",
+    "host:libxml2"
+]
 template = "custom"
 script = """
 DYNAMIC_INIT

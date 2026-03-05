@@ -11,6 +11,9 @@ dependencies = [
     "gtk3",
     "libsoup",
 ]
+dev-dependencies = [
+    "host:libxml2"
+]
 template = "custom"
 script = """
 DYNAMIC_INIT
