@@ -22,7 +22,7 @@ dependencies = [
     "libxkbfile",
     "libxxf86vm",
     "mesa-x11",
-    "openssl1",
+    "openssl3",
     "pixman",
     "x11proto",
     "xtrans",

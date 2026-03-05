@@ -10,6 +10,8 @@ dependencies = [
 template = "meson"
 mesonflags = [
     "-Dgtk_doc=false",
+    "-Dman=false",
+    "-Dtests=false",
     "-Dintrospection=disabled",
 ]
     
