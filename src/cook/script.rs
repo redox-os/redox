@@ -124,11 +124,11 @@ fi
 # to not strip symbols from the final package, add COOKBOOK_NOSTRIP=true to the recipe
 # (or to your environment) before calling cookbook_cargo or cookbook_cargo_packages
 build_type=release
-install_flags=
+install_flags=--no-track
 build_flags=--release
 if [ ! -z "${COOKBOOK_DEBUG}" ]
 then
-    install_flags=--debug
+    install_flags+=" --debug"
     build_flags=
     build_type=debug
     export CPPFLAGS="${CPPFLAGS} -g"
@@ -142,16 +142,34 @@ fi
 
 reexport_flags
 
-# cargo template
 COOKBOOK_CARGO="${COOKBOOK_REDOXER}"
+COOKBOOK_CARGO_FLAGS=(
+    --locked
+)
+# cargo template using cargo install
 function cookbook_cargo {
     "${COOKBOOK_CARGO}" install \
-        --path "${COOKBOOK_SOURCE}/${PACKAGE_PATH}" \
+        --path "${COOKBOOK_SOURCE}${COOKBOOK_CARGO_PATH:+/$COOKBOOK_CARGO_PATH}" \
         --root "${COOKBOOK_STAGE}/usr" \
-        --locked \
-        --no-track \
-        ${install_flags} \
-         -j "${COOKBOOK_MAKE_JOBS}" "$@"
+        -j "${COOKBOOK_MAKE_JOBS}" ${install_flags} \
+        ${COOKBOOK_CARGO_FLAGS[@]} "$@"
+}
+
+# cargo template using cargo build (prefixed name)
+function cookbook_cargo_build {
+    recipe="${recipe:-$(basename "${COOKBOOK_RECIPE}")}"
+    bin_dir="${bin_dir:-.}"
+    bin_flags="${bin_flags:-}"
+    bin_name="${bin_name:-$(basename "${COOKBOOK_CARGO_PATH}")}"
+    bin_final_name="${bin_final_name:-${recipe}_${bin_name//_/-}}"
+    mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
+    "${COOKBOOK_CARGO}" build \
+        --manifest-path "${COOKBOOK_SOURCE}${COOKBOOK_CARGO_PATH:+/$COOKBOOK_CARGO_PATH}/Cargo.toml" \
+        ${bin_flags} ${build_flags} -j "${COOKBOOK_MAKE_JOBS}" ${COOKBOOK_CARGO_FLAGS[@]}
+    cp -v \
+        "target/${TARGET}/${build_type}/${bin_dir}/${bin_name}" \
+        "${COOKBOOK_STAGE}/usr/bin/${bin_final_name}"
+    unset bin_name bin_flags bin_dir bin_final_name
 }
 
 # helper for installing binaries that are cargo examples
@@ -159,30 +177,17 @@ function cookbook_cargo_examples {
     recipe="$(basename "${COOKBOOK_RECIPE}")"
     for example in "$@"
     do
-        "${COOKBOOK_CARGO}" build \
-            --manifest-path "${COOKBOOK_SOURCE}/${PACKAGE_PATH}/Cargo.toml" \
-            --example "${example}" \
-            ${build_flags} -j "${COOKBOOK_MAKE_JOBS}"
-        mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
-        cp -v \
-            "target/${TARGET}/${build_type}/examples/${example}" \
-            "${COOKBOOK_STAGE}/usr/bin/${recipe}_${example}"
+        bin_dir="examples" bin_name="${example}" bin_flags="--example ${example}" cookbook_cargo_build
     done
 }
 
 # helper for installing binaries that are cargo packages
 function cookbook_cargo_packages {
     recipe="$(basename "${COOKBOOK_RECIPE}")"
+    mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
     for package in "$@"
     do
-        "${COOKBOOK_CARGO}" build \
-            --manifest-path "${COOKBOOK_SOURCE}/${PACKAGE_PATH}/Cargo.toml" \
-            --package "${package}" \
-            ${build_flags} -j "${COOKBOOK_MAKE_JOBS}"
-        mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
-        cp -v \
-            "target/${TARGET}/${build_type}/${package}" \
-            "${COOKBOOK_STAGE}/usr/bin/${recipe}_${package}"
+        bin_name="${package}" bin_flags="--package ${package}" bin_final_name="${package//_/-}" cookbook_cargo_build
     done
 }
 

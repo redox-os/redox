@@ -4,14 +4,12 @@ git = "https://github.com/jackpot51/smithay"
 branch = "redox"
 
 [build]
-template = "custom"
+template = "cargo"
 dependencies = [
     "libffi",
     "libwayland",
     "libxkbcommon",
 ]
-script = """
-DYNAMIC_INIT
-export RUSTFLAGS="${RUSTFLAGS} -lffi"
-cookbook_cargo_packages smallvil
-"""
+cargopackages = [
+    "smallvil"
+]

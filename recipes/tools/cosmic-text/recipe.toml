@@ -5,5 +5,7 @@ branch = "main"
 [build]
 template = "custom"
 script = """
-cookbook_cargo_packages editor
+DYNAMIC_INIT
+COOKBOOK_CARGO_FLAGS=() # remove --locked
+COOKBOOK_CARGO_PATH=examples/editor cookbook_cargo_build
 """

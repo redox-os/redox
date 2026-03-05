@@ -11,7 +11,7 @@ examples="main directions image raster"
 for example in "${examples}"
     do
         "${COOKBOOK_CARGO}" build \
-            --manifest-path "${COOKBOOK_SOURCE}/${PACKAGE_PATH}/Cargo.toml" \
+            --manifest-path "${COOKBOOK_SOURCE}/${COOKBOOK_CARGO_PATH}/Cargo.toml" \
             --example "${example}" \
             --release \
             --features "monospace-font"

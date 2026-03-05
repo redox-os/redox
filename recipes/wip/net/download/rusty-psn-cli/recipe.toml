@@ -4,7 +4,7 @@ git = "https://github.com/RainbowCookie32/rusty-psn"
 shallow_clone = true
 [build]
 template = "cargo"
-cargoflags = "--features cli"
+cargoflags = ["--features cli"]
 dependencies = [
     "openssl3",
 ]
