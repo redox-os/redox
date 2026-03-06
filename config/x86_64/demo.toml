@@ -29,15 +29,14 @@ neverball = {}
 prboom = {}
 redox-games = {}
 sopwith = {}
-# syobonaction = {} # linking errors
+syobonaction = {}
 
 # Demos
-auto-test = {}
-# nushell = {}
+nushell = {}
 orbclient = {}
 pixelcannon = {}
 rodioplay = {}
-# gears = {} # sccache issue
+gears = {}
 
 # MIDI
 freepats = {}
