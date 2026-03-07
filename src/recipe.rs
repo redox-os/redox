@@ -100,9 +100,13 @@ pub enum BuildKind {
     #[serde(rename = "cargo")]
     Cargo {
         #[serde(default)]
-        package_path: Option<String>,
+        cargopath: Option<String>,
         #[serde(default)]
-        cargoflags: String,
+        cargoflags: Vec<String>,
+        #[serde(default)]
+        cargopackages: Vec<String>,
+        #[serde(default)]
+        cargoexamples: Vec<String>,
     },
     /// Will build and install using configure and make
     #[serde(rename = "configure")]
@@ -559,8 +563,10 @@ mod tests {
                     shallow_clone: None,
                 }),
                 build: BuildRecipe::new(BuildKind::Cargo {
-                    package_path: None,
-                    cargoflags: String::new(),
+                    cargopath: None,
+                    cargoflags: Vec::new(),
+                    cargopackages: Vec::new(),
+                    cargoexamples: Vec::new(),
                 }),
                 ..Default::default()
             }

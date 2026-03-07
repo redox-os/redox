@@ -396,12 +396,14 @@ pub fn fetch(recipe: &CookRecipe, check_source: bool, logger: &PtyOut) -> Result
     };
 
     if let BuildKind::Cargo {
-        package_path,
+        cargopath,
         cargoflags: _,
+        cargopackages: _,
+        cargoexamples: _,
     } = &recipe.recipe.build.kind
     {
         // TODO: No need to fetch if !check_source and already fetched?
-        fetch_cargo(&source_dir, package_path.as_ref(), logger)?;
+        fetch_cargo(&source_dir, cargopath.as_ref(), logger)?;
     }
 
     fetch_apply_source_info(recipe, ident)?;
@@ -481,12 +483,12 @@ pub(crate) fn fetch_extract_tar(
 
 pub(crate) fn fetch_cargo(
     source_dir: &PathBuf,
-    package_path: Option<&String>,
+    cargopath: Option<&String>,
     logger: &PtyOut,
 ) -> Result<(), String> {
     let mut source_dir = source_dir.clone();
-    if let Some(package_path) = package_path {
-        source_dir = source_dir.join(package_path);
+    if let Some(cargopath) = cargopath {
+        source_dir = source_dir.join(cargopath);
     }
 
     let local_redoxer = Path::new("target/release/cookbook_redoxer");

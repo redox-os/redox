@@ -11,7 +11,7 @@ recipe="$(basename "${COOKBOOK_RECIPE}")"
     for example in imgille
     do
         "${COOKBOOK_CARGO}" build \
-            --manifest-path "${COOKBOOK_SOURCE}/${PACKAGE_PATH}/Cargo.toml" \
+            --manifest-path "${COOKBOOK_SOURCE}/${COOKBOOK_CARGO_PATH}/Cargo.toml" \
             --example "${example}" \
             --release \
             --features=img

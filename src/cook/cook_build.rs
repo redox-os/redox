@@ -345,13 +345,38 @@ pub fn build(
         //TODO: Add more configurability, convert scripts to Rust?
         let script = match &recipe.build.kind {
             BuildKind::Cargo {
-                package_path,
+                cargopath,
                 cargoflags,
+                cargopackages,
+                cargoexamples,
             } => {
-                format!(
-                    "DYNAMIC_INIT\nPACKAGE_PATH={} cookbook_cargo {cargoflags}",
-                    package_path.as_deref().unwrap_or(".")
-                )
+                let mut script = format!(
+                    "DYNAMIC_INIT\n{}\nCOOKBOOK_CARGO_PATH={} ",
+                    flags_fn("COOKBOOK_CARGO_FLAGS", cargoflags),
+                    cargopath.as_deref().unwrap_or(".")
+                );
+                if cargopackages.len() == 0 && cargoexamples.len() == 0 {
+                    script += "cookbook_cargo\n"
+                } else {
+                    if cargopackages.len() > 0 {
+                        script += "cookbook_cargo_packages";
+                        for package in cargopackages {
+                            script += " ";
+                            script += package;
+                        }
+                        script += "\n";
+                    }
+                    if cargoexamples.len() > 0 {
+                        script += "cookbook_cargo_examples";
+                        for example in cargoexamples {
+                            script += " ";
+                            script += example;
+                        }
+                        script += "\n";
+                    }
+                }
+
+                script
             }
             BuildKind::Configure { configureflags } => format!(
                 "DYNAMIC_INIT\n{}cookbook_configure",

@@ -69,7 +69,7 @@ cosmic-comp wayland-session
 
 # For smallvil (easier to debug)
 #export WAYLAND_DISPLAY=wayland-1
-#smallvil_smallvil &
+#smallvil &
 #sleep 2
 #wayland-session
 """

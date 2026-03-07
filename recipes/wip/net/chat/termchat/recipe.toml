@@ -4,4 +4,4 @@ git = "https://github.com/lemunozm/termchat"
 shallow_clone = true
 [build]
 template = "cargo"
-cargoflags = "--all-features"
+cargoflags = ["--all-features"]
