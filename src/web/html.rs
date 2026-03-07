@@ -284,7 +284,6 @@ pub fn generate_html_index(
         ),
     );
 
-    println!("Generating web content to {}", index_path.display());
     fs::write(index_path, html).expect("Failed to write index HTML file");
 }
 

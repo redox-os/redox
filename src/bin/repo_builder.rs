@@ -283,6 +283,7 @@ fn publish_packages(config: &CliConfig) -> anyhow::Result<()> {
     output_file.write_all(output.as_bytes())?;
 
     if let Some(conf) = &config.web {
+        eprintln!("\x1b[01;38;5;155mrepo - generating web content\x1b[0m");
         generate_web(&repository.packages.keys().cloned().collect(), conf);
     }
     Ok(())
