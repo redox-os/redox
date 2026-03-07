@@ -3,8 +3,10 @@ same_as = "../orbutils"
 
 [build]
 template = "cargo"
-package_path = "orbutils"
-cargoflags = "--bin background"
+cargopath = "orbutils"
+cargoflags = [
+    "--bin background"
+]
 
 [package]
 dependencies = [

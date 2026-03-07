@@ -18,5 +18,5 @@ DYNAMIC_INIT
 cp -v \
     "target/${TARGET}/${build_type}/libfile_explorer_plugin.dylib" \
     "${COOKBOOK_SOURCE}"/lib/http-server/inline/file_explorer.plugin.httprs
-PACKAGE_PATH=crates/http-server cookbook_cargo --bin http-server
+COOKBOOK_CARGO_PATH=crates/http-server cookbook_cargo --bin http-server
 """

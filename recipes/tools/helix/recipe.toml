@@ -10,7 +10,7 @@ template = "custom"
 script = """
 DYNAMIC_INIT
 export CFLAGS="$CFLAGS -D__redox__"
-PACKAGE_PATH="helix-term" cookbook_cargo
+COOKBOOK_CARGO_PATH="helix-term" cookbook_cargo
 mv "${COOKBOOK_STAGE}/usr/bin/hx" "${COOKBOOK_STAGE}/usr/bin/helix"
 mkdir -p "${COOKBOOK_STAGE}/usr/lib/helix/runtime/grammars"
 mkdir -p "${COOKBOOK_STAGE}/usr/lib/helix/runtime/queries"

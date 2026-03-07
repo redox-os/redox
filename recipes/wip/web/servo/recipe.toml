@@ -40,7 +40,7 @@ export CLANGFLAGS="-I $PREFIX_INCLUDE/c++/13.2.0 -I $PREFIX_INCLUDE/c++/13.2.0/$
 unset CC_WRAPPER
 export CARGO_MAKEFLAGS="-j $COOKBOOK_MAKE_JOBS" CCACHE="sccache"
 
-PACKAGE_PATH="ports/servoshell" cookbook_cargo
+COOKBOOK_CARGO_PATH="ports/servoshell" cookbook_cargo
 
 # resources packaging
 mkdir -p ${COOKBOOK_STAGE}/usr/lib/servo/bin
