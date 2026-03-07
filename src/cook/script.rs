@@ -347,7 +347,7 @@ function cookbook_meson {
 
 pub(crate) static BUILD_POSTSCRIPT: &str = r#"
 # Strip binaries
-for dir in "${COOKBOOK_STAGE}/bin" "${COOKBOOK_STAGE}/usr/bin"
+for dir in "${COOKBOOK_STAGE}/bin" "${COOKBOOK_STAGE}/usr/bin" "${COOKBOOK_STAGE}/libexec" "${COOKBOOK_STAGE}/usr/libexec"
 do
     if [ -d "${dir}" ] && [ -z "${COOKBOOK_NOSTRIP}" ]
     then
