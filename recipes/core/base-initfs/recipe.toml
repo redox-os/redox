@@ -116,6 +116,6 @@ RUSTFLAGS="$RUSTFLAGS -Ctarget-feature=+crt-static" cargo \
 
 env -u CARGO -u RUSTFLAGS cargo run --manifest-path "${COOKBOOK_SOURCE}/initfs/tools/Cargo.toml" --bin redox-initfs-ar -- "${COOKBOOK_BUILD}/initfs" "${COOKBOOK_BUILD}/bootstrap" -o "${COOKBOOK_BUILD}/initfs.img"
 
-mkdir -v "${COOKBOOK_STAGE}/boot"
-cp "${COOKBOOK_BUILD}/initfs.img" "${COOKBOOK_STAGE}/boot/initfs"
+mkdir -pv "${COOKBOOK_STAGE}/usr/lib/boot"
+cp "${COOKBOOK_BUILD}/initfs.img" "${COOKBOOK_STAGE}/usr/lib/boot/initfs"
 """
