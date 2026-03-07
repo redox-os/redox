@@ -8,13 +8,6 @@ DYNAMIC_INIT
 mkdir -pv "${COOKBOOK_STAGE}/usr/share/ui"
 cp -rv "${COOKBOOK_SOURCE}/apps" "${COOKBOOK_STAGE}/usr/share/ui/apps"
 
-for project in orbutils launcher
-do
-    "${COOKBOOK_CARGO}" install \
-            --path "${COOKBOOK_SOURCE}/${project}" \
-            --root "${COOKBOOK_STAGE}/usr" \
-            --locked \
-            --no-track \
-            ${install_flags}
-done
+COOKBOOK_CARGO_PATH="orbutils" cookbook_cargo
+COOKBOOK_CARGO_PATH="launcher" cookbook_cargo
 """

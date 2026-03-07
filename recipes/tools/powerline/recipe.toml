@@ -10,7 +10,6 @@ export CARGOFLAGS="--no-default-features --features chrono"
 ${COOKBOOK_CARGO} install \
     --path "${COOKBOOK_SOURCE}/${COOKBOOK_CARGO_PATH}" \
     --root "${COOKBOOK_STAGE}/usr" \
-    --no-track \
     --no-default-features \
     --features chrono \
     ${install_flags}

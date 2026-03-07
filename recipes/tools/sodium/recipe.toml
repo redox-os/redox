@@ -9,7 +9,7 @@ DYNAMIC_INIT
     --path "${COOKBOOK_SOURCE}" \
     --root "${COOKBOOK_STAGE}/usr" \
     --locked \
-    --no-track \
+    ${install_flags} \
     --features orbital
 
 mkdir -pv "${COOKBOOK_STAGE}/usr/share/ui/apps"
