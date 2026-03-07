@@ -61,7 +61,7 @@ pub fn generate_html_pkg(
         Some(SourceRecipe::Git { git, .. }) => {
             let host = get_hostname(git);
             let tree_link = get_tree_url(git, host, &package.source_identifier, None);
-            let short_commit = &package.source_identifier[0..7];
+            let short_commit = get_short_commit(&package.source_identifier);
             format!(
                 r#"
 <table>
@@ -110,7 +110,7 @@ pub fn generate_html_pkg(
             &package.commit_identifier,
             Some(&format!("recipes/{category}/{name}/recipe.toml")),
         );
-        let short_commit = &package.commit_identifier[0..7];
+        let short_commit = get_short_commit(&package.commit_identifier);
         source_html += &format!(
             r#"
 <table>
@@ -275,7 +275,7 @@ pub fn generate_html_index(
         target = redoxer::target(),
         category_sections = categories_html.join("\n\n"),
         commit_time = &ident::get_ident().time,
-        commit_hash = &ident::get_ident().commit[0..7],
+        commit_hash = get_short_commit(&ident::get_ident().commit),
         commit_tree = get_tree_url(
             &config.this_repo,
             get_hostname(&config.this_repo),
@@ -284,7 +284,6 @@ pub fn generate_html_index(
         ),
     );
 
-    println!("Generating web content to {}", index_path.display());
     fs::write(index_path, html).expect("Failed to write index HTML file");
 }
 
@@ -323,4 +322,8 @@ pub fn get_tree_url(git_url: &str, host: &str, commit: &str, folder: Option<&str
         Some(f) => format!("{base_url}/{f}"),
         None => base_url,
     }
+}
+
+fn get_short_commit(commit: &str) -> &str {
+    commit.get(0..7).unwrap_or("?")
 }
