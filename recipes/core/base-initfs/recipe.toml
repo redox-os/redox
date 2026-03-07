@@ -92,11 +92,6 @@ do
     esac
 done
 
-# TODO: symlinks aren't supported by redox-initfs
-#ln -sv zerod "${COOKBOOK_BUILD}/initfs/bin/nulld"
-
-cp "${COOKBOOK_BUILD}/initfs/bin/zerod" "${COOKBOOK_BUILD}/initfs/bin/nulld"
-
 cp "${COOKBOOK_SYSROOT}/usr/bin/redoxfs" "${COOKBOOK_BUILD}/initfs/bin"
 
 ARCH="$(echo "${GNU_TARGET}" | cut -d - -f1)"
