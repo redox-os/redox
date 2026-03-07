@@ -5,14 +5,14 @@ git = "https://gitlab.redox-os.org/redox-os/bootloader.git"
 template = "custom"
 script = """
 OUTDIR="${COOKBOOK_BUILD}"
-mkdir -v "${COOKBOOK_STAGE}/boot"
+mkdir -pv "${COOKBOOK_STAGE}/usr/lib/boot"
 
 function bootloader {
     export TARGET="$1"
     src="$2"
     dst="$3"
     "${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}" -f "${COOKBOOK_SOURCE}/Makefile" -C "${OUTDIR}" "${OUTDIR}/${src}"
-    cp -v "${OUTDIR}/${src}" "${COOKBOOK_STAGE}/boot/${dst}"
+    cp -v "${OUTDIR}/${src}" "${COOKBOOK_STAGE}/usr/lib/boot/${dst}"
 }
 
 ARCH="$(echo "${TARGET}" | cut -d - -f1)"
