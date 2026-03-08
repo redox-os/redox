@@ -1,4 +1,4 @@
-use pkg::package::PackageError;
+use pkg::PackageError;
 use pkg::{Package, PackageName};
 
 use crate::config::CookConfig;
@@ -555,14 +555,7 @@ fn build_deps_dir(
                 &tags_dir,
                 &dep_pkgars
                     .iter()
-                    .map(|(name, _)| {
-                        // TODO: without_host should just return as_str
-                        if name.is_host() {
-                            &name.as_str()["host:".len()..]
-                        } else {
-                            name.as_str()
-                        }
-                    })
+                    .map(|(name, _)| name.without_host())
                     .collect(),
             )?
         {
@@ -588,7 +581,7 @@ fn build_deps_dir(
 
         let pkey_path = "build/id_ed25519.pub.toml";
         for (name, archive_path) in dep_pkgars {
-            let tag_file = tags_dir.join(name.without_host().as_str());
+            let tag_file = tags_dir.join(name.without_prefix());
             fs::write(&tag_file, "")
                 .map_err(|e| format!("failed to write tag file {}: {:?}", tag_file.display(), e))?;
             pkgar::extract(pkey_path, &archive_path, deps_dir_tmp.to_str().unwrap()).map_err(
@@ -665,7 +658,7 @@ pub fn build_remote(
     cook_config: &CookConfig,
 ) -> Result<(Vec<PathBuf>, BTreeSet<PackageName>), String> {
     let source_toml = target_dir.join("source.toml");
-    let source_pubkey = target_dir.join("id_ed25519.pub.toml");
+    let source_pubkey = "build/remotes/pub_key_static.redox-os.org.toml";
 
     let packages = recipe.get_packages_list();
     for (i, package) in packages.into_iter().enumerate() {
