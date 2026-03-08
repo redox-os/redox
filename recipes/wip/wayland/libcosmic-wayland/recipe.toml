@@ -11,4 +11,5 @@ template = "custom"
 script = """
 DYNAMIC_INIT
 cookbook_cargo_packages application
+mv "${COOKBOOK_STAGE}/usr/bin/application" "${COOKBOOK_STAGE}/usr/bin/libcosmic-wayland_application"
 """
