@@ -1,6 +1,7 @@
 // avoid confusion with build.rs
 pub mod cook_build;
 pub mod fetch;
+pub mod fetch_repo;
 pub mod fs;
 pub mod ident;
 pub mod package;

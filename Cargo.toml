@@ -31,8 +31,7 @@ tui = ["ratatui", "ansi-to-tui", "strip-ansi-escapes"]
 
 [dependencies]
 anyhow = "1"
-# blake3 1.5.4 is incompatible with 0.3 dependency from pkgar
-blake3 = "=1.5.3"
+blake3 = "1"
 globset = "0.4"
 libc = "0.2"
 ignore = "0.4"

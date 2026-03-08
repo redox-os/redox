@@ -3,7 +3,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use pkg::{Package, PackageName};
+use pkg::{Package, PackageName, PackagePrefix};
 
 use crate::{
     blake3::hash_to_hex,
@@ -79,7 +79,7 @@ pub fn package(
         }
 
         let deps = if package.is_some() {
-            BTreeSet::from([name.without_host()])
+            BTreeSet::from([name.with_prefix(PackagePrefix::Any)])
         } else {
             auto_deps.clone()
         };
@@ -155,7 +155,7 @@ pub fn package_toml(
     let ident_source = fetch::fetch_get_source_info(recipe)?;
 
     let package = Package {
-        name: recipe.name.without_host(),
+        name: recipe.name.with_prefix(PackagePrefix::Any),
         version: package_version(&recipe.recipe),
         target: recipe.target.to_string(),
         blake3: hash,
