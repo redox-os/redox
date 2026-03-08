@@ -1631,8 +1631,8 @@ fn run_tui_cook(
         kill_everything();
     }
 
-    fetcher_handle.join().unwrap();
-    cooker_handle.join().unwrap();
+    let _ = fetcher_handle.join();
+    let _ = cooker_handle.join();
 
     Ok(app.dump_logs_on_exit)
 }

@@ -5,7 +5,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use pkg::{PackageName, package::PackageError, recipes};
+use pkg::{PackageError, PackageName, recipes};
 use regex::Regex;
 use serde::{
     Deserialize, Serialize,
