@@ -16,6 +16,8 @@ pub struct CookConfigOpt {
     pub logs: Option<bool>,
     /// whether to ignore build errors
     pub nonstop: Option<bool>,
+    /// whether to archive packages with compressed format
+    pub compressed: Option<bool>,
     /// whether to print verbose logs to certain commands
     /// build failure still be printed anyway
     pub verbose: Option<bool>,
@@ -35,6 +37,7 @@ pub struct CookConfig {
     pub tui: bool,
     pub logs: bool,
     pub nonstop: bool,
+    pub compressed: bool,
     pub verbose: bool,
     pub clean_build: bool,
     pub clean_target: bool,
@@ -49,6 +52,7 @@ impl From<CookConfigOpt> for CookConfig {
             tui: value.tui.unwrap(),
             logs: value.logs.unwrap(),
             nonstop: value.nonstop.unwrap(),
+            compressed: value.compressed.unwrap(),
             verbose: value.verbose.unwrap(),
             clean_build: value.clean_build.unwrap(),
             clean_target: value.clean_target.unwrap(),
@@ -97,6 +101,9 @@ pub fn init_config() {
     }
     if config.cook_opt.offline.is_none() {
         config.cook_opt.offline = Some(extract_env("COOKBOOK_OFFLINE", false));
+    }
+    if config.cook_opt.compressed.is_none() {
+        config.cook_opt.compressed = Some(extract_env("COOKBOOK_COMPRESSED", false));
     }
     if config.cook_opt.verbose.is_none() {
         config.cook_opt.verbose = Some(extract_env("COOKBOOK_VERBOSE", true));
