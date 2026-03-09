@@ -518,8 +518,10 @@ pub fn fetch_remote(
 ) -> Result<(), String> {
     let (mut manager, repository) = fetch_repo::get_binary_repo();
     let target_dir = create_target_dir(recipe_dir, recipe.target)?;
-    let writer = logger.as_ref().unwrap().1.try_clone().unwrap();
-    manager.set_callback(Rc::new(RefCell::new(PlainPtyCallback::new(writer))));
+    if logger.is_some() {
+        let writer = logger.as_ref().unwrap().1.try_clone().unwrap();
+        manager.set_callback(Rc::new(RefCell::new(PlainPtyCallback::new(writer))));
+    }
     let packages = recipe.recipe.get_packages_list();
 
     let name = recipe_dir
