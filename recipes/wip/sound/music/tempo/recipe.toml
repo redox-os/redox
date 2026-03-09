@@ -1,0 +1,16 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/tobagin/tempo"
+rev = "v1.5.1"
+shallow_clone = true
+[build]
+template = "meson"
+dependencies = [
+    "gtk4",
+    "libadwaita",
+    "glib",
+    "json-glib",
+    "libgee",
+    "gstreamer",
+]
+dev-dependencies = ["host:blueprint"]

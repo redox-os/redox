@@ -1,0 +1,5 @@
+[source]
+tar = "https://downloads.es.net/pub/iperf/iperf-3.20.tar.gz"
+
+[build]
+template = "configure"

@@ -1,8 +1,10 @@
 #TODO webbrowser crate error
 [source]
 git = "https://github.com/BVE-Reborn/rend3"
+shallow_clone = true
 [build]
 template = "custom"
 script = """
+DYNAMIC_INIT
 cookbook_cargo_packages rend3-examples-package
 """

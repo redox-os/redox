@@ -7,98 +7,65 @@ shallow_clone = true
 [build]
 template = "custom"
 dependencies = [
-    "zlib",
-    "libxml2",
-]
-dev-dependencies = [
-    "libstdcxx",
-    "host:xz",
-    "host:libarchive",  # workaround for cmake error
+    "zstd",
 ]
 script = """
 DYNAMIC_INIT
+ARCH="$(echo "${TARGET}" | cut -d - -f1)"
+
+case "${ARCH}" in
+    x86 | x86_64) LLVM_TARGETS_TO_BUILD="X86";;
+    aarch64) LLVM_TARGETS_TO_BUILD="AArch64";;
+    riscv64gc) LLVM_TARGETS_TO_BUILD="RISCV";;
+esac
+
+if [ "${COOKBOOK_HOST_SYSROOT}" = "/usr" ]; then
+    LLVM_TARGETS_TO_BUILD="X86;AArch64;RISCV"
+fi
+
+# This just build the LLVM library and tools just enough for Rust, to build the rest of LLVM see
+# https://github.com/llvm/llvm-zorg/blob/main/zorg/buildbot/builders/annotated/standalone-build.sh
 
 COOKBOOK_CMAKE_FLAGS+=(
+    -DLLVM_BUILD_LLVM_DYLIB=On
+    -DLLVM_LINK_LLVM_DYLIB=On
+    -DLLVM_INCLUDE_UTILS=On
+    -DLLVM_INSTALL_UTILS=On
+    -DLLVM_TOOL_LLVM_COV_BUILD=On
+    -DLLVM_TOOL_LLVM_PROFDATA_BUILD=On
+    -DLLVM_TARGETS_TO_BUILD="$LLVM_TARGETS_TO_BUILD"
+    -DLLVM_ENABLE_ZLIB=Off
+    -DLLVM_USE_STATIC_ZSTD=On
+    -DLLVM_ENABLE_LIBXML2=Off
+
+# the rest of options that shared to clang
+    -DCROSS_TOOLCHAIN_FLAGS_NATIVE="-DCMAKE_TOOLCHAIN_FILE=$(realpath "${COOKBOOK_RECIPE}/native.cmake")"
     -DCMAKE_CXX_FLAGS="--std=gnu++11"
     -DBUILD_SHARED_LIBS=False
-    -DLLVM_LINK_LLVM_DYLIB=On
-    -DCROSS_TOOLCHAIN_FLAGS_NATIVE="-DCMAKE_TOOLCHAIN_FILE=$(realpath "${COOKBOOK_RECIPE}/native.cmake")"
     -DLLVM_BUILD_EXAMPLES=Off
     -DLLVM_BUILD_TESTS=Off
-    -DLLVM_BUILD_UTILS=On
     -DLLVM_DEFAULT_TARGET_TRIPLE="${TARGET}"
     -DLLVM_ENABLE_LTO=Off
     -DLLVM_ENABLE_RTTI=On
     -DLLVM_ENABLE_THREADS=On
     -DLLVM_INCLUDE_EXAMPLES=Off
     -DLLVM_INCLUDE_TESTS=Off
-    -DLLVM_INSTALL_UTILS=On
     -DLLVM_OPTIMIZED_TABLEGEN=On
-    -DLLVM_TARGET_ARCH="$(echo "${TARGET}" | cut -d - -f1)"
-    -DLLVM_TARGETS_TO_BUILD="X86;AArch64"
-    -DLLVM_TOOL_LLVM_COV_BUILD=On
-    -DLLVM_TOOL_LLVM_PROFDATA_BUILD=On
+    -DLLVM_TARGET_ARCH=$ARCH
     -DLLVM_TOOLS_INSTALL_DIR=bin
     -DLLVM_UTILS_INSTALL_DIR=bin
-    -DLIBCLANG_BUILD_STATIC=On
     -DUNIX=1
-    -DLLVM_ENABLE_PROJECTS="llvm;clang;clang-tools-extra;lld"
 )
 
-# Native tablegen build fails with too many jobs, limit to 16
-COOKBOOK_MAKE_JOBS="$(( ${COOKBOOK_MAKE_JOBS} > 16 ? 16 : ${COOKBOOK_MAKE_JOBS} ))"
 COOKBOOK_SOURCE="$COOKBOOK_SOURCE/llvm"
 cookbook_cmake
 """
-
-# clang library and runtime
-[[optional-packages]]
-name = "clang"
-dependencies = [ ".runtime" ]
-files = [
-    "usr/bin/clang*",
-    "usr/libexec/**",
-    "usr/lib/libclang-cpp.so*",
-    "usr/lib/libclang.so*",
-    "usr/lib/clang/**",
-    "usr/lib/libear/**",
-    "usr/lib/libscanbuild/**",
-    "usr/share/clang*/**",
-]
-
-# lld runtime (no library)
-[[optional-packages]]
-name = "lld"
-dependencies = [ ".runtime" ]
-files = [
-    "usr/bin/*.lld",
-    "usr/bin/*-ld",
-    "usr/bin/lld*",
-]
 
 # llvm runtime
 [[optional-packages]]
 name = "runtime"
 files = [
     "usr/bin/**",
-]
-
-[[optional-packages]]
-name = "clang-dev"
-dependencies = [ ".clang" ]
-files = [
-    "usr/include/clang*/**",
-    "usr/lib/libclang*.a",
-    "usr/lib/cmake/clang/**",
-]
-
-[[optional-packages]]
-name = "lld-dev"
-dependencies = [ ".lld" ]
-files = [
-    "usr/include/lld*/**",
-    "usr/lib/liblld*.a",
-    "usr/lib/cmake/lld/**",
 ]
 
 [[optional-packages]]

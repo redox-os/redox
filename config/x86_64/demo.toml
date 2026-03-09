@@ -16,13 +16,9 @@ periodictable = {}
 intel-one-mono = {}
 
 # Shell Apps
-bottom = {}
-curl = {}
-git = {}
 gnu-grep = {}
 htop = {}
 ripgrep = {}
-sodium = {}
 terminfo = {}
 vim = {}
 
@@ -33,15 +29,14 @@ neverball = {}
 prboom = {}
 redox-games = {}
 sopwith = {}
-# syobonaction = {} # linking errors
+syobonaction = {}
 
 # Demos
-acid = {}
-# nushell = {}
+nushell = {}
 orbclient = {}
 pixelcannon = {}
 rodioplay = {}
-# gears = {} # sccache issue
+gears = {}
 
 # MIDI
 freepats = {}

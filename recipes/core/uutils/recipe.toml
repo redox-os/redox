@@ -1,12 +1,19 @@
 # TODO Fix coreutils i18n/l10n behavior on Redox
+# TODO waiting for rustix bump before removing patches
+# TODO Fix locale init bug on aarch64 before removing patches
 [source]
 git = "https://github.com/uutils/coreutils"
+rev = "aa218a30aca43fd1805841357ff885afbd9090c3"
+patches = [
+  "redox.patch"
+]
 
 [build]
 template = "custom"
 script = """
 DYNAMIC_INIT
-CARGO_PROFILE_RELEASE_LTO=thin cookbook_cargo --no-default-features --features feat_os_unix_redox --bin coreutils
+# TODO: upstream changes, consider using feat_require_unix_core if relibc is ready?
+CARGO_PROFILE_RELEASE_LTO=thin cookbook_cargo --no-default-features --features feat_os_unix_redox,kill --bin coreutils
 
 BINS=(
     '['
@@ -42,6 +49,7 @@ BINS=(
     head
     join
     install
+    kill
     link
     ln
     ls
@@ -51,6 +59,7 @@ BINS=(
     more
     mv
     nl
+    nproc
     numfmt
     od
     paste

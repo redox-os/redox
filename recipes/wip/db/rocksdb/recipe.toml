@@ -1,4 +1,5 @@
-#TODO missing script for gnu make: https://github.com/facebook/rocksdb/blob/main/INSTALL.md
+#TODO missing script for gnu make
+# build instructions: https://github.com/facebook/rocksdb/blob/main/INSTALL.md
 [source]
 git = "https://github.com/facebook/rocksdb"
 rev = "v10.7.5"

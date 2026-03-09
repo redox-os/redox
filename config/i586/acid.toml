@@ -1,3 +1,0 @@
-# Configuration to run the "acid" tests
-
-include = ["../acid.toml"]

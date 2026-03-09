@@ -1,12 +1,11 @@
-#TODO make libwayland work
+#TODO not compiled or tested
 [source]
 git = "https://github.com/slint-ui/slint"
+shallow_clone = true
 [build]
 template = "custom"
-dependencies = [
-    "libwayland",
-]
 script = """
+DYNAMIC_INIT
 cookbook_cargo_packages gallery energy-monitor carousel \
 memory imagefilter plotter opengl_underlay opengl_texture \
 maps virtual_keyboard 7guis

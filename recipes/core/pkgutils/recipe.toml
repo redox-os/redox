@@ -5,6 +5,6 @@ git = "https://gitlab.redox-os.org/redox-os/pkgutils.git"
 template = "custom"
 script = """
 # Must be statically linked
-PACKAGE_PATH=pkg-cli
+COOKBOOK_CARGO_PATH=pkg-cli
 cookbook_cargo
 """

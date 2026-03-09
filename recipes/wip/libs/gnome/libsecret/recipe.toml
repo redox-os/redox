@@ -1,0 +1,13 @@
+#TODO not compiled or tested
+[source]
+tar = "https://download.gnome.org/sources/libsecret/0.21/libsecret-0.21.7.tar.xz"
+[build]
+template = "meson"
+mesonflags = [
+    "-Dmanpage=false",
+    "-Dgtk_doc=false",
+    "-Dintrospection=false",
+]
+dependencies = [
+    "libgcrypt",
+]

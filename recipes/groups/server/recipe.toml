@@ -1,0 +1,17 @@
+# server variant meta-package
+[package]
+dependencies = [
+    "bash",
+    "bottom",
+    "ca-certificates",
+    #"contain",
+    "coreutils",
+    "curl",
+    "diffutils",
+    "extrautils",
+    "findutils",
+    "git",
+    "installer",
+    "ion",
+    "kibi",
+]

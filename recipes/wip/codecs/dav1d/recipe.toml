@@ -1,7 +1,10 @@
 #TODO not compiled or tested
 # build instructions: https://code.videolan.org/videolan/dav1d#compile
 [source]
-git = "https://code.videolan.org/videolan/dav1d"
-rev = "48035599cdd4e4415732e408c407e0c1cd1c7444"
+tar = "https://downloads.videolan.org/videolan/dav1d/1.5.3/dav1d-1.5.3.tar.xz"
+shallow_clone = true
 [build]
 template = "meson"
+mesonflags = [
+    "-Denable_tests=false",
+]

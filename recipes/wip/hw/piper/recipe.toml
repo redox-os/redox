@@ -1,0 +1,16 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/libratbag/piper"
+rev = "0.8"
+shallow_clone = true
+[build]
+template = "meson"
+mesonflags = [
+    "-Druntime-dependency-checks=false",
+]
+dependencies = [
+    "libratbag",
+    "gtk3",
+    "cairo",
+    "libevdev",
+]

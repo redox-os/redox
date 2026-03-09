@@ -1,12 +1,14 @@
 #TODO compiled but not tested
 [source]
 git = "https://github.com/hickory-dns/hickory-dns"
+shallow_clone = true
 [build]
 template = "custom"
 dependencies = [
-    "openssl1",
+    "openssl3",
 ]
 script = """
+DYNAMIC_INIT
 binary=hickory-dns
 "${COOKBOOK_CARGO}" build \
             --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \

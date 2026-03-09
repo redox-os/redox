@@ -1,10 +1,16 @@
 #TODO not compiled or tested
 [source]
 git = "https://invent.kde.org/multimedia/kwave"
-rev = "release/25.08"
+rev = "release/25.12"
 shallow_clone = true
 [build]
 template = "cmake"
+cmakeflags = [
+    "--preset=release",
+    "-DWITH_DOC=OFF",
+    "-DWITH_FLAC=OFF",
+    "-DWITH_OSS=OFF",
+]
 dependencies = [
     "libpulse",
     "libmad",

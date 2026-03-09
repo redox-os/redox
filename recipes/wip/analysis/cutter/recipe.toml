@@ -1,12 +1,13 @@
 #TODO not compiled or tested
+#TODO determine minimum dependencies from cmake log
 # build instructions: https://cutter.re/docs/building.html
 [source]
-tar = "https://github.com/rizinorg/cutter/releases/download/v2.3.4/Cutter-v2.3.4-src.tar.gz"
+tar = "https://github.com/rizinorg/cutter/releases/download/v2.4.1/Cutter-v2.4.1-src.tar.gz"
 [build]
 template = "cmake"
-dependencies = [
-    "libzip",
-    "zlib",
-    "qt5-base",
-    "qt5-svg",
-]
+#dependencies = [
+#    "libzip",
+#    "zlib",
+#    "qt6-base",
+#    "qt6-svg",
+#]

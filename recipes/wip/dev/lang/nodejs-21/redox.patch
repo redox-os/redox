@@ -203,6 +203,23 @@ diff -ruwN source/deps/v8/src/base/platform/platform-posix.cc source-new/deps/v8
      flags |= MAP_NORESERVE;
  #endif  // !V8_OS_AIX && !V8_OS_FREEBSD && !V8_OS_QNX
  #if V8_OS_QNX
+@@ -565,14 +569,8 @@
+     // MADV_FREE_REUSABLE sometimes fails, so fall back to MADV_DONTNEED.
+     ret = madvise(address, size, MADV_DONTNEED);
+   }
+-#elif defined(_AIX) || defined(V8_OS_SOLARIS)
+-  int ret = madvise(reinterpret_cast<caddr_t>(address), size, MADV_FREE);
+-  if (ret != 0 && errno == ENOSYS) {
+-    return true;  // madvise is not available on all systems.
+-  }
+-  if (ret != 0 && errno == EINVAL) {
+-    ret = madvise(reinterpret_cast<caddr_t>(address), size, MADV_DONTNEED);
+-  }
++#elif defined(_AIX) || defined(V8_OS_SOLARIS) || defined(V8_OS_REDOX)
++  int ret = 0; // madvise is not available on all systems.
+ #else
+   int ret = madvise(address, size, MADV_DONTNEED);
+ #endif
 diff -ruwN source/deps/v8/src/base/platform/platform-redox.cc source-new/deps/v8/src/base/platform/platform-redox.cc
 --- source/deps/v8/src/base/platform/platform-redox.cc	1970-01-01 07:00:00.000000000 +0700
 +++ source-new/deps/v8/src/base/platform/platform-redox.cc	2025-10-10 15:23:18.233737033 +0700

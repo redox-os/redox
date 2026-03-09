@@ -3,10 +3,14 @@
 # build instructions: https://docs.krita.org/en/untranslatable_pages/building_krita.html#building-on-linux
 [source]
 git = "https://invent.kde.org/graphics/krita"
-rev = "v5.2.13"
+branch = "release/5.2.14"
 shallow_clone = true
 [build]
 template = "cmake"
+cmakeflags = [
+    "-DLIMIT_LONG_TESTS=OFF",
+    "-DENABLE_UPDATERS=OFF",
+]
 # dependencies = [
 #     "gexiv2",
 #     "ffmpeg6",

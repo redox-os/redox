@@ -1,8 +1,11 @@
-#TODO require rustc 1.81
+#TODO not compiled or tested
 [source]
 git = "https://github.com/ggez/ggez"
+shallow_clone = true
 [build]
 template = "custom"
 script = """
-cookbook_cargo_examples 02_hello_world 04_snake cube hello_canvas input_test shader shadows sounds text vertex_shader
+DYNAMIC_INIT
+cookbook_cargo_examples 02_hello_world 04_snake cube \
+hello_canvas input_test shader shadows sounds text vertex_shader
 """

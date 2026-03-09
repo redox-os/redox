@@ -1,0 +1,13 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/tjjh89017/ezio"
+rev = "v2.0.21"
+[build]
+template = "cmake"
+dependencies = [
+    "boost",
+    "libtorrent",
+    "protobuf",
+    "libspdlog",
+    "grpc",
+]

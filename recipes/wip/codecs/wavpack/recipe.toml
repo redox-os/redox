@@ -1,6 +1,6 @@
-#TODO compilation error - missing header
+#TODO compilation error: missing header
 [source]
-tar = "https://github.com/dbry/WavPack/releases/download/5.7.0/wavpack-5.7.0.tar.xz"
+tar = "https://github.com/dbry/WavPack/releases/download/5.9.0/wavpack-5.9.0.tar.xz"
 [build]
 template = "configure"
 dependencies = [

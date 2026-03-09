@@ -1,4 +1,4 @@
-# X11 configuration
+# Wayland configuration
 
 include = ["desktop.toml"]
 
@@ -13,35 +13,28 @@ filesystem_size = 2048
 [packages]
 adwaita-icon-theme = {}
 bash = {}
+cosmic-app-library = {}
+cosmic-comp = {}
 gtk3 = {}
+libcosmic-wayland = {}
 libxcursor = {}
+iced-wayland = {}
 mesa = {}
+"pop-icon-theme.cursors" = {}
 smallvil = {}
 softbuffer-wayland = {}
 wayland-rs = {}
-webkitgtk3 = {}
+#webkitgtk3 = {}
 winit-wayland = {}
 xkeyboard-config = {}
 
-[[files]]
-path = "/usr/lib/init.d/10_wayland_env"
-data = """
-export XDG_RUNTIME_DIR /tmp/run/user/0
-mkdir -p $XDG_RUNTIME_DIR
-export WAYLAND_DISPLAY wayland-1
-glib-compile-schemas /usr/share/glib-2.0/schemas/
-"""
-
-# Overridden to launch smallvil instead of orblogin
+# Overridden to launch wayland compositor instead of orblogin
 [[files]]
 path = "/usr/lib/init.d/20_orbital"
 data = """
-audiod
-export BROWSER /bin/netsurf-fb
-export VT 3
-nowait orbital orbital-wayland
-unset BROWSER
-unset VT
+requires_weak 10_net
+notify audiod
+nowait BROWSER=/bin/netsurf-fb VT=3 orbital orbital-wayland
 """
 
 [[files]]
@@ -50,20 +43,60 @@ mode = 0o755
 data = """
 #!/usr/bin/env bash
 
+set -ex
+
+# Prepare environment
+unset DISPLAY
+export COSMIC_BACKEND=winit
+export HOME=/root
 export LD_DEBUG=all
+export RUST_BACKTRACE=full
 export RUST_LOG=debug
-smallvil_smallvil &
-sleep 2
-env G_MAIN_POLL_DEBUG=1 G_MESSAGES_DEBUG=all LD_DEBUG=all WEBKIT_DEBUG=all MiniBrowser&
-#softbuffer-wayland_animation &
-#wayland-rs_simple_window &
-#winit-wayland_window &
+export XCURSOR_THEME=Pop
+export XDG_RUNTIME_DIR=/tmp/run/user/0
+
+# Create XDG runtime directory
+#TODO: mkdir -p not working
+mkdir -p /tmp/run
+mkdir -p /tmp/run/user
+mkdir -p /tmp/run/user/0
+
+# Compile glib schemas
+glib-compile-schemas /usr/share/glib-2.0/schemas/
+
+# For cosmic-comp (more features)
+cosmic-comp wayland-session
+
+# For smallvil (easier to debug)
+#export WAYLAND_DISPLAY=wayland-1
+#smallvil &
+#sleep 2
+#wayland-session
+"""
+
+[[files]]
+path = "/usr/bin/wayland-session"
+mode = 0o755
+data = """
+#!/usr/bin/env bash
+
+set -ex
+
+#env G_MAIN_POLL_DEBUG=1 G_MESSAGES_DEBUG=all LD_DEBUG=all WEBKIT_DEBUG=all MiniBrowser&
+printenv
+#wayland-rs_simple_window
+#winit-wayland_window
+#softbuffer-wayland_animation
+#iced-wayland_sctk_lazy
+libcosmic-wayland_application
+#gtk3-widget-factory
+#cosmic-app-library run
 """
 
 [[files]]
 path = "/etc/gtk-3.0/settings.ini"
 data = """
 [Settings]
-gtk-cursor-theme-name = "Adwaita"
-gtk-icon-theme-name = "Adwaita"
+gtk-cursor-theme-name = "Pop"
+gtk-icon-theme-name = "Cosmic"
 """

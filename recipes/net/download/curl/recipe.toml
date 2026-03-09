@@ -1,0 +1,30 @@
+[source]
+git = "https://gitlab.redox-os.org/redox-os/curl.git"
+branch = "redox-8.6"
+upstream = "https://github.com/curl/curl.git"
+
+[build]
+template = "cmake"
+dependencies = [
+    #TODO: git fails to build when this is a dependency: "libpsl",
+    "nghttp2",
+    "openssl3",
+    "zlib",
+]
+cmakeflags = [
+    "-DCURL_DISABLE_FTP=On",
+    "-DCURL_DISABLE_TFTP=On",
+    "-DENABLE_IPV6=Off",
+    "-DCURL_DISABLE_NTLM=On",
+    "-DENABLE_THREADED_RESOLVER=Off",
+    "-DCURL_CA_PATH=/etc/ssl/certs",
+    "-DUSE_NGHTTP2=On",
+    "-DCURL_USE_OPENSSL=On",
+    "-DUSE_ZLIB=On",
+    "-DCURL_USE_LIBPSL=Off",
+]
+
+[package]
+dependencies = [
+    "ca-certificates"
+]

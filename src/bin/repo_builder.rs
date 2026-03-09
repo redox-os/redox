@@ -1,10 +1,10 @@
-use anyhow::{anyhow, bail};
 use cookbook::WALK_DEPTH;
 use cookbook::cook::ident::{get_ident, init_ident};
 use cookbook::cook::{fetch, package as cook_package};
 use cookbook::recipe::CookRecipe;
-use pkg::package::{Repository, SourceIdentifier};
+use cookbook::web::{CliWebConfig, generate_web};
 use pkg::{Package, PackageName, recipes};
+use pkg::{Repository, SourceIdentifier};
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::env;
 use std::fs::{self, File};
@@ -30,18 +30,22 @@ struct CliConfig {
     repo_dir: PathBuf,
     appstream: bool,
     recipe_list: Vec<String>,
+    web: Option<CliWebConfig>,
 }
 
 impl CliConfig {
     fn parse_args() -> Result<Self, std::io::Error> {
         let mut args = env::args().skip(1);
-        let repo_dir = args
-            .next()
-            .expect("Usage: repo_builder <REPO_DIR> <recipe1> <recipe2> ...");
+        let repo_dir = PathBuf::from(
+            args.next()
+                .expect("Usage: repo_builder <REPO_DIR> <recipe1> <recipe2> ..."),
+        );
+        let web = CliWebConfig::parse_args();
         Ok(CliConfig {
-            repo_dir: PathBuf::from(repo_dir),
+            repo_dir,
             appstream: env::var("COOKBOOK_APPSTREAM").ok().as_deref() == Some("true"),
             recipe_list: args.collect(),
+            web,
         })
     }
 }
@@ -59,25 +63,33 @@ fn publish_packages(config: &CliConfig) -> anyhow::Result<()> {
         fs::create_dir_all(repo_path)?;
     }
 
+    // Don't publish host packages
+    let target_packages = &config
+        .recipe_list
+        .iter()
+        .map(PackageName::new)
+        .filter(|pkg| pkg.as_ref().is_ok_and(|p| !p.is_host()))
+        .collect::<Result<Vec<_>, _>>()?;
+
+    if target_packages.len() == 0 {
+        return Ok(());
+    }
+
+    // TODO: publish cross target builds?
+    if std::env::var("COOKBOOK_CROSS_TARGET").is_ok_and(|x| !x.is_empty()) {
+        return Ok(());
+    }
+
     // Runtime dependencies include both `[package.dependencies]` and dynamically
     // linked packages discovered by auto_deps.
     //
     // The following adds the package dependencies of the recipes to the repo as
     // well.
-    let (recipe_list, recipe_map) = Package::new_recursive_nonstop(
-        &config
-            .recipe_list
-            .iter()
-            .map(PackageName::new)
-            // Don't publish host packages
-            .filter(|pkg| pkg.as_ref().is_ok_and(|p| !p.is_host()))
-            .collect::<Result<Vec<_>, _>>()?,
-        WALK_DEPTH,
-    );
+    let (recipe_list, recipe_map) = Package::new_recursive_nonstop(target_packages, WALK_DEPTH);
 
     if recipe_list.len() == 0 {
         // Fail-Safe
-        bail!("Zero packages are passing the build");
+        anyhow::bail!("Zero packages are passing the build");
     }
 
     let mut appstream_sources: HashMap<String, PathBuf> = HashMap::new();
@@ -117,6 +129,7 @@ fn publish_packages(config: &CliConfig) -> anyhow::Result<()> {
                 fs::copy(&toml_src, &toml_dst)?;
             }
 
+            // TODO: Extract from pkgar instead to handle config.cook.clean_target == true
             if stage_dir.join("usr/share/metainfo").exists() {
                 appstream_sources.insert(recipe.name().to_string(), stage_dir.clone());
             }
@@ -133,10 +146,8 @@ fn publish_packages(config: &CliConfig) -> anyhow::Result<()> {
             .join("build")
             .join(&target)
             .join("appstream");
-        let appstream_pkg = repo_path.join("repo-appstream.pkgar");
 
         fs::remove_dir_all(&appstream_root).ok();
-        fs::remove_file(&appstream_pkg).ok();
         fs::create_dir_all(&appstream_root)?;
 
         if !appstream_sources.is_empty() {
@@ -151,17 +162,22 @@ fn publish_packages(config: &CliConfig) -> anyhow::Result<()> {
                 compose_cmd.arg(source_path);
             }
 
-            compose_cmd
-                .status()?
-                .success()
-                .then_some(())
-                .ok_or(anyhow!("appstreamcli failed"))?;
-
-            pkgar::create(
-                format!("{}/build/id_ed25519.toml", root),
-                &appstream_pkg,
-                &appstream_root,
-            )?;
+            let exit_status = compose_cmd.status()?;
+            if exit_status.success() {
+                let appstream_pkg = repo_path.join("repo-appstream.pkgar");
+                fs::remove_file(&appstream_pkg).ok();
+                pkgar::create(
+                    format!("{}/build/id_ed25519.toml", root),
+                    &appstream_pkg,
+                    &appstream_root,
+                )?;
+            } else {
+                eprintln!("\x1b[1;91;49mrepo - appstreamcli failed:\x1b[0m {exit_status:?}");
+                for (_recipe, source_path) in &appstream_sources {
+                    eprintln!("- {}", source_path.display());
+                }
+                eprintln!();
+            }
         }
     }
 
@@ -257,12 +273,18 @@ fn publish_packages(config: &CliConfig) -> anyhow::Result<()> {
         packages.insert(package_name, version_str.to_string());
     }
 
-    let output = toml::to_string(&Repository {
+    let repository = Repository {
         packages,
         outdated_packages,
-    })?;
+    };
+
+    let output = toml::to_string(&repository)?;
     let mut output_file = File::create(&repo_toml_path)?;
     output_file.write_all(output.as_bytes())?;
 
+    if let Some(conf) = &config.web {
+        eprintln!("\x1b[01;38;5;155mrepo - generating web content\x1b[0m");
+        generate_web(&repository.packages.keys().cloned().collect(), conf);
+    }
     Ok(())
 }

@@ -8,11 +8,10 @@ use cookbook::cook::ident;
 use cookbook::cook::package::package;
 use cookbook::cook::pty::{PtyOut, UnixSlavePty, flush_pty, setup_pty};
 use cookbook::cook::script::KILL_ALL_PID;
-use cookbook::cook::tree::{WalkTreeEntry, display_tree_entry, format_size, walk_tree_entry};
+use cookbook::cook::tree::{self, WalkTreeEntry};
 use cookbook::log_to_pty;
-use cookbook::recipe::CookRecipe;
+use cookbook::recipe::{CookRecipe, recipes_flatten_package_names, recipes_mark_as_deps};
 use pkg::PackageName;
-use pkg::package::PackageError;
 use ratatui::Terminal;
 use ratatui::layout::{Constraint, Direction, Layout, Position, Rect};
 use ratatui::prelude::TermionBackend;
@@ -21,7 +20,7 @@ use ratatui::text::{Line, Span, Text};
 use ratatui::widgets::{Block, Borders, Clear, List, ListItem, ListState, Paragraph, Wrap};
 use redox_installer::PackageConfig;
 use std::borrow::Cow;
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::collections::{BTreeMap, HashMap, HashSet, VecDeque};
 use std::io::{Read, Write, stderr, stdin, stdout};
 use std::path::PathBuf;
 use std::process::Command;
@@ -43,13 +42,15 @@ const REPO_HELP_STR: &str = r#"
     Usage: repo <command> [flags] <recipe1> <recipe2> ...
 
     command list:
-        fetch     download recipe sources
-        cook      build recipe packages
-        unfetch   delete recipe sources
-        clean     delete recipe artifacts
-        push      extract package into sysroot
-        find      find path of recipe packages
-        tree      show tree of recipe packages
+        fetch        download recipe sources
+        cook         build recipe packages
+        unfetch      delete recipe sources
+        clean        delete recipe artifacts
+        clean-target delete recipe artifacts for one target
+        push         extract package into sysroot
+        find         find path of recipe packages
+        cook-tree    show tree of recipe build
+        push-tree    show tree of recipe packages
     
     common flags:
         --cookbook=<cookbook_dir>  the "recipes" folder, default to $PWD/recipes
@@ -63,13 +64,18 @@ const REPO_HELP_STR: &str = r#"
         --repo-binary              override recipes config to use repo_binary
 
     cook env and their defaults:
-        CI=                        set to any value to disable TUI
-        COOKBOOK_LOGS=             whether to capture build logs (default is !CI)
-        COOKBOOK_OFFLINE=false     prevent internet access if possible
+        CI=                          set to any value to disable TUI
+        COOKBOOK_LOGS=               whether to capture build logs (default is !CI)
+        COOKBOOK_OFFLINE=false       prevent internet access if possible
                                         ignored when command "fetch" is used
-        COOKBOOK_NONSTOP=false     pkeep running even a recipe build failed
-        COOKBOOK_VERBOSE=true      print success/error on each recipe
-        COOKBOOK_MAKE_JOBS=        override build jobs count from nproc
+        COOKBOOK_NONSTOP=false       keep running even a recipe build failed
+        COOKBOOK_COMPRESSED=false    build packages in compressed format
+        COOKBOOK_VERBOSE=true        print success/error on each recipe
+        COOKBOOK_CLEAN_BUILD=false   remove build directory before building
+        COOKBOOK_CLEAN_TARGET=false  remove target directory after building
+        COOKBOOK_WRITE_FILETREE=false whether to write stage files tree
+        COOKBOOK_MAKE_JOBS=          override build jobs count from nproc
+        COOKBOOK_WEB=false           whether to generate package web files
 "#;
 
 #[derive(Clone)]
@@ -89,25 +95,29 @@ struct CliConfig {
 enum CliCommand {
     Fetch,
     Cook,
+    CookTree,
     Unfetch,
     Clean,
+    CleanTarget,
     Push,
-    Tree,
+    PushTree,
     Find,
 }
 
 impl CliCommand {
     pub fn is_informational(&self) -> bool {
-        *self == CliCommand::Tree || *self == CliCommand::Find
+        *self == CliCommand::PushTree || *self == CliCommand::CookTree || *self == CliCommand::Find
     }
     pub fn is_building(&self) -> bool {
-        *self == CliCommand::Fetch || *self == CliCommand::Cook
+        *self == CliCommand::Fetch || *self == CliCommand::Cook || *self == CliCommand::CookTree
     }
     pub fn is_pushing(&self) -> bool {
-        *self == CliCommand::Push || *self == CliCommand::Tree
+        *self == CliCommand::Push || *self == CliCommand::PushTree
     }
     pub fn is_cleaning(&self) -> bool {
-        *self == CliCommand::Clean || *self == CliCommand::Unfetch
+        *self == CliCommand::Clean
+            || *self == CliCommand::CleanTarget
+            || *self == CliCommand::Unfetch
     }
 }
 
@@ -120,8 +130,10 @@ impl FromStr for CliCommand {
             "cook" => Ok(CliCommand::Cook),
             "unfetch" => Ok(CliCommand::Unfetch),
             "clean" => Ok(CliCommand::Clean),
+            "clean-target" => Ok(CliCommand::CleanTarget),
             "push" => Ok(CliCommand::Push),
-            "tree" => Ok(CliCommand::Tree),
+            "push-tree" => Ok(CliCommand::PushTree),
+            "cook-tree" => Ok(CliCommand::CookTree),
             "find" => Ok(CliCommand::Find),
             _ => Err(anyhow!("Unknown command '{}'\n{}\n", s, REPO_HELP_STR)),
         }
@@ -135,8 +147,10 @@ impl ToString for CliCommand {
             CliCommand::Cook => "cook".to_string(),
             CliCommand::Unfetch => "unfetch".to_string(),
             CliCommand::Clean => "clean".to_string(),
+            CliCommand::CleanTarget => "clean-target".to_string(),
             CliCommand::Push => "push".to_string(),
-            CliCommand::Tree => "tree".to_string(),
+            CliCommand::PushTree => "push-tree".to_string(),
+            CliCommand::CookTree => "cook-tree".to_string(),
             CliCommand::Find => "find".to_string(),
         }
     }
@@ -185,12 +199,12 @@ fn main_inner() -> anyhow::Result<()> {
         process::exit(1);
     }
 
-    let (config, command, recipe_names) = parse_args(args)?;
+    let (config, command, recipes) = parse_args(args)?;
     if command.is_building() {
         ident::init_ident();
     }
     if command == CliCommand::Cook && config.cook.tui {
-        if let Some((name, e)) = run_tui_cook(config.clone(), recipe_names.clone())? {
+        if let Some((name, e)) = run_tui_cook(config.clone(), recipes.clone())? {
             let _ = stderr().write(e.as_bytes());
             let _ = stderr().write(b"\n\n");
             print_failed(&command, &name);
@@ -198,17 +212,20 @@ fn main_inner() -> anyhow::Result<()> {
         } else {
             print_success(&command, None);
         }
-        return publish_packages(&recipe_names, &config.repo_dir);
+        return publish_packages(&recipes, &config.repo_dir);
     }
-    if command == CliCommand::Tree {
-        return handle_tree(&recipe_names, &config);
+    if command == CliCommand::PushTree {
+        return handle_tree(&recipes, false, &config);
+    }
+    if command == CliCommand::CookTree {
+        return handle_tree(&recipes, true, &config);
     }
     if command == CliCommand::Push {
-        return handle_push(&recipe_names, &config);
+        return handle_push(&recipes, &config);
     }
 
     let verbose = config.cook.verbose;
-    for recipe in &recipe_names {
+    for recipe in &recipes {
         match repo_inner(&config, &command, recipe) {
             Ok(_) => {
                 if !command.is_informational() {
@@ -233,14 +250,14 @@ fn main_inner() -> anyhow::Result<()> {
     }
 
     if command == CliCommand::Cook {
-        return publish_packages(&recipe_names, &config.repo_dir);
+        return publish_packages(&recipes, &config.repo_dir);
     }
 
-    if verbose {
+    if verbose && recipes.len() > 1 {
         println!(
             "\nCommand '{}' completed for {} recipes.",
             command.to_string(),
-            recipe_names.len()
+            recipes.len()
         );
     }
     Ok(())
@@ -292,7 +309,7 @@ fn repo_inner(
                 let is_cook = *command == CliCommand::Cook;
                 let source_dir = handle_fetch(recipe, config, is_cook, logger)?;
                 if is_cook {
-                    handle_cook(recipe, config, source_dir, recipe.is_deps, logger)?;
+                    handle_cook(recipe, config, source_dir, logger)?;
                 }
                 Ok(())
             };
@@ -344,10 +361,12 @@ fn repo_inner(
             let _ = th.join();
             result?;
         }
-        CliCommand::Unfetch => handle_clean(recipe, config, true, true)?,
-        CliCommand::Clean => handle_clean(recipe, config, false, true)?,
+        CliCommand::Unfetch | CliCommand::Clean | CliCommand::CleanTarget => {
+            handle_clean(recipe, config, command)?
+        }
         CliCommand::Push => unreachable!(),
-        CliCommand::Tree => unreachable!(),
+        CliCommand::PushTree => unreachable!(),
+        CliCommand::CookTree => unreachable!(),
         CliCommand::Find => println!("{}", recipe.dir.display()),
     })
 }
@@ -438,47 +457,50 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
 
     let command = command.ok_or(anyhow!("Error: No command specified."))?;
     let command: CliCommand = str::parse(&command)?;
-    let mut recipes = if config.all || config.category.is_some() {
-        if !recipe_names.is_empty() {
-            bail!("Do not specify recipe names when using the --all or --category flag.");
-        }
-        if config.all && config.category.is_some() {
-            bail!("Do not specify both --all and --category flag.");
-        }
-        if config.all && !command.is_cleaning() {
-            // because read_recipe is false by logic below
-            // some recipes on wip folders are invalid anyway
-            bail!(
-                "Refusing to run an unrealistic command to {} all recipes",
-                command.to_string()
-            );
-        }
-        match &config.category {
-            None => pkg::recipes::list(""),
-            Some(prefix) => pkg::recipes::list("")
-                .into_iter()
-                .filter(|p| p.starts_with(prefix))
-                .collect(),
-        }
-        .iter()
-        // TODO: Allow selecting recipes from category as host?
-        .map(|f| CookRecipe::from_path(f, !command.is_cleaning(), false))
-        .collect::<Result<Vec<CookRecipe>, PackageError>>()?
-    } else {
-        if recipe_names.is_empty() {
+    if command.is_informational() {
+        // avoid extra data that clobber stdout
+        config.cook.verbose = false;
+    }
+
+    let mut preloaded_recipes: BTreeMap<PackageName, CookRecipe> = BTreeMap::new();
+
+    if recipe_names.is_empty() {
+        if config.all || config.category.is_some() {
+            if !recipe_names.is_empty() {
+                bail!("Do not specify recipe names when using the --all or --category flag.");
+            }
+            if config.all && config.category.is_some() {
+                bail!("Do not specify both --all and --category flag.");
+            }
+            if config.all && !command.is_cleaning() {
+                // because read_recipe is false by logic below
+                // some recipes on wip folders are invalid anyway
+                bail!(
+                    "Refusing to run an unrealistic command to {} all recipes",
+                    command.to_string()
+                );
+            }
+            let all_recipes_path = match &config.category {
+                None => pkg::recipes::list(""),
+                Some(prefix) => pkg::recipes::list("")
+                    .into_iter()
+                    .filter(|p| p.starts_with(prefix))
+                    .collect(),
+            };
+
+            for path in all_recipes_path {
+                // TODO: Allow selecting recipes from category as host?
+                let recipe = CookRecipe::from_path(&path, !command.is_cleaning(), false)?;
+                let recipe_name = recipe.name.clone();
+                preloaded_recipes.insert(recipe_name.clone(), recipe);
+                recipe_names.push(recipe_name);
+            }
+        } else {
             if let Some(conf) = config.filesystem.as_ref() {
                 recipe_names = conf
                     .packages
-                    .iter()
-                    .filter_map(|(f, v)| {
-                        match v {
-                            PackageConfig::Build(rule) if rule == "ignore" => {
-                                return None;
-                            }
-                            _ => {}
-                        }
-                        PackageName::new(f).ok()
-                    })
+                    .keys()
+                    .filter_map(|k| PackageName::new(k.to_string()).ok())
                     .collect();
             } else {
                 bail!(
@@ -486,61 +508,163 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
                 );
             }
         }
-        if command.is_building() || (command.is_pushing() && config.with_package_deps) {
-            if config.with_package_deps {
-                recipe_names = CookRecipe::get_package_deps_recursive(&recipe_names, true)
-                    .context("failed get package deps")?;
-            }
-            CookRecipe::get_build_deps_recursive(
-                &recipe_names,
-                !command.is_pushing(),
-                // In CliCommand::Cook, is_deps==true will make it skip checking source
-                command.is_pushing() || !config.with_package_deps,
-            )?
-        } else {
-            recipe_names
-                .iter()
-                .map(|f| CookRecipe::from_name(f.clone()).unwrap())
-                .collect()
-        }
-    };
-    if let Some(conf) = config.filesystem.as_ref()
-        && !command.is_cleaning()
-    {
-        let repo_binary = conf.general.repo_binary == Some(true);
-        let mut last_rule = if repo_binary { "binary" } else { "source" };
-        let mut should_drop_host_packages = true;
-        // Use rev() so recipes that don't listed in config is inherited from parent
-        for recipe in recipes.iter_mut().rev() {
-            if let Some(conf) = conf.packages.get(recipe.name.as_str()) {
-                last_rule = match conf {
-                    PackageConfig::Build(rule) => &rule,
-                    _ => {
-                        if repo_binary {
-                            "binary"
-                        } else {
-                            "source"
-                        }
-                    }
-                };
-                if should_drop_host_packages && (last_rule == "source" || last_rule == "local") {
-                    should_drop_host_packages = false;
-                }
-            };
-            recipe
-                .apply_filesystem_config(last_rule)
-                .map_err(|e| anyhow!(e))?;
-        }
-        // If there's no building from source, drop all host toolchain
-        // TODO: This is more of a hack to make CI passing
-        if should_drop_host_packages && config.with_package_deps {
-            recipes = recipes.into_iter().filter(|p| !p.name.is_host()).collect();
-        }
     }
 
-    if command.is_informational() {
-        // avoid extra data that clobber stdout
-        config.cook.verbose = false;
+    if command.is_cleaning() {
+        let recipes = if preloaded_recipes.is_empty() {
+            CookRecipe::from_list(recipe_names)?
+        } else {
+            preloaded_recipes.into_values().collect()
+        };
+
+        return Ok((config, command, recipes));
+    }
+
+    let mut recipes = if let Some(conf) = config.filesystem.as_ref() {
+        let repo_binary = conf.general.repo_binary == Some(true);
+
+        // Expand deps for "source" + "local" and "binary"
+        // This is the complete map from filesystem config
+        let mut source_names: Vec<PackageName> = Vec::new();
+        let mut binary_names: Vec<PackageName> = Vec::new();
+        let mut special_rules: HashMap<PackageName, String> = HashMap::new();
+        let default_rule = if repo_binary { "binary" } else { "source" };
+        for (recipe_name_str, recipe_config) in conf.packages.iter() {
+            let Ok(recipe_name) = PackageName::new(recipe_name_str) else {
+                continue;
+            };
+            let rule = match recipe_config {
+                PackageConfig::Build(rule) => {
+                    special_rules.insert(recipe_name.clone(), rule.to_string());
+                    rule
+                }
+                _ => default_rule,
+            };
+
+            if rule == "source" || rule == "local" {
+                source_names.push(recipe_name);
+            } else if rule == "binary" {
+                binary_names.push(recipe_name);
+            }
+        }
+        source_names = CookRecipe::get_all_deps_names_recursive(&source_names, true)?;
+        binary_names = CookRecipe::get_all_deps_names_recursive(&binary_names, false)?;
+        let source_names: HashSet<PackageName> = source_names.into_iter().collect();
+        let binary_names: HashSet<PackageName> = binary_names.into_iter().collect();
+
+        // These are list that derived from recipe_names
+        let mut source_recipe_names: Vec<PackageName> = Vec::new();
+        let mut binary_recipe_names: Vec<PackageName> = Vec::new();
+        let mut ignore_recipe_names: Vec<PackageName> = Vec::new();
+        for recipe_name in recipe_names.iter() {
+            if source_names.contains(recipe_name) {
+                source_recipe_names.push(recipe_name.clone());
+            } else if binary_names.contains(recipe_name) {
+                binary_recipe_names.push(recipe_name.clone());
+            } else {
+                if special_rules
+                    .get(recipe_name)
+                    .is_some_and(|s| s == "ignore")
+                {
+                    ignore_recipe_names.push(recipe_name.clone());
+                } else if repo_binary {
+                    binary_recipe_names.push(recipe_name.clone());
+                } else {
+                    source_recipe_names.push(recipe_name.clone());
+                }
+            }
+        }
+
+        if config.with_package_deps {
+            source_recipe_names =
+                CookRecipe::get_package_deps_recursive(&source_recipe_names, true)?;
+            binary_recipe_names =
+                CookRecipe::get_package_deps_recursive(&binary_recipe_names, true)?;
+        }
+
+        let mut recipes =
+            if command.is_building() || (command.is_pushing() && config.with_package_deps) {
+                // Pushing do not need dev deps, so does binary recipes at building
+                let include_dev = command.is_building();
+                if include_dev && default_rule == "source" {
+                    // let's cover a very specific case, binary -> source -> binary -> dev
+                    // in this case, we need to move that "source" to "binary", because
+                    // that would include dev from its binary child, which is unnecessary
+                    let mut i = 0;
+                    while i < source_recipe_names.len() {
+                        let name = &source_recipe_names[i];
+                        match special_rules.get(name) {
+                            Some(s) if s.as_str() == "source" => {
+                                if binary_names.contains(name) {
+                                    let bin = source_recipe_names.remove(i);
+                                    binary_recipe_names.push(bin);
+                                    continue;
+                                }
+                            }
+                            _ => {}
+                        }
+                        i += 1;
+                    }
+                }
+                CookRecipe::get_build_deps_recursive(&source_recipe_names, include_dev)?
+            } else {
+                CookRecipe::from_list(source_recipe_names.clone())?
+            };
+
+        let binary_recipes =
+            if command.is_building() || (command.is_pushing() && config.with_package_deps) {
+                CookRecipe::get_build_deps_recursive(&binary_recipe_names, false)?
+            } else {
+                CookRecipe::from_list(binary_recipe_names.clone())?
+            };
+
+        let ignore_recipes = CookRecipe::from_list(ignore_recipe_names.clone())?;
+
+        recipes.extend(binary_recipes);
+        recipes.extend(ignore_recipes);
+        recipes = recipes_flatten_package_names(recipes);
+
+        for recipe in recipes.iter_mut() {
+            if let Some(special_rule) = special_rules.get(&recipe.name) {
+                recipe.apply_filesystem_config(&special_rule)?;
+                continue;
+            }
+            let rule = match (
+                source_names.contains(&recipe.name),
+                binary_names.contains(&recipe.name),
+            ) {
+                (true, true) => {
+                    // both lists: flip logic
+                    if repo_binary { "source" } else { "binary" }
+                }
+                (true, false) => "source",
+                (false, true) => "binary",
+                (false, false) => default_rule,
+            };
+            if recipe.name.is_host() && rule == "binary" {
+                // host recipe binaries is currently not supported
+                continue;
+            }
+
+            recipe.apply_filesystem_config(rule)?;
+        }
+
+        recipes
+    } else {
+        if config.with_package_deps {
+            recipe_names = CookRecipe::get_package_deps_recursive(&recipe_names, true)?;
+        }
+        if command.is_building() || (command.is_pushing() && config.with_package_deps) {
+            let include_dev = command.is_building();
+            CookRecipe::get_build_deps_recursive(&recipe_names, include_dev)?
+        } else {
+            CookRecipe::from_list(recipe_names.clone())?
+        }
+    };
+
+    if command.is_pushing() || !config.with_package_deps {
+        // In CliCommand::Cook, is_deps==true will make it skip checking source
+        recipes_mark_as_deps(&recipe_names, &mut recipes);
     }
 
     Ok((config, command, recipes))
@@ -554,7 +678,7 @@ fn handle_fetch(
 ) -> anyhow::Result<PathBuf> {
     let source_dir = match config.cook.offline && allow_offline {
         true => fetch_offline(&recipe, logger),
-        false => fetch(&recipe, logger),
+        false => fetch(&recipe, !recipe.is_deps, logger),
     }
     .map_err(|e| anyhow!("failed to fetch: {:?}", e))?;
 
@@ -565,7 +689,6 @@ fn handle_cook(
     recipe: &CookRecipe,
     config: &CliConfig,
     source_dir: PathBuf,
-    is_deps: bool,
     logger: &PtyOut,
 ) -> anyhow::Result<()> {
     let recipe_dir = &recipe.dir;
@@ -576,15 +699,32 @@ fn handle_cook(
         &target_dir,
         &recipe.name,
         &recipe.recipe,
-        config.cook.offline,
-        !is_deps,
+        &config.cook,
+        !recipe.is_deps,
         logger,
     )
     .map_err(|err| anyhow!("failed to build: {:?}", err))?;
 
-    package(&recipe, &stage_dirs, &auto_deps, logger)
+    package(&recipe, &stage_dirs, &auto_deps, &config.cook, logger)
         .map_err(|err| anyhow!("failed to package: {:?}", err))?;
 
+    if config.cook.clean_target || config.cook.write_filetree {
+        let stage_dirs = get_stage_dirs(&recipe.recipe.optional_packages, &target_dir);
+        for stage_dir in stage_dirs {
+            if stage_dir.is_dir() {
+                if config.cook.write_filetree {
+                    let mut stage_files_buf = String::new();
+                    tree::walk_file_tree(&stage_dir, "", &mut stage_files_buf)
+                        .context("failed to walk stage files tree")?;
+                    fs::write(stage_dir.with_added_extension("files"), stage_files_buf)
+                        .context("unable to write stage files")?;
+                }
+                if config.cook.clean_target {
+                    fs::remove_dir_all(&stage_dir).context("failed to remove stage dir")?;
+                }
+            }
+        }
+    }
     Ok(())
 }
 
@@ -602,15 +742,17 @@ fn handle_nonstop_fail(recipe: &CookRecipe) -> anyhow::Result<()> {
 fn handle_clean(
     recipe: &CookRecipe,
     _config: &CliConfig,
-    source: bool,
-    target: bool,
+    command: &CliCommand,
 ) -> anyhow::Result<()> {
-    let dir = recipe.dir.join("target");
-    if dir.exists() && target {
+    let mut dir = recipe.dir.join("target");
+    if matches!(*command, CliCommand::CleanTarget) {
+        dir = dir.join(redoxer::target())
+    }
+    if dir.exists() {
         fs::remove_dir_all(&dir).context(format!("failed to delete {}", dir.display()))?;
     }
     let dir = recipe.dir.join("source");
-    if dir.exists() && source {
+    if dir.exists() && matches!(*command, CliCommand::Unfetch) {
         fs::remove_dir_all(&dir).context(format!("failed to delete {}", dir.display()))?;
     }
     Ok(())
@@ -665,11 +807,12 @@ fn handle_push(recipes: &Vec<CookRecipe>, config: &CliConfig) -> anyhow::Result<
     };
     if config.with_package_deps {
         for (i, root) in roots.iter().enumerate() {
-            walk_tree_entry(
+            tree::walk_tree_entry(
                 &root.name,
                 &recipe_map,
                 "",
                 i == num_roots - 1,
+                false,
                 &mut visited,
                 &mut total_size,
                 handle_push_inner,
@@ -702,7 +845,7 @@ fn handle_push(recipes: &Vec<CookRecipe>, config: &CliConfig) -> anyhow::Result<
         println!("");
         println!(
             "Pushed {} of {} {}",
-            format_size(total_size),
+            tree::format_size(total_size),
             visited.len(),
             if visited.len() == 1 {
                 "package"
@@ -715,7 +858,11 @@ fn handle_push(recipes: &Vec<CookRecipe>, config: &CliConfig) -> anyhow::Result<
     Ok(())
 }
 
-fn handle_tree(recipes: &Vec<CookRecipe>, _config: &CliConfig) -> anyhow::Result<()> {
+fn handle_tree(
+    recipes: &Vec<CookRecipe>,
+    is_build_tree: bool,
+    _config: &CliConfig,
+) -> anyhow::Result<()> {
     let recipe_map: HashMap<&PackageName, &CookRecipe> =
         recipes.iter().map(|r| (&r.name, r)).collect();
     let mut total_size: u64 = 0;
@@ -723,27 +870,42 @@ fn handle_tree(recipes: &Vec<CookRecipe>, _config: &CliConfig) -> anyhow::Result
     let roots: Vec<&CookRecipe> = recipes.iter().filter(|r| !r.is_deps).collect();
     let num_roots = roots.len();
     for (i, root) in roots.iter().enumerate() {
-        display_tree_entry(
+        tree::display_tree_entry(
             &root.name,
             &recipe_map,
             "",
             i == num_roots - 1,
+            is_build_tree,
             &mut visited,
             &mut total_size,
         )?;
     }
 
     println!("");
-    println!(
-        "Estimated image size: {} of {} {}",
-        format_size(total_size),
-        visited.len(),
-        if visited.len() == 1 {
-            "package"
-        } else {
-            "packages"
-        },
-    );
+    if is_build_tree {
+        println!(
+            "Build summary: {} need build, {} may rebuild, with total of {} {}",
+            total_size,
+            roots.len(),
+            visited.len(),
+            if visited.len() == 1 {
+                "recipe"
+            } else {
+                "recipes"
+            },
+        );
+    } else {
+        println!(
+            "Estimated image size: {} of {} {}",
+            tree::format_size(total_size),
+            visited.len(),
+            if visited.len() == 1 {
+                "package"
+            } else {
+                "packages"
+            },
+        );
+    }
 
     Ok(())
 }
@@ -1010,7 +1172,6 @@ fn run_tui_cook(
     let cooker_handle = thread::spawn(move || {
         'done: for (mut recipe, source_dir) in work_rx {
             let name = recipe.name.clone();
-            let is_deps = recipe.is_deps;
             let (mut stdout_writer, mut stderr_writer) = setup_logger(&cooker_status_tx, &name);
             let mut logger = Some((&mut stdout_writer, &mut stderr_writer));
             'again: loop {
@@ -1018,13 +1179,7 @@ fn run_tui_cook(
                     .send(StatusUpdate::StartCook(name.clone()))
                     .unwrap();
                 let _ = recipe.reload_recipe(); // reread recipe.toml in case we're retrying
-                let handler = handle_cook(
-                    &recipe,
-                    &cooker_config,
-                    source_dir.clone(),
-                    is_deps,
-                    &logger,
-                );
+                let handler = handle_cook(&recipe, &cooker_config, source_dir.clone(), &logger);
                 if let Some(log_path) = cooker_config.logs_dir.as_ref() {
                     if let Err(err_ctx) = &handler {
                         log_to_pty!(&logger, "\n{:?}", err_ctx)
@@ -1477,8 +1632,8 @@ fn run_tui_cook(
         kill_everything();
     }
 
-    fetcher_handle.join().unwrap();
-    cooker_handle.join().unwrap();
+    let _ = fetcher_handle.join();
+    let _ = cooker_handle.join();
 
     Ok(app.dump_logs_on_exit)
 }

@@ -1,0 +1,11 @@
+#TODO not compiled or tested
+#TODO determine minimum dependencies from cmake log
+[source]
+git = "https://invent.kde.org/education/marble"
+branch = "release/25.12"
+shallow_clone = true
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DBUILD_WITH_DBUS=OFF",
+]

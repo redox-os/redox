@@ -1,0 +1,12 @@
+#TODO not compiled or tested
+[source]
+git = "https://gitlab.gnome.org/World/decoder"
+shallow_clone = true
+[build]
+template = "meson"
+dependencies = [
+    "glib",
+    "gtk4",
+    "libadwaita",
+    "gstreamer",
+]

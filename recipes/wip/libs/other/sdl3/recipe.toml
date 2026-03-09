@@ -3,16 +3,23 @@
 # build instructions: https://github.com/libsdl-org/SDL/blob/main/docs/README-cmake.md
 # dependencies: https://github.com/libsdl-org/SDL/blob/main/docs/README-linux.md
 [source]
-tar = "https://github.com/libsdl-org/SDL/releases/download/release-3.2.26/SDL3-3.2.26.tar.gz"
+tar = "https://github.com/libsdl-org/SDL/releases/download/release-3.4.0/SDL3-3.4.0.tar.gz"
 [build]
 template = "cmake"
 cmakeflags = [
     "-DSDL_SHARED=ON",
     "-DSDL_STATIC=OFF",
-    "-DSDL_TESTS=OFF",
+    "-DSDL_TEST_LIBRARY=OFF",
     "-DSDL_DISABLE_INSTALL_DOCS=ON",
+    "-DSDL_DBUS=OFF",
+    "-DSDL_LIBURING=OFF",
+    "-DSDL_IBUS=OFF",
+    "-DSDL_OPENGL=OFF",
+    "-DSDL_OPENGLES=OFF",
+    "-DSDL_LIBUDEV=OFF",
+    "-DSDL_AUDIO=OFF",
 ]
 dependencies = [
-    "liborbital",
+    #"liborbital",
     "mesa",
 ]

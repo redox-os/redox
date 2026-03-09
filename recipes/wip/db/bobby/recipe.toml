@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/hbons/Bobby"
+[build]
+template = "meson"
+dependencies = [
+    "libadwaita",
+    "glib",
+    "gtk4",
+]

@@ -1,11 +1,13 @@
-#TODO make libwayland work
+#TODO not compiled or tested
 [source]
 git = "https://github.com/vizia/vizia"
+shallow_clone = true
 [build]
 template = "custom"
-dependencies = [
-    "libwayland",
-]
+#dependencies = [
+#    "libwayland",
+#]
 script = """
+DYNAMIC_INIT
 cookbook_cargo_examples animation dragdrop number input timers
 """

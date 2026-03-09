@@ -3,7 +3,6 @@ tar = "https://www.x.org/releases/individual/lib/libXfont2-2.0.7.tar.xz"
 blake3 = "9b4951683df21108e45fda23dbd25dcb47b67a3a0e224a36374fbc2d0f489cac"
 patches = ["redox.patch"]
 script = """
-DYNAMIC_INIT
 autotools_recursive_regenerate
 """
 

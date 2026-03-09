@@ -1,8 +1,10 @@
 #TODO not compiled or tested
 [source]
 git = "https://github.com/cea-sec/sanzu"
+shallow_clone = true
 [build]
 template = "custom"
 script = """
+DYNAMIC_INIT
 cookbook_cargo_packages sanzu
 """

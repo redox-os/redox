@@ -1,8 +1,10 @@
 #TODO not compiled or tested
 [source]
 git = "https://github.com/fastn-stack/kulfi"
+shallow_clone = true
 [build]
 template = "custom"
 script = """
+DYNAMIC_INIT
 cookbook_cargo_packages malai
 """

@@ -1,8 +1,10 @@
 #TODO nanorand crate error
 [source]
 git = "https://github.com/albedo-engine/albedo"
+shallow_clone = true
 [build]
 template = "custom"
 script = """
+DYNAMIC_INIT
 cookbook_cargo_examples gpu_picking
 """

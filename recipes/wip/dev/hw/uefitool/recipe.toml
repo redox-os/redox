@@ -1,0 +1,7 @@
+#TODO missing script for compilation: https://github.com/LongSoft/UEFITool#installation
+[source]
+git = "https://github.com/LongSoft/UEFITool"
+rev = "A73"
+shallow_clone = true
+[build]
+template = "custom"

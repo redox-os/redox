@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+#TODO discover minimum dependencies from meson log
+[source]
+git = "https://github.com/dubstar-04/Design"
+rev = "e6906bc36217306b07d23fa5a4332778db8bca78"
+shallow_clone = true
+[build]
+template = "meson"

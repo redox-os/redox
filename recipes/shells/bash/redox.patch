@@ -111,6 +111,22 @@ diff -ruwN source/include/posixwait.h source-new/include/posixwait.h
  
  #  if !defined (WSTOPSIG)
  #    define WSTOPSIG(s)       ((s) >> 8)
+diff --color -ruwN source/jobs.c source-new/jobs.c
+--- source/jobs.c	2022-12-14 00:09:02.000000000 +0700
++++ source-new/jobs.c	2026-02-09 23:29:28.811403291 +0700
+@@ -4417,9 +4417,11 @@
+ 	{
+ 	  shell_pgrp = getpid ();
+ 	  setpgid (0, shell_pgrp);
++  }
++
++    // shell pgrep is not set automatically on Redox
+ 	  if (shell_tty != -1)
+ 	    tcsetpgrp (shell_tty, shell_pgrp);
+-	}
+ 
+       tty_sigs = 0;
+       while ((terminal_pgrp = tcgetpgrp (shell_tty)) != -1)
 diff -ruwN source/lib/readline/input.c source-new/lib/readline/input.c
 --- source/lib/readline/input.c	2022-04-09 02:43:24.000000000 +0700
 +++ source-new/lib/readline/input.c	2025-09-01 04:36:35.276926707 +0700

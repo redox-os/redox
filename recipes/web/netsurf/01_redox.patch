@@ -84,7 +84,7 @@ diff -ruwN source/netsurf/Makefile.config source-new/netsurf/Makefile.config
 +override NETSURF_USE_VIDEO := NO
 +
 +override NETSURF_FB_FONTLIB := freetype
-+override NETSURF_FB_FONTPATH := /ui/fonts/
++override NETSURF_FB_FONTPATH := /usr/share/fonts/
 +override NETSURF_FB_FONT_SANS_SERIF := Sans/Fira/Regular.ttf
 +override NETSURF_FB_FONT_SANS_SERIF_BOLD := Sans/Fira/Bold.ttf
 +override NETSURF_FB_FONT_SANS_SERIF_ITALIC := Sans/Fira/Regular.ttf

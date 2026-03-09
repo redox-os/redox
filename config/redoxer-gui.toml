@@ -11,9 +11,8 @@ orbital = {}
 [[files]]
 path = "/usr/lib/init.d/30_redoxer"
 data = """
+requires_weak 10_net
 echo
-echo ## running redoxer in orbital ##
-export VT 3
-nowait orbital redoxerd
-unset VT
+echo "## running redoxer in orbital ##"
+nowait VT=3 orbital redoxerd
 """

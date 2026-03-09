@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/libsigcplusplus/libsigcplusplus#building-from-a-release-tarball
+[source]
+tar = "https://github.com/libsigcplusplus/libsigcplusplus/releases/download/3.8.0/libsigc++-3.8.0.tar.xz"
+[build]
+template = "meson"
+mesonflags = [
+    "-Dbuild-manual=false",
+    "-Dbuild-tests=false",
+]

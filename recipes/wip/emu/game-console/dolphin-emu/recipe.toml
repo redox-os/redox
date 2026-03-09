@@ -1,0 +1,38 @@
+#TODO not compiled or tested yet
+#TODO discover minimum dependencies from cmake log
+# build instructions: https://github.com/dolphin-emu/dolphin/wiki/Building-for-Linux
+[source]
+git = "https://github.com/dolphin-emu/dolphin"
+rev = "71e15c2875f36458c8f29ee160f01606967bcd13"
+shallow_clone = true
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DENABLE_LTO=ON",
+    "-DUSE_UPNP=OFF",
+    "-DENABLE_ALSA=OFF",
+    "-DENABLE_PULSEAUDIO=OFF",
+    "-DENABLE_CUBEB=OFF",
+    "-DENABLE_TESTS=OFF",
+    "-DENABLE_VULKAN=OFF",
+    "-DUSE_DISCORD_PRESENCE=OFF",
+    "-DUSE_MGBA=OFF",
+    "-DENABLE_AUTOUPDATE=OFF",
+    "-DUSE_RETRO_ACHIEVEMENTS=OFF",
+    "=DENABLE_ANALYTICS=OFF",
+    "-DENCODE_FRAMEDUMPS=OFF",
+    "-DENABLE_LLVM=OFF",
+]
+dependencies = [
+    #"ffmpeg6",
+    #"libevdev",
+    #"libusb",
+    #"pango",
+    #"cairo",
+    "qt6-base",
+    "qt6-svg",
+    #"mesa-x11",
+    #"curl",
+    #"libvulkan",
+    #"openal",
+]

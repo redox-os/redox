@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/tanciaku/tmmpr"
+shallow_clone = true
+[build]
+template = "cargo"

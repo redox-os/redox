@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/wowemulation-dev/rilua"
+shallow_clone = true
+[build]
+template = "cargo"

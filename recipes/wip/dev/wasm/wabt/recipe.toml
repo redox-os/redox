@@ -1,0 +1,9 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/WebAssembly/wabt#building-using-cmake-directly-linux-and-macos
+[source]
+tar = "https://github.com/WebAssembly/wabt/releases/download/1.0.39/wabt-1.0.39.tar.xz"
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DBUILD_TESTS=OFF",
+]

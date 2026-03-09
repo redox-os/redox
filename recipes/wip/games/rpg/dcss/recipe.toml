@@ -1,7 +1,6 @@
-#TODO missing script for "make", see https://github.com/crawl/crawl/blob/master/crawl-ref/INSTALL.md#compiling
-#TODO require DejaVu fonts
+#TODO missing script for gnu make: https://github.com/crawl/crawl/blob/master/crawl-ref/INSTALL.md#compiling
 [source]
-tar = "https://github.com/crawl/crawl/releases/download/0.30.0/stone_soup-0.30.0.tar.xz"
+tar = "https://github.com/crawl/crawl/releases/download/0.33.1/stone_soup-0.33.1.tar.xz"
 [build]
 template = "custom"
 dependencies = [
@@ -14,5 +13,7 @@ dependencies = [
     "libpng",
 ]
 script = """
-export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include/ncurses"
+DYNAMIC_INIT
 """
+[package]
+dependencies = ["dejavu"]

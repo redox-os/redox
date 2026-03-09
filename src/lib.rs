@@ -2,6 +2,7 @@ pub mod blake3;
 pub mod config;
 pub mod cook;
 pub mod recipe;
+pub mod web;
 
 mod progress_bar;
 

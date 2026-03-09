@@ -1,0 +1,17 @@
+#TODO not compiled or tested
+#TODO determine minimum dependencies from meson log
+[source]
+tar = "https://download.gnome.org/sources/gnome-connections/49/gnome-connections-49.0.tar.xz"
+[build]
+template = "meson"
+#dependencies = [
+#    "libsecret",
+#    "libhandy",
+#    "libxml2",
+#    "gtk-vnc",
+#    "freerdp",
+#    "cairo",
+#    "gtk3",
+#    "glib",
+#    "gdk-pixbuf",
+#]

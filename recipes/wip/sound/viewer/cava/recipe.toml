@@ -1,0 +1,15 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/karlstav/cava"
+rev = "0.10.7"
+shallow_clone = true
+script = """
+autotools_recursive_regenerate
+"""
+[build]
+template = "configure"
+dependencies = [
+    "ncursesw",
+    "fftw",
+    "iniparser",
+]

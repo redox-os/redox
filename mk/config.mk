@@ -11,6 +11,9 @@ ARCH?=$(HOST_ARCH)
 BOARD?=
 ## Enable to use binary prefix (much faster)
 PREFIX_BINARY?=1
+## Enable to use up-to-date rust compiler (experimental, only available to Tier 2 targets)
+## Even more experimental, add -Zbuild-std to cookbook.toml to allow compilation to Tier 3 targets
+PREFIX_USE_UPSTREAM_RUST_COMPILER?=0
 ## Enable to use binary packages (much faster)
 REPO_BINARY?=0
 ## Name of the configuration to include in the image name e.g. desktop or server
@@ -29,7 +32,11 @@ ifeq ($(ARCH),i686)
 endif
 ## Select filesystem config
 ifeq ($(BOARD),)
+ifeq ($(wildcard config/$(ARCH)/$(CONFIG_NAME).toml),)
+FILESYSTEM_CONFIG?=config/$(CONFIG_NAME).toml
+else
 FILESYSTEM_CONFIG?=config/$(ARCH)/$(CONFIG_NAME).toml
+endif
 else
 FILESYSTEM_CONFIG?=config/$(ARCH)/$(BOARD)/$(CONFIG_NAME).toml
 endif
@@ -51,23 +58,28 @@ SCCACHE_BUILD?=$(shell [ -f /run/.containerenv ] && echo 1 || echo 0)
 CONTAINERFILE?=podman/redox-base-containerfile
 
 # Per host variables
-export NPROC=nproc
+NPROC=nproc
+SED=sed
+FIND=find
+REPO_BIN=./target/release/repo
 
 ifneq ($(PODMAN_BUILD),1)
 FSTOOLS_IN_PODMAN=0
 HOST_TARGET := $(shell env -u RUSTUP_TOOLCHAIN rustc -vV | grep host | cut -d: -f2 | tr -d " ")
 # x86_64 linux hosts have all toolchains
-ifneq ($(HOST_TARGET),x86_64-unknown-linux-gnu)
-	ifeq ($(ARCH),aarch64)
-		# aarch64 linux hosts have aarch64 toolchain
-		ifneq ($(HOST_TARGET),aarch64-unknown-linux-gnu)
-            $(info The $(ARCH) binary prefix is only built for x86_64 and aarch64 Linux hosts)
-			PREFIX_BINARY=0
-		endif
-	else
+ifeq ($(PREFIX_BINARY),1)
+ifeq ($(HOST_TARGET),aarch64-unknown-linux-gnu)
+	ifneq ($(ARCH),aarch64)
+	ifneq ($(ARCH),x86_64)
         $(info The $(ARCH) binary prefix is only built for x86_64 Linux hosts)
 		PREFIX_BINARY=0
 	endif
+	endif
+else ifeq ($(HOST_TARGET),x86_64-unknown-linux-gnu)
+else
+    $(info The $(ARCH) binary prefix is only built for Linux hosts)
+	PREFIX_BINARY=0
+endif
 endif
 endif
 
@@ -98,13 +110,23 @@ endif
 UNAME := $(shell uname)
 ifeq ($(UNAME),Darwin)
 	FUMOUNT=umount
-	export NPROC=sysctl -n hw.ncpu
+	NPROC=sysctl -n hw.ncpu
+	SED=gsed
+	FIND=gfind
 	VB_AUDIO=coreaudio
 	VBM=/Applications/VirtualBox.app/Contents/MacOS/VBoxManage
 else ifeq ($(UNAME),FreeBSD)
+	FIND=gfind
 	FUMOUNT=sudo umount
 	VB_AUDIO=pulse # To check, will probably be OSS on most setups
 	VBM=VBoxManage
+else ifeq ($(UNAME),Redox)
+	PODMAN_BUILD=0
+# TODO: allow overriding to cross compiler toolchain when build server have one prebuilt
+	HOSTED_REDOX=1
+ifneq ($(shell which repo),)
+	REPO_BIN=repo
+endif
 else
 	# Detect which version of the fusermount binary is available.
 	ifneq (, $(shell which fusermount3))
@@ -120,6 +142,7 @@ endif
 # Automatic variables
 ROOT=$(CURDIR)
 export RUST_COMPILER_RT_ROOT=$(ROOT)/rust/src/llvm-project/compiler-rt
+export TESTBIN?=
 RUNNING_IN_PODMAN=$(shell [ -f /run/.containerenv ] && echo 1 || echo 0)
 ifeq ($(PODMAN_BUILD),1)
 ifeq ($(RUNNING_IN_PODMAN),1)
@@ -149,6 +172,8 @@ INSTALLER=$(FSTOOLS)/bin/redox_installer
 REDOXFS=$(FSTOOLS)/bin/redoxfs
 REDOXFS_MKFS=$(FSTOOLS)/bin/redoxfs-mkfs
 INSTALLER_OPTS=--cookbook=.
+INSTALLER_FEATURES=
+REDOXFS_FEATURES=
 COOKBOOK_OPTS="--filesystem=$(FILESYSTEM_CONFIG)"
 ifeq ($(REPO_BINARY),1)
 INSTALLER_OPTS+=--repo-binary
@@ -156,15 +181,21 @@ COOKBOOK_OPTS+=--repo-binary
 endif
 ifeq ($(FSTOOLS_NO_MOUNT),1)
 INSTALLER_OPTS+=--no-mount
+INSTALLER_FEATURES=--no-default-features --features installer
+REDOXFS_FEATURES= --no-default-features --features std,log
 endif
 
 REPO_TAG=$(BUILD)/repo.tag
 FSTOOLS_TAG=build/fstools.tag
-export BOARD
+export BOARD FIND
 
 ifeq ($(SCCACHE_BUILD),1)
 	export CC_WRAPPER:=sccache
 	export RUSTC_WRAPPER:=$(CC_WRAPPER)
+endif
+
+ifeq ($(HOSTED_REDOX),1)
+FSTOOLS_TAG=
 endif
 
 ## If Podman is being used, a container is required

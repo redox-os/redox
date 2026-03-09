@@ -1,5 +1,6 @@
 #TODO don't run
 [source]
 git = "https://github.com/richox/orz"
+shallow_clone = true
 [build]
 template = "cargo"

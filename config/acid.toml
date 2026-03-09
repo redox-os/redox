@@ -1,11 +1,11 @@
-# Configuration to run the "acid" tests
+# Configuration for "acid" testing
 
 include = ["base.toml"]
 
 # General settings
 [general]
 # Filesystem size in MiB
-filesystem_size = 256
+filesystem_size = 1024
 
 # Package settings
 [packages]
@@ -16,11 +16,16 @@ ion = {}
 [[files]]
 path = "/usr/lib/init.d/10_acid"
 data = """
-export RUST_BACKTRACE full
-acid
-acid create_test
-acid switch
-acid tls
-acid thread
+requires_weak 00_drivers
+ion /usr/lib/run_acid.ion
+"""
+
+[[files]]
+path = "/usr/lib/run_acid.ion"
+data = """
+#!/usr/bin/env ion
+export RUST_BACKTRACE=full
+cd /home/user/acid
+cargo test
 shutdown
 """

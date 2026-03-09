@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/icculus/physfs/blob/main/docs/INSTALL.txt
+[source]
+git = "https://github.com/icculus/physfs"
+branch = "stable-3.2"
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DPHYSFS_BUILD_DOCS=OFF",
+]

@@ -2,6 +2,19 @@
 # build instructions: https://gitlab.freedesktop.org/pipewire/pipewire/-/blob/master/INSTALL.md
 [source]
 git = "https://gitlab.freedesktop.org/pipewire/pipewire"
-rev = "4debdcd40b055b3eaa83a8f4443aa990ea566bfe"
+branch = "1.4"
+shallow_clone = true
 [build]
 template = "meson"
+mesonflags = [
+    "-Dtests=disabled",
+    "-Dpipewire-jack=disabled",
+    "-Dpipewire-v4l2=disabled",
+    "-Dspa-plugins=disabled",
+    "-Ddbus=disabled",
+    "-Dflatpak=disabled",
+]
+dependencies = [
+    "libpulse",
+    "sdl2",
+]

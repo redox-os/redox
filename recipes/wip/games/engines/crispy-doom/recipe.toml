@@ -1,0 +1,11 @@
+#TODO Not compiled/tested yet
+[source]
+git = "https://github.com/fabiangreffrath/crispy-doom"
+rev = "crispy-doom-7.1"
+[build]
+template = "configure"
+dependencies = [
+    "sdl2",
+    "sdl2-mixer",
+    "sdl2-net",
+]

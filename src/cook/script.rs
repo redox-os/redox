@@ -1,24 +1,11 @@
+// Scripts here is executed using "cookbook_redoxer env" where CC, RUSTFLAGS, etc. defined.
+// Look up redoxer env script if you want to see how they work.
+
 pub(crate) static SHARED_PRESCRIPT: &str = r#"
 # Build dynamically
 function DYNAMIC_INIT {
-    COOKBOOK_AUTORECONF="autoreconf"
-    autotools_recursive_regenerate() {
-        for f in $(find . -name configure.ac -o -name configure.in -type f | sort); do
-            echo "* autotools regen in '$(dirname $f)'..."
-            ( cd "$(dirname "$f")" && "${COOKBOOK_AUTORECONF}" -fvi "$@" -I${COOKBOOK_HOST_SYSROOT}/share/aclocal )
-        done
-    }
-
     case "${TARGET}" in
-        "x86_64-unknown-redox")
-            ;;
-        "aarch64-unknown-redox")
-            ;;
-        "x86_64-unknown-linux-gnu")
-            ;;
-        "aarch64-unknown-linux-gnu")
-            ;;
-        *)
+        "i586-unknown-redox" | "riscv64gc-unknown-redox")
             [ -z "${COOKBOOK_VERBOSE}" ] || echo "WARN: ${TARGET} does not support dynamic linking." >&2
             return
             ;;
@@ -42,15 +29,26 @@ function DYNAMIC_INIT {
     COOKBOOK_MESON_FLAGS=(
         --buildtype release
         --wrap-mode nofallback
-        --strip
         -Ddefault_library=shared
         -Dprefix=/usr
     )
 
     # TODO: check paths for spaces
-    export LDFLAGS="-Wl,-rpath-link,${COOKBOOK_SYSROOT}/lib -L${COOKBOOK_SYSROOT}/lib"
-    export RUSTFLAGS="-C target-feature=-crt-static"
+    export LDFLAGS="${USER_LDFLAGS}-Wl,-rpath-link,${COOKBOOK_SYSROOT}/lib -L${COOKBOOK_SYSROOT}/lib"
+    export RUSTFLAGS="-C target-feature=-crt-static -L native=${COOKBOOK_SYSROOT}/lib -C link-arg=-Wl,-rpath-link,${COOKBOOK_SYSROOT}/lib"
     export COOKBOOK_DYNAMIC=1
+
+    if [ function = $(type -t reexport_flags) ]; then
+        reexport_flags
+    fi
+}
+
+COOKBOOK_AUTORECONF="autoreconf"
+autotools_recursive_regenerate() {
+    for f in $(find . -name configure.ac -o -name configure.in -type f | sort); do
+        echo "* autotools regen in '$(dirname $f)'..."
+        ( cd "$(dirname "$f")" && "${COOKBOOK_AUTORECONF}" -fvi "$@" -I${COOKBOOK_HOST_SYSROOT}/share/aclocal )
+    done
 }
 
 # Build both dynamically and statically
@@ -74,7 +72,6 @@ function DYNAMIC_STATIC_INIT {
         COOKBOOK_MESON_FLAGS=(
             --buildtype release
             --wrap-mode nofallback
-            --strip
             -Ddefault_library=both
             -Dprefix=/usr
         )
@@ -102,12 +99,20 @@ export CARGO_TARGET_DIR="${COOKBOOK_BUILD}/target"
 
 # This adds the sysroot includes for most C compilation
 #TODO: check paths for spaces!
-export CFLAGS="-I${COOKBOOK_SYSROOT}/include"
-export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include"
+export CPPFLAGS="${CPPFLAGS:+$CPPFLAGS }-I${COOKBOOK_SYSROOT}/include"
 
 # This adds the sysroot libraries and compiles binaries statically for most C compilation
 #TODO: check paths for spaces!
-export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib --static"
+USER_LDFLAGS="${LDFLAGS:+$LDFLAGS }"
+export LDFLAGS="${USER_LDFLAGS}-L${COOKBOOK_SYSROOT}/lib --static"
+
+# This reexport C variables into custom build script that can be consumed by cc crate
+function reexport_flags {
+    target=${TARGET//-/_}
+    export CFLAGS_${target}="${CFLAGS:+$CFLAGS }${CPPFLAGS}"
+    export CXXFLAGS_${target}="${CXXFLAGS:+$CXXFLAGS }${CPPFLAGS}"
+    export LDFLAGS_${target}="${LDFLAGS}"
+}
 
 # These ensure that pkg-config gets the right flags from the sysroot
 if [ "${TARGET}" != "${COOKBOOK_HOST_TARGET}" ]
@@ -122,14 +127,13 @@ fi
 # to not strip symbols from the final package, add COOKBOOK_NOSTRIP=true to the recipe
 # (or to your environment) before calling cookbook_cargo or cookbook_cargo_packages
 build_type=release
-install_flags=
+install_flags=--no-track
 build_flags=--release
 if [ ! -z "${COOKBOOK_DEBUG}" ]
 then
-    install_flags=--debug
+    install_flags+=" --debug"
     build_flags=
     build_type=debug
-    export CFLAGS="${CFLAGS} -g"
     export CPPFLAGS="${CPPFLAGS} -g"
 fi
 
@@ -139,16 +143,36 @@ build_flags+=" --offline"
 install_flags+=" --offline"
 fi
 
-# cargo template
+reexport_flags
+
 COOKBOOK_CARGO="${COOKBOOK_REDOXER}"
+COOKBOOK_CARGO_FLAGS=(
+    --locked
+)
+# cargo template using cargo install
 function cookbook_cargo {
     "${COOKBOOK_CARGO}" install \
-        --path "${COOKBOOK_SOURCE}/${PACKAGE_PATH}" \
+        --path "${COOKBOOK_SOURCE}${COOKBOOK_CARGO_PATH:+/$COOKBOOK_CARGO_PATH}" \
         --root "${COOKBOOK_STAGE}/usr" \
-        --locked \
-        --no-track \
-        ${install_flags} \
-         -j "${COOKBOOK_MAKE_JOBS}" "$@"
+        -j "${COOKBOOK_MAKE_JOBS}" ${install_flags} \
+        ${COOKBOOK_CARGO_FLAGS[@]} "$@"
+}
+
+# cargo template using cargo build (prefixed name)
+function cookbook_cargo_build {
+    recipe="${recipe:-$(basename "${COOKBOOK_RECIPE}")}"
+    bin_dir="${bin_dir:-.}"
+    bin_flags="${bin_flags:-}"
+    bin_name="${bin_name:-$(basename "${COOKBOOK_CARGO_PATH}")}"
+    bin_final_name="${bin_final_name:-${recipe}_${bin_name//_/-}}"
+    mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
+    "${COOKBOOK_CARGO}" build \
+        --manifest-path "${COOKBOOK_SOURCE}${COOKBOOK_CARGO_PATH:+/$COOKBOOK_CARGO_PATH}/Cargo.toml" \
+        ${bin_flags} ${build_flags} -j "${COOKBOOK_MAKE_JOBS}" ${COOKBOOK_CARGO_FLAGS[@]}
+    cp -v \
+        "target/${TARGET}/${build_type}/${bin_dir}/${bin_name}" \
+        "${COOKBOOK_STAGE}/usr/bin/${bin_final_name}"
+    unset bin_name bin_flags bin_dir bin_final_name
 }
 
 # helper for installing binaries that are cargo examples
@@ -156,30 +180,17 @@ function cookbook_cargo_examples {
     recipe="$(basename "${COOKBOOK_RECIPE}")"
     for example in "$@"
     do
-        "${COOKBOOK_CARGO}" build \
-            --manifest-path "${COOKBOOK_SOURCE}/${PACKAGE_PATH}/Cargo.toml" \
-            --example "${example}" \
-            ${build_flags} -j "${COOKBOOK_MAKE_JOBS}"
-        mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
-        cp -v \
-            "target/${TARGET}/${build_type}/examples/${example}" \
-            "${COOKBOOK_STAGE}/usr/bin/${recipe}_${example}"
+        bin_dir="examples" bin_name="${example}" bin_flags="--example ${example}" cookbook_cargo_build
     done
 }
 
 # helper for installing binaries that are cargo packages
 function cookbook_cargo_packages {
     recipe="$(basename "${COOKBOOK_RECIPE}")"
+    mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
     for package in "$@"
     do
-        "${COOKBOOK_CARGO}" build \
-            --manifest-path "${COOKBOOK_SOURCE}/${PACKAGE_PATH}/Cargo.toml" \
-            --package "${package}" \
-            ${build_flags} -j "${COOKBOOK_MAKE_JOBS}"
-        mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
-        cp -v \
-            "target/${TARGET}/${build_type}/${package}" \
-            "${COOKBOOK_STAGE}/usr/bin/${recipe}_${package}"
+        bin_name="${package}" bin_flags="--package ${package}" bin_final_name="${package//_/-}" cookbook_cargo_build
     done
 }
 
@@ -206,33 +217,53 @@ COOKBOOK_CMAKE_FLAGS=(
     -DENABLE_SHARED=False
     -DENABLE_STATIC=True
 )
-function cookbook_cmake {
-if [ "$(echo "${TARGET}" | cut -d - -f3)" = "linux" ]; then
-    SYSTEM_NAME="Linux"
-else
-    SYSTEM_NAME="UnixPaths"
-fi
-    cat > cross_file.cmake <<EOF
-set(CMAKE_AR ${GNU_TARGET}-ar)
-set(CMAKE_CXX_COMPILER ${GNU_TARGET}-g++)
-set(CMAKE_C_COMPILER ${GNU_TARGET}-gcc)
-set(CMAKE_FIND_ROOT_PATH ${COOKBOOK_SYSROOT})
+
+function generate_cookbook_cmake_file {
+    target=$1
+    gcc_prefix=$2
+    sysroot=$3
+    file=$4
+    arch=$(echo "$target" | cut -d - -f1)
+    os=$(echo "$target" | cut -d - -f3)
+
+    if [ "$os" = "linux" ]; then
+        SYSTEM_NAME="Linux"
+    else
+        SYSTEM_NAME="UnixPaths"
+    fi
+
+    cat > $file <<EOF
+set(CMAKE_AR ${gcc_prefix}ar)
+set(CMAKE_CXX_COMPILER ${gcc_prefix}g++)
+set(CMAKE_C_COMPILER ${gcc_prefix}gcc)
+set(CMAKE_FIND_ROOT_PATH ${sysroot})
 set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
 set(CMAKE_PLATFORM_USES_PATH_WHEN_NO_SONAME 1)
-set(CMAKE_PREFIX_PATH, ${COOKBOOK_SYSROOT})
-set(CMAKE_RANLIB ${GNU_TARGET}-ranlib)
+set(CMAKE_PREFIX_PATH, ${sysroot})
+set(CMAKE_RANLIB ${gcc_prefix}ranlib)
 set(CMAKE_SHARED_LIBRARY_SONAME_C_FLAG "-Wl,-soname,")
 set(CMAKE_SYSTEM_NAME ${SYSTEM_NAME})
-set(CMAKE_SYSTEM_PROCESSOR $(echo "${TARGET}" | cut -d - -f1))
+set(CMAKE_SYSTEM_PROCESSOR ${arch})
 EOF
+
+    if [ "$target" = "$TARGET" ]
+    then
+        echo "set(CMAKE_C_FLAGS \"${CFLAGS} ${CPPFLAGS}\")" >> $file
+        echo "set(CMAKE_CXX_FLAGS \"${CFLAGS} ${CPPFLAGS}\")" >> $file
+    fi
 
     if [ -n "${CC_WRAPPER}" ]
     then
-        echo "set(CMAKE_C_COMPILER_LAUNCHER ${CC_WRAPPER})" >> cross_file.cmake
-        echo "set(CMAKE_CXX_COMPILER_LAUNCHER ${CC_WRAPPER})" >> cross_file.cmake
+        echo "set(CMAKE_C_COMPILER_LAUNCHER ${CC_WRAPPER})" >> $file
+        echo "set(CMAKE_CXX_COMPILER_LAUNCHER ${CC_WRAPPER})" >> $file
     fi
+}
+
+function cookbook_cmake {
+
+    generate_cookbook_cmake_file $TARGET $GNU_TARGET- "$COOKBOOK_SYSROOT" cross_file.cmake
 
     "${COOKBOOK_CMAKE}" "${COOKBOOK_SOURCE}" \
         -DCMAKE_BUILD_TYPE=Release \
@@ -256,11 +287,23 @@ COOKBOOK_MESON="meson"
 COOKBOOK_MESON_FLAGS=(
     --buildtype release
     --wrap-mode nofallback
-    --strip
     -Ddefault_library=static
     -Dprefix=/usr
 )
 function cookbook_meson {
+    # TODO: do this in rust, to handle path spaces as well
+    function format_flags {
+        local flags=($1)
+        local formatted=""
+        for i in "${!flags[@]}"; do
+            formatted+="'${flags[$i]}'"
+            if [ $i -lt $((${#flags[@]} - 1)) ]; then
+                formatted+=", "
+            fi
+        done
+        echo "$formatted"
+    }
+
     echo "[binaries]" > cross_file.txt
     echo "c = [$(printf "'%s', " $CC | sed 's/, $//')]"  >> cross_file.txt
     echo "cpp = [$(printf "'%s', " $CXX | sed 's/, $//')]" >> cross_file.txt
@@ -277,30 +320,19 @@ function cookbook_meson {
     echo "cpu = '$(echo "${TARGET}" | cut -d - -f1)'" >> cross_file.txt
     echo "endian = 'little'" >> cross_file.txt
 
-    echo "[paths]" >> cross_file.txt
+    echo "[built-in options]" >> cross_file.txt
     echo "prefix = '/usr'" >> cross_file.txt
     echo "libdir = 'lib'" >> cross_file.txt
     echo "bindir = 'bin'" >> cross_file.txt
+    echo "c_args = [$(format_flags "$CFLAGS $CPPFLAGS")]" >> cross_file.txt
+    echo "cpp_args = [$(format_flags "$CXXFLAGS $CPPFLAGS")]" >> cross_file.txt
+    echo "c_link_args = [$(format_flags "$LDFLAGS")]" >> cross_file.txt
 
     echo "[properties]" >> cross_file.txt
     echo "needs_exe_wrapper = true" >> cross_file.txt
     echo "sys_root = '${COOKBOOK_SYSROOT}'" >> cross_file.txt
-    echo "c_args = [$(printf "'%s', " $CFLAGS | sed 's/, $//')]" >> cross_file.txt
-    echo "cpp_args = [$(printf "'%s', " $CPPFLAGS | sed 's/, $//')]" >> cross_file.txt
-    echo "c_link_args = [$(printf "'%s', " $LDFLAGS | sed 's/, $//')]" >> cross_file.txt
 
-    unset AR
-    unset AS
-    unset CC
-    unset CXX
-    unset LD
-    unset NM
-    unset OBJCOPY
-    unset OBJDUMP
-    unset PKG_CONFIG
-    unset RANLIB
-    unset READELF
-    unset STRIP
+    unset AR AS CC CXX LD NM OBJCOPY OBJDUMP PKG_CONFIG RANLIB READELF STRIP
 
     "${COOKBOOK_MESON}" setup \
         "${COOKBOOK_SOURCE}" \
@@ -315,7 +347,7 @@ function cookbook_meson {
 
 pub(crate) static BUILD_POSTSCRIPT: &str = r#"
 # Strip binaries
-for dir in "${COOKBOOK_STAGE}/bin" "${COOKBOOK_STAGE}/usr/bin"
+for dir in "${COOKBOOK_STAGE}/bin" "${COOKBOOK_STAGE}/usr/bin" "${COOKBOOK_STAGE}/libexec" "${COOKBOOK_STAGE}/usr/libexec"
 do
     if [ -d "${dir}" ] && [ -z "${COOKBOOK_NOSTRIP}" ]
     then

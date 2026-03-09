@@ -1,0 +1,19 @@
+[source]
+tar = "https://downloads.xiph.org/releases/opus/opusfile-0.12.tar.gz"
+blake3 = "1b6a5c371a0ea2ae8e37ab2e921388dfef9252dbf7f60045192dabbdd898f2bf"
+script = """
+autotools_recursive_regenerate
+"""
+
+[build]
+template = "configure"
+dependencies = [
+    "openssl3",
+    "libogg",
+    "libopus",
+]
+
+[package]
+dependencies = [
+    "ca-certificates"
+]

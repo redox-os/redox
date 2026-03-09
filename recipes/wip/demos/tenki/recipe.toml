@@ -1,5 +1,6 @@
 #TODO compiled but not tested
 [source]
 git = "https://github.com/ckaznable/tenki"
+shallow_clone = true
 [build]
 template = "cargo"

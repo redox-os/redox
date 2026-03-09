@@ -1,0 +1,14 @@
+#TODO not compiled or tested
+[source]
+tar = "https://github.com/nmeum/android-tools/releases/download/35.0.2/android-tools-35.0.2.tar.xz"
+[build]
+template = "cmake"
+dependencies = [
+    "libusb",
+    "pcre",
+    "protobuf",
+    "libbrotli",
+    "zstd",
+    "lz4",
+]
+dev-dependencies = ["host:go"]

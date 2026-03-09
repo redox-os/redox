@@ -2,9 +2,14 @@
 #TODO discover minimum dependencies from cmake log
 # build instructions: https://github.com/obsproject/obs-studio/wiki/Building-OBS-Studio
 [source]
-tar = "https://github.com/obsproject/obs-studio/releases/download/32.0.2/OBS-Studio-32.0.2-Sources.tar.gz"
+tar = "https://github.com/obsproject/obs-studio/releases/download/32.0.4/OBS-Studio-32.0.4-Sources.tar.gz"
 [build]
 template = "cmake"
+cmakeflags = [
+    "-DENABLE_UI=OFF",
+    "-DENABLE_SCRIPTING=OFF",
+    "-DENABLE_HEVC=OFF",
+]
 # dependencies = [
 #     "boost",
 #     "librsvg",

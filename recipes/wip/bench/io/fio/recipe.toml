@@ -1,0 +1,7 @@
+#TODO configuration problem
+[source]
+git = "https://github.com/axboe/fio"
+rev = "fio-3.41"
+shallow_clone = true
+[build]
+template = "configure"

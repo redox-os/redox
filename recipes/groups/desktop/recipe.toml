@@ -1,0 +1,21 @@
+# desktop variant meta-package
+[package]
+dependencies = [
+    "server",
+    "cosmic-edit",
+    "cosmic-files",
+    "cosmic-icons",
+    "cosmic-term",
+    "dejavu",
+    "freefont",
+    "hicolor-icon-theme",
+    "installer-gui",
+    "netsurf",
+    "orbdata",
+    "orbital",
+    "orbutils",
+    "patchelf",
+    "pop-icon-theme",
+    "rustpython",
+    "shared-mime-info",
+]

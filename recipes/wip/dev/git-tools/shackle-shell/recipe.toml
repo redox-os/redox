@@ -1,0 +1,5 @@
+#TODO not compiled or tested
+[source]
+git = "https://codeberg.org/worthe-it/shackle-shell"
+[build]
+template = "cargo"

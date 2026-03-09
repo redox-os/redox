@@ -1,4 +1,4 @@
-#TODO page fault
+#TODO node is working but ld.so crashing with npm
 [source]
 tar = "https://nodejs.org/dist/v21.7.3/node-v21.7.3.tar.xz"
 blake3 = "95a56db4f9729b2f8384ab58ccb2ec0c41da05991f7400ef97bd76748d77870b"
@@ -58,10 +58,7 @@ COOKBOOK_CONFIGURE_FLAGS=(
   --shared-nghttp3
   --shared-openssl
   --shared-zlib
-  --disable-shared-readonly-heap
-  --without-node-snapshot
-  --without-node-code-cache
-  --v8-lite-mode
+  --without-inspector
 # TODO: Find a way to separate host and target flags instead?
 # --shared-zlib-includes="${COOKBOOK_TOOLCHAIN}/include"
   --shared-openssl-includes="${COOKBOOK_SYSROOT}/include"

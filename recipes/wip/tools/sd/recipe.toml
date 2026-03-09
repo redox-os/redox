@@ -1,5 +1,0 @@
-#TODO relibc function not implemented
-[source]
-git = "https://github.com/chmln/sd.git"
-[build]
-template = "cargo"

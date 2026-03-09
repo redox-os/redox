@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO not tested
 # how to setup: https://webmin.com/download/#freebsd-and-any-other-linux-installation-from-source
 [source]
 tar = "https://github.com/webmin/webmin/releases/download/2.600/webmin-2.600-minimal.tar.gz"
@@ -8,3 +8,5 @@ script = """
 mkdir -pv "${COOKBOOK_STAGE}/home/user/webmin"
 cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}/home/user/webmin"
 """
+[package]
+dependencies = ["perl5"]

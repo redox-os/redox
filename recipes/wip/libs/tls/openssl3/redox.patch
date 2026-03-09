@@ -36,7 +36,7 @@ diff -ruwN source/Configurations/10-main.conf source-new/Configurations/10-main.
 +        inherit_from     => [ "redox-generic64" ],
 +        perlasm_scheme   => "linux64",
 +    },
-+    "redox-i686" => {
++    "redox-i586" => {
 +        inherit_from     => [ "redox-common" ],
 +        bn_ops           => "BN_LLONG",
 +        perlasm_scheme   => "elf",

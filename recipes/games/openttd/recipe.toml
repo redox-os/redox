@@ -1,6 +1,7 @@
 [source]
 git = "https://github.com/OpenTTD/OpenTTD.git"
-branch = "release/1.8"
+#TODO: fix issues with this: branch = "release/1.8"
+rev = "231402fb4bea0a0d6a16cef90764d9e7aa699c53"
 shallow_clone = true
 patches = ["redox.patch"]
 

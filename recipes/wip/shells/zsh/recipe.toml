@@ -1,4 +1,4 @@
-#TODO: Buggy, can't return after running commands
+#TODO: spammy getrusage() warning, or need times() support
 [source]
 tar = "https://github.com/zsh-users/zsh/archive/refs/tags/zsh-5.9.tar.gz"
 blake3 = "a15b94fae03e87aba6fc6a27df3c98e610b85b0c7c0fc90248f07fdcb8816860"

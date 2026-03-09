@@ -1,9 +1,11 @@
-#TODO missing script for "make", see https://github.com/zerotier/ZeroTierOne#build-and-platform-notes
+#TODO missing script for gnu make: https://github.com/zerotier/ZeroTierOne/blob/dev/build.md
+#TODO discover minimum dependencies
 [source]
 git = "https://github.com/zerotier/ZeroTierOne"
-rev = "327eb9013b39809835a912c9117a0b9669f4661f"
+rev = "1.16.0"
+shallow_clone = true
 [build]
 template = "custom"
-dependencies = [
-    "openssl1",
-]
+#dependencies = [
+#    "openssl3",
+#]

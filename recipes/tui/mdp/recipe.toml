@@ -12,8 +12,8 @@ rsync -av --delete --exclude='.git' "${COOKBOOK_SOURCE}/" ./
 
 export CFLAGS="${CFLAGS} -I${COOKBOOK_SYSROOT}/include/ncursesw"
 
-"${COOKBOOK_MAKE}" -j"$(${NPROC})"
+"${COOKBOOK_MAKE}" -j"${COOKBOOK_MAKE_JOBS}"
 
 # Install
-"${REDOX_MAKE}" DESTDIR="${COOKBOOK_STAGE}" PREFIX="" install
+"${COOKBOOK_MAKE}" DESTDIR="${COOKBOOK_STAGE}" PREFIX="" install
 """

@@ -1,0 +1,707 @@
+diff --git a/Cargo.lock b/Cargo.lock
+index 96aeafeae..01486a61d 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -180,14 +180,11 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "df099ccb16cd014ff054ac1bf392c67feeef57164b05c42f037cd40f5d4357f4"
+ dependencies = [
+  "clipboard-win",
+- "core-graphics",
+- "image",
+  "log",
+- "objc2 0.5.2",
++ "objc2",
+  "objc2-app-kit",
+  "objc2-foundation",
+  "parking_lot",
+- "windows-sys 0.48.0",
+  "wl-clipboard-rs",
+  "x11rb",
+ ]
+@@ -884,16 +881,7 @@ version = "0.5.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "2c132eebf10f5cad5289222520a4a058514204aed6d791f1cf4fe8088b82d15f"
+ dependencies = [
+- "objc2 0.5.2",
+-]
+-
+-[[package]]
+-name = "block2"
+-version = "0.6.2"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "cdeb9d870516001442e364c5220d3574d2da8dc765554b4a617230d33fa58ef5"
+-dependencies = [
+- "objc2 0.6.3",
++ "objc2",
+ ]
+ 
+ [[package]]
+@@ -987,12 +975,6 @@ version = "1.5.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "1fd0f2584146f6f2ef48085050886acf353beff7305ebd1ae69500e27c67f64b"
+ 
+-[[package]]
+-name = "byteorder-lite"
+-version = "0.1.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "8f1fe948ff07f4bd06c30984e69f5b4899c516a3ef74f34df92a2df2ab535495"
+-
+ [[package]]
+ name = "bytes"
+ version = "1.11.1"
+@@ -1438,30 +1420,6 @@ version = "0.8.7"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "773648b94d0e5d620f64f280777445740e61fe701025087ec8b57f45c791888b"
+ 
+-[[package]]
+-name = "core-graphics"
+-version = "0.23.2"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "c07782be35f9e1140080c6b96f0d44b739e2278479f64e02fdab4e32dfd8b081"
+-dependencies = [
+- "bitflags 1.3.2",
+- "core-foundation 0.9.4",
+- "core-graphics-types",
+- "foreign-types 0.5.0",
+- "libc",
+-]
+-
+-[[package]]
+-name = "core-graphics-types"
+-version = "0.1.3"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "45390e6114f68f718cc7a830514a96f903cccd70d02a8f6d9f643ac4ba45afaf"
+-dependencies = [
+- "bitflags 1.3.2",
+- "core-foundation 0.9.4",
+- "libc",
+-]
+-
+ [[package]]
+ name = "cpufeatures"
+ version = "0.2.17"
+@@ -1639,17 +1597,6 @@ dependencies = [
+  "memchr",
+ ]
+ 
+-[[package]]
+-name = "ctrlc"
+-version = "3.5.1"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "73736a89c4aff73035ba2ed2e565061954da00d4970fc9ac25dcc85a2a20d790"
+-dependencies = [
+- "dispatch2",
+- "nix 0.30.1",
+- "windows-sys 0.61.0",
+-]
+-
+ [[package]]
+ name = "curl"
+ version = "0.4.47"
+@@ -1881,18 +1828,6 @@ dependencies = [
+  "windows-sys 0.61.0",
+ ]
+ 
+-[[package]]
+-name = "dispatch2"
+-version = "0.3.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "89a09f22a6c6069a18470eb92d2298acf25463f14256d24778e1230d789a2aec"
+-dependencies = [
+- "bitflags 2.10.0",
+- "block2 0.6.2",
+- "libc",
+- "objc2 0.6.3",
+-]
+-
+ [[package]]
+ name = "displaydoc"
+ version = "0.2.5"
+@@ -2016,7 +1951,6 @@ version = "0.11.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "e49905ece098e793ca21a019598e9efc9a66459ad1d76bd7619e771a42dae2fc"
+ dependencies = [
+- "arboard",
+  "crossterm 0.29.0",
+  "edit",
+  "edtui-jagged",
+@@ -2228,26 +2162,6 @@ version = "2.3.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "37909eebbb50d72f9059c3b6d82c0463f2ff062c9e95845c43a6c9c0355411be"
+ 
+-[[package]]
+-name = "fax"
+-version = "0.2.6"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "f05de7d48f37cd6730705cbca900770cab77a89f413d23e100ad7fad7795a0ab"
+-dependencies = [
+- "fax_derive",
+-]
+-
+-[[package]]
+-name = "fax_derive"
+-version = "0.2.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "a0aca10fb742cb43f9e7bb8467c91aa9bcb8e3ffbc6a6f7389bb93ffc920577d"
+-dependencies = [
+- "proc-macro2",
+- "quote",
+- "syn 2.0.114",
+-]
+-
+ [[package]]
+ name = "fd-lock"
+ version = "4.0.2"
+@@ -2259,15 +2173,6 @@ dependencies = [
+  "windows-sys 0.52.0",
+ ]
+ 
+-[[package]]
+-name = "fdeflate"
+-version = "0.3.7"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "1e6853b52649d4ac5c0bd02320cddc5ba956bdb407c4b75a2c6b75bf51500f8c"
+-dependencies = [
+- "simd-adler32",
+-]
+-
+ [[package]]
+ name = "file-id"
+ version = "0.2.2"
+@@ -2408,28 +2313,7 @@ version = "0.3.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "f6f339eb8adc052cd2ca78910fda869aefa38d22d5cb648e6485e4d3fc06f3b1"
+ dependencies = [
+- "foreign-types-shared 0.1.1",
+-]
+-
+-[[package]]
+-name = "foreign-types"
+-version = "0.5.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "d737d9aa519fb7b749cbc3b962edcf310a8dd1f4b67c91c4f83975dbdd17d965"
+-dependencies = [
+- "foreign-types-macros",
+- "foreign-types-shared 0.3.1",
+-]
+-
+-[[package]]
+-name = "foreign-types-macros"
+-version = "0.2.3"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "1a5c6c585bc94aaf2c7b51dd4c2ba22680844aba4c687be581871a6f518c5742"
+-dependencies = [
+- "proc-macro2",
+- "quote",
+- "syn 2.0.114",
++ "foreign-types-shared",
+ ]
+ 
+ [[package]]
+@@ -2438,12 +2322,6 @@ version = "0.1.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "00b0228411908ca8685dba7fc2cdd70ec9990a6e753e89b6ac91a84c40fbaf4b"
+ 
+-[[package]]
+-name = "foreign-types-shared"
+-version = "0.3.1"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "aa9a19cbb55df58761df49b23516a86d432839add4af60fc256da840f66ed35b"
+-
+ [[package]]
+ name = "form_urlencoded"
+ version = "1.2.2"
+@@ -2711,17 +2589,6 @@ dependencies = [
+  "tracing",
+ ]
+ 
+-[[package]]
+-name = "half"
+-version = "2.7.1"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "6ea2d84b969582b4b1864a92dc5d27cd2b77b622a8d79306834f1be5ba20d84b"
+-dependencies = [
+- "cfg-if",
+- "crunchy",
+- "zerocopy 0.8.34",
+-]
+-
+ [[package]]
+ name = "halfbrown"
+ version = "0.4.0"
+@@ -3154,20 +3021,6 @@ dependencies = [
+  "icu_properties",
+ ]
+ 
+-[[package]]
+-name = "image"
+-version = "0.25.9"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "e6506c6c10786659413faa717ceebcb8f70731c0a60cbae39795fdf114519c1a"
+-dependencies = [
+- "bytemuck",
+- "byteorder-lite",
+- "moxcms",
+- "num-traits",
+- "png",
+- "tiff",
+-]
+-
+ [[package]]
+ name = "indexmap"
+ version = "2.13.0"
+@@ -3932,7 +3785,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "1fa76a2c86f704bdb222d66965fb3d63269ce38518b83cb0575fca855ebb6316"
+ dependencies = [
+  "adler2",
+- "simd-adler32",
+ ]
+ 
+ [[package]]
+@@ -3982,16 +3834,6 @@ dependencies = [
+  "tokio",
+ ]
+ 
+-[[package]]
+-name = "moxcms"
+-version = "0.7.11"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "ac9557c559cd6fc9867e122e20d2cbefc9ca29d80d027a8e39310920ed2f0a97"
+-dependencies = [
+- "num-traits",
+- "pxfm",
+-]
+-
+ [[package]]
+ name = "multipart-rs"
+ version = "0.1.13"
+@@ -4119,7 +3961,6 @@ version = "0.110.1"
+ dependencies = [
+  "assert_cmd",
+  "crossterm 0.29.0",
+- "ctrlc",
+  "dirs",
+  "fancy-regex",
+  "lexopt",
+@@ -5043,15 +4884,6 @@ dependencies = [
+  "objc2-encode",
+ ]
+ 
+-[[package]]
+-name = "objc2"
+-version = "0.6.3"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "b7c2599ce0ec54857b29ce62166b0ed9b4f6f1a70ccc9a71165b6154caca8c05"
+-dependencies = [
+- "objc2-encode",
+-]
+-
+ [[package]]
+ name = "objc2-app-kit"
+ version = "0.2.2"
+@@ -5059,9 +4891,9 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "e4e89ad9e3d7d297152b17d39ed92cd50ca8063a89a9fa569046d41568891eff"
+ dependencies = [
+  "bitflags 2.10.0",
+- "block2 0.5.1",
++ "block2",
+  "libc",
+- "objc2 0.5.2",
++ "objc2",
+  "objc2-core-data",
+  "objc2-core-image",
+  "objc2-foundation",
+@@ -5075,8 +4907,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "617fbf49e071c178c0b24c080767db52958f716d9eabdf0890523aeae54773ef"
+ dependencies = [
+  "bitflags 2.10.0",
+- "block2 0.5.1",
+- "objc2 0.5.2",
++ "block2",
++ "objc2",
+  "objc2-foundation",
+ ]
+ 
+@@ -5095,8 +4927,8 @@ version = "0.2.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "55260963a527c99f1819c4f8e3b47fe04f9650694ef348ffd2227e8196d34c80"
+ dependencies = [
+- "block2 0.5.1",
+- "objc2 0.5.2",
++ "block2",
++ "objc2",
+  "objc2-foundation",
+  "objc2-metal",
+ ]
+@@ -5114,9 +4946,9 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "0ee638a5da3799329310ad4cfa62fbf045d5f56e3ef5ba4149e7452dcf89d5a8"
+ dependencies = [
+  "bitflags 2.10.0",
+- "block2 0.5.1",
++ "block2",
+  "libc",
+- "objc2 0.5.2",
++ "objc2",
+ ]
+ 
+ [[package]]
+@@ -5136,8 +4968,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "dd0cba1276f6023976a406a14ffa85e1fdd19df6b0f737b063b95f6c8c7aadd6"
+ dependencies = [
+  "bitflags 2.10.0",
+- "block2 0.5.1",
+- "objc2 0.5.2",
++ "block2",
++ "objc2",
+  "objc2-foundation",
+ ]
+ 
+@@ -5148,8 +4980,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "e42bee7bff906b14b167da2bac5efe6b6a07e6f7c0a21a7308d40c960242dc7a"
+ dependencies = [
+  "bitflags 2.10.0",
+- "block2 0.5.1",
+- "objc2 0.5.2",
++ "block2",
++ "objc2",
+  "objc2-foundation",
+  "objc2-metal",
+ ]
+@@ -5241,7 +5073,7 @@ checksum = "fedfea7d58a1f73118430a55da6a286e7b044961736ce96a16a17068ea25e5da"
+ dependencies = [
+  "bitflags 2.10.0",
+  "cfg-if",
+- "foreign-types 0.3.2",
++ "foreign-types",
+  "libc",
+  "once_cell",
+  "openssl-macros",
+@@ -5638,19 +5470,6 @@ dependencies = [
+  "time",
+ ]
+ 
+-[[package]]
+-name = "png"
+-version = "0.18.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "97baced388464909d42d89643fe4361939af9b7ce7a31ee32a168f832a70f2a0"
+-dependencies = [
+- "bitflags 2.10.0",
+- "crc32fast",
+- "fdeflate",
+- "flate2",
+- "miniz_oxide",
+-]
+-
+ [[package]]
+ name = "polars"
+ version = "0.52.0"
+@@ -6392,27 +6211,12 @@ dependencies = [
+  "thiserror 1.0.69",
+ ]
+ 
+-[[package]]
+-name = "pxfm"
+-version = "0.1.27"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "7186d3822593aa4393561d186d1393b3923e9d6163d3fbfd6e825e3e6cf3e6a8"
+-dependencies = [
+- "num-traits",
+-]
+-
+ [[package]]
+ name = "quick-error"
+ version = "1.2.3"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "a1d01941d82fa2ab50be1e79e6714289dd7cde78eba4c074bc5a4374f650dfe0"
+ 
+-[[package]]
+-name = "quick-error"
+-version = "2.0.1"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "a993555f31e5a609f617c12db6250dedcac1b0a85076912c436e6fc9b2c8e6a3"
+-
+ [[package]]
+ name = "quick-xml"
+ version = "0.36.2"
+@@ -7948,7 +7752,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "36e39da5d30887b5690e29de4c5ebb8ddff64ebd9933f98a01daaa4fd11b36ea"
+ dependencies = [
+  "peresil",
+- "quick-error 1.2.3",
++ "quick-error",
+  "sxd-document",
+ ]
+ 
+@@ -8169,20 +7973,6 @@ dependencies = [
+  "once_cell",
+ ]
+ 
+-[[package]]
+-name = "tiff"
+-version = "0.10.3"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "af9605de7fee8d9551863fd692cce7637f548dbd9db9180fcc07ccc6d26c336f"
+-dependencies = [
+- "fax",
+- "flate2",
+- "half",
+- "quick-error 2.0.1",
+- "weezl",
+- "zune-jpeg",
+-]
+-
+ [[package]]
+ name = "time"
+ version = "0.3.47"
+@@ -8510,7 +8300,7 @@ dependencies = [
+  "chrono",
+  "libc",
+  "log",
+- "objc2 0.5.2",
++ "objc2",
+  "objc2-foundation",
+  "once_cell",
+  "percent-encoding",
+@@ -9353,12 +9143,6 @@ dependencies = [
+  "rustls-pki-types",
+ ]
+ 
+-[[package]]
+-name = "weezl"
+-version = "0.1.12"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "a28ac98ddc8b9274cb41bb4d9d4d5c425b6020c50c46f25559911905610b4a88"
+-
+ [[package]]
+ name = "which"
+ version = "4.4.2"
+@@ -10242,18 +10026,3 @@ dependencies = [
+  "cc",
+  "pkg-config",
+ ]
+-
+-[[package]]
+-name = "zune-core"
+-version = "0.4.12"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "3f423a2c17029964870cfaabb1f13dfab7d092a62a29a89264f4d36990ca414a"
+-
+-[[package]]
+-name = "zune-jpeg"
+-version = "0.4.21"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "29ce2c8a9384ad323cf564b67da86e21d3cfdff87908bc1223ed5c99bc792713"
+-dependencies = [
+- "zune-core",
+-]
+diff --git a/Cargo.toml b/Cargo.toml
+index 1ec173b6d..4c9293791 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -89,7 +89,6 @@ chrono-tz = "0.10"
+ crossbeam-channel = "0.5.15"
+ crossterm = "0.29.0"
+ csv = "1.4"
+-ctrlc = "3.5"
+ devicons = "0.6.12"
+ dialoguer = { default-features = false, version = "0.12" }
+ digest = { default-features = false, version = "0.10" }
+@@ -248,7 +247,6 @@ nu-mcp = { path = "./crates/nu-mcp", version = "0.110.1", optional = true }
+ reedline = { workspace = true, features = ["bashisms"] }
+ 
+ crossterm = { workspace = true }
+-ctrlc = { workspace = true }
+ dirs = { workspace = true }
+ log = { workspace = true }
+ lexopt = { workspace = true }
+diff --git a/crates/nu-command/src/default_context.rs b/crates/nu-command/src/default_context.rs
+index fcc7fa3f9..a80237429 100644
+--- a/crates/nu-command/src/default_context.rs
++++ b/crates/nu-command/src/default_context.rs
+@@ -271,9 +271,6 @@ pub fn add_shell_command_context(mut engine_state: EngineState) -> EngineState {
+             Whoami,
+         };
+ 
+-        #[cfg(all(unix, feature = "os"))]
+-        bind_command! { ULimit };
+-
+         #[cfg(all(unix, feature = "os"))]
+         bind_command! { UMask };
+ 
+diff --git a/crates/nu-command/src/filesystem/ls.rs b/crates/nu-command/src/filesystem/ls.rs
+index 554ec0fd9..7aae4bdc3 100644
+--- a/crates/nu-command/src/filesystem/ls.rs
++++ b/crates/nu-command/src/filesystem/ls.rs
+@@ -773,20 +773,12 @@ pub(crate) fn dir_entry_dict(
+ 
+             record.push(
+                 "user",
+-                if let Some(user) = users::get_user_by_uid(md.uid().into()) {
+-                    Value::string(user.name, span)
+-                } else {
+-                    Value::int(md.uid().into(), span)
+-                },
++                Value::int(md.uid().into(), span)
+             );
+ 
+             record.push(
+                 "group",
+-                if let Some(group) = users::get_group_by_gid(md.gid().into()) {
+-                    Value::string(group.name, span)
+-                } else {
+-                    Value::int(md.gid().into(), span)
+-                },
++                Value::int(md.gid().into(), span)
+             );
+         }
+     }
+diff --git a/crates/nu-command/src/filesystem/ucp.rs b/crates/nu-command/src/filesystem/ucp.rs
+index 2198911e6..b193dab2c 100644
+--- a/crates/nu-command/src/filesystem/ucp.rs
++++ b/crates/nu-command/src/filesystem/ucp.rs
+@@ -320,7 +320,8 @@ fn make_attributes(preserve: Option<Value>) -> Result<uu_cp::Attributes, ShellEr
+                 target_os = "android",
+                 target_os = "macos",
+                 target_os = "netbsd",
+-                target_os = "openbsd"
++                target_os = "openbsd",
++                target_os = "redox",
+             ))]
+             ownership: ATTR_UNSET,
+             mode: ATTR_UNSET,
+@@ -342,7 +343,8 @@ fn make_attributes(preserve: Option<Value>) -> Result<uu_cp::Attributes, ShellEr
+                 target_os = "android",
+                 target_os = "macos",
+                 target_os = "netbsd",
+-                target_os = "openbsd"
++                target_os = "openbsd",
++                target_os = "redox",
+             ))]
+             ownership: ATTR_UNSET,
+             timestamps: ATTR_UNSET,
+diff --git a/crates/nu-command/src/platform/mod.rs b/crates/nu-command/src/platform/mod.rs
+index 624587747..38f026dcb 100644
+--- a/crates/nu-command/src/platform/mod.rs
++++ b/crates/nu-command/src/platform/mod.rs
+@@ -6,8 +6,6 @@ mod kill;
+ mod sleep;
+ mod term;
+ #[cfg(unix)]
+-mod ulimit;
+-#[cfg(unix)]
+ mod umask_;
+ mod whoami;
+ 
+@@ -21,7 +19,5 @@ pub use kill::Kill;
+ pub use sleep::Sleep;
+ pub use term::{Term, TermQuery, TermSize};
+ #[cfg(unix)]
+-pub use ulimit::ULimit;
+-#[cfg(unix)]
+ pub use umask_::UMask;
+ pub use whoami::Whoami;
+diff --git a/crates/nu-explore/Cargo.toml b/crates/nu-explore/Cargo.toml
+index 4375ca1d5..f8848f7a1 100644
+--- a/crates/nu-explore/Cargo.toml
++++ b/crates/nu-explore/Cargo.toml
+@@ -38,7 +38,6 @@ serde_json = { workspace = true, features = ["preserve_order"] }
+ strip-ansi-escapes = { workspace = true }
+ edtui = { version = "0.11.1", default-features = false, features = [
+     "system-editor",
+-    "arboard",
+ ] }
+ tui-tree-widget = "0.24"
+ unicode-segmentation = { workspace = true }
+diff --git a/crates/nu-utils/src/filesystem.rs b/crates/nu-utils/src/filesystem.rs
+index 6766e0cb9..ed340aedf 100644
+--- a/crates/nu-utils/src/filesystem.rs
++++ b/crates/nu-utils/src/filesystem.rs
+@@ -40,15 +40,7 @@ pub fn have_permission(dir: impl AsRef<Path>) -> PermissionResult {
+ 
+ #[cfg(unix)]
+ pub mod users {
+-    use nix::unistd::{Gid, Group, Uid, User};
+-
+-    pub fn get_user_by_uid(uid: Uid) -> Option<User> {
+-        User::from_uid(uid).ok().flatten()
+-    }
+-
+-    pub fn get_group_by_gid(gid: Gid) -> Option<Group> {
+-        Group::from_gid(gid).ok().flatten()
+-    }
++    use nix::unistd::{Gid, Uid};
+ 
+     pub fn get_current_uid() -> Uid {
+         Uid::current()
+@@ -60,7 +52,7 @@ pub mod users {
+ 
+     #[cfg(not(any(target_os = "linux", target_os = "freebsd", target_os = "android")))]
+     pub fn get_current_username() -> Option<String> {
+-        get_user_by_uid(get_current_uid()).map(|user| user.name)
++        None
+     }
+ 
+     #[cfg(any(target_os = "linux", target_os = "freebsd", target_os = "android"))]
+@@ -127,22 +119,7 @@ pub mod users {
+             nix::libc::getgrouplist(name.as_ptr(), gid.as_raw(), buff.as_mut_ptr(), &mut count)
+         };
+ 
+-        if res < 0 {
+-            None
+-        } else {
+-            buff.truncate(count as usize);
+-            buff.sort_unstable();
+-            buff.dedup();
+-            // allow trivial cast: on macos i is i32, on linux it's already gid_t
+-            #[allow(trivial_numeric_casts)]
+-            Some(
+-                buff.into_iter()
+-                    .map(|id| Gid::from_raw(id as gid_t))
+-                    .filter_map(get_group_by_gid)
+-                    .map(|group| group.gid)
+-                    .collect(),
+-            )
+-        }
++        None
+     }
+ }
+ 
+diff --git a/rust-toolchain.toml b/rust-toolchain.toml
+deleted file mode 100644
+index 37ca9dfd1..000000000
+--- a/rust-toolchain.toml
++++ /dev/null
+@@ -1,17 +0,0 @@
+-# So, you want to update the Rust toolchain...
+-# The key is making sure all our dependencies support the version of Rust we're using,
+-# and that nushell compiles on all the platforms tested in our CI.
+-
+-# Here's some documentation on how to use this file:
+-# https://rust-lang.github.io/rustup/overrides.html#the-toolchain-file
+-
+-[toolchain]
+-# The default profile includes rustc, rust-std, cargo, rust-docs, rustfmt and clippy.
+-# https://rust-lang.github.io/rustup/concepts/profiles.html
+-profile = "default"
+-# The current plan is to be 2 releases behind the latest stable release. So, if the
+-# latest stable release is 1.72.0, the channel should be 1.70.0. We want to do this
+-# so that we give repo maintainers and package managers a chance to update to a more
+-# recent version of rust. However, if there is a "cool new feature" that we want to
+-# use in nushell, we may opt to use the bleeding edge stable version of rust.
+-channel = "1.91.1"
+diff --git a/src/signals.rs b/src/signals.rs
+index c3a4b8379..d5be1009c 100644
+--- a/src/signals.rs
++++ b/src/signals.rs
+@@ -25,10 +25,4 @@ pub(crate) fn ctrlc_protection(engine_state: &mut EngineState) {
+         .expect("Failed to register interrupt signal handler");
+ 
+     engine_state.signal_handlers = Some(signal_handlers.clone());
+-
+-    ctrlc::set_handler(move || {
+-        interrupt.store(true, Ordering::Relaxed);
+-        signal_handlers.run(SignalAction::Interrupt);
+-    })
+-    .expect("Error setting Ctrl-C handler");
+ }

@@ -3,10 +3,13 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use pkg::{Package, PackageName};
+use pkg::{Package, PackageName, PackagePrefix};
+use pkgar::ext::PackageSrcExt;
+use pkgar_core::HeaderFlags;
 
 use crate::{
     blake3::hash_to_hex,
+    config::CookConfig,
     cook::{fetch, fs::*, pty::PtyOut},
     log_to_pty,
     recipe::{BuildKind, CookRecipe, OptionalPackageRecipe, Recipe},
@@ -16,6 +19,7 @@ pub fn package(
     recipe: &CookRecipe,
     stage_dirs: &Vec<PathBuf>,
     auto_deps: &BTreeSet<PackageName>,
+    cook_config: &CookConfig,
     logger: &PtyOut,
 ) -> Result<(), String> {
     let name = &recipe.name;
@@ -47,7 +51,14 @@ pub fn package(
             .map_err(|err| format!("failed to save pkgar secret key: {:?}", err))?;
     }
 
-    let stage_modified = modified_all(stage_dirs, modified_dir)?;
+    let Ok(stage_modified) = modified_all(stage_dirs, modified_dir) else {
+        // stage dirs doesn't exist, assume safe only when clean_target = true
+        if !crate::config::get_config().cook.clean_target {
+            return Err("Stage directory is not present at packaging step".into());
+        } else {
+            return Ok(());
+        }
+    };
 
     let packages = recipe.recipe.get_packages_list();
 
@@ -63,16 +74,23 @@ pub fn package(
         }
 
         if !package_file.is_file() {
-            pkgar::create(
+            pkgar::create_with_flags(
                 secret_path,
                 package_file.to_str().unwrap(),
                 stage_dir.to_str().unwrap(),
+                HeaderFlags::latest(
+                    pkgar_core::Architecture::Independent,
+                    match cook_config.compressed {
+                        true => pkgar_core::Packaging::LZMA2,
+                        false => pkgar_core::Packaging::Uncompressed,
+                    },
+                ),
             )
             .map_err(|err| format!("failed to create pkgar archive: {:?}", err))?;
         }
 
         let deps = if package.is_some() {
-            BTreeSet::from([name.without_host()])
+            BTreeSet::from([name.with_prefix(PackagePrefix::Any)])
         } else {
             auto_deps.clone()
         };
@@ -123,12 +141,12 @@ pub fn package_toml(
         }
     }
 
-    let (hash, size) = if let Some((pkey_path, archive_path)) = package_file {
+    let (hash, network_size, storage_size) = if let Some((pkey_path, archive_path)) = package_file {
         use pkgar_core::PackageSrc;
         let pkey = pkgar_keys::PublicKeyFile::open(pkey_path)
             .map_err(|e| format!("Unable to read public key: {e:?}"))?
             .pkey;
-        let package = pkgar::PackageFile::new(archive_path, &pkey).map_err(|e| {
+        let mut package = pkgar::PackageFile::new(archive_path, &pkey).map_err(|e| {
             format!(
                 "Unable to read packaged pkgar file {}: {e:?}",
                 archive_path.display(),
@@ -140,21 +158,45 @@ pub fn package_toml(
                 archive_path.display(),
             )
         })?;
-        (hash_to_hex(package.header().blake3), mt.len())
+        let package_size = mt.len();
+        let storage_size = match package.header().flags.packaging() {
+            pkgar_core::Packaging::LZMA2 => {
+                let mut size = 0;
+                let entries = package
+                    .read_entries()
+                    .map_err(|e| format!("Unable to get lzma entry: {e}"))?;
+                for entry in entries {
+                    let data_reader = package
+                        .data_reader(entry)
+                        .map_err(|e| format!("Unable to read lzma entry: {e}"))?;
+                    size += data_reader.unpacked_size;
+                    package
+                        .restore_reader(data_reader.into_inner())
+                        .map_err(|e| format!("Unable to put lzma entry: {e}"))?;
+                }
+                size
+            }
+            _ => package_size,
+        };
+
+        (
+            hash_to_hex(package.header().blake3),
+            package_size,
+            storage_size,
+        )
     } else {
-        ("".into(), 0)
+        ("".into(), 0, 0)
     };
 
     let ident_source = fetch::fetch_get_source_info(recipe)?;
 
     let package = Package {
-        name: recipe.name.without_host(),
+        name: recipe.name.with_prefix(PackagePrefix::Any),
         version: package_version(&recipe.recipe),
         target: recipe.target.to_string(),
         blake3: hash,
-        // this size will be different once pkgar supports compression
-        network_size: size,
-        storage_size: size,
+        network_size,
+        storage_size,
         depends: package_deps,
         commit_identifier: ident_source.commit_identifier,
         source_identifier: ident_source.source_identifier,
@@ -194,7 +236,14 @@ pub fn package_stage_paths(
     package: Option<&OptionalPackageRecipe>,
     target_dir: &Path,
 ) -> (PathBuf, PathBuf, PathBuf) {
-    package_name_paths(package, target_dir, "stage")
+    let mut target_dir = target_dir.to_path_buf();
+    if let Some(cross_target) = std::env::var("COOKBOOK_CROSS_TARGET").ok() {
+        if cross_target != "" {
+            // TODO: automatically pass COOKBOOK_CROSS_GNU_TARGET?
+            target_dir = target_dir.join(cross_target)
+        }
+    }
+    package_name_paths(package, &target_dir, "stage")
 }
 
 pub fn package_source_paths(

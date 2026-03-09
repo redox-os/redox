@@ -1,0 +1,4 @@
+[source]
+git = "https://github.com/pls-rs/pls"
+[build]
+template = "cargo"

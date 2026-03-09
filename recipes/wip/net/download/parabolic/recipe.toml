@@ -1,7 +1,16 @@
-#TODO not compiled or tested
-#TODO it uses vcpkg for dependency management, see: https://github.com/NickvisionApps/parabolic#building-manually
+#TODO missing script for .net: https://github.com/NickvisionApps/Parabolic#-building
+#TODO requires .net 10
 [source]
 git = "https://github.com/NickvisionApps/Parabolic"
-rev = "7309661a25948c56f25383c464a1b284bdeb00e7"
+rev = "2026.2.4"
+shallow_clone = true
 [build]
-template = "cmake"
+template = "custom"
+dependencies = [
+    "gtk4",
+    "libadwaita",
+]
+dev-dependencies = [
+    "host:blueprint",
+    "host:dotnet10",
+]

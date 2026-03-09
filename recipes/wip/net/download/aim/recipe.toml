@@ -1,13 +1,9 @@
-#TODO openssl-sys crate compilation error
+#TODO not compiled or tested
 [source]
 git = "https://github.com/mihaigalos/aim"
+shallow_clone = true
 [build]
 dependencies = [
-    "openssl1",
+    "openssl3",
 ]
-template = "custom"
-script = """
-export OPENSSL_DIR="${COOKBOOK_SYSROOT}"
-export OPENSSL_STATIC="true"
-cookbook_cargo
-"""
+template = "cargo"

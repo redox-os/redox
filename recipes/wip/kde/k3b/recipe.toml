@@ -3,10 +3,22 @@
 # build instructions: https://invent.kde.org/multimedia/k3b/-/blob/master/INSTALL.txt?ref_type=heads
 [source]
 git = "https://invent.kde.org/multimedia/k3b"
-branch = "release/25.08"
+branch = "release/25.12"
 shallow_clone = true
 [build]
 template = "cmake"
+cmakeflags = [
+    "-DK3B_DOC=OFF",
+    "-DK3B_ENABLE_TAGLIB=OFF",
+    "-DK3B_ENABLE_DVD_RIPPING=OFF",
+    "-DK3B_BUILD_MUSE_DECODER_PLUGIN=OFF",
+    "-DK3B_BUILD_FLAC_DECODER_PLUGIN=OFF",
+    "-DK3B_BUILD_SNDFILE_DECODER_PLUGIN=OFF",
+    "-DK3B_BUILD_LAME_ENCODER_PLUGIN=OFF",
+    "-DK3B_BUILD_SOX_ENCODER_PLUGIN=OFF",
+    "-DK3B_BUILD_EXTERNAL_ENCODER_PLUGIN=OFF",
+    "-DK3B_BUILD_WAVE_DECODER_PLUGIN=OFF",
+]
 dependencies = [
     "libcdio-paranoia",
 ]

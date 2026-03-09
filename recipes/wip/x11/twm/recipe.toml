@@ -2,7 +2,6 @@
 tar = "https://www.x.org/releases/individual/app/twm-1.0.13.tar.xz"
 blake3 = "50acf2123537a739dcaff50e1ae9b38d7e117a2d07cd3a6b550dcafdc52ff9fc"
 script = """
-DYNAMIC_INIT
 autotools_recursive_regenerate
 """
 

@@ -1,8 +1,10 @@
 #TODO x11rb and rustix crates error
 [source]
 git = "https://github.com/kvark/blade"
+shallow_clone = true
 [build]
 template = "custom"
 script = """
+DYNAMIC_INIT
 cookbook_cargo_examples bunnymark particle ray-query scene
 """

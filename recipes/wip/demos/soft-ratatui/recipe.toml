@@ -1,6 +1,10 @@
 #TODO glutin crate error
 [source]
 git = "https://github.com/gold-silver-copper/soft_ratatui"
+shallow_clone = true
 [build]
-template = "cargo"
-package_path = "egui_colors_example"
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_cargo_packages egui_colors_example
+"""

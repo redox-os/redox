@@ -1,0 +1,6 @@
+#!/usr/bin/env ion
+export RUST_BACKTRACE=full
+cd /home/user/acid
+cargo test
+bash /root/relibc-tests/run.sh
+os-test-runner

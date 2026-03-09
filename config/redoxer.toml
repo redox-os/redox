@@ -1,6 +1,6 @@
 # Configuration for the Redoxer image
 
-include = ["net.toml"]
+include = ["base.toml"]
 
 # Package settings
 [packages]
@@ -9,38 +9,43 @@ ca-certificates = {}
 coreutils = {}
 extrautils = {}
 findutils = {}
+gnu-make = {}
 ion = {}
-netdb = {}
 pkgutils = {}
 relibc = {}
+sed = {}
 
 # Override to not background dhcpd
 [[files]]
 path = "/usr/lib/init.d/10_net"
 data = """
-smolnetd
+requires_weak 00_drivers
+notify smolnetd
 dhcpd
-"""
-
-[[files]]
-path = "/usr/lib/init.d/20_env"
-data = """
-echo
-echo ## preparing environment ##
-export GROUPS 0
-export HOME /root
-export HOST redox
-export SHELL /bin/sh
-export UID 0
-export USER root
-cd /root
-env
 """
 
 [[files]]
 path = "/usr/lib/init.d/30_redoxer"
 data = """
+requires_weak 10_net
+ion /usr/lib/run_redoxer.ion
+"""
+
+[[files]]
+path = "/usr/lib/run_redoxer.ion"
+data = """
+#!/usr/bin/env ion
 echo
-echo ## running redoxer ##
+echo "## preparing environment ##"
+export GROUPS=0
+export HOME=/root
+export HOST=redox
+export SHELL=/bin/sh
+export UID=0
+export USER=root
+cd /root
+env
+echo
+echo "## running redoxer ##"
 redoxerd
 """

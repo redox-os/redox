@@ -2,5 +2,8 @@
 # require nerdfonts
 [source]
 git = "https://github.com/CompeyDev/ssh-portfolio"
+shallow_clone = true
 [build]
 template = "cargo"
+[package]
+dependencies = ["nerd-fonts"]

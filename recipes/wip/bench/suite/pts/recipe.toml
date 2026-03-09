@@ -1,0 +1,12 @@
+#TODO figure out the installation script - https://github.com/phoronix-test-suite/phoronix-test-suite
+[source]
+git = "https://github.com/phoronix-test-suite/phoronix-test-suite"
+shallow_clone = true
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}/home/user/pts"
+cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}/home/user/pts"
+"""
+[package]
+dependencies = ["php84"]

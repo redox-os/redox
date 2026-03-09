@@ -1,8 +1,10 @@
 #TODO not compiled or tested
 [source]
 git = "https://github.com/rezigned/tur"
+shallow_clone = true
 [build]
 template = "custom"
 script = """
+DYNAMIC_INIT
 cookbook_cargo_packages tur-cli tur-tui
 """

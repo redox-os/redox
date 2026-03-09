@@ -1,8 +1,10 @@
 #TODO compilation error
 [source]
 git = "https://github.com/saschagrunert/rain"
+shallow_clone = true
 [build]
 template = "custom"
 script = """
+DYNAMIC_INIT
 cookbook_cargo_examples demo
 """

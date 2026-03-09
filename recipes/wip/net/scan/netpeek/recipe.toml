@@ -3,5 +3,6 @@
 [source]
 git = "https://github.com/ZingyTomato/NetPeek"
 rev = "v0.2.4"
+shallow_clone = true
 [build]
 template = "meson"

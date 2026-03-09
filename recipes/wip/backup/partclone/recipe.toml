@@ -1,0 +1,16 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/Thomas-Tsai/partclone"
+rev = "0.3.40"
+shallow_clone = true
+script = """
+autotools_recursive_regenerate
+"""
+[build]
+template = "configure"
+configureflags = [
+    "--enable-ncursesw",
+]
+dependencies = [
+    "ncursesw",
+]

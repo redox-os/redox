@@ -1,8 +1,13 @@
 #TODO compiled but not tested
 [source]
 git = "https://github.com/warpy-ai/rustubble"
+shallow_clone = true
 [build]
 template = "custom"
 script = """
-cookbook_cargo_examples list_example menu_list_example progress_bar_example spinner_example stopwatch_example table_example text_area_example text_input_example timer_example viewport_example
+DYNAMIC_INIT
+cookbook_cargo_examples list_example menu_list_example \
+progress_bar_example spinner_example stopwatch_example \
+table_example text_area_example text_input_example \
+timer_example viewport_example
 """

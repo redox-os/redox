@@ -2,7 +2,6 @@
 tar = "https://www.x.org/releases/individual/lib/libXext-1.3.6.tar.xz"
 blake3 = "4c24887ba3913728f3c0be945006f6babbc2c44c8118d4b1ca5366294e3f4406"
 script = """
-DYNAMIC_INIT
 autotools_recursive_regenerate
 """
 

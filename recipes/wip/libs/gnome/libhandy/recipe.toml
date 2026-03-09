@@ -1,0 +1,13 @@
+#TODO not compiled or tested
+# build instructions: https://gitlab.gnome.org/GNOME/libhandy#building
+[source]
+tar = "https://download.gnome.org/sources/libhandy/1.8/libhandy-1.8.3.tar.xz"
+[build]
+template = "meson"
+mesonflags = [
+    "-Dtests=false"
+]
+dependencies = [
+    "glib",
+    "gtk3",
+]

@@ -1,6 +1,6 @@
 # Minimal desktop configuration
 
-include = ["minimal-net.toml"]
+include = ["minimal.toml"]
 
 # General settings
 [general]
@@ -12,22 +12,21 @@ filesystem_size = 256
 orbdata = {}
 orbital = {}
 orbterm = {}
-orbutils-background = {}
-orbutils-launcher = {}
-orbutils-orblogin = {}
+orbutils = {}
 
 [[files]]
 path = "/usr/lib/init.d/20_orbital"
 data = """
-export VT 3
-nowait orbital orblogin launcher
-unset VT
+requires_weak 10_net
+notify audiod
+nowait VT=3 orbital orblogin launcher
 """
 
 # Override console config to not switch to VT 2
 [[files]]
 path = "/usr/lib/init.d/30_console"
 data = """
+requires_weak 20_orbital
 nowait getty 2
 nowait getty /scheme/debug/no-preserve -J
 """

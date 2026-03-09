@@ -1,8 +1,11 @@
 #TODO ahash crate error
 [source]
 git = "https://github.com/tesselode/kira-examples"
+shallow_clone = true
 [build]
 template = "custom"
 script = """
-cookbook_cargo_packages dynamic-music ghost-noise metronome score-counter spatial-audio simple-sound-playback
+DYNAMIC_INIT
+cookbook_cargo_packages dynamic-music ghost-noise metronome \
+score-counter spatial-audio simple-sound-playback
 """

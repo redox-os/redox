@@ -66,18 +66,12 @@ case "${TARGET}" in
 esac
 
 rm -rf "${COOKBOOK_BUILD}/initfs"
-mkdir -p "${COOKBOOK_BUILD}/initfs/etc"
+mkdir -p "${COOKBOOK_BUILD}/initfs/lib/init.d"
 
-cp "${COOKBOOK_SOURCE}/init.rc" "${COOKBOOK_BUILD}/initfs/etc/init.rc"
-cp "${COOKBOOK_SOURCE}/init_drivers.rc" "${COOKBOOK_BUILD}/initfs/etc/init_drivers.rc"
-if [ -e ${COOKBOOK_SOURCE}/${TARGET}/init_drivers.rc.${BOARD} ]; then
-    cp "${COOKBOOK_SOURCE}/${TARGET}/init_drivers.rc.${BOARD}" "${COOKBOOK_BUILD}/initfs/etc/init_drivers.rc"
-elif [ -e ${COOKBOOK_SOURCE}/${TARGET}/init_drivers.rc ]; then
-    cp "${COOKBOOK_SOURCE}/${TARGET}/init_drivers.rc" "${COOKBOOK_BUILD}/initfs/etc/init_drivers.rc"
-fi
+cp "${COOKBOOK_SOURCE}/init.d"/* "${COOKBOOK_BUILD}/initfs/lib/init.d/"
 
-mkdir -pv "${COOKBOOK_BUILD}/initfs/etc/pcid"
-cp -v "${COOKBOOK_SOURCE}/drivers/initfs.toml" "${COOKBOOK_BUILD}/initfs/etc/pcid/initfs.toml"
+mkdir -pv "${COOKBOOK_BUILD}/initfs/lib/pcid.d"
+cp -v "${COOKBOOK_SOURCE}/drivers/initfs.toml" "${COOKBOOK_BUILD}/initfs/lib/pcid.d/initfs.toml"
 
 export CARGO_PROFILE_RELEASE_OPT_LEVEL=s
 export CARGO_PROFILE_RELEASE_PANIC=abort
@@ -98,11 +92,6 @@ do
     esac
 done
 
-# TODO: symlinks aren't supported by redox-initfs
-#ln -sv zerod "${COOKBOOK_BUILD}/initfs/bin/nulld"
-
-cp "${COOKBOOK_BUILD}/initfs/bin/zerod" "${COOKBOOK_BUILD}/initfs/bin/nulld"
-
 cp "${COOKBOOK_SYSROOT}/usr/bin/redoxfs" "${COOKBOOK_BUILD}/initfs/bin"
 
 ARCH="$(echo "${GNU_TARGET}" | cut -d - -f1)"
@@ -120,8 +109,8 @@ RUSTFLAGS="$RUSTFLAGS -Ctarget-feature=+crt-static" cargo \
     -z max-page-size=4096 \
     "${COOKBOOK_BUILD}/${TARGET}/release/libbootstrap.a"
 
-env -u CARGO cargo run --manifest-path "${COOKBOOK_SOURCE}/initfs/tools/Cargo.toml" --bin redox-initfs-ar -- "${COOKBOOK_BUILD}/initfs" "${COOKBOOK_BUILD}/bootstrap" -o "${COOKBOOK_BUILD}/initfs.img"
+env -u CARGO -u RUSTFLAGS cargo run --manifest-path "${COOKBOOK_SOURCE}/initfs/tools/Cargo.toml" --bin redox-initfs-ar -- "${COOKBOOK_BUILD}/initfs" "${COOKBOOK_BUILD}/bootstrap" -o "${COOKBOOK_BUILD}/initfs.img"
 
-mkdir -v "${COOKBOOK_STAGE}/boot"
-cp "${COOKBOOK_BUILD}/initfs.img" "${COOKBOOK_STAGE}/boot/initfs"
+mkdir -pv "${COOKBOOK_STAGE}/usr/lib/boot"
+cp "${COOKBOOK_BUILD}/initfs.img" "${COOKBOOK_STAGE}/usr/lib/boot/initfs"
 """

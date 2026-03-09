@@ -1,0 +1,8 @@
+#TODO missing script for waf: https://ardour.org/building_linux.html
+#TODO discover minimum dependencies from waf log
+[source]
+git = "https://git.ardour.org/ardour/ardour"
+rev = "9.0"
+shallow_clone = true
+[build]
+template = "custom"

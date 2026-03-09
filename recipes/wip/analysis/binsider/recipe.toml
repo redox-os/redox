@@ -1,5 +1,6 @@
 #TODO async-io and rustix crates error
 [source]
 git = "https://github.com/orhun/binsider"
+shallow_clone = true
 [build]
 template = "cargo"

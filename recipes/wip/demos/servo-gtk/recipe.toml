@@ -1,11 +1,13 @@
 #TODO not compiled or tested
 [source]
 git = "https://github.com/nacho/servo-gtk"
+shallow_clone = true
 [build]
 template = "custom"
 dependencies = [
     "gtk4"
 ]
 script = """
+DYNAMIC_INIT
 cookbook_cargo_examples browser
 """

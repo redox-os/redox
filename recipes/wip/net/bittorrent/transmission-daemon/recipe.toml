@@ -1,10 +1,18 @@
 #TODO not compiled or tested
-# build instructions: https://github.com/transmission/transmission/blob/main/docs/Building-Transmission.md#on-unix
+#TODO discover minimum dependencies from cmake log
+# build instructions: https://github.com/transmission/transmission/blob/4.0.x/docs/Building-Transmission.md#on-unix
+# build options: https://github.com/transmission/transmission/blob/4.0.x/CMakeLists.txt#L45
 [source]
 tar = "https://github.com/transmission/transmission/releases/download/4.0.6/transmission-4.0.6.tar.xz"
 [build]
 template = "cmake"
-dependencies = [
-    "openssl1",
-    "curl",
+cmakeflags = [
+    "-DINSTALL_WEB=OFF",
+    "-DENABLE_UTILS=OFF",
+    "-DENABLE_TESTS=OFF",
+    "-DINSTALL_DOC=OFF",
 ]
+#dependencies = [
+#    "openssl3",
+#    "curl",
+#]

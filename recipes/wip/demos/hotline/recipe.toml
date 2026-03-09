@@ -1,8 +1,10 @@
 #TODO hot-lib-reloader crate error
 [source]
 git = "https://github.com/polymonster/hotline"
+shallow_clone = true
 [build]
 template = "custom"
 script = """
+DYNAMIC_INIT
 cookbook_cargo_examples triangle
 """

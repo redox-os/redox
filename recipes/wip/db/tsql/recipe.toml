@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/fcoury/tsql"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages tsql
+"""
+[package]
+dependencies = ["postgresql16"]

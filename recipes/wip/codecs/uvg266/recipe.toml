@@ -2,6 +2,10 @@
 # build instructions: https://github.com/ultravideo/uvg266#compiling-uvg266
 [source]
 git = "https://github.com/ultravideo/uvg266"
-rev = "9add13b7053a6ba3f6b22bf82728e01fc437a447"
+rev = "v0.8.1"
+shallow_clone = true
 [build]
 template = "cmake"
+cmakeflags = [
+    "-DBUILD_TESTS=OFF"
+]

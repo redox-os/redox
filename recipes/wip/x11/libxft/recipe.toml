@@ -2,7 +2,6 @@
 tar = "https://www.x.org/releases/individual/lib/libXft-2.3.9.tar.xz"
 blake3 = "db5b642f7d5f1184d0975db36ae9f9fbd0a0c538a2288930fc034376374e83dc"
 script = """
-DYNAMIC_INIT
 autotools_recursive_regenerate
 """
 

@@ -17,16 +17,16 @@ include = ["../desktop.toml"]
 [[files]]
 path = "/usr/lib/init.d/20_orbital"
 data = """
-audiod
-export VT 3
-nowait orbital contain_orblogin launcher
-unset VT
+requires_weak 10_net
+notify audiod
+nowait VT=3 orbital contain_orblogin launcher
 """
 
 # Override console init to use contain
 [[files]]
 path = "/usr/lib/init.d/30_console"
 data = """
+requires_weak 20_orbital
 nowait getty --contain 2
 nowait getty --contain /scheme/debug/no-preserve -J
 """

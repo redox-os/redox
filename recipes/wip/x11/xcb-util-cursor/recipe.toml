@@ -2,7 +2,6 @@
 tar = "https://www.x.org/releases/individual/lib/xcb-util-cursor-0.1.6.tar.xz"
 blake3 = "af6e7e99779682450e4cb3aa7225f5724845b1672c0380c65ca03b58dfb2d5d8"
 script = """
-DYNAMIC_INIT
 autotools_recursive_regenerate
 """
 

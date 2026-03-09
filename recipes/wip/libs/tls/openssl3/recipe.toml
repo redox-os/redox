@@ -21,16 +21,16 @@ COOKBOOK_CONFIGURE_FLAGS=(
     enable-zstd
     "${OS}-${ARCH}"
     --prefix="/usr"
+    --openssldir="/etc/ssl"
 )
 
 if [ "${COOKBOOK_DYNAMIC}" = "1" ]; then
     COOKBOOK_CONFIGURE_FLAGS+=(shared)
 else
-    COOKBOOK_CONFIGURE_FLAGS+=(no-shared)
+    COOKBOOK_CONFIGURE_FLAGS+=(no-shared no-dso)
 fi
 
 "${COOKBOOK_CONFIGURE}" "${COOKBOOK_CONFIGURE_FLAGS[@]}"
 "${COOKBOOK_MAKE}" -j1 # bug in make/ar
 "${COOKBOOK_MAKE}" install_sw install_ssldirs DESTDIR="${COOKBOOK_STAGE}"
-rm -rfv "${COOKBOOK_STAGE}/"{share,ssl}
 """

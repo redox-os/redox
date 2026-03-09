@@ -16,9 +16,18 @@ pub struct CookConfigOpt {
     pub logs: Option<bool>,
     /// whether to ignore build errors
     pub nonstop: Option<bool>,
+    /// whether to archive packages with compressed format
+    pub compressed: Option<bool>,
     /// whether to print verbose logs to certain commands
     /// build failure still be printed anyway
     pub verbose: Option<bool>,
+    /// whether to always clean the build directory before building
+    pub clean_build: Option<bool>,
+    /// whether to always clean the target directory after building
+    /// (deletes everything except pkgar files)
+    pub clean_target: Option<bool>,
+    /// whether to always write stage.files metadata
+    pub write_filetree: Option<bool>,
 }
 
 #[derive(Debug, Default, Clone, Deserialize, PartialEq, Serialize)]
@@ -28,7 +37,11 @@ pub struct CookConfig {
     pub tui: bool,
     pub logs: bool,
     pub nonstop: bool,
+    pub compressed: bool,
     pub verbose: bool,
+    pub clean_build: bool,
+    pub clean_target: bool,
+    pub write_filetree: bool,
 }
 
 impl From<CookConfigOpt> for CookConfig {
@@ -39,7 +52,11 @@ impl From<CookConfigOpt> for CookConfig {
             tui: value.tui.unwrap(),
             logs: value.logs.unwrap(),
             nonstop: value.nonstop.unwrap(),
+            compressed: value.compressed.unwrap(),
             verbose: value.verbose.unwrap(),
+            clean_build: value.clean_build.unwrap(),
+            clean_target: value.clean_target.unwrap(),
+            write_filetree: value.write_filetree.unwrap(),
         }
     }
 }
@@ -85,11 +102,26 @@ pub fn init_config() {
     if config.cook_opt.offline.is_none() {
         config.cook_opt.offline = Some(extract_env("COOKBOOK_OFFLINE", false));
     }
+    if config.cook_opt.compressed.is_none() {
+        config.cook_opt.compressed = Some(extract_env("COOKBOOK_COMPRESSED", false));
+    }
     if config.cook_opt.verbose.is_none() {
         config.cook_opt.verbose = Some(extract_env("COOKBOOK_VERBOSE", true));
     }
     if config.cook_opt.nonstop.is_none() {
         config.cook_opt.nonstop = Some(extract_env("COOKBOOK_NONSTOP", false));
+    }
+    if config.cook_opt.clean_build.is_none() {
+        config.cook_opt.clean_build = Some(extract_env("COOKBOOK_CLEAN_BUILD", false));
+    }
+    if config.cook_opt.clean_target.is_none() {
+        config.cook_opt.clean_target = Some(extract_env("COOKBOOK_CLEAN_TARGET", false));
+    }
+    if config.cook_opt.write_filetree.is_none() {
+        config.cook_opt.write_filetree = Some(extract_env(
+            "COOKBOOK_WRITE_FILETREE",
+            config.cook_opt.clean_target.unwrap_or(false) || extract_env("COOKBOOK_WEB", false),
+        ));
     }
     if config.mirrors.len() == 0 {
         // The GNU FTP mirror below is automatically inserted for convenience

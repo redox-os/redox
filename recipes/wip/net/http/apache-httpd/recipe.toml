@@ -1,6 +1,6 @@
 #TODO compiles but requires setgroups syscall at startup
 [source]
-tar= "https://dlcdn.apache.org/httpd/httpd-2.4.61.tar.bz2"
+tar= "https://archive.apache.org/dist/httpd/httpd-2.4.61.tar.bz2"
 patches = [
     "redox.patch",
 ]
@@ -14,7 +14,7 @@ dependencies = [
     "libuuid",
     "libxcrypt",
     "libxml2",
-    "openssl1",
+    "openssl3",
     "pcre",
     "zlib",
 ]
@@ -23,6 +23,7 @@ template = "custom"
 script = """
 # cookbook_configure
 
+DYNAMIC_INIT
 export COOKBOOK_MAKE_JOBS=1
 export CPPFLAGS="$CPPFLAGS -I${COOKBOOK_SYSROOT}/include/apr-1 -DDEBUG=1"
 export LTFLAGS="$LTFLAGS -Wall"
@@ -31,9 +32,9 @@ COOKBOOK_CONFIGURE_FLAGS=(
     --host=${TARGET}
     --with-apr=$COOKBOOK_SYSROOT
     --with-apr-util=$COOKBOOK_SYSROOT
-    --enable-unixd=static
-    --enable-authz_core=static
-    --enable-authz_host=static
+    --enable-unixd=shared
+    --enable-authz_core=shared
+    --enable-authz_host=shared
     ac_cv_prog_PCRE_CONFIG=$COOKBOOK_SYSROOT/bin/pcre-config
     ap_cv_void_ptr_lt_long=no
 )

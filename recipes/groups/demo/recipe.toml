@@ -1,0 +1,22 @@
+# demo variant meta-package
+[package]
+dependencies = [
+    "desktop",
+    "periodictable",
+    "intel-one-mono",
+    "gnu-grep",
+    "htop",
+    "ripgrep",
+    "terminfo",
+    "vim",
+    "dosbox",
+    "freedoom",
+    "neverball",
+    "prboom",
+    "redox-games",
+    "sopwith",
+    "orbclient",
+    "pixelcannon",
+    "rodioplay",
+    "freepats",
+]

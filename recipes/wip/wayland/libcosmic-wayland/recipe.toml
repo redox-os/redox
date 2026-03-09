@@ -1,0 +1,15 @@
+[source]
+git = "https://github.com/jackpot51/libcosmic.git"
+branch = "redox-wayland"
+
+[build]
+dependencies = [
+    "libwayland",
+    "libxkbcommon",
+]
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_cargo_packages application
+mv "${COOKBOOK_STAGE}/usr/bin/application" "${COOKBOOK_STAGE}/usr/bin/libcosmic-wayland_application"
+"""

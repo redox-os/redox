@@ -1,5 +1,17 @@
-#TODO compilation error
+# Compiled, not tested
 [source]
 tar = "https://sourceware.org/elfutils/ftp/0.190/elfutils-0.190.tar.bz2"
+
 [build]
 template = "configure"
+dependencies = [
+    "zlib",
+    "argp-standalone",
+    "musl-fts",
+    "musl-obstack",
+    # "gettext",
+]
+configureflags = [
+    "--disable-libdebuginfod",
+    "--disable-debuginfod",
+]

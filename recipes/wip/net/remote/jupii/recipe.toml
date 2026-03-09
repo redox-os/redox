@@ -3,6 +3,7 @@
 [source]
 git = "https://github.com/mkiol/Jupii"
 rev = "ed80ca0ea29081a2bff038faf4884e3acabb14b7"
+shallow_clone = true
 [build]
 template = "cmake"
 cmakeflags = [

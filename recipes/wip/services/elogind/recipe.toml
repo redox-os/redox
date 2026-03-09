@@ -1,0 +1,16 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/elogind/elogind"
+rev = "V255.22"
+shallow_clone = true
+[build]
+template = "meson"
+mesonflags = [
+    "-Dmode=release",
+    "-Dtranslations=false",
+    "-Dtests=false",
+]
+dependencies = [
+    "libeudev",
+    "libcap",
+]

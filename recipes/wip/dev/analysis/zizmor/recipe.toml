@@ -1,8 +1,10 @@
 #TODO camino crate error
 [source]
 git = "https://github.com/woodruffw/zizmor"
+shallow_clone = true
 [build]
 template = "custom"
 script = """
+DYNAMIC_INIT
 cookbook_cargo_packages zizmor
 """

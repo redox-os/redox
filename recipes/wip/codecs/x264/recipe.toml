@@ -1,5 +1,7 @@
 #TODO the redox target is not supported on the configure script
 [source]
 git = "https://code.videolan.org/videolan/x264"
+branch = "stable"
+shallow_clone = true
 [build]
 template = "configure"

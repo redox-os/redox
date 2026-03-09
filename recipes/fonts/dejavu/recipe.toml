@@ -8,7 +8,7 @@ script = """
 #TODO: Mono style included in Sans directory
 for style in Sans Serif
 do
-    DEST="${COOKBOOK_STAGE}/ui/fonts/${style}/DejaVu"
+    DEST="${COOKBOOK_STAGE}/usr/share/fonts/${style}/DejaVu"
     mkdir -pv "${DEST}"
     cp -v "${COOKBOOK_SOURCE}/ttf/DejaVu${style}"*".ttf" "${DEST}"
 done

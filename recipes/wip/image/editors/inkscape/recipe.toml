@@ -1,8 +1,9 @@
 #TODO not compiled or tested
 #TODO discover minimum dependencies from cmake log
 # build instructions: https://inkscape.org/develop/getting-started/#compile
+# build options: https://gitlab.com/inkscape/inkscape/-/blob/master/CMakeLists.txt?ref_type=heads#L87
 [source]
-tar = "https://inkscape.org/gallery/item/56344/inkscape-1.4.2.tar.xz"
+tar = "https://inkscape.org/gallery/item/58914/inkscape-1.4.3.tar.xz"
 [build]
 template = "cmake"
 # dependencies = [

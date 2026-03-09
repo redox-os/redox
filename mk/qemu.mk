@@ -1,12 +1,14 @@
 # Configuration file for QEMU
 
-QEMU=SDL_VIDEO_X11_DGAMOUSE=0 qemu-system-$(QEMU_ARCH)
+QEMU=qemu-system-$(QEMU_ARCH)
 QEMUFLAGS=-d guest_errors -name "Redox OS $(ARCH)"
 netboot?=no
+redoxer?=no
 VGA_SUPPORTED=no
 
 ifeq ($(ARCH),i586)
 	audio?=ac97
+	disk?=ata
 	gpu?=vga
 	uefi=no
 	VGA_SUPPORTED=yes
@@ -42,7 +44,7 @@ else ifeq ($(ARCH),x86_64)
 		endif
 	endif
 	ifneq ($(usb),no)
-		QEMUFLAGS+=-device nec-usb-xhci,id=xhci
+		QEMUFLAGS+=-device qemu-xhci
 	endif
 else ifeq ($(ARCH),aarch64)
 	# Default to UEFI as U-Boot doesn't set up a framebuffer for us and we don't yet support
@@ -58,6 +60,7 @@ else ifeq ($(ARCH),aarch64)
 	ifeq ($(BOARD),raspi3bp)
 		QEMU_KERNEL=$(BUILD)/raspi3bp_uboot.rom
 		disk?=sdcard
+		gpu=none
 		QEMU_MACHINE:=raspi3b
 		QEMU_SMP:=4
 		QEMU_MEM:=1024
@@ -103,14 +106,15 @@ else ifeq ($(ARCH),riscv64gc)
 	QEMU_SMP?=4
 	QEMU_MEM?=2048
 	QEMU_CPU=max
-	disk?=nvme
 	PFLASH0=$(firstword \
 		$(wildcard /usr/share/qemu-efi-riscv64/RISCV_VIRT_CODE.fd) \
+		$(wildcard /usr/share/edk2/riscv/RISCV_VIRT_CODE.fd) \
 		$(wildcard /usr/share/qemu/edk2-riscv-code.fd) \
 		$(wildcard /opt/homebrew/opt/qemu/share/qemu/edk2-riscv-code.fd) \
 	)
 	PFLASH1=$(firstword \
 		$(wildcard /usr/share/qemu-efi-riscv64/RISCV_VIRT_VARS.fd) \
+		$(wildcard /usr/share/edk2/riscv/RISCV_VIRT_VARS.fd) \
 		$(wildcard /usr/share/qemu/edk2-riscv-vars.fd) \
 		$(wildcard /opt/homebrew/opt/qemu/share/qemu/edk2-riscv-vars.fd) \
 	)
@@ -160,6 +164,17 @@ ifeq ($(serial),no)
 else
 	QEMUFLAGS+=-chardev stdio,id=debug,signal=off,mux=on,"$(if $(qemu_serial_logfile),logfile=$(qemu_serial_logfile))"
 	QEMUFLAGS+=-serial chardev:debug -mon chardev=debug
+endif
+
+# redoxer exit code: 51 => success, 53 => failure
+ifeq ($(redoxer),yes)
+ifeq ($(ARCH),x86_64)
+	QEMUFLAGS+=-device isa-debug-exit
+else ifeq ($(ARCH),i586)
+	QEMUFLAGS+=-device isa-debug-exit
+else ifeq ($(ARCH),aarch64)
+	QEMUFLAGS+=-semihosting-config enable=on,target=native,userspace=on
+endif
 endif
 
 ifeq ($(iommu),yes)
@@ -236,6 +251,12 @@ else ifeq ($(gpu),virtio)
 	else
 		QEMUFLAGS+=-vga none -device virtio-gpu
 	endif
+else ifeq ($(gpu),virtio-sdl)
+	ifeq ($(VGA_SUPPORTED),yes)
+		QEMUFLAGS+=-vga none -device virtio-vga -display sdl,show-cursor=on
+	else
+		QEMUFLAGS+=-vga none -device virtio-gpu -display sdl,show-cursor=on
+	endif
 else ifeq ($(gpu),virtio-gl)
 	ifeq ($(VGA_SUPPORTED),yes)
 		QEMUFLAGS+=-display gtk,gl=on -vga none -device virtio-vga-gl
@@ -245,7 +266,7 @@ else ifeq ($(gpu),virtio-gl)
 endif
 
 EXTRA_DISK=$(BUILD)/extra.img
-disk?=ata
+disk?=nvme
 ifeq ($(disk),ata)
 	# For i386, ata will use ided
 	# For aarch64 and x86_64, ata will use ahcid
@@ -351,18 +372,3 @@ $(BUILD)/qemu_uboot.rom:
 
 qemu: qemu-deps
 	$(QEMU) $(QEMUFLAGS)
-
-# You probably want to use disk=no when using the *_extra targets
-qemu_extra: qemu-deps
-	$(QEMU) $(QEMUFLAGS) \
-		-drive file=$(EXTRA_DISK),format=raw
-
-qemu_nvme_extra: qemu-deps
-	$(QEMU) $(QEMUFLAGS) \
-		-drive file=$(EXTRA_DISK),format=raw,if=none,id=drv1 -device nvme,drive=drv1,serial=NVME_EXTRA
-
-#additional steps for $(DISK) are required!!!
-qemu_raspi: qemu-deps
-	$(QEMU) -M raspi3b -smp 4,cores=1 \
-		-kernel $(FIRMWARE) \
-		-serial stdio -display none

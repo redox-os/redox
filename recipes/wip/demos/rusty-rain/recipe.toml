@@ -1,5 +1,6 @@
-#TODO working but don't exit and hang the orbterm window
+#TODO compiled but not tested for a long time
 [source]
 git = "https://github.com/cowboy8625/rusty-rain"
+shallow_clone = true
 [build]
 template = "cargo"

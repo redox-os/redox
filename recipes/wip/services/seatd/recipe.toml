@@ -1,7 +1,10 @@
 #TODO not compiled or tested
-# lacking build instructions
 [source]
-git = "https://git.sr.ht/~kennylevinsen/seatd"
-rev = "3e9ef69f14f630a719dd464f3c90a7932f1c8296"
+git = "https://github.com/jackpot51/seatd"
+branch = "redox"
+
 [build]
 template = "meson"
+mesonflags = [
+    "-Dman-pages=disabled",
+]

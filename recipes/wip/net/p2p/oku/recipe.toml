@@ -1,8 +1,10 @@
 #TODO not compiled or tested
 [source]
 git = "https://github.com/OkuBrowser/oku"
+shallow_clone = true
+script = "./prebuild.sh"
 [build]
-template = "custom"
+template = "cargo"
 dependencies = [
     "gtk4",
     "glib",
@@ -10,7 +12,3 @@ dependencies = [
     "webkitgtk4",
     "libfuse3",
 ]
-script = """
-./prebuild.sh
-cookbook_cargo
-"""

@@ -1,7 +1,7 @@
 #TODO not compiled or tested
-# lacking build instructions
 [source]
 git = "https://github.com/knik0/faad2"
 rev = "2.11.2"
+shallow_clone = true
 [build]
 template = "cmake"

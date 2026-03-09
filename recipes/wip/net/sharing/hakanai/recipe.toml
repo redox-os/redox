@@ -1,11 +1,13 @@
 #TODO not compiled or tested
 [source]
 git = "https://github.com/czerwonk/hakanai"
+shallow_clone = true
 [build]
 template = "custom"
 dependencies = [
     "openssl3"
 ]
 script = """
+DYNAMIC_INIT
 cookbook_cargo_packages hakanai hakanai-server
 """

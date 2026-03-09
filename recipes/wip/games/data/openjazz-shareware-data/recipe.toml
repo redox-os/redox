@@ -4,7 +4,7 @@
 template = "custom"
 script = """
 ASSETS_DIR="${COOKBOOK_STAGE}/usr/share/games/openjazz/"
-APP_DIR="${COOKBOOK_STAGE}/ui/apps"
+APP_DIR="${COOKBOOK_STAGE}/usr/share/ui/apps"
 
 curl -vJL https://archive.org/download/jazz-jackrabbit/Jazz%20Jackrabbit.rar -o jazzdemo.rar
 sha256sum -c "${COOKBOOK_RECIPE}/jazzdemo.rar.sha"

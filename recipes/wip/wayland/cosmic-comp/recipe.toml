@@ -1,0 +1,20 @@
+#TODO: performance issues, no keyboard input
+[source]
+git = "https://github.com/jackpot51/cosmic-comp"
+branch = "redox"
+
+[build]
+template = "custom"
+dependencies = [
+    "libffi",
+    #TODO: requires evdev and some udev implementation: "libinput",
+    "libwayland",
+    "libxkbcommon",
+    "mesa",
+    "pixman",
+    "seatd",
+]
+script = """
+DYNAMIC_INIT
+cookbook_cargo --no-default-features --config 'profile.release.lto = "thin"'
+"""

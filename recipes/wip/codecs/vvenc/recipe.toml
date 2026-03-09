@@ -2,6 +2,7 @@
 # build instructions: https://github.com/fraunhoferhhi/vvenc/wiki/Build#build-using-plain-cmake
 [source]
 git = "https://github.com/fraunhoferhhi/vvenc"
-rev = "eea6fce28c8e822a0ece7a343a10fd5d6dd0e7bb"
+rev = "v1.14.0"
+shallow_clone = true
 [build]
 template = "cmake"

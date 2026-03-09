@@ -1,9 +1,11 @@
 #TODO not compiled or tested
 [source]
 git = "https://github.com/greatest-ape/aquatic"
+shallow_clone = true
 [build]
 template = "custom"
 script = """
+DYNAMIC_INIT
 cookbook_cargo_packages aquatic_udp
 mv "${COOKBOOK_STAGE}/usr/bin/aquatic_udp" "${COOKBOOK_STAGE}/usr/bin/aquatic-udp"
 """

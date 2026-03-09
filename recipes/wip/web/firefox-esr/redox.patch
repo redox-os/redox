@@ -1,0 +1,295 @@
+diff --color -ruwN source/build/moz.configure/init.configure source-new/build/moz.configure/init.configure
+--- source/build/moz.configure/init.configure	2026-01-07 04:09:42.000000000 +0700
++++ source-new/build/moz.configure/init.configure	2026-01-27 12:48:28.508789372 +0700
+@@ -511,6 +511,8 @@
+         canonical_os = canonical_kernel = "NetBSD"
+     elif os.startswith("openbsd"):
+         canonical_os = canonical_kernel = "OpenBSD"
++    elif os.startswith("redox"):
++        canonical_os = canonical_kernel = "Redox"
+     elif os.startswith("solaris"):
+         canonical_os = canonical_kernel = "SunOS"
+     elif os.startswith("wasi") and allow_wasi:
+@@ -934,6 +936,14 @@
+ 
+ set_define("XP_FREEBSD", target_is_freebsd)
+ 
++@depends(target)
++def target_is_redox(target):
++    if target.kernel == "Redox":
++        return True
++
++
++set_define("XP_REDOX", target_is_redox)
++
+ 
+ @depends(target)
+ def target_is_solaris(target):
+diff --color -ruwN source/mozglue/misc/PlatformMutex.h source-new/mozglue/misc/PlatformMutex.h
+--- source/mozglue/misc/PlatformMutex.h	2026-01-07 04:09:50.000000000 +0700
++++ source-new/mozglue/misc/PlatformMutex.h	2026-01-27 13:12:16.262181670 +0700
+@@ -48,7 +48,7 @@
+ 
+   PlatformData* platformData();
+ 
+-#if !defined(XP_WIN) && !defined(__wasi__)
++#if !defined(XP_WIN) && !defined(__wasi__) && !defined(__redox__)
+   void* platformData_[sizeof(pthread_mutex_t) / sizeof(void*)];
+   static_assert(sizeof(pthread_mutex_t) / sizeof(void*) != 0 &&
+                     sizeof(pthread_mutex_t) % sizeof(void*) == 0,
+diff --color -ruwN source/python/mozbuild/mozbuild/configure/constants.py source-new/python/mozbuild/mozbuild/configure/constants.py
+--- source/python/mozbuild/mozbuild/configure/constants.py	2026-01-07 04:09:50.000000000 +0700
++++ source-new/python/mozbuild/mozbuild/configure/constants.py	2026-01-27 09:16:48.349211711 +0700
+@@ -40,6 +40,7 @@
+         "NetBSD",
+         "OpenBSD",
+         "OSX",
++        "Redox",
+         "SunOS",
+         "WINNT",
+         "WASI",
+@@ -55,6 +56,7 @@
+         "Linux",
+         "NetBSD",
+         "OpenBSD",
++        "Redox",
+         "SunOS",
+         "WINNT",
+         "WASI",
+@@ -146,6 +148,7 @@
+     "Linux": "__linux__",
+     "NetBSD": "__NetBSD__",
+     "OpenBSD": "__OpenBSD__",
++    "Redox": "__redox__",
+     "SunOS": "__sun__",
+     "WINNT": "_WIN32 || __CYGWIN__",
+     "WASI": "__wasi__",
+diff --color -ruwN source/xpcom/build/BinaryPath.h source-new/xpcom/build/BinaryPath.h
+--- source/xpcom/build/BinaryPath.h	2026-01-07 04:09:59.000000000 +0700
++++ source-new/xpcom/build/BinaryPath.h	2026-01-27 12:51:20.922621049 +0700
+@@ -133,11 +133,15 @@
+     return rv;
+   }
+ 
+-#elif defined(ANDROID)
++#elif defined(ANDROID) || defined(XP_REDOX)
+   static nsresult Get(char aResult[MAXPATHLEN]) {
+     // On Android, we use the MOZ_ANDROID_LIBDIR variable that is set by the
+     // Java bootstrap code.
++#if defined(XP_REDOX)
++    const char* libDir = getenv("MOZ_REDOX_LIBDIR");
++#else
+     const char* libDir = getenv("MOZ_ANDROID_LIBDIR");
++#endif
+     if (!libDir) {
+       return NS_ERROR_FAILURE;
+     }
+diff --color -ruwN source/Cargo.lock source-new/Cargo.lock
+--- source/Cargo.lock	2026-01-07 04:09:41.000000000 +0700
++++ source-new/Cargo.lock	2026-01-27 19:15:51.024103229 +0700
+@@ -3724,6 +3724,16 @@
+ checksum = "348108ab3fba42ec82ff6e9564fc4ca0247bdccdc68dd8af9764bbc79c3c8ffb"
+ 
+ [[package]]
++name = "libredox"
++version = "0.1.12"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "3d0b95e02c851351f877147b7deea7b1afb1df71b63aa5f8270716e0c5720616"
++dependencies = [
++ "bitflags 2.9.0",
++ "libc",
++]
++
++[[package]]
+ name = "libsqlite3-sys"
+ version = "0.31.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+@@ -5586,11 +5596,23 @@
+ 
+ [[package]]
+ name = "redox_syscall"
+-version = "0.5.999"
++version = "0.5.18"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "ed2bf2547551a7053d6fdfafda3f938979645c44812fbfcda098faae3f1a362d"
++dependencies = [
++ "bitflags 2.9.0",
++]
+ 
+ [[package]]
+ name = "redox_users"
+-version = "0.4.999"
++version = "0.4.6"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "ba009ff324d1fc1b900bd1fdb31564febe58a8ccc8a6fdbb93b543d33b13ca43"
++dependencies = [
++ "getrandom 0.2.999",
++ "libredox",
++ "thiserror 1.999.999",
++]
+ 
+ [[package]]
+ name = "regex"
+diff --color -ruwN source/Cargo.toml source-new/Cargo.toml
+--- source/Cargo.toml	2026-01-07 04:09:40.000000000 +0700
++++ source-new/Cargo.toml	2026-01-27 19:14:06.467281854 +0700
+@@ -134,12 +134,6 @@
+ # Patch r-efi to an empty crate
+ r-efi = { path = "build/rust/r-efi" }
+ 
+-# Patch redox_users to an empty crate
+-redox_users = { path = "build/rust/redox_users" }
+-
+-# Patch redox_syscall to an empty crate
+-redox_syscall = { path = "build/rust/redox_syscall" }
+-
+ # Patch hermit-abi to an empty crate
+ hermit-abi = { path = "build/rust/hermit-abi" }
+ 
+diff --color -ruwN source/ipc/chromium/src/base/platform_thread.h source-new/ipc/chromium/src/base/platform_thread.h
+--- source/ipc/chromium/src/base/platform_thread.h	2026-01-07 04:09:45.000000000 +0700
++++ source-new/ipc/chromium/src/base/platform_thread.h	2026-01-27 18:12:57.887138642 +0700
+@@ -24,7 +24,7 @@
+ #else
+ #  include <pthread.h>
+ typedef pthread_t PlatformThreadHandle;
+-#  if defined(XP_LINUX) || defined(XP_OPENBSD) || defined(XP_SOLARIS) || \
++#  if defined(XP_LINUX) || defined(XP_OPENBSD) || defined(XP_REDOX) || defined(XP_SOLARIS) || \
+       defined(__GLIBC__)
+ #    include <unistd.h>
+ typedef pid_t PlatformThreadId;
+diff --color -ruwN source/mozglue/misc/TimeStamp_posix.cpp source-new/mozglue/misc/TimeStamp_posix.cpp
+--- source/mozglue/misc/TimeStamp_posix.cpp	2026-01-07 04:09:50.000000000 +0700
++++ source-new/mozglue/misc/TimeStamp_posix.cpp	2026-01-27 17:59:05.200260121 +0700
+@@ -13,7 +13,10 @@
+ // obtained with this API; see TimeDuration::Resolution;
+ //
+ 
++
++#if !defined(__redox__)
+ #include <sys/syscall.h>
++#endif
+ #include <time.h>
+ #include <unistd.h>
+ #include <string.h>
+diff --color -ruwN source/supply-chain/audits.toml source-new/supply-chain/audits.toml
+--- source/supply-chain/audits.toml	2026-01-07 04:09:51.000000000 +0700
++++ source-new/supply-chain/audits.toml	2026-01-27 19:29:15.927403772 +0700
+@@ -3235,6 +3235,11 @@
+ version = "0.2.6"
+ notes = "This crate uses unsafe block, but this doesn't have network and file access. I audited code."
+ 
++[[audits.libredox]]
++who = "Wildan M <willnode@wellosoft.net>"
++criteria = "safe-to-deploy"
++version = "0.1.12"
++
+ [[audits.libsqlite3-sys]]
+ who = "Ben Dean-Kawamura <bdk@mozilla.com>"
+ criteria = "safe-to-deploy"
+@@ -4560,10 +4565,20 @@
+ delta = "1.10.1 -> 1.10.2"
+ 
+ [[audits.redox_syscall]]
++who = "Wildan M <willnode@wellosoft.net>"
++criteria = "safe-to-deploy"
++version = "0.5.18"
++
++[[audits.redox_syscall]]
+ who = "Mike Hommey <mh+mozilla@glandium.org>"
+ criteria = "safe-to-deploy"
+ delta = "0.2.13 -> 0.2.16"
+ 
++[[audits.redox_users]]
++who = "Wildan M <willnode@wellosoft.net>"
++criteria = "safe-to-deploy"
++version = "0.4.6"
++
+ [[audits.regex]]
+ who = "Mike Hommey <mh+mozilla@glandium.org>"
+ criteria = "safe-to-deploy"
+@@ -4676,7 +4691,7 @@
+ the `regex` developers in the same repository.
+ 
+ This crate is explicitly designed for FFI use, and should not be used directly
+-by Rust code. The exported `extern \"C\"` functions are not marked as `unsafe`,
++by Rust code. The exported `extern "C"` functions are not marked as `unsafe`,
+ meaning that it is technically incorrect to use them from within Rust code,
+ however they are reasonable to use from C code.
+ 
+@@ -6463,7 +6478,7 @@
+ who = "Makoto Kato <m_kato@ga2.so-net.ne.jp>"
+ criteria = "safe-to-deploy"
+ version = "0.1.2"
+-notes = "This crate is zero-copy version of \"From\". This has no unsafe code and uses no ambient capabilities."
++notes = 'This crate is zero-copy version of "From". This has no unsafe code and uses no ambient capabilities.'
+ 
+ [[audits.zerofrom]]
+ who = "Makoto Kato <m_kato@ga2.so-net.ne.jp>"
+diff --color -ruwN source/supply-chain/imports.lock source-new/supply-chain/imports.lock
+--- source/supply-chain/imports.lock	2026-01-07 04:09:52.000000000 +0700
++++ source-new/supply-chain/imports.lock	2026-01-27 19:29:15.929403788 +0700
+@@ -1592,7 +1592,7 @@
+ criteria = "safe-to-deploy"
+ version = "1.6.0"
+ notes = """
+-Grepped for \"unsafe\", \"crypt\", \"cipher\", \"fs\", \"net\" - there were no
++Grepped for "unsafe", "crypt", "cipher", "fs", "net" - there were no
+ hits except for 8 occurrences of `unsafe`.  Additional `unsafe` review comments
+ can be found in https://crrev.com/c/5445719.
+ """
+@@ -1902,7 +1902,7 @@
+ * Using `unsafe` in a string:
+ 
+     ```
+-    src/constfn.rs:            \"unsafe\" => Qualifiers::Unsafe,
++    src/constfn.rs:            "unsafe" => Qualifiers::Unsafe,
+     ```
+ 
+ * Using `std::fs` in `build/build.rs` to write `${OUT_DIR}/version.expr`
+@@ -2104,6 +2104,7 @@
+ user-id = 213776 # divviup-github-automation
+ start = "2020-09-28"
+ end = "2026-01-07"
++renew = false
+ 
+ [[audits.isrg.audits.base64]]
+ who = "Tim Geoghegan <timg@letsencrypt.org>"
+diff --color -ruwN source/build/rust/redox_syscall/Cargo.toml source-new/build/rust/redox_syscall/Cargo.toml
+--- source/build/rust/redox_syscall/Cargo.toml	2026-01-07 04:09:41.000000000 +0700
++++ source-new/build/rust/redox_syscall/Cargo.toml	1970-01-01 07:00:00.000000000 +0700
+@@ -1,8 +0,0 @@
+-[package]
+-name = "redox_syscall"
+-version = "0.5.999"
+-edition = "2018"
+-license = "MPL-2.0"
+-
+-[lib]
+-path = "lib.rs"
+diff --color -ruwN source/build/rust/redox_syscall/lib.rs source-new/build/rust/redox_syscall/lib.rs
+--- source/build/rust/redox_syscall/lib.rs	2026-01-07 04:09:41.000000000 +0700
++++ source-new/build/rust/redox_syscall/lib.rs	1970-01-01 07:00:00.000000000 +0700
+@@ -1,3 +0,0 @@
+-/* This Source Code Form is subject to the terms of the Mozilla Public
+- * License, v. 2.0. If a copy of the MPL was not distributed with this
+- * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+diff --color -ruwN source/build/rust/redox_users/Cargo.toml source-new/build/rust/redox_users/Cargo.toml
+--- source/build/rust/redox_users/Cargo.toml	2026-01-07 04:09:41.000000000 +0700
++++ source-new/build/rust/redox_users/Cargo.toml	1970-01-01 07:00:00.000000000 +0700
+@@ -1,8 +0,0 @@
+-[package]
+-name = "redox_users"
+-version = "0.4.999"
+-edition = "2018"
+-license = "MPL-2.0"
+-
+-[lib]
+-path = "lib.rs"
+diff --color -ruwN source/build/rust/redox_users/lib.rs source-new/build/rust/redox_users/lib.rs
+--- source/build/rust/redox_users/lib.rs	2026-01-07 04:09:41.000000000 +0700
++++ source-new/build/rust/redox_users/lib.rs	1970-01-01 07:00:00.000000000 +0700
+@@ -1,3 +0,0 @@
+-/* This Source Code Form is subject to the terms of the Mozilla Public
+- * License, v. 2.0. If a copy of the MPL was not distributed with this
+- * file, You can obtain one at http://mozilla.org/MPL/2.0/. */

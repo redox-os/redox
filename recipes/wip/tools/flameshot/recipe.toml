@@ -1,12 +1,18 @@
 #TODO not compiled or tested
+#TODO determine minimum dependencies from cmake log
 # build instructions: https://flameshot.org/docs/installation/source-code/#compilation
 [source]
 git = "https://github.com/flameshot-org/flameshot"
-rev = "70be63d478a271da549597d69bd4868607c0a395"
+branch = "v13.3.0"
+shallow_clone = true
 [build]
 template = "cmake"
-dependencies = [
-    "qt5-base",
-    "qt5-tools",
-    "qt5-svg",
+cmakeflags = [
+    "-DDISABLE_UPDATE_CHECKER=ON",
+    "-DBUILD_STATIC_LIBS=OFF",
 ]
+#dependencies = [
+#    "qt5-base",
+#    "qt5-tools",
+#    "qt5-svg",
+#]

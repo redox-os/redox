@@ -1,8 +1,14 @@
-#TODO missing script for building, see https://github.com/tux4kids/tuxmath/blob/master/doc/INSTALL
+#TODO not compiled or tested
+# build instructions: https://github.com/tux4kids/tuxmath/blob/master/doc/INSTALL
 [source]
 git = "https://github.com/tux4kids/tuxmath"
+shallow_clone = true
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
 [build]
-template = "custom"
+template = "configure"
 dependencies = [
     "t4kcommon",
     "sdl1",

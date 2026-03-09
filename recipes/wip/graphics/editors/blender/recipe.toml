@@ -2,9 +2,14 @@
 #TODO determine the minimum dependencies from cmake log
 # build instructions: https://developer.blender.org/docs/handbook/building_blender/
 [source]
-tar = "https://download.blender.org/source/blender-5.0.0.tar.xz"
+tar = "https://download.blender.org/source/blender-5.0.1.tar.xz"
 [build]
 template = "cmake"
+cmakeflags = [
+    "-DWITH_GHOST_SDL=ON",
+    "-DWITH_SDL=ON",
+    "-DWITH_EXPERIMENTAL_FEATURES=OFF",
+]
 # dependencies = [
 #     "dbus",
 #     "libdecor",

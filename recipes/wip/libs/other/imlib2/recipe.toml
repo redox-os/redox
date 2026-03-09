@@ -4,7 +4,6 @@ tar = "https://downloads.sourceforge.net/project/enlightenment/imlib2-src/1.12.5
 blake3 = "535b6a986538295af5194e81281a11a1d7e79ae518959ca434f1e53bfa67e86d"
 patches = ["redox.patch"]
 script = """
-DYNAMIC_INIT
 autotools_recursive_regenerate
 """
 

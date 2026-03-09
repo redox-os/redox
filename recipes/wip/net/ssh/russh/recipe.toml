@@ -1,8 +1,9 @@
 [source]
 git = "https://github.com/jackpot51/russh"
-
+shallow_clone = true
 [build]
 template = "custom"
 script = """
+DYNAMIC_INIT
 cookbook_cargo_examples client_exec_simple client_exec_interactive sftp_client sftp_server
 """

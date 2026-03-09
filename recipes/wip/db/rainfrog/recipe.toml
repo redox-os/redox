@@ -1,6 +1,7 @@
 #TODO not compiled or tested
 [source]
 git = "https://github.com/achristmascarl/rainfrog"
+shallow_clone = true
 [build]
 template = "cargo"
 [package]

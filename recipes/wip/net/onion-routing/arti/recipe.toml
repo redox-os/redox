@@ -1,11 +1,13 @@
 #TODO pwd-grp crate error
 [source]
 git = "https://gitlab.torproject.org/tpo/core/arti"
+shallow_clone = true
 [build]
 template = "custom"
 dependencies = [
-    "openssl1",
+    "openssl3",
 ]
 script = """
+DYNAMIC_INIT
 cookbook_cargo_packages arti
 """

@@ -3,10 +3,14 @@
 # build instructions: https://invent.kde.org/multimedia/kdenlive/-/blob/master/dev-docs/build.md#build-and-install-the-projects
 [source]
 git = "https://invent.kde.org/multimedia/kdenlive"
-branch = "release/25.08"
+branch = "release/25.12"
 shallow_clone = true
 [build]
 template = "cmake"
+cmakeflags = [
+    "-DBUILD_TESTING=OFF",
+    "-DUSE_DBUS=OFF",
+]
 # dependencies = [
 #     "mlt",
 #     "ffmpeg6",

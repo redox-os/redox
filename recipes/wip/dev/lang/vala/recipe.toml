@@ -1,8 +1,14 @@
-#TODO missing script for building, see https://gitlab.gnome.org/GNOME/vala#building-vala
+#TODO not compiled or tested
+#TODO require bootstraping from another vala compiler
+# build instructions: https://gitlab.gnome.org/GNOME/vala#building-vala
 [source]
-tar = "https://download.gnome.org/sources/vala/0.56/vala-0.56.14.tar.xz"
+tar = "https://download.gnome.org/sources/vala/0.56/vala-0.56.18.tar.xz"
 [build]
 template = "custom"
 dependencies = [
     "glib",
 ]
+script = """
+DYNAMIC_INIT
+cookbook_configure
+"""

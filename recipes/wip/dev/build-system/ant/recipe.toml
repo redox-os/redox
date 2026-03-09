@@ -1,5 +1,13 @@
-#TODO missing script for building: https://ant.apache.org/manual/install.html#buildingant
+#TODO not tested
 [source]
-tar = "https://downloads.apache.org/ant/source/apache-ant-1.10.14-src.tar.xz"
+tar = "https://dlcdn.apache.org//ant/binaries/apache-ant-1.10.15-bin.tar.xz"
 [build]
 template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}/usr/bin/ant-dir"
+cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}/usr/bin/ant-dir"
+echo "/usr/bin/ant-dir/bin/ant" > "${COOKBOOK_STAGE}"/usr/bin/ant
+chmod a+x "${COOKBOOK_STAGE}"/usr/bin/ant
+"""
+[package]
+dependencies = ["openjdk21",]

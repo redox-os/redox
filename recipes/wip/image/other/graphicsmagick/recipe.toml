@@ -1,6 +1,5 @@
-#TODO compilation error - missing sys/poll.h
-#TODO fix libwebp
-#TODO more features - http://www.graphicsmagick.org/README.html#add-on-libraries-programs
+#TODO compilation error: missing sys/poll.h
+#TODO more features: http://www.graphicsmagick.org/README.html#add-on-libraries-programs
 [source]
 tar = "https://sourceforge.net/projects/graphicsmagick/files/graphicsmagick/1.3.42/GraphicsMagick-1.3.42.tar.xz/download"
 [build]

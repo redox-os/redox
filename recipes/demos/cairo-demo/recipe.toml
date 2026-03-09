@@ -1,0 +1,25 @@
+# source is part of cookbook
+
+[build]
+dependencies = [
+    "cairo",
+    "expat",
+    "fontconfig",
+    "freetype2",
+    "liborbital",
+    "libpng",
+    "pixman",
+    "zlib",
+]
+template = "custom"
+script = """
+"${CXX}" \
+    $("${PKG_CONFIG}" --cflags cairo) \
+    "${COOKBOOK_RECIPE}/cairo-demo.c" \
+    -o cairo-demo \
+    -static \
+    $("${PKG_CONFIG}" --libs cairo) \
+    -lorbital
+mkdir -pv "${COOKBOOK_STAGE}/bin"
+cp -v "cairo-demo" "${COOKBOOK_STAGE}/bin/cairo-demo"
+"""

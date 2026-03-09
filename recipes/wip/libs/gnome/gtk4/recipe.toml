@@ -1,0 +1,25 @@
+#TODO not compiled or tested
+# build instructions: https://docs.gtk.org/gtk4/building.html
+[source]
+tar = "https://download.gnome.org/sources/gtk/4.20/gtk-4.20.3.tar.xz"
+[build]
+template = "meson"
+mesonflags = [
+    "-Dwayland-backend=false",
+    "-Dintrospection=false",
+    "-Dprofile=default",
+    "-Dbuild-testsuite=false",
+    "-Dbuild-tests=false",
+]
+dependencies = [
+    "glib",
+    "gdk-pixbuf",
+    "pango",
+    "cairo",
+    "libepoxy",
+    "atk",
+    "shared-mime-info",
+    "graphene",
+    "libxkbcommon",
+    "gstreamer",
+]

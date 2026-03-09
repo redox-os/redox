@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+#TODO discover minimum dependencies
+[source]
+tar = "https://codeberg.org/eyekay/letters/archive/0.2.0.tar.gz"
+[build]
+template = "meson"

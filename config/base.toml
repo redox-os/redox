@@ -15,6 +15,8 @@ bootloader = {}
 kernel = {}
 libgcc = {}
 libstdcxx = {}
+netdb = {}
+netutils = {}
 relibc = {}
 userutils = {}
 uutils = {}
@@ -27,20 +29,99 @@ data = """
 rm -rf /tmp
 mkdir -m a=rwxt /tmp
 
-ipcd
-ptyd
+notify ipcd
+notify ptyd
 nowait sudo --daemon
 """
 
 [[files]]
 path = "/usr/lib/init.d/00_drivers"
 data = """
-pcid-spawner /etc/pcid.d/
+requires_weak 00_base
+pcid-spawner
+"""
+
+## Network init
+[[files]]
+path = "/usr/lib/init.d/10_net"
+data = """
+requires_weak 00_drivers
+notify smolnetd
+nowait dhcpd
+"""
+
+[[files]]
+path = "/etc/login_schemes.toml"
+data = """
+[user_schemes.root]
+schemes = ["*"]
+[user_schemes.user]
+schemes = [
+  # Kernel schemes
+  "debug",
+  "event",
+  "memory",
+  "pipe",
+  "serio",
+  "irq",
+  "time",
+  "sys",
+  # Base schemes
+  "rand",
+  "null",
+  "zero",
+  "log",
+  # Network schemes
+  "ip",
+  "icmp",
+  "tcp",
+  "udp",
+  # IPC schemes
+  "shm",
+  "chan",
+  "uds_stream",
+  "uds_dgram",
+  # File schemes
+  "file",
+  # Display schemes
+  "display.vesa",
+  "display*",
+  # Other schemes
+  "pty",
+  "sudo",
+  "audio",
+  "orbital",
+]
 """
 
 [[files]]
 path = "/etc/hostname"
 data = "redox"
+
+## Default net configuration (optimized for QEMU)
+[[files]]
+path = "/etc/net/dns"
+data = """
+9.9.9.9
+"""
+
+[[files]]
+path = "/etc/net/ip"
+data = """
+10.0.2.15
+"""
+
+[[files]]
+path = "/etc/net/ip_router"
+data = """
+10.0.2.2
+"""
+
+[[files]]
+path = "/etc/net/ip_subnet"
+data = """
+255.255.255.0
+"""
 
 # https://www.freedesktop.org/software/systemd/man/latest/os-release.html
 [[files]]
@@ -124,10 +205,21 @@ path = "/share"
 data = "usr/share"
 symlink = true
 
+[[files]]
+path = "/ui"
+data = "usr/share/ui"
+symlink = true
+
 ## legacy orbital font directory
 [[files]]
-path = "/usr/share/fonts"
-data = "../../ui/fonts"
+path = "/usr/share/ui/fonts"
+data = "/usr/share/fonts"
+symlink = true
+
+## legacy orbital icon directory
+[[files]]
+path = "/usr/share/ui/icons"
+data = "/usr/share/icons"
 symlink = true
 
 ## /var
@@ -219,8 +311,6 @@ symlink = true
 password = "password"
 uid = 0
 gid = 0
-name = "root"
-home = "/root"
 shell = "/usr/bin/ion"
 
 [users.user]

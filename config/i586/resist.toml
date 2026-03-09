@@ -1,3 +1,0 @@
-# Configuration to use the "resist" tests
-
-include = ["../resist.toml"]

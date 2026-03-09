@@ -1,0 +1,12 @@
+#TODO not compiled or tested
+[source]
+git = "https://gitlab.gnome.org/World/read-it-later"
+shallow_clone = true
+[build]
+template = "meson"
+dependencies = [
+    "gtk4",
+    "libadwaita",
+    "glib",
+    "gdk-pixbuf",
+]

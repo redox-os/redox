@@ -1,6 +1,10 @@
-#TODO build sdl2 opengl examples, see: https://github.com/ocornut/imgui/pull/3027
+#TODO not compiled or tested
+#TODO discover minimum dependencies from cmake log
+# pull request: https://github.com/ocornut/imgui/pull/3027
 [source]
 git = "https://github.com/Qix-/imgui"
 branch = "cmake"
+shallow_clone = true
 [build]
 template = "cmake"
+#dependencies = ["sdl2"]

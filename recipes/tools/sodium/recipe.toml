@@ -9,11 +9,11 @@ DYNAMIC_INIT
     --path "${COOKBOOK_SOURCE}" \
     --root "${COOKBOOK_STAGE}/usr" \
     --locked \
-    --no-track \
+    ${install_flags} \
     --features orbital
 
-mkdir -pv "${COOKBOOK_STAGE}/ui/apps"
-cp -v ${COOKBOOK_SOURCE}/manifest "${COOKBOOK_STAGE}/ui/apps/sodium"
-mkdir -pv "${COOKBOOK_STAGE}/ui/icons"
-cp -v ${COOKBOOK_SOURCE}/icon.png "${COOKBOOK_STAGE}/ui/icons/sodium.png"
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/ui/apps"
+cp -v ${COOKBOOK_SOURCE}/manifest "${COOKBOOK_STAGE}/usr/share/ui/apps/sodium"
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/icons"
+cp -v ${COOKBOOK_SOURCE}/icon.png "${COOKBOOK_STAGE}/usr/share/icons/sodium.png"
 """

@@ -4,9 +4,13 @@
 # dependencies: https://github.com/maoschanz/drawing/blob/master/CONTRIBUTING.md#dependencies
 [source]
 git = "https://github.com/maoschanz/drawing"
-rev = "1.0.2"
+branch = "1.0.x-stable"
+shallow_clone = true
 [build]
 template = "meson"
+mesonflags = [
+    "-Denable-translations-and-appdata=false"
+]
 #dependencies = [
 #    "gtk3",
 #    "cairo",

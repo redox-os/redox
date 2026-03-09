@@ -5,7 +5,6 @@ patches = [
     "redox.patch"
 ]
 script = """
-DYNAMIC_INIT
 autotools_recursive_regenerate
 """
 
@@ -13,6 +12,9 @@ autotools_recursive_regenerate
 template = "custom"
 script = """
 DYNAMIC_INIT
-rsync -av --delete "$COOKBOOK_SOURCE/." ./
+COOKBOOK_CONFIGURE_FLAGS+=(
+# TODO: https://gitlab.redox-os.org/redox-os/redox/-/issues/1753
+    'ac_cv_func_mkfifo=no'
+)
 cookbook_configure
 """

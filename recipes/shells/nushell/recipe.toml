@@ -1,11 +1,8 @@
-#TODO: build fails to link, we need the following in relibc
-# - getgrgid_r
-# - getgrouplist
-# Additionally, openssl fails to link fprintf and sscanf
-
+#TODO: Reduce crate patches
 [source]
-git = "https://github.com/jackpot51/nushell.git"
-branch = "redox"
+git = "https://github.com/nushell/nushell"
+rev = "172a070a4bbeff15a289813bc73d4628a3032210"
+patches = ["redox.patch"]
 
 [build]
 dependencies = [
@@ -13,8 +10,7 @@ dependencies = [
 ]
 template = "custom"
 script = """
+DYNAMIC_INIT
 export OPENSSL_DIR="${COOKBOOK_SYSROOT}"
-export OPENSSL_STATIC="true"
 cookbook_cargo
 """
-

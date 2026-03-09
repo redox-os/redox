@@ -1,0 +1,22 @@
+[source]
+git = "https://github.com/jackpot51/cosmic-panel"
+branch = "redox"
+
+[build]
+template = "custom"
+dependencies = [
+    "gettext",
+    #"libffi",
+    #TODO: requires evdev and some udev implementation: "libinput",
+    "libwayland",
+    "libxkbcommon",
+    #"mesa",
+    #"pixman",
+    #"seatd",
+]
+script = """
+DYNAMIC_INIT
+export GETTEXT_DIR="${COOKBOOK_SYSROOT}/usr"
+COOKBOOK_SOURCE="${COOKBOOK_SOURCE}/cosmic-panel-bin"
+cookbook_cargo --no-default-features
+"""

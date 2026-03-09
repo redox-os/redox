@@ -5,8 +5,9 @@ ifeq ($(FSTOOLS_IN_PODMAN),1)
 	$(PODMAN_RUN) make $@
 else
 	mkdir -p $(BUILD)
-	rm -rf $@  $@.partial
+	-$(FUMOUNT) $(MOUNT_DIR) || true
 	-$(FUMOUNT) /tmp/redox_installer || true
+	rm -rf $@  $@.partial $(MOUNT_DIR)
 	FILESYSTEM_SIZE=$(FILESYSTEM_SIZE) && \
 	if [ -z "$$FILESYSTEM_SIZE" ] ; then \
 	FILESYSTEM_SIZE=$(shell $(INSTALLER) --filesystem-size -c $(FILESYSTEM_CONFIG)); \
@@ -65,7 +66,7 @@ else
 	@mkdir -p $(MOUNT_DIR)
 	$(REDOXFS) $(BUILD)/harddrive.img $(MOUNT_DIR)
 	@sleep 2
-	@pgrep redoxfs
+	@echo "\033[1;36;49mharddrive.img mounted ($$(pgrep redoxfs))\033[0m"
 endif
 
 mount_extra: $(FSTOOLS) FORCE
@@ -75,7 +76,7 @@ else
 	@mkdir -p $(MOUNT_DIR)
 	$(REDOXFS) $(BUILD)/extra.img $(MOUNT_DIR)
 	@sleep 2
-	@pgrep redoxfs
+	@echo "\033[1;36;49mextra.img mounted ($$(pgrep redoxfs))\033[0m"
 endif
 
 mount_live: $(FSTOOLS) FORCE
@@ -85,7 +86,7 @@ else
 	@mkdir -p $(MOUNT_DIR)
 	$(REDOXFS) $(BUILD)/redox-live.iso $(MOUNT_DIR)
 	@sleep 2
-	@pgrep redoxfs
+	@echo "\033[1;36;49mredox-live.iso mounted ($$(pgrep redoxfs))\033[0m"
 endif
 
 unmount: FORCE
@@ -96,4 +97,5 @@ else
 	-$(FUMOUNT) $(MOUNT_DIR)
 	@rm -rf $(MOUNT_DIR)
 	@-$(FUMOUNT) /tmp/redox_installer 2>/dev/null || true
+	@echo "\033[1;36;49mFilesystem unmounted\033[0m"
 endif

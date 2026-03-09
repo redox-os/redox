@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+#TODO discover minimum dependencies from meson log
+[source]
+git = "https://codeberg.org/haydn/typesetter"
+[build]
+template = "meson"

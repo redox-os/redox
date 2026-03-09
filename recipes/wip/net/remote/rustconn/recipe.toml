@@ -1,0 +1,15 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/totoshko88/RustConn"
+shallow_clone = true
+[build]
+template = "custom"
+dependencies = [
+    "gtk4",
+    "libadwaita",
+    "vte",
+]
+script = """
+DYNAMIC_INIT
+cookbook_cargo_packages rustconn
+"""

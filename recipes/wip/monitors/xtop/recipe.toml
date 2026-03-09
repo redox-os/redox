@@ -1,0 +1,7 @@
+# TODO compiles but fails to run
+# ratatui-widgets-0.3.0 src/guage.rs 313:9 Ratio should be between 0 and 1 inclusively
+[source]
+git = "https://github.com/mabognar/xtop"
+
+[build]
+template = "cargo"

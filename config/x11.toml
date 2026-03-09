@@ -12,47 +12,42 @@ filesystem_size = 2048
 # Package settings
 [packages]
 adwaita-icon-theme = {}
-caja = {}
 dbus = {}
 gtk3 = {}
-marco = {}
-mate-control-center = {}
-mate-icon-theme = {}
-mate-panel = {}
-mate-session-manager = {}
-mate-settings-daemon = {}
-mate-terminal = {}
+mate-common = {}
 mesa-demos-x11 = {}
-webkitgtk3 = {}
-xev = {}
-xeyes = {}
+#webkitgtk3 = {} # not compiling
 #xfce4-panel = {}
 #xfwm4 = {}
-xinit = {}
-xkbcomp = {}
-xkbutils = {}
-xkeyboard-config = {}
-xserver-xorg = {}
-xserver-xorg-video-orbital = {}
-xterm = {}
+x11-full = {}
 zenity = {}
 
 [[files]]
 path = "/usr/lib/init.d/10_dbus"
 data = """
+requires_weak 10_net
+bash /usr/bin/start-dbus.sh
+"""
+
+[[files]]
+path = "/usr/bin/start-dbus.sh"
+mode = 0o755
+data = """
+#!/usr/bin/env bash
 export DBUS_DEBUG_OUTPUT=1
 #export DBUS_VERBOSE=1
 #export G_DBUS_DEBUG=all
 mkdir -p /var/lib/dbus
 dbus-uuidgen --ensure
 mkdir -p /run/dbus
+rm -f /run/dbus/pid
 dbus-daemon --system
 """
 
 [[files]]
 path = "/usr/lib/init.d/10_xenv"
 data = """
-export DISPLAY :0
+requires_weak 10_net
 glib-compile-schemas /usr/share/glib-2.0/schemas/
 """
 
@@ -60,12 +55,9 @@ glib-compile-schemas /usr/share/glib-2.0/schemas/
 [[files]]
 path = "/usr/lib/init.d/20_orbital"
 data = """
-audiod
-export BROWSER /bin/netsurf-fb
-export VT 3
-nowait orbital orbital-x11
-unset BROWSER
-unset VT
+requires_weak 10_dbus 10_xenv
+notify audiod
+nowait BROWSER=/bin/netsurf-fb VT=3 orbital orbital-x11
 """
 
 [[files]]
@@ -75,6 +67,10 @@ data = """
 #!/usr/bin/env bash
 
 set -ex
+
+# for ice authority and pixbuf
+export HOME=/home/root
+export XDG_DATA_DIRS=/usr/share
 
 # Generate config file
 WIDTH="$((0x$(grep FRAMEBUFFER_WIDTH /scheme/sys/env | cut -d '=' -f 2)))"
@@ -123,8 +119,21 @@ set -ex
 
 xterm&
 sleep 1
+
+gdk-pixbuf-query-loaders --update-cache
 mate-session&
 """
+
+
+# Override console config to set DISPLAY=:0
+[[files]]
+path = "/usr/lib/init.d/30_console"
+data = """
+requires_weak 20_orbital
+nowait DISPLAY=:0 getty 2
+nowait DISPLAY=:0 getty /scheme/debug/no-preserve -J
+"""
+
 
 [[files]]
 path = "/usr/bin/browser"

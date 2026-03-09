@@ -1,6 +1,10 @@
 #TODO not compiled or tested
 # build instructions: https://github.com/rizinorg/rizin/blob/dev/BUILDING.md
 [source]
-tar = "https://github.com/rizinorg/rizin/releases/download/v0.7.3/rizin-src-v0.7.3.tar.xz"
+tar = "https://github.com/rizinorg/rizin/releases/download/v0.8.1/rizin-src-v0.8.1.tar.xz"
 [build]
 template = "meson"
+mesonflags = [
+    "-Denable_tests=false",
+    "-Denable_rz_test=false",
+]

@@ -19,7 +19,7 @@ cp -v "${COOKBOOK_RECIPE}/baserom.us.z64" baserom.us.z64
 #TODO: do this in cook instead
 unset AR AS CC CXX LD NM OBJCOPY OBJDUMP RANLIB READELF STRIP
 
-export REDOX_CFLAGS="${CFLAGS}"
+export REDOX_CFLAGS="${CFLAGS} -I${COOKBOOK_SYSROOT}/include"
 export REDOX_LDFLAGS="${LDFLAGS}"
 unset CFLAGS LDFLAGS
 
@@ -28,9 +28,9 @@ export CROSS="${TARGET}-"
 mkdir -p "${COOKBOOK_STAGE}/bin"
 cp -v build/us_pc/sm64.us.f3dex2e "${COOKBOOK_STAGE}/bin/sm64"
 
-mkdir -pv "${COOKBOOK_STAGE}/ui/apps"
-cp -v "${COOKBOOK_RECIPE}/manifest" "${COOKBOOK_STAGE}/ui/apps/sm64ex"
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/ui/apps"
+cp -v "${COOKBOOK_RECIPE}/manifest" "${COOKBOOK_STAGE}/usr/share/ui/apps/sm64ex"
 
-mkdir -pv "${COOKBOOK_STAGE}/ui/icons/apps"
-wget -O "${COOKBOOK_STAGE}/ui/icons/apps/sm64ex.png" https://evilgames.eu/texture-packs/thumb/sm64-reloaded.png
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/icons/apps"
+wget -O "${COOKBOOK_STAGE}/usr/share/icons/apps/sm64ex.png" https://evilgames.eu/texture-packs/thumb/sm64-reloaded.png
 """

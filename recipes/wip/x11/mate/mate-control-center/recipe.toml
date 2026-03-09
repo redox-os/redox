@@ -11,6 +11,9 @@ dependencies = [
     "libxscrnsaver",
     "marco",
 ]
+dev-dependencies = [
+    "host:itstool"
+]
 template = "meson"
 mesonflags = [
     "-Dlibappindicator=no",

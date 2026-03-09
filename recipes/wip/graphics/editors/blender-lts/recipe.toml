@@ -4,8 +4,14 @@
 [source]
 git = "https://projects.blender.org/blender/blender"
 branch = "blender-v4.5-release"
+shallow_clone = true
 [build]
 template = "cmake"
+cmakeflags = [
+    "-DWITH_GHOST_SDL=ON",
+    "-DWITH_SDL=ON",
+    "-DWITH_EXPERIMENTAL_FEATURES=OFF",
+]
 # dependencies = [
 #     "dbus",
 #     "libdecor",

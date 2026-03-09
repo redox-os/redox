@@ -2,8 +2,10 @@
 #TODO require NodeJS and NPM
 [source]
 git = "https://github.com/ekzhang/sshx"
+shallow_clone = true
 [build]
 template = "custom"
 script = """
+DYNAMIC_INIT
 cookbook_cargo_packages sshx
 """

@@ -1,8 +1,10 @@
 #TODO device_query crate error
 [source]
 git = "https://github.com/lemunozm/ruscii"
+shallow_clone = true
 [build]
 template = "custom"
 script = """
+DYNAMIC_INIT
 cookbook_cargo_examples pong space_invaders
 """

@@ -1,7 +1,6 @@
-use pkg::package::SourceIdentifier;
-
-use crate::REMOTE_PKG_SOURCE;
 use crate::config::translate_mirror;
+use crate::cook::fetch_repo;
+use crate::cook::fetch_repo::PlainPtyCallback;
 use crate::cook::fs::*;
 use crate::cook::package::get_package_name;
 use crate::cook::package::package_source_paths;
@@ -12,11 +11,15 @@ use crate::log_to_pty;
 use crate::recipe::BuildKind;
 use crate::recipe::CookRecipe;
 use crate::{blake3, recipe::SourceRecipe};
+use pkg::SourceIdentifier;
+use pkg::net_backend::DownloadBackendWriter;
+use std::cell::RefCell;
 use std::fs;
 use std::fs::File;
 use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::process::Command;
+use std::rc::Rc;
 
 pub(crate) fn get_blake3(path: &PathBuf, show_progress: bool) -> Result<String, String> {
     if show_progress {
@@ -52,7 +55,7 @@ pub fn fetch_offline(recipe: &CookRecipe, logger: &PtyOut) -> Result<PathBuf, St
 
     let ident = match &recipe.recipe.source {
         Some(SourceRecipe::Path { path: _ }) | None => {
-            fetch(recipe, logger)?;
+            fetch(recipe, true, logger)?;
             "local_source".to_string()
         }
         Some(SourceRecipe::SameAs { same_as }) => {
@@ -114,7 +117,7 @@ pub fn fetch_offline(recipe: &CookRecipe, logger: &PtyOut) -> Result<PathBuf, St
     Ok(source_dir)
 }
 
-pub fn fetch(recipe: &CookRecipe, logger: &PtyOut) -> Result<PathBuf, String> {
+pub fn fetch(recipe: &CookRecipe, check_source: bool, logger: &PtyOut) -> Result<PathBuf, String> {
     let recipe_dir = &recipe.dir;
     let source_dir = recipe_dir.join("source");
     match recipe.recipe.build.kind {
@@ -134,7 +137,7 @@ pub fn fetch(recipe: &CookRecipe, logger: &PtyOut) -> Result<PathBuf, String> {
         Some(SourceRecipe::SameAs { same_as }) => {
             let recipe = fetch_resolve_canon(recipe_dir, &same_as, recipe.name.is_host())?;
             // recursively fetch
-            fetch(&recipe, logger)?;
+            fetch(&recipe, check_source, logger)?;
             fetch_make_symlink(&source_dir, &same_as)?;
             fetch_get_source_info(&recipe)?.source_identifier
         }
@@ -195,6 +198,8 @@ pub fn fetch(recipe: &CookRecipe, logger: &PtyOut) -> Result<PathBuf, String> {
                 rename(&source_dir_tmp, &source_dir)?;
 
                 false
+            } else if !check_source {
+                true
             } else {
                 if !source_dir.join(".git").is_dir() {
                     return Err(format!(
@@ -228,12 +233,22 @@ pub fn fetch(recipe: &CookRecipe, logger: &PtyOut) -> Result<PathBuf, String> {
                     let (_, remote_branch, remote_name, remote_url) =
                         get_git_remote_tracking(&source_dir)?;
                     // TODO: how to get default branch and compare it here?
-                    if remote_name == "origin" && &remote_url == chop_dot_git(git) {
-                        let fetch_rev =
-                            get_git_fetch_rev(&source_dir, &remote_url, &remote_branch)?;
-                        fetch_rev == head_rev
-                    } else {
+                    if let Some(branch) = branch
+                        && branch != &remote_branch
+                    {
                         false
+                    } else if remote_name != "origin" {
+                        false
+                    } else if &remote_url != chop_dot_git(git) {
+                        false
+                    } else {
+                        match get_git_fetch_rev(&source_dir, &remote_url, &remote_branch) {
+                            Ok(fetch_rev) => fetch_rev == head_rev,
+                            Err(e) => {
+                                log_to_pty!(logger, "{}", e);
+                                false
+                            }
+                        }
                     }
                 }
             };
@@ -313,28 +328,29 @@ pub fn fetch(recipe: &CookRecipe, logger: &PtyOut) -> Result<PathBuf, String> {
         }) => {
             let source_tar = recipe_dir.join("source.tar");
             let mut tar_updated = false;
-            while {
+            loop {
                 if !source_tar.is_file() {
                     tar_updated = true;
                     download_wget(&tar, &source_tar, logger)?;
                 }
+                if !check_source {
+                    break;
+                }
                 let source_tar_blake3 = get_blake3(&source_tar, tar_updated && logger.is_none())?;
                 if let Some(blake3) = blake3 {
-                    if source_tar_blake3 != *blake3 {
-                        if tar_updated {
-                            return Err(format!(
-                                "The downloaded tar blake3 '{source_tar_blake3}' is not equal to blake3 in recipe.toml"
-                            ));
-                        } else {
-                            log_to_pty!(
-                                logger,
-                                "DEBUG: source tar blake3 is different and need redownload"
-                            );
-                            remove_all(&source_tar)?;
-                        }
-                        true
+                    if source_tar_blake3 == *blake3 {
+                        break;
+                    }
+                    if tar_updated {
+                        return Err(format!(
+                            "The downloaded tar blake3 '{source_tar_blake3}' is not equal to blake3 in recipe.toml"
+                        ));
                     } else {
-                        false
+                        log_to_pty!(
+                            logger,
+                            "DEBUG: source tar blake3 is different and need redownload"
+                        );
+                        remove_all(&source_tar)?;
                     }
                 } else {
                     //TODO: set blake3 hash on the recipe with something like "cook fix"
@@ -344,9 +360,9 @@ pub fn fetch(recipe: &CookRecipe, logger: &PtyOut) -> Result<PathBuf, String> {
                         source_tar.display(),
                         source_tar_blake3
                     );
-                    false
+                    break;
                 }
-            } {}
+            }
             if source_dir.is_dir() {
                 if tar_updated || fetch_is_patches_newer(recipe_dir, patches, &source_dir)? {
                     log_to_pty!(
@@ -383,11 +399,14 @@ pub fn fetch(recipe: &CookRecipe, logger: &PtyOut) -> Result<PathBuf, String> {
     };
 
     if let BuildKind::Cargo {
-        package_path,
+        cargopath,
         cargoflags: _,
+        cargopackages: _,
+        cargoexamples: _,
     } = &recipe.recipe.build.kind
     {
-        fetch_cargo(&source_dir, package_path.as_ref(), logger)?;
+        // TODO: No need to fetch if !check_source and already fetched?
+        fetch_cargo(&source_dir, cargopath.as_ref(), logger)?;
     }
 
     fetch_apply_source_info(recipe, ident)?;
@@ -467,18 +486,19 @@ pub(crate) fn fetch_extract_tar(
 
 pub(crate) fn fetch_cargo(
     source_dir: &PathBuf,
-    package_path: Option<&String>,
+    cargopath: Option<&String>,
     logger: &PtyOut,
 ) -> Result<(), String> {
     let mut source_dir = source_dir.clone();
-    if let Some(package_path) = package_path {
-        source_dir = source_dir.join(package_path);
+    if let Some(cargopath) = cargopath {
+        source_dir = source_dir.join(cargopath);
     }
 
-    let mut command = if is_redox() {
-        Command::new("cargo")
+    let local_redoxer = Path::new("target/release/cookbook_redoxer");
+    let mut command = if is_redox() && !local_redoxer.is_file() {
+        Command::new("cookbook_redoxer")
     } else {
-        let cookbook_redoxer = Path::new("target/release/cookbook_redoxer")
+        let cookbook_redoxer = local_redoxer
             .canonicalize()
             .unwrap_or(PathBuf::from("cargo"));
         Command::new(&cookbook_redoxer)
@@ -490,34 +510,18 @@ pub(crate) fn fetch_cargo(
     Ok(())
 }
 
-fn get_remote_url(name: &str, ext: &str) -> String {
-    return format!(
-        "{}/{}/{}.{}",
-        REMOTE_PKG_SOURCE,
-        redoxer::target(),
-        name,
-        ext
-    );
-}
-
-fn get_pubkey_url() -> String {
-    return format!("{}/id_ed25519.pub.toml", REMOTE_PKG_SOURCE);
-}
-
 pub fn fetch_remote(
     recipe_dir: &Path,
     recipe: &CookRecipe,
     offline_mode: bool,
     logger: &PtyOut,
 ) -> Result<(), String> {
+    let (mut manager, repository) = fetch_repo::get_binary_repo();
     let target_dir = create_target_dir(recipe_dir, recipe.target)?;
-    let source_pubkey = target_dir.join("id_ed25519.pub.toml");
-    if !offline_mode {
-        download_wget(&get_pubkey_url(), &source_pubkey, logger)?;
-    } else {
-        offline_check_exists(&source_pubkey)?;
+    if logger.is_some() {
+        let writer = logger.as_ref().unwrap().1.try_clone().unwrap();
+        manager.set_callback(Rc::new(RefCell::new(PlainPtyCallback::new(writer))));
     }
-
     let packages = recipe.recipe.get_packages_list();
 
     let name = recipe_dir
@@ -529,15 +533,47 @@ pub fn fetch_remote(
     for package in packages {
         let (_, source_pkgar, source_toml) = package_source_paths(package, &target_dir);
         let source_name = get_package_name(name, package);
+        let Some(repo_blake3) = repository.packages.get(&source_name) else {
+            return Err(format!(
+                "Package {source_name} does not exist in server repository"
+            ));
+        };
 
         if !offline_mode {
-            //TODO: Check freshness
-            download_wget(
-                &get_remote_url(&source_name, "pkgar"),
-                &source_pkgar,
-                logger,
-            )?;
-            download_wget(&get_remote_url(&source_name, "toml"), &source_toml, logger)?;
+            if source_toml.is_file() {
+                let pkg_toml = read_source_toml(&source_toml)?;
+                if &pkg_toml.blake3 != repo_blake3 {
+                    log_to_pty!(logger, "DEBUG: Updating source binaries");
+                    remove_all(&source_toml)?;
+                    if source_pkgar.is_file() {
+                        remove_all(&source_pkgar)?;
+                    }
+                }
+            }
+
+            if !source_toml.is_file() {
+                {
+                    let toml_file = File::create(&source_toml)
+                        .map_err(|e| format!("Unable to create source.toml: {e:?}"))?;
+                    let mut writer = DownloadBackendWriter::ToFile(toml_file);
+                    manager
+                        .download(&format!("{}.toml", &source_name), None, &mut writer)
+                        .map_err(|e| format!("Unable to download source.toml: {e:?}"))?;
+                }
+                let pkg_toml = read_source_toml(&source_toml)?;
+                let pkgar_file = File::create(&source_pkgar)
+                    .map_err(|e| format!("Unable to create source.pkgar: {e:?}"))?;
+                let mut writer = DownloadBackendWriter::ToFile(pkgar_file);
+                manager
+                    .download(
+                        &format!("{}.pkgar", &source_name),
+                        Some(pkg_toml.network_size),
+                        &mut writer,
+                    )
+                    .map_err(|e| format!("Unable to download source.pkgar: {e:?}"))?;
+            }
+
+            // manager.download(file, 0, dest)
         } else {
             offline_check_exists(&source_pkgar)?;
             offline_check_exists(&source_toml)?;
@@ -545,14 +581,7 @@ pub fn fetch_remote(
 
         // guaranteed to exist once
         if package.is_none() {
-            let mut file = File::open(&source_toml)
-                .map_err(|e| format!("Unable to open source.toml: {e:?}"))?;
-            let mut contents = String::new();
-            file.read_to_string(&mut contents)
-                .map_err(|e| format!("Unable to read source.toml: {e:?}"))?;
-
-            let pkg_toml = pkg::Package::from_toml(&contents)
-                .map_err(|e| format!("Unable to parse source.toml: {e:?}"))?;
+            let pkg_toml = read_source_toml(&source_toml)?;
 
             fetch_apply_source_info_from_remote(
                 recipe,
@@ -567,6 +596,17 @@ pub fn fetch_remote(
     }
 
     Ok(())
+}
+
+fn read_source_toml(source_toml: &Path) -> Result<pkg::Package, String> {
+    let mut file =
+        File::open(source_toml).map_err(|e| format!("Unable to open source.toml: {e:?}"))?;
+    let mut contents = String::new();
+    file.read_to_string(&mut contents)
+        .map_err(|e| format!("Unable to read source.toml: {e:?}"))?;
+    let pkg_toml = pkg::Package::from_toml(&contents)
+        .map_err(|e| format!("Unable to parse source.toml: {e:?}"))?;
+    Ok(pkg_toml)
 }
 
 pub(crate) fn fetch_is_patches_newer(
@@ -640,7 +680,7 @@ pub(crate) fn fetch_apply_source_info(
     source_identifier: String,
 ) -> Result<(), String> {
     let ident = crate::cook::ident::get_ident();
-    let info = pkg::package::SourceIdentifier {
+    let info = SourceIdentifier {
         commit_identifier: ident.commit.to_string(),
         time_identifier: ident.time.to_string(),
         source_identifier: source_identifier,
@@ -651,7 +691,7 @@ pub(crate) fn fetch_apply_source_info(
 
 pub(crate) fn fetch_apply_source_info_from_remote(
     recipe: &CookRecipe,
-    info: &pkg::package::SourceIdentifier,
+    info: &SourceIdentifier,
 ) -> Result<(), String> {
     let target_dir = create_target_dir(&recipe.dir, recipe.target)?;
     let source_toml_path = target_dir.join("source_info.toml");

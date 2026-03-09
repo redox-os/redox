@@ -1,9 +1,11 @@
 #TODO not compiled or tested
 [source]
 git = "https://github.com/ethersync/ethersync"
+shallow_clone = true
 [build]
 template = "custom"
 script = """
 COOKBOOK_SOURCE="${COOKBOOK_SOURCE}/daemon"
+DYNAMIC_INIT
 cookbook_cargo
 """

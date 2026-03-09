@@ -9,4 +9,7 @@ dependencies = [
     "libstdcxx",
     "vte",
 ]
+dev-dependencies = [
+    "host:itstool",
+]
 template = "meson"

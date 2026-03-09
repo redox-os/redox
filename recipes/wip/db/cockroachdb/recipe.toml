@@ -1,6 +1,8 @@
-#TODO missing script for Bazel, see https://cockroachlabs.atlassian.net/wiki/spaces/CRDB/pages/181338446/Getting+and+building+CockroachDB+from+source
+#TODO missing script for Bazel
+# build instructions: https://cockroachlabs.atlassian.net/wiki/spaces/CRDB/pages/181338446/Getting+and+building+CockroachDB+from+source
 [source]
 git = "https://github.com/cockroachdb/cockroach"
-rev = "0ad77cfcc5a81b96dd2f27ed608536388b680537"
+branch = "release-25.4"
+shallow_clone = true
 [build]
 template = "custom"

@@ -2,7 +2,6 @@
 tar = "https://www.x.org/releases/individual/lib/xcb-util-renderutil-0.3.10.tar.xz"
 blake3 = "085c94d08bd8181512d4ce93cf0e5bcd48cd8ed983bbb7a7bcb3a3c2312a08ea"
 script = """
-DYNAMIC_INIT
 autotools_recursive_regenerate
 """
 

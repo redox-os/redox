@@ -1,6 +1,7 @@
 #TODO missing script for building, lacking build instructions
 [source]
 git = "https://github.com/elm/compiler"
-rev = "c9aefb6230f5e0bda03205ab0499f6e4af924495"
+rev = "0.19.1"
+shallow_clone = true
 [build]
 template = "custom"

@@ -1,7 +1,16 @@
 #TODO not compiled or tested
-# build instructions: https://github.com/upscayl/upscayl-ncnn/blob/master/README.md
 [source]
 git = "https://github.com/upscayl/upscayl-ncnn"
-rev = "22774bc42e2bc3c785b5b585d213d960b1348ad5"
+rev = "d02fa88e078e7109fd689932453362430144014d"
+shallow_clone = true
 [build]
-template = "cmake"
+template = "custom"
+dependencies = [
+    "libvulkan",
+    "openmp",
+]
+script = """
+COOKBOOK_SOURCE="${COOKBOOK_SOURCE}/src"
+DYNAMIC_INIT
+cookbook_cmake
+"""

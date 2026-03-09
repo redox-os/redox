@@ -6,6 +6,6 @@ blake3 = "acd40f61f6f512b0808d4bf530ab4aeb5a8ec3aa1f65bf5a1d08964d1bc3d044"
 template = "custom"
 script = """
 for file in "${COOKBOOK_SOURCE}"/*.ttf; do
-    install -D -m 644 "$file" "${COOKBOOK_STAGE}/ui/fonts/Mono/Hack/$(basename "$file")"
+    install -D -m 644 "$file" "${COOKBOOK_STAGE}/usr/share/fonts/Mono/Hack/$(basename "$file")"
 done
 """

@@ -1,5 +1,6 @@
 #TODO not compiled or tested
 [source]
 git = "https://github.com/julianbuettner/zeco"
+shallow_clone = true
 [build]
 template = "cargo"

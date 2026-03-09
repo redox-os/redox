@@ -1,9 +1,11 @@
 #TODO not compiled or tested
 [source]
 git = "https://github.com/ccbrown/iocraft"
+shallow_clone = true
 [build]
 template = "custom"
 script = """
+DYNAMIC_INIT
 cookbook_cargo_examples borders calculator counter \
 fullscreen hello_world overlap progress_bar scrolling \
 table use_input use_output weather

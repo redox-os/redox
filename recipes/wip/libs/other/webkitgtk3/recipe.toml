@@ -16,6 +16,9 @@ dependencies = [
     "libwebp",
     "sqlite3",
 ]
+dev-dependencies = [
+    "host:gperf"
+]
 script = """
 DYNAMIC_INIT
 export WEBKIT_USE_SCCACHE=1

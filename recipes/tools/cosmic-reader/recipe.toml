@@ -24,8 +24,8 @@ export BINDGEN_EXTRA_CLANG_ARGS="--sysroot=${COOKBOOK_HOST_SYSROOT}/${GNU_TARGET
     -C link-args="-lpng -lexpat"
 mkdir -pv "${COOKBOOK_STAGE}/usr/bin/"
 cp -v "target/${TARGET}/release/cosmic-reader" "${COOKBOOK_STAGE}/usr/bin/"
-mkdir -pv "${COOKBOOK_STAGE}/ui/apps"
-cp -v "${COOKBOOK_RECIPE}/manifest" "${COOKBOOK_STAGE}/ui/apps/40_cosmic-reader"
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/ui/apps"
+cp -v "${COOKBOOK_RECIPE}/manifest" "${COOKBOOK_STAGE}/usr/share/ui/apps/40_cosmic-reader"
 #TODO: install with just?
 APPID="com.system76.CosmicReader"
 mkdir -pv "${COOKBOOK_STAGE}/usr/share/applications/"

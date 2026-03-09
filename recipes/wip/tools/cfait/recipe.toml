@@ -1,0 +1,5 @@
+#TODO not compiled or tested
+[source]
+git = "https://codeberg.org/trougnouf/cfait"
+[build]
+template = "cargo"

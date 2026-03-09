@@ -9,7 +9,7 @@ patches = [
 template = "custom"
 dependencies = [
     "pcre",
-    "openssl1",
+    "openssl3",
     "zlib",
 ]
 script = """
@@ -19,7 +19,7 @@ ARCH="${TARGET%%-*}"
 COOKBOOK_CONFIGURE_FLAGS=(
     --crossbuild=Redox:$ARCH
     --with-cc="$CC"
-    --with-cc-opt="$CFLAGS"
+    --with-cc-opt="$CFLAGS $CPPFLAGS"
     --with-ld-opt="$LDFLAGS"
     --sbin-path=/usr/bin/nginx 
     --modules-path=/usr/lib/nginx/modules
@@ -46,6 +46,7 @@ COOKBOOK_CONFIGURE_FLAGS=(
     --with-threads
     --with-http_ssl_module
     --with-http_v2_module
+    --with-http_v3_module
     --with-http_realip_module
     --with-http_gzip_static_module
     --with-http_stub_status_module
