@@ -20,7 +20,7 @@ Please review the `LICENSE` file for the project you are contributing to.
 
 ## AI Use
 
-Redox OS does not accept AI-generated (especially large language model generated) content.
+Redox OS does not accept AI-generated (especially large language model generated) content. This policy is not open to discussion, any content submitted that is clearly labelled as AI-generated (including issues, merge requests, and merge request descriptions) will be immediately closed, and any attempt to bypass this policy will result in a ban from the project.
 
 ## Chat
 
