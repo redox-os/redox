@@ -34,7 +34,7 @@ then
     exit 1
 fi
 
-BOOTLOADER="recipes/core/bootloader/target/${ARCH}-unknown-redox/stage/boot/bootloader.efi"
+BOOTLOADER="recipes/core/bootloader/target/${ARCH}-unknown-redox/stage/usr/lib/boot/bootloader.efi"
 set -x
 sudo mkdir -pv "${ESP}/EFI" "${ESP}/loader/entries"
 sudo cp -v "${BOOTLOADER}" "${ESP}/EFI/redox.efi"
