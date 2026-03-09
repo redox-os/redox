@@ -13,12 +13,13 @@ filesystem_size = 8192
 #boxedwine = {}
 cosmic-player = {}
 cosmic-reader = {}
-#cosmic-settings = {} # requires recvmsg/sendmsg
-#cosmic-store = {} # requires recvmsg/sendmsg
+cosmic-settings = {}
+cosmic-store = {}
 cosmic-term = {}
 cosmic-text = {}
 #qemu = {} # not building
 schismtracker = {}
+servo = {}
 
 # cli
 cleye = {}
@@ -35,7 +36,7 @@ xz = {}
 
 # demos
 #cairodemo = {}
-#cmatrix = {} # addwstr
+cmatrix = {}
 cpal = {}
 gears = {}
 glutin = {}
@@ -55,7 +56,7 @@ winit = {}
 # dev
 autoconf = {}
 automake = {}
-cookbook = {}
+#cookbook = {}
 gcc13 = {}
 gnu-binutils = {}
 gnu-make = {}
@@ -63,7 +64,6 @@ nasm = {}
 patch = {}
 pkg-config = {}
 rust = {}
-#rustpython = {}
 
 # games
 devilutionx = {}
@@ -71,7 +71,7 @@ eduke32 = {}
 flycast = {}
 freeciv = {}
 gigalomania = {}
-#love = {} # not building
+love = {}
 mednafen = {}
 mgba = {}
 openjazz = {}
@@ -86,16 +86,15 @@ rs-nes = {} # need game for testing
 rust64 = {} # need roms
 rustual-boy = {} # need game for testing
 scummvm = {} # need game for testing
-#sm64ex = {} # not building
+sm64ex = {}
 #spacecadetpinball = {} # not building
-#syobonaction = {}
+syobonaction = {}
 #vice = {} # broken on new toolchain
 #vvvvvv = {} # cannot find -lgcc_s
 
 # stuff
 generaluser-gs = {}
 jeremy = {}
-libc-bench = {}
 noto-color-emoji = {}
 timidity = {}
 ttf-hack = {}
