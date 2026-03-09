@@ -69,6 +69,7 @@ const REPO_HELP_STR: &str = r#"
         COOKBOOK_OFFLINE=false       prevent internet access if possible
                                         ignored when command "fetch" is used
         COOKBOOK_NONSTOP=false       keep running even a recipe build failed
+        COOKBOOK_COMPRESSED=false    build packages in compressed format
         COOKBOOK_VERBOSE=true        print success/error on each recipe
         COOKBOOK_CLEAN_BUILD=false   remove build directory before building
         COOKBOOK_CLEAN_TARGET=false  remove target directory after building
@@ -704,7 +705,7 @@ fn handle_cook(
     )
     .map_err(|err| anyhow!("failed to build: {:?}", err))?;
 
-    package(&recipe, &stage_dirs, &auto_deps, logger)
+    package(&recipe, &stage_dirs, &auto_deps, &config.cook, logger)
         .map_err(|err| anyhow!("failed to package: {:?}", err))?;
 
     if config.cook.clean_target || config.cook.write_filetree {
