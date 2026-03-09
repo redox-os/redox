@@ -18,6 +18,10 @@ Please review the `LICENSE` file for the project you are contributing to.
 
 [This](https://doc.redox-os.org/book/philosophy.html) page we explain why we use the MIT license.
 
+## AI Use
+
+Redox OS does not accept AI-generated (especially large language model generated) content.
+
 ## Chat
 
 You can join in our chat platforms to discuss development, issues or ask questions.
