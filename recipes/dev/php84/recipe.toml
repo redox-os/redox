@@ -24,7 +24,7 @@ dependencies = [
     "libxml2",
     "libiconv",
     "libzip",
-    "ncurses",
+    "ncursesw",
     "nghttp2",
     "openssl1",
     "openssl3", # put this after openssl1

@@ -4,7 +4,7 @@ blake3 = "d1f5802ceb047b09143f1764bf4016f084cf7e6c026c7047919264c9f262a5dd"
 patches = ["vim.patch"]
 
 [build]
-dependencies = ["ncurses"]
+dependencies = ["ncursesw"]
 template = "custom"
 script = """
 DYNAMIC_INIT
@@ -20,7 +20,7 @@ export vim_cv_memmove_handles_overlap=yes
 
 COOKBOOK_CONFIGURE="./configure"
 COOKBOOK_CONFIGURE_FLAGS+=(
-    --with-tlib=ncurses
+    --with-tlib=ncursesw
 )
 cookbook_configure
 """
