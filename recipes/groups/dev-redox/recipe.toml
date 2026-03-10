@@ -9,7 +9,7 @@ dependencies = [
     "liborbital",
     "libsodium",
     "libxml2",
-    "ncurses",
+    "ncursesw",
     "nghttp2",
     "openssl3",
     "orbclient",

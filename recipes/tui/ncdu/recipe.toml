@@ -7,7 +7,7 @@ dependencies = ["terminfo"]
 
 [build]
 template = "custom"
-dependencies = ["ncurses"]
+dependencies = ["ncursesw"]
 script = """
 DYNAMIC_INIT
 cookbook_configure
