@@ -13,10 +13,16 @@ COOKBOOK_CONFIGURE_FLAGS+=(
     --without-ada
     --without-manpages
     --without-tests
-    --with-shared
+    --enable-pc-files
+    --with-terminfo-dirs=/usr/share/terminfo
+    --with-pkg-config-libdir=/usr/lib/pkgconfig
     cf_cv_func_mkstemp=yes
     cf_cv_wint_t=yes
 )
+if [ "${COOKBOOK_DYNAMIC}" == "1" ]
+then
+    COOKBOOK_CONFIGURE_FLAGS+=(--with-shared)
+fi
 cookbook_configure
 """
 

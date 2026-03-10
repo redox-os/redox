@@ -32,4 +32,7 @@ rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 cp -av libbz2.so* "${COOKBOOK_STAGE}/lib"
 ln -sr "${COOKBOOK_STAGE}/lib/libbz2.so.1.0" "${COOKBOOK_STAGE}/lib/libbz2.so.1"
 ln -sr "${COOKBOOK_STAGE}/lib/libbz2.so.1.0" "${COOKBOOK_STAGE}/lib/libbz2.so"
+
+mkdir -p "${COOKBOOK_STAGE}/lib/pkgconfig"
+cp "${COOKBOOK_RECIPE}/pkgconfig" "${COOKBOOK_STAGE}/lib/pkgconfig/bzip2.pc"
 """

@@ -136,7 +136,7 @@ fn auto_deps_from_dynamic_linking(
                         if verbose {
                             log_to_pty!(logger, "DEBUG: {} provides {}", dep, child_name);
                         }
-                        deps.insert(dep.clone());
+                        deps.insert(dep.with_prefix(pkg::PackagePrefix::Any));
                         missing.remove(child_name);
                     }
                 }
@@ -555,7 +555,7 @@ fn build_deps_dir(
                 &tags_dir,
                 &dep_pkgars
                     .iter()
-                    .map(|(name, _)| name.without_host())
+                    .map(|(name, _)| name.without_prefix())
                     .collect(),
             )?
         {
