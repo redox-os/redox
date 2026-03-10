@@ -8,7 +8,7 @@ patches = [
 [build]
 template = "custom"
 dependencies = [
-    "ncurses",
+    "ncursesw",
 ]
 script = """
 DYNAMIC_INIT

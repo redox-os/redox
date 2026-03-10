@@ -8,16 +8,16 @@ patches = [
 [build]
 template = "custom"
 dependencies = [
-    "bzip2",
-    "libffi",
-    "libuuid",
-    "openssl3",
-    "ncursesw",
-    "readline",
-    "sqlite3",
-    "zlib",
-    "xz",
-    "zstd",
+    "target:bzip2",
+    "target:libffi",
+    "target:libuuid",
+    "target:openssl3",
+    "target:ncursesw",
+    "target:readline",
+    "target:sqlite3",
+    "target:zlib",
+    "target:xz",
+    "target:zstd",
 ]
 dev-dependencies = [
     "host:python312"
