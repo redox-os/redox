@@ -16,6 +16,5 @@ dependencies = [
     "orbutils",
     "patchelf",
     "pop-icon-theme",
-    "rustpython",
     "shared-mime-info",
 ]

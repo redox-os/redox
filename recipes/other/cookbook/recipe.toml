@@ -25,7 +25,7 @@ dependencies = [
     "nasm",
     "pkg-config",
     "pkgar",
-    "rustpython",
+    "python312",
     "sed",
     "wget",
 ]

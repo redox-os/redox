@@ -893,8 +893,8 @@ redox()
     patch \
     pkgar \
     pkg-config \
+    python312 \
     rust \
-    rustpython \
     sdl1 \
     sdl2-ttf \
     vim"
