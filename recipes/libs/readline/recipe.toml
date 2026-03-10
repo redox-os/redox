@@ -1,9 +1,6 @@
 [source]
-tar = "https://ftp.gnu.org/gnu/readline/readline-7.0.tar.gz"
-blake3 = "962483e201f36f05a5ccb507bb7330b4d4e4989fd52f41eb15ba65582ad02703"
-patches = [
-    "redox.patch"
-]
+tar = "https://ftp.gnu.org/gnu/readline/readline-8.3.tar.gz"
+blake3 = "7109f094062bda387a0c16b4875375b96e36437bebbbd8d8f91bb27ba01d687f"
 
 [build]
 template = "custom"
@@ -15,7 +12,8 @@ DYNAMIC_INIT
 cookbook_configure
 OS=$(echo "${TARGET}" | cut -d - -f3)
 if [ "${OS}" = "redox" ]; then
-    ln -s "libhistory.so.7" "${COOKBOOK_STAGE}"/usr/lib/libhistory.so
-    ln -s "libreadline.so.7" "${COOKBOOK_STAGE}"/usr/lib/libreadline.so
+    ln -s "libhistory.so.8" "${COOKBOOK_STAGE}"/usr/lib/libhistory.so
+    ln -s "libreadline.so.8" "${COOKBOOK_STAGE}"/usr/lib/libreadline.so
+    patchelf --add-needed libncursesw.so "${COOKBOOK_STAGE}/usr/lib/libreadline.so.8"
 fi
 """

@@ -10,7 +10,6 @@ template = "custom"
 dependencies = [
     "target:bzip2",
     "target:libffi",
-    "target:libuuid",
     "target:openssl3",
     "target:ncursesw",
     "target:readline",
@@ -38,6 +37,7 @@ if [ "$TARGET" != "$COOKBOOK_HOST_TARGET" ]; then
         --with-build-python="${COOKBOOK_TOOLCHAIN}/usr/bin/python3.12"
         --with-ensurepip=install
         --disable-test-modules
+        --with-ssl-default-suites=openssl
         ac_cv_file__dev_ptmx=no
         ac_cv_file__dev_ptc=no
     )
