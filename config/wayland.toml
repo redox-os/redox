@@ -68,10 +68,7 @@ glib-compile-schemas /usr/share/glib-2.0/schemas/
 cosmic-comp wayland-session
 
 # For smallvil (easier to debug)
-#export WAYLAND_DISPLAY=wayland-1
-#smallvil &
-#sleep 2
-#wayland-session
+#smallvil -c wayland-session&
 """
 
 [[files]]
