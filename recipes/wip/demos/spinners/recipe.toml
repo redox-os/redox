@@ -3,9 +3,11 @@
 git = "https://github.com/FGRibreau/spinners"
 shallow_clone = true
 [build]
-template = "custom"
-script = """
-DYNAMIC_INIT
-cookbook_cargo_examples cycle simple stop_persist \
-stop_symbol timer
-"""
+template = "cargo"
+cargoexamples = [
+    "cycle",
+    "simple",
+    "stop_persist",
+    "stop_symbol",
+    "timer",
+]

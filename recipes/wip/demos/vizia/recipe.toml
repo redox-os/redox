@@ -3,11 +3,12 @@
 git = "https://github.com/vizia/vizia"
 shallow_clone = true
 [build]
-template = "custom"
-#dependencies = [
-#    "libwayland",
-#]
-script = """
-DYNAMIC_INIT
-cookbook_cargo_examples animation dragdrop number input timers
-"""
+template = "cargo"
+cargoexamples = [
+    "animation",
+    "dragdrop",
+    "number",
+    "input",
+    "timers",
+]
+#dependencies = ["libwayland"]

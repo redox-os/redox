@@ -3,8 +3,10 @@
 git = "https://github.com/ardaku/wavy"
 shallow_clone = true
 [build]
-template = "custom"
-script = """
-DYNAMIC_INIT
-cookbook_cargo_examples monitor play query record
-"""
+template = "cargo"
+cargoexamples = [
+    "monitor",
+    "play",
+    "query",
+    "record",
+]

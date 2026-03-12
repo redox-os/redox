@@ -3,8 +3,5 @@
 git = "https://github.com/gold-silver-copper/soft_ratatui"
 shallow_clone = true
 [build]
-template = "custom"
-script = """
-DYNAMIC_INIT
-cookbook_cargo_packages egui_colors_example
-"""
+template = "cargo"
+cargopackages = ["egui_colors_example"]

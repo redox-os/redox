@@ -3,11 +3,8 @@
 git = "https://github.com/nacho/servo-gtk"
 shallow_clone = true
 [build]
-template = "custom"
+template = "cargo"
+cargoexamples = ["browser"]
 dependencies = [
     "gtk4"
 ]
-script = """
-DYNAMIC_INIT
-cookbook_cargo_examples browser
-"""

@@ -3,21 +3,11 @@
 git = "https://github.com/nidhoggfgg/rsille"
 shallow_clone = true
 [build]
-template = "custom"
-script = """
-DYNAMIC_INIT
-cookbook_cargo_examples anime-mix obj-mix cube cube-colorful
-recipe="$(basename "${COOKBOOK_RECIPE}")"
-    for example in imgille
-    do
-        "${COOKBOOK_CARGO}" build \
-            --manifest-path "${COOKBOOK_SOURCE}/${COOKBOOK_CARGO_PATH}/Cargo.toml" \
-            --example "${example}" \
-            --release \
-            --features=img
-        mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
-        cp -v \
-            "target/${TARGET}/${build_type}/examples/${example}" \
-            "${COOKBOOK_STAGE}/usr/bin/${recipe}_${example}"
-    done
-"""
+template = "cargo"
+cargoflags = ["--features=img"]
+cargoexamples = [
+    "anime-mix",
+    "obj-mix",
+    "cube",
+    "cube-colorful",
+]

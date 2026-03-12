@@ -3,8 +3,5 @@
 git = "https://github.com/DioxusLabs/taffy"
 shallow_clone = true
 [build]
-template = "custom"
-script = """
-DYNAMIC_INIT
-cookbook_cargo_examples basic
-"""
+template = "cargo"
+cargoexamples = ["basic"]

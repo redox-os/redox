@@ -3,8 +3,9 @@
 git = "https://github.com/junkdog/tachyonfx"
 shallow_clone = true
 [build]
-template = "custom"
-script = """
-DYNAMIC_INIT
-cookbook_cargo_examples basic-effects open-window tweens
-"""
+template = "cargo"
+cargoexamples = [
+    "basic-effects",
+    "open-window",
+    "tweens",
+]

@@ -3,11 +3,11 @@
 git = "https://github.com/mediar-ai/uniOCR"
 shallow_clone = true
 [build]
-template = "custom"
+template = "cargo"
+cargoexamples = [
+    "basic",
+    "batch_processing",
+]
 dependencies = [
     "openssl3",
 ]
-script = """
-DYNAMIC_INIT
-cookbook_cargo_examples basic batch_processing
-"""

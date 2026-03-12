@@ -3,10 +3,17 @@
 git = "https://github.com/slint-ui/slint"
 shallow_clone = true
 [build]
-template = "custom"
-script = """
-DYNAMIC_INIT
-cookbook_cargo_packages gallery energy-monitor carousel \
-memory imagefilter plotter opengl_underlay opengl_texture \
-maps virtual_keyboard 7guis
-"""
+template = "cargo"
+cargopackages = [
+    "gallery",
+    "energy-monitor",
+    "carousel",
+    "memory",
+    "imagefilter",
+    "plotter",
+    "opengl_underlay",
+    "opengl_texture",
+    "maps",
+    "virtual_keyboard",
+    "7guis",
+]

@@ -3,9 +3,11 @@
 git = "https://github.com/broccolingual/rustui"
 shallow_clone = true
 [build]
-template = "custom"
-script = """
-DYNAMIC_INIT
-cookbook_cargo_examples hello_world colors inputs file_reader
-cookbook_cargo_packages tetris
-"""
+template = "cargo"
+cargopackages = ["tetris"]
+cargoexamples = [
+    "hello_world",
+    "colors",
+    "inputs",
+    "file_reader",
+]

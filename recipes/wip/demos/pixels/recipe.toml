@@ -3,9 +3,11 @@
 git = "https://github.com/parasyte/pixels"
 shallow_clone = true
 [build]
-template = "custom"
-script = """
-DYNAMIC_INIT
-cookbook_cargo_packages conway invaders minimal-egui \
-minimal-winit tiny-skia-winit
-"""
+template = "cargo"
+cargopackages = [
+    "conway",
+    "invaders",
+    "minimal-egui",
+    "minimal-winit",
+    "tiny-skia-winit",
+]

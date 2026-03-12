@@ -3,9 +3,9 @@
 git = "https://github.com/dimforge/rapier"
 shallow_clone = true
 [build]
-template = "custom"
-script = """
-DYNAMIC_INIT
-cookbook_cargo_packages rapier-examples-2d rapier-examples-3d \
-rapier-examples-3d-f64
-"""
+template = "cargo"
+cargopackages = [
+    "rapier-examples-2d",
+    "rapier-examples-3d",
+    "rapier-examples-3d-f64",
+]

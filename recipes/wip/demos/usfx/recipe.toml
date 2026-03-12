@@ -3,12 +3,13 @@
 git = "https://github.com/tversteeg/usfx"
 shallow_clone = true
 [build]
-template = "custom"
+template = "cargo"
+cargoexamples = [
+    "cpal",
+    "music",
+    "sdl2",
+]
 dependencies = [
     "libalsa",
     "sdl2",
 ]
-script = """
-DYNAMIC_INIT
-cookbook_cargo_examples cpal music sdl2
-"""
