@@ -3,8 +3,8 @@
 git = "https://github.com/mehrantsi/FeOxDB"
 shallow_clone = true
 [build]
-template = "custom"
-script = """
-DYNAMIC_INIT
-cookbook_cargo_examples basic_usage deterministic_test
-"""
+template = "cargo"
+cargoexamples = [
+    "basic_usage",
+    "deterministic_test",
+]

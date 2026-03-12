@@ -3,8 +3,7 @@
 git = "https://github.com/bevyengine/bevy"
 shallow_clone = true
 [build]
-template = "custom"
-script = """
-DYNAMIC_INIT
-cookbook_cargo_examples hello_world
-"""
+template = "cargo"
+cargoexamples = [
+    "hello_world"
+]

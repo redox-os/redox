@@ -3,8 +3,9 @@
 git = "https://github.com/yazgoo/blockish"
 shallow_clone = true
 [build]
-template = "custom"
-script = """
-DYNAMIC_INIT
-cookbook_cargo_examples euc gif tiny-skia
-"""
+template = "cargo"
+cargoexamples = [
+    "euc",
+    "gif",
+    "tiny-skia",
+]

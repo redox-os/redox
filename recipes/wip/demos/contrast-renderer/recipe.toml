@@ -3,8 +3,7 @@
 git = "https://github.com/Lichtso/contrast_renderer"
 shallow_clone = true
 [build]
-template = "custom"
-script = """
-DYNAMIC_INIT
-cookbook_cargo_examples showcase
-"""
+template = "cargo"
+cargoexamples = [
+    "showcase",
+]

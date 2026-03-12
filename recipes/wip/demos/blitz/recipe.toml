@@ -3,11 +3,11 @@
 git = "https://github.com/DioxusLabs/blitz"
 shallow_clone = true
 [build]
-template = "custom"
+template = "cargo"
+cargoexamples = [
+    "url",
+    "markdown",
+]
 dependencies = [
     "openssl3",
 ]
-script = """
-DYNAMIC_INIT
-cookbook_cargo_examples url markdown
-"""

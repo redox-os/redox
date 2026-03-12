@@ -3,8 +3,11 @@
 git = "https://github.com/console-rs/console"
 shallow_clone = true
 [build]
-template = "custom"
-script = """
-DYNAMIC_INIT
-cookbook_cargo_examples colors colors256 cursor_at keyboard term
-"""
+template = "cargo"
+cargoexamples = [
+    "colors",
+    "colors256",
+    "cursor_at",
+    "keyboard",
+    "term",
+]

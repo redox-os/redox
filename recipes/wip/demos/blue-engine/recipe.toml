@@ -3,8 +3,11 @@
 git = "https://github.com/AryanpurTech/BlueEngine"
 shallow_clone = true
 [build]
-template = "custom"
-script = """
-DYNAMIC_INIT
-cookbook_cargo_examples triangle square cube rotate_around wireframe
-"""
+template = "cargo"
+cargoexamples = [
+    "triangle",
+    "square",
+    "cube",
+    "rotate_around",
+    "wireframe",
+]

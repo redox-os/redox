@@ -3,9 +3,11 @@
 git = "https://github.com/zesterer/euc"
 shallow_clone = true
 [build]
-template = "custom"
-script = """
-DYNAMIC_INIT
-cookbook_cargo_examples spinning_cube teapot texture_mapping \
-triangle wireframes
-"""
+template = "cargo"
+cargoexamples = [
+    "spinning_cube",
+    "teapot",
+    "texture_mapping",
+    "triangle",
+    "wireframes",
+]

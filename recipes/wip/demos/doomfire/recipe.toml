@@ -3,8 +3,7 @@
 git = "https://github.com/r-marques/doomfire"
 shallow_clone = true
 [build]
-template = "custom"
-script = """
-DYNAMIC_INIT
-cookbook_cargo_examples doomfire-minifb
-"""
+template = "cargo"
+cargoexamples = [
+    "doomfire-minifb",
+]

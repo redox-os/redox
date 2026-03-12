@@ -3,10 +3,15 @@
 git = "https://github.com/DioxusLabs/dioxus"
 shallow_clone = true
 [build]
-template = "custom"
-script = """
-DYNAMIC_INIT
-cookbook_cargo_examples calculator clock counters \
-file_explorer hello_world multiwindow popup window_event \
-window_zoom
-"""
+template = "cargo"
+cargoexamples = [
+    "calculator",
+    "clock",
+    "counters",
+    "file_explorer",
+    "hello_world",
+    "multiwindow",
+    "popup",
+    "window_event",
+    "window_zoom",
+]
