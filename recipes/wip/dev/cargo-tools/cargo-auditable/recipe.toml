@@ -1,8 +1,7 @@
 #TODO camino crate error
 [source]
 git = "https://github.com/rust-secure-code/cargo-auditable"
+shallow_clone = true
 [build]
-template = "custom"
-script = """
-cookbook_cargo_packages cargo-auditable
-"""
+template = "cargo"
+cargopackages = ["cargo-auditable"]

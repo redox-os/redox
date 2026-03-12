@@ -2,11 +2,12 @@
 # build instructions: https://github.com/yvt/openspades#on-unixes-from-source
 [source]
 git = "https://github.com/siecvi/zerospades"
+shallow_clone = true
 [build]
 template = "custom"
 dependencies = [
 	"glew",
-	"openssl1",
+	"openssl3",
 	"sdl2",
 	"sdl2-image",
 	"freealut",

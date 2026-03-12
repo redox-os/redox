@@ -1,8 +1,7 @@
 #TODO camino crate error
 [source]
 git = "https://github.com/axodotdev/cargo-dist"
+shallow_clone = true
 [build]
-template = "custom"
-script = """
-cookbook_cargo_packages cargo-dist
-"""
+template = "cargo"
+cargopackages = ["cargo-dist"]

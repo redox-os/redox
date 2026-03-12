@@ -1,5 +1,6 @@
 #TODO require rustc 1.75 or newer
 [source]
 git = "https://github.com/lu-zero/cargo-c"
+shallow_clone = true
 [build]
 template = "cargo"

@@ -1,11 +1,10 @@
 #TODO openssl-sys crate error
 [source]
 git = "https://github.com/crev-dev/cargo-crev"
+shallow_clone = true
 [build]
-template = "custom"
+template = "cargo"
+cargopackages = ["cargo-crev"]
 dependencies = [
-    "openssl1",
+    "openssl3",
 ]
-script = """
-cookbook_cargo_packages cargo-crev
-"""

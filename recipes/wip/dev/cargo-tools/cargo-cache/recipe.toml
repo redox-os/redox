@@ -2,5 +2,6 @@
 # tested 29th January 2026
 [source]
 git = "https://github.com/matthiaskrgr/cargo-cache"
+shallow_clone = true
 [build]
 template = "cargo"

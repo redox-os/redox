@@ -7,7 +7,7 @@ shallow_clone = true
 template = "custom"
 dependencies = [
 	"glew",
-	"openssl1",
+	"openssl3",
 	"sdl2",
 	"sdl2-image",
 	"freealut",
