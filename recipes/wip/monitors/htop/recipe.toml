@@ -8,11 +8,8 @@ autotools_recursive_regenerate
 
 [build]
 template = "configure"
-configureflags = [
-    "--disable-unicode",
-]
 dependencies = [
-    "ncurses",
+    "ncursesw",
 ]
 
 [package]
