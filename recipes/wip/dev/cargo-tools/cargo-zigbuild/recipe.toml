@@ -1,8 +1,10 @@
 #TODO make zig work
 [source]
 git = "https://github.com/rust-cross/cargo-zigbuild"
+shallow_clone = true
 [build]
 template = "cargo"
+[package]
 dependencies = [
     "zig"
 ]

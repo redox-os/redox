@@ -1,8 +1,11 @@
 #TODO Not compiled or tested
+#TODO determine what llvm variant is needed
 [source]
 git = "https://github.com/drahnr/cargo-spellcheck"
+shallow_clone = true
 [build]
 template = "cargo"
-dependencies = [
-    "llvm18",
-]
+#dependencies = [
+#    "llvm21",
+#    "llvm21.runtime",
+#]

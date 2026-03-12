@@ -2,8 +2,9 @@
 # tested 29th January 2026
 [source]
 git = "https://github.com/xd009642/tarpaulin"
+shallow_clone = true
 [build]
 template = "cargo"
 dependencies = [
-    "openssl1",
+    "openssl3",
 ]

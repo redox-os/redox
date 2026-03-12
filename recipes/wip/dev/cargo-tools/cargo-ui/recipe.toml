@@ -1,12 +1,13 @@
 #TODO make libxkbcommon work
 [source]
 git = "https://github.com/slint-ui/cargo-ui"
+shallow_clone = true
 [build]
-template = "custom"
+template = "cargo"
+cargoflags = [
+    "--no-default-features --features slint-backend-gl-all"
+]
 dependencies = [
     "fontconfig",
     "libxkbcommon",
 ]
-script = """
-cookbook_cargo --no-default-features slint-backend-gl-all
-"""

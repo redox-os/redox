@@ -1,5 +1,6 @@
 #TODO Not compiled or tested
 [source]
 git = "https://github.com/dalance/cargo-trend"
+shallow_clone = true
 [build]
 template = "cargo"

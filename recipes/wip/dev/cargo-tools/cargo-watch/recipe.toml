@@ -1,5 +1,6 @@
 #TODO nix crate error
 [source]
 git = "https://github.com/watchexec/cargo-watch"
+shallow_clone = true
 [build]
 template = "cargo"
