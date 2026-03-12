@@ -1,10 +1,20 @@
-#TODO missing header files
+#TODO protobuf in redox
 [source]
-tar = "https://github.com/mobile-shell/mosh/releases/download/mosh-1.4.0/mosh-1.4.0.tar.gz"
+git = "https://github.com/mobile-shell/mosh"
+rev = "mosh-1.4.0"
+shallow_clone = true
+script = """
+./autogen.sh
+"""
+
 [build]
 template = "configure"
 dependencies = [
     "openssl3",
-    "ncurses",
+    "ncursesw",
     "zlib",
+    "protobuf"
+]
+dev-dependencies = [
+    "host:protobuf"
 ]

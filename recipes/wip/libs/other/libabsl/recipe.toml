@@ -1,0 +1,9 @@
+#TODO: compile error on redox, need patches
+# Also see https://github.com/protocolbuffers/protobuf/blob/main/cmake/README.md
+[source]
+git = "https://github.com/abseil/abseil-cpp"
+rev = "20260107.1"
+shallow_clone = true
+
+[build]
+template = "cmake"
