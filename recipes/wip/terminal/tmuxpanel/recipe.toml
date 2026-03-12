@@ -1,0 +1,11 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/marlocarlo/Tmux-Plugin-Panel"
+shallow_clone = true
+[build]
+template = "cargo"
+[package]
+dependencies = [
+    "tmux",
+    "git",
+]

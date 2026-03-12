@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/1jehuang/mermaid-rs-renderer"
+shallow_clone = true
+[build]
+template = "cargo"

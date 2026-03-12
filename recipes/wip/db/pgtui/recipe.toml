@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+[source]
+git = "https://codeberg.org/kdwarn/pgtui"
+shallow_clone = true
+[build]
+template = "cargo"

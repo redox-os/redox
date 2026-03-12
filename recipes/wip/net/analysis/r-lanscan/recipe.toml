@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/robgonnella/r-lanscan"
+shallow_clone = true
+[build]
+template = "cargo"
+cargopackages = [
+    "r-lancli",
+    "r-lanterm",
+]

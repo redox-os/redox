@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/ki-editor/ki-editor"
+shallow_clone = true
+[build]
+template = "cargo"

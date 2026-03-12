@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+[source]
+git = "https://gnu.foo/projects/whyno"
+shallow_clone = true
+[build]
+template = "cargo"
