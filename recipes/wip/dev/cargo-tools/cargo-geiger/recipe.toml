@@ -1,13 +1,14 @@
 #TODO camino crate error
 [source]
 git = "https://github.com/rust-secure-code/cargo-geiger"
+shallow_clone = true
 [build]
 template = "custom"
 dependencies = [
-    "openssl1",
+    "openssl3",
 ]
 script = """
+DYNAMIC_INIT
 export OPENSSL_DIR="${COOKBOOK_SYSROOT}"
-export OPENSSL_STATIC="true"
 cookbook_cargo_packages cargo-geiger
 """

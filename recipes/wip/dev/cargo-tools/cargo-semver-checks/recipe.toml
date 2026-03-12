@@ -1,5 +1,6 @@
 #TODO serde crate error
 [source]
 git = "https://github.com/obi1kenobi/cargo-semver-checks"
+shallow_clone = true
 [build]
 template = "cargo"

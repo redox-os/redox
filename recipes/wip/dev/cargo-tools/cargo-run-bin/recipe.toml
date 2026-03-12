@@ -1,5 +1,6 @@
 #TODO compilation error
 [source]
 git = "https://github.com/dustinblackman/cargo-run-bin"
+shallow_clone = true
 [build]
 template = "cargo"

@@ -1,5 +1,6 @@
 #TODO ahash crate error
 [source]
 git = "https://github.com/LukeMathWalker/cargo-px"
+shallow_clone = true
 [build]
 template = "cargo"

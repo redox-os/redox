@@ -1,8 +1,9 @@
 #TODO update the redox_syscall crate version on the dependency tree
 [source]
 git = "https://github.com/qtfkwk/cargo-list"
+shallow_clone = true
 [build]
 template = "cargo"
 dependencies = [
-    "openssl1",
+    "openssl3",
 ]

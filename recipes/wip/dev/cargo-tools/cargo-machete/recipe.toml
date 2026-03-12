@@ -1,5 +1,6 @@
 #TODO camino crate error
 [source]
 git = "https://github.com/bnjbvr/cargo-machete"
+shallow_clone = true
 [build]
 template = "cargo"

@@ -1,5 +1,6 @@
 #TODO compiled but not tested (after an update on proc-macro2)
 [source]
 git = "https://github.com/rust-fuzz/cargo-fuzz"
+shallow_clone = true
 [build]
 template = "cargo"

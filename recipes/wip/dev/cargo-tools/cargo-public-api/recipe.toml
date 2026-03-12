@@ -1,11 +1,10 @@
 #TODO camino crate error
 [source]
 git = "https://github.com/Enselic/cargo-public-api"
+shallow_clone = true
 [build]
-template = "custom"
+template = "cargo"
+cargopackages = ["cargo-public-api"]
 dependencies = [
-    "openssl1",
+    "openssl3",
 ]
-script = """
-cookbook_cargo_packages cargo-public-api
-"""

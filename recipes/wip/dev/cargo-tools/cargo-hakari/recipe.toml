@@ -1,8 +1,7 @@
 #TODO atomicwrites and rustix crates error
 [source]
 git = "https://github.com/guppy-rs/guppy"
+shallow_clone = true
 [build]
-template = "custom"
-script = """
-cookbook_cargo_packages cargo-hakari
-"""
+template = "cargo"
+cargopackages = ["cargo-hakari"]

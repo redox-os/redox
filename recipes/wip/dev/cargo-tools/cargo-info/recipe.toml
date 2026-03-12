@@ -1,8 +1,9 @@
 #TODO openssl error
 [source]
 git = "https://gitlab.com/imp/cargo-info"
+shallow_clone = true
 [build]
 template = "cargo"
 dependencies = [
-    "openssl1",
+    "openssl3",
 ]

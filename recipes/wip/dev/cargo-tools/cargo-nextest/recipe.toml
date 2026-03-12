@@ -1,8 +1,7 @@
 #TODO shared_child and libc crates error
 [source]
 git = "https://github.com/nextest-rs/nextest"
+shallow_clone = true
 [build]
-template = "custom"
-script = """
-cookbook_cargo_packages cargo-nextest
-"""
+template = "cargo"
+cargopackages = ["cargo-nextest"]

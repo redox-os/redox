@@ -1,8 +1,7 @@
 #TODO camino crate error
 [source]
 git = "https://github.com/guppy-rs/guppy"
+shallow_clone = true
 [build]
-template = "custom"
-script = """
-cookbook_cargo_packages cargo-guppy
-"""
+template = "cargo"
+cargopackages = ["cargo-guppy"]

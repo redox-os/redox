@@ -1,13 +1,14 @@
 #TODO openssl-sys crate error
 [source]
 git = "https://github.com/iomentum/cargo-scaffold"
+shallow_clone = true
 [build]
 template = "custom"
 dependencies = [
-    "openssl1",
+    "openssl3",
 ]
 script = """
+DYNAMIC_INIT
 export OPENSSL_DIR="${COOKBOOK_SYSROOT}"
-export OPENSSL_STATIC="true"
 cookbook_cargo
 """
