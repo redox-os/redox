@@ -3,9 +3,6 @@
 git = "https://github.com/FyroxEngine/Fyrox-demo-projects"
 shallow_clone = true
 [build]
-template = "custom"
-script = """
-DYNAMIC_INIT
-COOKBOOK_SOURCE="${COOKBOOK_SOURCE}/ui"
-cookbook_cargo_packages executor
-"""
+template = "cargo"
+cargopath = "ui"
+cargopackages = ["executor"]

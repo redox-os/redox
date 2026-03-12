@@ -3,10 +3,23 @@
 git = "https://github.com/sebcrozet/kiss3d"
 shallow_clone = true
 [build]
-template = "custom"
-script = """
-DYNAMIC_INIT
-cookbook_cargo_examples camera cube lines multi_windows planar_lines \
-points post_processing primitives primitives2d procedural rectangle \
-screenshot stereo text texturing ui window
-"""
+template = "cargo"
+cargoexamples = [
+    "camera",
+    "cube",
+    "lines",
+    "multi_windows",
+    "planar_lines",
+    "points",
+    "post_processing",
+    "primitives",
+    "primitives2d",
+    "procedural",
+    "rectangle",
+    "screenshot",
+    "stereo",
+    "text",
+    "texturing",
+    "ui",
+    "window",
+]

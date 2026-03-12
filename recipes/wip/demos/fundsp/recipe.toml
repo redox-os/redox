@@ -3,12 +3,20 @@
 git = "https://github.com/SamiPerttu/fundsp"
 shallow_clone = true
 [build]
-template = "custom"
+template = "cargo"
+cargoexamples = [
+    "beep",
+    "file",
+    "grain",
+    "grain2",
+    "keys",
+    "network",
+    "optimize",
+    "peek",
+    "plot",
+    "sequence",
+    "type",
+]
 dependencies = [
     "fontconfig",
 ]
-script = """
-DYNAMIC_INIT
-cookbook_cargo_examples beep file grain grain2 keys network \
-optimize peek plot sequence type
-"""

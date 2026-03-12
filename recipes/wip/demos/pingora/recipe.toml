@@ -3,8 +3,8 @@
 git = "https://github.com/cloudflare/pingora"
 shallow_clone = true
 [build]
-template = "custom"
-script = """
-DYNAMIC_INIT
-cookbook_cargo_examples server client
-"""
+template = "cargo"
+cargoexamples = [
+    "server",
+    "client",
+]

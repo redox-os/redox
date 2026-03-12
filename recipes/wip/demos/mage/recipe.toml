@@ -3,8 +3,8 @@
 git = "https://github.com/baad-c0de/mage-core"
 shallow_clone = true
 [build]
-template = "custom"
-script = """
-DYNAMIC_INIT
-cookbook_cargo_examples basic hello
-"""
+template = "cargo"
+cargoexamples = [
+    "basic",
+    "hello",
+]

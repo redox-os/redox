@@ -3,9 +3,10 @@
 git = "https://github.com/Wayoung7/firework-rs"
 shallow_clone = true
 [build]
-template = "custom"
-script = """
-DYNAMIC_INIT
-cookbook_cargo_packages firework-rs
-cookbook_cargo_examples fountain heart vortex
-"""
+template = "cargo"
+cargopackages = ["firework-rs"]
+cargoexamples = [
+    "fountain",
+    "heart",
+    "vortex",
+]

@@ -3,9 +3,16 @@
 git = "https://github.com/not-fl3/macroquad"
 shallow_clone = true
 [build]
-template = "custom"
-script = """
-DYNAMIC_INIT
-cookbook_cargo_examples 3d basic_shapes camera first_person \
-particles_example platformer shadertoy snake text ui
-"""
+template = "cargo"
+cargoexamples = [
+    "3d",
+    "basic_shapes",
+    "camera",
+    "first_person",
+    "particles_example",
+    "platformer",
+    "shadertoy",
+    "snake",
+    "text",
+    "ui",
+]

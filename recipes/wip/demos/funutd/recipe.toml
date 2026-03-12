@@ -3,8 +3,7 @@
 git = "https://github.com/SamiPerttu/funutd"
 shallow_clone = true
 [build]
-template = "custom"
-script = """
-DYNAMIC_INIT
-cookbook_cargo_examples editor
-"""
+template = "cargo"
+cargoexamples = [
+    "editor",
+]

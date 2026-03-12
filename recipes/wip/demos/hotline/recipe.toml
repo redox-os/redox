@@ -3,8 +3,5 @@
 git = "https://github.com/polymonster/hotline"
 shallow_clone = true
 [build]
-template = "custom"
-script = """
-DYNAMIC_INIT
-cookbook_cargo_examples triangle
-"""
+template = "cargo"
+cargoexamples = ["triangle"]

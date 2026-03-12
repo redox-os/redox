@@ -3,8 +3,5 @@
 git = "https://github.com/alexheretic/gfx-shader-watch"
 shallow_clone = true
 [build]
-template = "custom"
-script = """
-DYNAMIC_INIT
-cookbook_cargo_examples watch-shaders
-"""
+template = "cargo"
+cargoexamples = ["watch-shaders"]

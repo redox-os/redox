@@ -3,8 +3,5 @@
 git = "https://git.sr.ht/~ireas/genpdf-rs"
 shallow_clone = true
 [build]
-template = "custom"
-script = """
-DYNAMIC_INIT
-cookbook_cargo_examples demo
-"""
+template = "cargo"
+cargoexamples = ["demo"]

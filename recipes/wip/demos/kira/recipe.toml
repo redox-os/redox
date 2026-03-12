@@ -3,9 +3,12 @@
 git = "https://github.com/tesselode/kira-examples"
 shallow_clone = true
 [build]
-template = "custom"
-script = """
-DYNAMIC_INIT
-cookbook_cargo_packages dynamic-music ghost-noise metronome \
-score-counter spatial-audio simple-sound-playback
-"""
+template = "cargo"
+cargopackages = [
+    "dynamic-music",
+    "ghost-noise",
+    "metronome",
+    "score-counter",
+    "spatial-audio",
+    "simple-sound-playback",
+]

@@ -3,9 +3,10 @@
 git = "https://github.com/Nazariglez/notan"
 shallow_clone = true
 [build]
-template = "custom"
-script = """
-DYNAMIC_INIT
-cookbook_cargo_examples renderer_cube draw_path_flower \
-game_pong game_of_life
-"""
+template = "cargo"
+cargoexamples = [
+    "renderer_cube",
+    "draw_path_flower",
+    "game_pong",
+    "game_of_life",
+]
