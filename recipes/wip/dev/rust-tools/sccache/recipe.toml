@@ -3,11 +3,7 @@
 git = "https://github.com/mozilla/sccache"
 shallow_clone = true
 [build]
-template = "custom"
+template = "cargo"
 dependencies = [
     "openssl3",
 ]
-script = """
-DYNAMIC_INIT
-cookbook_cargo
-"""

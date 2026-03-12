@@ -1,11 +1,13 @@
 #TODO cargo-util crate error
 [source]
 git = "https://github.com/trailofbits/dylint"
+shallow_clone = true
 [build]
-template = "custom"
-dependencies = [
-    "openssl1",
+template = "cargo"
+cargopackages = [
+    "cargo-dylint",
+    "dylint-link",
 ]
-script = """
-cookbook_cargo_packages cargo-dylint dylint-link
-"""
+dependencies = [
+    "openssl3",
+]

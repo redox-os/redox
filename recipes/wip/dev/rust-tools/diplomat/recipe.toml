@@ -1,8 +1,7 @@
 #TODO missing script to properly move the binary
 [source]
 git = "https://github.com/rust-diplomat/diplomat"
+shallow_clone = true
 [build]
-template = "custom"
-script = """
-cookbook_cargo_packages diplomat
-"""
+template = "cargo"
+cargopackages = ["diplomat"]

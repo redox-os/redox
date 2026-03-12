@@ -1,11 +1,10 @@
 #TODO compilation error
 [source]
 git = "https://github.com/immunant/c2rust"
+shallow_clone = true
 [build]
-template = "custom"
+template = "cargo"
+cargopackages = ["c2rust"]
 dependencies = [
-    "openssl1",
+    "openssl3",
 ]
-script = """
-cookbook_cargo_packages c2rust
-"""

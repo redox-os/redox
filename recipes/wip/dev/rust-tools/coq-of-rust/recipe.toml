@@ -1,8 +1,16 @@
+#TODO not compiled or tested
 #TODO require the rust-src rustc-dev llvm-tools-preview components
 [source]
 git = "https://github.com/formal-land/coq-of-rust"
+shallow_clone = true
 [build]
-template = "custom"
-script = """
-cookbook_cargo_packages coq_of_rust_cli coq_of_rust_lib
-"""
+template = "cargo"
+cargopackages = [
+    "coq_of_rust_cli",
+    "coq_of_rust_lib",
+]
+[package]
+dependencies = [
+    "rust",
+    "llvm21-common",
+]

@@ -1,8 +1,7 @@
 #TODO camino crate error
 [source]
 git = "https://github.com/evcxr/evcxr"
+shallow_clone = true
 [build]
-template = "custom"
-script = """
-cookbook_cargo_packages evcxr_repl
-"""
+template = "cargo"
+cargopackages = ["evcxr_repl"]
