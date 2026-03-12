@@ -1,8 +1,9 @@
 #TODO compiled but not tested (after cargo update)
 [source]
 git = "https://github.com/jasonwhite/git-subset"
+shallow_clone = true
 [build]
 template = "cargo"
 dependencies = [
-    "openssl1",
+    "openssl3",
 ]

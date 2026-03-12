@@ -1,8 +1,7 @@
 #TODO not compiled or tested
 [source]
 git = "https://github.com/ahkohd/oyo"
+shallow_clone = true
 [build]
-template = "custom"
-script = """
-cookbook_cargo_packages oyo
-"""
+template = "cargo"
+cargopackages = ["oyo"]

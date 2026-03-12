@@ -1,5 +1,6 @@
 #TODO compiled but not tested (after a cargo update and a patch on the ring crate)
 [source]
 git = "https://github.com/sondr3/git-ignore"
+shallow_clone = true
 [build]
 template = "cargo"

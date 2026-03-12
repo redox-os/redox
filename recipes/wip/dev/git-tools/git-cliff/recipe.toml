@@ -1,8 +1,7 @@
 #TODO compiled but not tested (after a patch on the ring crate)
 [source]
 git = "https://github.com/orhun/git-cliff"
+shallow_clone = true
 [build]
-template = "custom"
-script = """
-cookbook_cargo_packages git-cliff
-"""
+template = "cargo"
+cargopackages = ["git-cliff"]

@@ -1,7 +1,7 @@
 #TODO: Incomplete std/syscall porting, or vendor patches
 [source]
 git = "https://github.com/jesseduffield/lazygit"
-
+shallow_clone = true
 [build]
 template = "custom"
 dev-dependencies = [

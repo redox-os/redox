@@ -1,5 +1,6 @@
 #TODO not compiled or tested
 [source]
 git = "https://github.com/bircni/git-statuses"
+shallow_clone = true
 [build]
 template = "cargo"

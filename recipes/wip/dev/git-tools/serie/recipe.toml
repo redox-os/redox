@@ -1,5 +1,6 @@
 #TODO x11rb and rustix crates error
 [source]
 git = "https://github.com/lusingander/serie"
+shallow_clone = true
 [build]
 template = "cargo"

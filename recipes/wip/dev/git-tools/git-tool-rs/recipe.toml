@@ -1,5 +1,6 @@
 #TODO compilation error
 [source]
 git = "https://github.com/SierraSoftworks/git-tool"
+shallow_clone = true
 [build]
 template = "cargo"

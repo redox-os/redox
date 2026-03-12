@@ -1,5 +1,6 @@
 #TODO compiled but not tested (after cargo update)
 [source]
 git = "https://github.com/mlange-42/git-graph"
+shallow_clone = true
 [build]
 template = "cargo"
