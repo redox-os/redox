@@ -1,14 +1,16 @@
 #TODO make all dependencies work
 [source]
 git = "https://github.com/matt-kimball/allocscope"
+shallow_clone = true
 [build]
-template = "custom"
+template = "cargo"
+cargopackages = [
+    "allocscope-trace",
+    "allocscope-view",
+]
 dependencies = [
     "libiberty",
     "ncurses",
     "sqlite3",
     "libunwind",
 ]
-script = """
-cookbook_cargo_packages allocscope-trace allocscope-view
-"""

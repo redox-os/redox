@@ -1,8 +1,10 @@
 #TODO make gtk3 work
 [source]
 git = "https://github.com/elkowar/eww"
+shallow_clone = true
 [build]
-template = "custom"
+template = "cargo"
+cargopackages = ["eww"]
 dependencies = [
     "gtk3",
     "pango",
@@ -10,6 +12,3 @@ dependencies = [
     "gdk-pixbuf",
     "glib",
 ]
-script = """
-cookbook_cargo_packages eww
-"""

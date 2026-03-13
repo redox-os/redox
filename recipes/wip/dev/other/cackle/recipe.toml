@@ -2,9 +2,7 @@
 #TODO Probably needs to be ported to Redox
 [source]
 git = "https://github.com/davidlattimore/cackle"
+shallow_clone = true
 [build]
 template = "cargo"
-#script = """
-#cookbook_cargo --features unsupported-os
-#"""
-# Uncomment the above lines if the Cargo template doesn't work.
+#cargoflags = ["--features unsupported-os"] # uncomment if it doesn't work

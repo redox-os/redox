@@ -1,6 +1,7 @@
 #TODO make mimalloc work
 [source]
 git = "https://github.com/Wilfred/difftastic"
+shallow_clone = true
 [build]
 template = "cargo"
 dependencies = [

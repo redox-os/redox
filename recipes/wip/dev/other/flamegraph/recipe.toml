@@ -1,8 +1,7 @@
 #TODO require DTrace support
 [source]
 git = "https://github.com/flamegraph-rs/flamegraph"
+shallow_clone = true
 [build]
-template = "custom"
-script = """
-cookbook_cargo_packages flamegraph
-"""
+template = "cargo"
+cargopackages = ["flamegraph"]

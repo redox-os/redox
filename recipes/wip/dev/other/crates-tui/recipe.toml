@@ -1,8 +1,9 @@
 #TODO not compiled or tested
 [source]
 git = "https://github.com/ratatui-org/crates-tui"
+shallow_clone = true
 [build]
 template = "cargo"
 dependencies = [
-    "openssl1",
+    "openssl3",
 ]

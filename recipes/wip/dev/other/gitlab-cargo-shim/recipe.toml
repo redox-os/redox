@@ -1,5 +1,6 @@
 #TODO camino crate error
 [source]
 git = "https://github.com/w4/gitlab-cargo-shim"
+shallow_clone = true
 [build]
 template = "cargo"

@@ -1,6 +1,7 @@
-#TODO missing script for SCons, see https://www.gem5.org/documentation/general_docs/building
+#TODO missing script for scons: https://www.gem5.org/documentation/general_docs/building
 [source]
 git = "https://github.com/gem5/gem5"
-rev = "6835f0665744bba3d56921c9406ee97e841b60a0"
+branch = "stable"
+shallow_clone = true
 [build]
 template = "custom"

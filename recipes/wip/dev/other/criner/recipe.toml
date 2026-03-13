@@ -2,11 +2,10 @@
 #TODO missing script to properly move th binary
 [source]
 git = "https://github.com/the-lean-crate/criner"
+shallow_clone = true
 [build]
-template = "custom"
+template = "cargo"
+cargopackages = ["criner"]
 dependencies = [
-    "openssl1",
+    "openssl3",
 ]
-script = """
-cookbook_cargo_packages criner
-"""

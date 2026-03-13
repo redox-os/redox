@@ -1,8 +1,7 @@
 #TODO missing script to properly move the binary
 [source]
 git = "https://github.com/SeaQL/FireDBG.for.Rust"
+shallow_clone = true
 [build]
-template = "custom"
-script = """
-cookbook_cargo_packages firedbg-cli
-"""
+template = "cargo"
+cargopackages = ["firedbg-cli"]

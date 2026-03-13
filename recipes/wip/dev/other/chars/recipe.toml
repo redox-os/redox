@@ -1,8 +1,7 @@
 #TODO compiled but not tested
 [source]
 git = "https://github.com/boinkor-net/chars"
+shallow_clone = true
 [build]
-template = "custom"
-script = """
-cookbook_cargo_packages chars
-"""
+template = "cargo"
+cargopackages = ["chars"]

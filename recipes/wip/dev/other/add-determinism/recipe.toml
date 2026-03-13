@@ -1,5 +1,6 @@
 #TODO source code error
 [source]
 git = "https://github.com/keszybz/add-determinism"
+shallow_clone = true
 [build]
 template = "cargo"

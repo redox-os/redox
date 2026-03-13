@@ -1,8 +1,7 @@
 #TODO compiled but not tested
 [source]
 git = "https://github.com/nickgerace/gfold"
+shallow_clone = true
 [build]
-template = "custom"
-script = """
-cookbook_cargo_packages gfold
-"""
+template = "cargo"
+cargopackages = ["gfold"]

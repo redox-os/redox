@@ -1,6 +1,6 @@
 [source]
 git = "https://github.com/4lDO2/fal-rs"
-
+shallow_clone = true
 [build]
-template = "custom"
-script = "cookbook_cargo_packages fal-frontend-redox"
+template = "cargo"
+cargopackages = ["fal-frontend-redox"]

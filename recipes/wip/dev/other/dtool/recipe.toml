@@ -1,5 +1,6 @@
 #TODO update the redox_syscall version on the dependency tree
 [source]
 git = "https://github.com/guoxbin/dtool"
+shallow_clone = true
 [build]
 template = "cargo"

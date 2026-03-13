@@ -1,5 +1,6 @@
 #TODO rfd crate error
 [source]
 git = "https://github.com/WINSDK/bite"
+shallow_clone = true
 [build]
 template = "cargo"

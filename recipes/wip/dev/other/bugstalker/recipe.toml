@@ -1,6 +1,7 @@
 #TODO make the dependency work
 [source]
 git = "https://github.com/godzie44/BugStalker"
+shallow_clone = true
 [build]
 template = "cargo"
 dependencies = [

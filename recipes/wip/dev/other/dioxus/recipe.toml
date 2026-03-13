@@ -2,11 +2,10 @@
 #TODO need to install the bindgen-cli build tool from cargo: cargo install --force --locked bindgen-cli
 [source]
 git = "https://github.com/DioxusLabs/dioxus"
+shallow_clone = true
 [build]
-template = "custom"
+template = "cargo"
+cargopackages = ["dioxus-cli"]
 dependencies = [
-    "openssl1",
+    "openssl3",
 ]
-script = """
-cookbook_cargo_packages dioxus-cli
-"""
