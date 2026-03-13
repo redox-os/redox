@@ -100,6 +100,7 @@ Each "Vendor" has its own alphabetical order in "Model", independent from models
 | HP | EliteBook Folio 9480M | 0.9.0 | 2025-11-04 | desktop | x86-64 | UEFI | Boots to Orbital, touchpad and usb work, cannot connect to the Internet, install failed, right maximum display resolution 1600x900
 | Lenovo | ThinkPad Yoga 260 Laptop - Type 20FE | 0.9.0 | 2024-09-07 | demo | x86-64 | UEFI | Boots to Orbital, No audio |
 | Lenovo | Yoga S730-13IWL | 0.9.0 | 2024-11-09 | desktop | x86-64 | UEFI | Boots to Orbital, No trackpad or USB mouse input support |
+| Lenovo | Ideapad 710S-13IKB | 0.9.0 | 2026-02-12 | demo | x86-64 | UEFI | Boots to Orbital, No trackpad or USB mouse input support |
 | Raspberry Pi | 3 Model B+ | 0.8.0 | Unknown | server | ARM64 | U-Boot | Boots to UART serial console (pl011) |
 | Samsung | Series 3 (NP350V5C) | 0.9.0 | 2025-08-04 | desktop | x86-64 | UEFI | Boots to Orbital, touchpad works, USB does not work, can connect to the Internet through LAN. Wrong maximum display resolution 1024x768 |
 | System76 | Oryx Pro (oryp10) | 0.8.0 | 2022-11-11 | desktop | x86-64 | UEFI | Boots to Orbital, No touchpad support, though it should be working |
@@ -117,6 +118,7 @@ Each "Vendor" has its own alphabetical order in "Model", independent from models
 | HP | EliteBook 2570p | 0.8.0 | 2022-11-23 | demo | x86-64 | BIOS (CSM mode?) | Gets to resolution selection, Fails assert in `src/os/bios/mod.rs:77` after selecting resolution |
 | Lenovo | G570 | 0.8.0 | 2022-11-11 | desktop | x86-64 | BIOS | Bootloader panics in `alloc_zeroed_page_aligned`, Correct video mode not offered (firmware issue) |
 | Lenovo | IdeaPad Y510P | 0.8.0 | 2022-11-11 | desktop | i686 | BIOS | Panics on `phys_to_virt overflow`, probably having invalid mappings for 32-bit |
+| Lenovo | ThinkPad X1 20KH-002 | 0.9.0 | 2026-02-11 | server | x86-64 | UEFI | Boots once after build but not a second time, fails in ps2d |
 | Lenovo | ThinkCentre M83 | 0.9.0 | 2025-11-09 | desktop | x86_64 | UEFI | Presents user with a set of display resolution options. After user selects an option, it takes a long time for the "live" thing to load all the way to 647MiB. Once it does reach 647MiB, however, it dumps a bunch of logs onto the screen. Those logs also happen to be offset so that the leftmost portion of all text "exists" past the leftmost part of the screen, resulting in the logs being only partially visible. The logs appear to include (among other things) 1. "thread 'main' (1) panicked at acpid/src/acpi.rs:256:68: Called `Result::unwrap()` on an `Err` value: Aml(NoCurrentOp)"; 2. "thread 'main' (1) panicked at acpid/src/main.rs:147:39:acpid: failed to daemonize: Error `I/O error` 5"; 3. "... [@hwd:40 ERROR] failed to probe with error No such device (os error 19)..."; etc. |
 | Panasonic | Toughbook CF-18 | 0.8.0 | 2022-11-11 | desktop | i686 | BIOS | Hangs after PIT initialization |
 | Toshiba | Satellite L500 | 0.8.0 | 2022-11-11 | desktop | i686 | BIOS | Correct video mode not offered (firmware issue), Panics on `phys_to_virt overflow`, probably having invalid mappings for 32-bit |
