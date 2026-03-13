@@ -7,7 +7,18 @@ rev = "2123.3"
 shallow_clone = true
 [build]
 template = "cmake"
+cmakeflags = [
+    "-DUSE_SYSTEM_SDL2=ON",
+    "-DENABLE_QT=OFF",
+    "-DENABLE_TESTS=OFF",
+    "-DENABLE_WEB_SERVICE=OFF",
+    "-DENABLE_SCRIPTING=OFF",
+    "-DENABLE_LIBUSB=OFF",
+    "-DENABLE_VULKAN=OFF",
+    "-DCITRA_USE_PRECOMPILED_HEADERS=OFF" # can be used?
+]
 dependencies = [
-    "qt6-base",
-    "qt6-multimedia",
+    "sdl2",
+    #"qt6-base",
+    #"qt6-multimedia",
 ]

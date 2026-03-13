@@ -1,9 +1,7 @@
 #TODO: fix aws-lc-sys compilation
 [source]
 git = "https://github.com/AvivNaaman/smb-rs"
-
+shallow_clone = true
 [build]
-template = "custom"
-script = """
-cookbook_cargo_packages smb-cli
-"""
+template = "cargo"
+cargopackages = ["smb-cli"]

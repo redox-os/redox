@@ -6,14 +6,17 @@ rev = "1.0"
 shallow_clone = true
 [build]
 template = "cmake"
+cmakeflags = [
+    "-DBUILD_QT_SDL=OFF"
+]
 dependencies = [
     "curl",
     "libpcap",
     "libenet",
     "sdl2",
-    "qt6-base",
-    "qt6-multimedia",
-    "qt6-svg",
+    #"qt6-base",
+    #"qt6-multimedia",
+    #"qt6-svg",
     "libarchive",
     "zstd",
     "faad2",

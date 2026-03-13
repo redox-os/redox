@@ -6,3 +6,6 @@ rev = "2.1.4"
 shallow_clone = true
 [build]
 template = "cmake"
+cmakeflags = [
+    "-DUNICORN_BUILD_TESTS=OFF"
+]

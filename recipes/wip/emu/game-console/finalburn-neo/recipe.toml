@@ -1,7 +1,7 @@
-#TODO missing script for "make", see https://github.com/finalburnneo/FBNeo/blob/master/README-SDL.md#sdl2
+#TODO missing script for gnu make: https://github.com/finalburnneo/FBNeo/blob/master/README-SDL.md#sdl2
 [source]
 git = "https://github.com/finalburnneo/FBNeo"
-rev = "9cc496e02a8d1588e1226b648852488a491f1b75"
+rev = "a50ddd24dcd7bed4b625eeea9b25631072bbfe80"
 shallow_clone = true
 [build]
 template = "custom"

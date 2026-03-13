@@ -1,6 +1,7 @@
 #TODO Not compiled or tested
 [source]
 git = "https://github.com/joamag/boytacean"
+shallow_clone = true
 [build]
 template = "cargo"
 dependencies = [

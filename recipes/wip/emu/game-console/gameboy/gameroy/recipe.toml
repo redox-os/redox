@@ -1,8 +1,7 @@
 #TODO not compiled or tested
 [source]
 git = "https://github.com/Rodrigodd/gameroy"
+shallow_clone = true
 [build]
-template = "custom"
-script = """
-cookbook_cargo_packages gameroy-native
-"""
+template = "cargo"
+cargopackages = ["gameroy-native"]

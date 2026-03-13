@@ -1,5 +1,6 @@
 #TODO update mio to 0.8 (after cargo update)
 [source]
 git = "https://git.zx2c4.com/wireguard-rs"
+shallow_clone = true
 [build]
 template = "cargo"

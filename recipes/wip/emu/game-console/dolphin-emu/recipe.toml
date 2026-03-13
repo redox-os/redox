@@ -22,17 +22,18 @@ cmakeflags = [
     "=DENABLE_ANALYTICS=OFF",
     "-DENCODE_FRAMEDUMPS=OFF",
     "-DENABLE_LLVM=OFF",
+    "-DENABLE_QT=OFF",
 ]
-dependencies = [
+#dependencies = [
     #"ffmpeg6",
     #"libevdev",
     #"libusb",
     #"pango",
     #"cairo",
-    "qt6-base",
-    "qt6-svg",
+    #"qt6-base",
+    #"qt6-svg",
     #"mesa-x11",
     #"curl",
     #"libvulkan",
     #"openal",
-]
+#]

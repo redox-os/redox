@@ -1,8 +1,7 @@
 #TODO ahash crate error
 [source]
 git = "https://github.com/tanakh/meru"
+shallow_clone = true
 [build]
-template = "custom"
-script = """
-cookbook_cargo_packages meru
-"""
+template = "cargo"
+cargopackages = ["meru"]

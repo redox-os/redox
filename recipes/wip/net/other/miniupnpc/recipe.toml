@@ -1,4 +1,4 @@
-#TODO Missing script for "make", see https://github.com/miniupnp/miniupnp/tree/master/miniupnpc#readme
+#TODO missing script for gnu make: https://github.com/miniupnp/miniupnp/tree/master/miniupnpc#readme
 [source]
 tar = "http://miniupnp.free.fr/files/miniupnpc-2.2.4.tar.gz"
 [build]

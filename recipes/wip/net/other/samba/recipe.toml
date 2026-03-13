@@ -2,7 +2,7 @@
 [source]
 git = "https://gitlab.redox-os.org/redox-os/samba.git"
 upstream = "https://github.com/samba-team/samba.git"
-
+shallow_clone = true
 [build]
 template = "custom"
 dependencies = [

@@ -5,6 +5,9 @@ git = "https://github.com/jpd002/Play-"
 shallow_clone = true
 [build]
 template = "cmake"
+cmakeflags = [
+    "-DBUILD_TESTS=OFF"
+]
 dependencies = [
     "openal",
     "libevdev",

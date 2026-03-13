@@ -1,12 +1,8 @@
 #TODO compilation error
 [source]
-tar = "https://invisible-island.net/archives/lynx/tarballs/lynx2.8.9rel.1.tar.gz"
+tar = "https://invisible-island.net/archives/lynx/tarballs/lynx2.9.2.tar.gz"
 [build]
-template = "custom"
+template = "configure"
 dependencies = [
-    "ncurses",
+    "ncursesw",
 ]
-script = """
-export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include/ncurses"
-cookbook_configure
-"""
