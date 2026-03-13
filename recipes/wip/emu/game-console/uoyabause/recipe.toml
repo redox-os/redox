@@ -2,13 +2,18 @@
 # build instructions: https://github.com/devmiyax/yabause/blob/master/yabause/README.LIN#L77
 [source]
 git = "https://github.com/devmiyax/yabause"
-rev = "7d28bd54aa3188e90e4126ff9f7c27b945380488"
+rev = "71c973f92966d33de464c1ba4dac1953af6ec462"
 shallow_clone = true
 [build]
-template = "cmake"
+template = "custom"
 dependencies = [
     "gtk2",
     "sdl2",
     "mesa",
     "gtkglext",
 ]
+script = """
+DYNAMIC_INIT
+COOKBOOK_SOURCE="${COOKBOOK_SOURCE}/yabause"
+cookbook_cmake
+"""

@@ -10,7 +10,7 @@ dependencies = [
     "mesa",
     "mesa-glu",
     "nghttp2",
-    "openssl1",
+    "openssl3",
     "sdl2",
     "zlib",
 ]

@@ -5,12 +5,16 @@ git = "https://github.com/snes9xgit/snes9x"
 rev = "1.63"
 shallow_clone = true
 [build]
-template = "cmake"
+template = "custom"
 dependencies = [
     "sdl2",
     "gtk3mm",
-    "libpng",
-    "zlib",
     "libx11",
-    "libepoxy",
+    "libxext",
+    "libxrandr",
 ]
+script = """
+COOKBOOK_SOURCE="${COOKBOOK_SOURCE}/gtk"
+DYNAMIC_INIT
+cookbook_cmake
+"""

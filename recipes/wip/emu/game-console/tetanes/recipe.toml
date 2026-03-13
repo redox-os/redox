@@ -1,6 +1,7 @@
 #TODO Not compiled or tested yet
 [source]
 git = "https://github.com/lukexor/tetanes"
+shallow_clone = true
 [build]
 template = "cargo"
 dependencies = [

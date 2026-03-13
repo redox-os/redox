@@ -29,7 +29,7 @@ dependencies = [
     "qt6-declarative",
     "curl",
     "opencv4",
-    "sdl2",
+    "sdl3",
     #"eudev",
     #"glew",
     "openal",
@@ -39,6 +39,6 @@ dependencies = [
     #"libevdev",
     #"libedit",
     #"libvulkan",
-    #"pulseaudio",
+    #"libpulse",
     #"ffmpeg6",
 ]

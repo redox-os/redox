@@ -1,22 +1,11 @@
 #TODO not compiled or tested
 [source]
 git = "https://github.com/evmar/retrowin32"
+shallow_clone = true
 [build]
-template = "custom"
+template = "cargo"
+cargopackages = ["retrowin32"]
+cargoflags = ["--x86-emu --sdl"]
 dependencies = [
     "sdl2",
 ]
-script = """
-DYNAMIC_INIT
-package=retrowin32
-"${COOKBOOK_CARGO}" build \
-            --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
-            --package "${package}" \
-            --release
-            --x86-emu
-            --sdl
-        mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
-        cp -v \
-            "target/${TARGET}/release/${package}" \
-            "${COOKBOOK_STAGE}/usr/bin/${package}"
-"""

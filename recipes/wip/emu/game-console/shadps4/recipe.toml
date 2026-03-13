@@ -5,11 +5,11 @@
 git = "https://github.com/shadps4-emu/shadPS4"
 [build]
 template = "cmake"
-cmakeflags = [
-    "-DENABLE_QT_GUI=ON"
-]
+#cmakeflags = [
+    #"-DENABLE_QT_GUI=ON"
+#]
 dependencies = [
-    "pulseaudio",
+    "libpulse",
     "openal",
     "openssl3",
     "libedit",
@@ -17,7 +17,7 @@ dependencies = [
     "libevdev",
     "sdl2",
     "sndio",
-    "qt6-base",
-    "qt6-multimedia",
+    #"qt6-base",
+    #"qt6-multimedia",
     "libvulkan",
 ]

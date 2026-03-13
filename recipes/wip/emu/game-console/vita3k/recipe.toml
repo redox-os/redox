@@ -5,6 +5,9 @@ git = "https://github.com/Vita3K/Vita3K"
 shallow_clone = true
 [build]
 template = "cmake"
+cmakeflags = [
+    "-DUSE_VITA3K_UPDATE=OFF"
+]
 dependencies = [
     "sdl2",
     "gtk3",

@@ -2,8 +2,7 @@
 # build instructions: https://github.com/dbalsom/martypc/wiki/Building-MartyPC#building-for-linux
 [source]
 git = "https://github.com/dbalsom/martypc"
+shallow_clone = true
 [build]
-template = "custom"
-script = """
-cookbook_cargo_packages martypc_eframe
-"""
+template = "cargo"
+cargopackages = ["martypc_eframe"]

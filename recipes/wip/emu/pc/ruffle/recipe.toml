@@ -4,11 +4,8 @@
 git = "https://github.com/ruffle-rs/ruffle"
 shallow_clone = true
 [build]
-template = "custom"
+template = "cargo"
+cargopackages = ["ruffle_desktop"]
 dependencies = [
 	"openssl3",
 ]
-script = """
-DYNAMIC_INIT
-cookbook_cargo_packages ruffle_desktop
-"""

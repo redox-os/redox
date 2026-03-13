@@ -1,12 +1,10 @@
 #TODO not compiled or tested
 [source]
 git = "https://github.com/OpenGMK/OpenGMK"
+shallow_clone = true
 [build]
-template = "custom"
+template = "cargo"
+cargopackages = ["gm8emulator"]
 dependencies = [
     "libalsa",
 ]
-script = """
-DYNAMIC_INIT
-cookbook_cargo_packages gm8emulator
-"""

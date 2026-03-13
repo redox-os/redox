@@ -1,4 +1,5 @@
 #TODO not compiled or tested yet
+#TODO determine minimum dependencies from cmake log
 # build instructions: https://github.com/stenzek/duckstation#linux-1
 [source]
 git = "https://github.com/stenzek/duckstation"
@@ -13,9 +14,9 @@ cmakeflags = [
     "-DBUILD_QT_FRONTEND=OFF",
     "-DBUILD_MINI_FRONTEND=ON",
 ]
-dependencies = [
+#dependencies = [
     #"sdl2",
     #"qt6-base",
     #"qt6-svg",
     #"qt6-tools",
-]
+#]

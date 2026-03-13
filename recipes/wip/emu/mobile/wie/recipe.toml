@@ -1,8 +1,7 @@
 #TODO compilation error
 [source]
 git = "https://github.com/dlunch/wie"
+shallow_clone = true
 [build]
-template = "custom"
-script = """
-cookbook_cargo_packages wie_cli
-"""
+template = "cargo"
+cargopackages = ["wie_cli"]
