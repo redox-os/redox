@@ -1,5 +1,6 @@
 #TODO not compiled or tested
 [source]
 git = "https://github.com/0x676e67/vproxy"
+shallow_clone = true
 [build]
 template = "cargo"

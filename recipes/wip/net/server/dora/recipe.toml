@@ -1,8 +1,10 @@
 #TODO not compiled or tested
 [source]
 git = "https://github.com/bluecatengineering/dora"
+shallow_clone = true
 [build]
-template = "custom"
-script = """
-cookbook_cargo_packages dora-bin dora-cfg
-"""
+template = "cargo"
+cargopackages = [
+    "dora-bin",
+    "dora-cfg",
+]

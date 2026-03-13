@@ -1,5 +1,5 @@
 #TODO not compiled or tested
-# dependencies - https://guacamole.apache.org/doc/gug/installing-guacamole.html#required-dependencies
+# dependencies: https://guacamole.apache.org/doc/gug/installing-guacamole.html#required-dependencies
 [source]
 tar = "https://apache.org/dyn/closer.lua/guacamole/1.5.5/source/guacamole-server-1.5.5.tar.gz?action=download"
 [build]
@@ -10,8 +10,8 @@ dependencies = [
     "libpng",
     "libuuid",
     "libssh2",
-    "openssl1",
+    "openssl3",
     "pango",
-    "pulseaudio",
+    "libpulse",
     "libvorbis",
 ]

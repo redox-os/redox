@@ -1,15 +1,16 @@
-#TODO make dependencies work
+#TODO not compiled or tested
+# build instructions: https://github.com/bitcoin/bitcoin/blob/master/doc/build-unix.md
 [source]
-tar = "https://bitcoincore.org/bin/bitcoin-core-27.0/bitcoin-27.0.tar.gz"
+tar = "https://bitcoincore.org/bin/bitcoin-core-30.2/bitcoin-30.2.tar.gz"
 [build]
-template = "custom"
+template = "cmake"
+cmakeflags = [
+    "-DENABLE_WALLET=OFF",
+    "-DENABLE_IPC=OFF",
+    "-DBUILD_TESTS=OFF",
+    "-DINSTALL_MAN=OFF",
+]
 dependencies = [
     "boost",
     "libevent",
 ]
-script = """
-COOKBOOK_CONFIGURE_FLAGS+=(
-    --disable-wallet
-)
-cookbook_configure
-"""

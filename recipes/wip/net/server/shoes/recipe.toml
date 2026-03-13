@@ -1,5 +1,6 @@
 #TODO not compiled or tested
 [source]
 git = "https://github.com/cfal/shoes"
+shallow_clone = true
 [build]
 template = "cargo"

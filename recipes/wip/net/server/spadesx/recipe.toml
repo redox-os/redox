@@ -2,6 +2,7 @@
 # build instructions: https://github.com/SpadesX/SpadesX#installation
 [source]
 git = "https://github.com/SpadesX/SpadesX"
+shallow_clone = true
 [build]
 template = "cmake"
 dependencies = [

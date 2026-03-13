@@ -1,8 +1,7 @@
 #TODO not compiled or tested
 [source]
 git = "https://codeberg.org/black-cat/toe-beans"
+shallow_clone = true
 [build]
-template = "custom"
-script = """
-cookbook_cargo_packages toe-beans
-"""
+template = "cargo"
+cargopackages = ["toe-beans"]
