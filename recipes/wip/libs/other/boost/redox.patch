@@ -1,0 +1,139 @@
+diff -ruwN source/boost/asio/detail/config.hpp source-new/boost/asio/detail/config.hpp
+--- source/boost/asio/detail/config.hpp	2025-12-03 20:46:38.000000000 +0700
++++ source-new/boost/asio/detail/config.hpp	2026-03-13 20:55:39.534429549 +0700
+@@ -1395,7 +1395,7 @@
+ # if defined(__linux__)
+ #  define BOOST_ASIO_HAS_MSG_NOSIGNAL 1
+ # elif defined(_POSIX_VERSION)
+-#  if (_POSIX_VERSION >= 200809L)
++#  if (_POSIX_VERSION >= 200809L) && !defined(__redox__)
+ #   define BOOST_ASIO_HAS_MSG_NOSIGNAL 1
+ #  endif // _POSIX_VERSION >= 200809L
+ # endif // defined(_POSIX_VERSION)
+diff -ruwN source/boost/config/detail/select_platform_config.hpp source-new/boost/config/detail/select_platform_config.hpp
+--- source/boost/config/detail/select_platform_config.hpp	2025-12-03 20:46:39.000000000 +0700
++++ source-new/boost/config/detail/select_platform_config.hpp	2026-03-13 20:45:55.392659272 +0700
+@@ -69,6 +69,10 @@
+ // QNX:
+ #  define BOOST_PLATFORM_CONFIG "boost/config/platform/qnxnto.hpp"
+ 
++#elif defined(__redox__)
++// Redox:
++#  define BOOST_PLATFORM_CONFIG "boost/config/platform/redox.hpp"
++
+ #elif defined(__VXWORKS__)
+ // vxWorks:
+ #  define BOOST_PLATFORM_CONFIG "boost/config/platform/vxworks.hpp"
+@@ -135,6 +139,7 @@
+ #  include "boost/config/platform/aix.hpp"
+ #  include "boost/config/platform/amigaos.hpp"
+ #  include "boost/config/platform/qnxnto.hpp"
++#  include "boost/config/platform/redox.hpp"
+ #  include "boost/config/platform/vxworks.hpp"
+ #  include "boost/config/platform/symbian.hpp" 
+ #  include "boost/config/platform/cray.hpp" 
+diff -ruwN source/boost/config/platform/redox.hpp source-new/boost/config/platform/redox.hpp
+--- source/boost/config/platform/redox.hpp	1970-01-01 07:00:00.000000000 +0700
++++ source-new/boost/config/platform/redox.hpp	2026-03-14 02:47:45.335839093 +0700
+@@ -0,0 +1,23 @@
++//  (C) Copyright Jim Douglas 2005. 
++//  Use, modification and distribution are subject to the 
++//  Boost Software License, Version 1.0. (See accompanying file 
++//  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
++
++//  See http://www.boost.org for most recent version.
++
++//  REDOX specific config options:
++
++#define BOOST_PLATFORM "REDOX"
++
++#undef  BOOST_HAS_LOG1P
++#undef  BOOST_HAS_EXPM1
++
++#define BOOST_HAS_PTHREADS
++
++#define BOOST_HAS_GETTIMEOFDAY
++#define BOOST_HAS_CLOCK_GETTIME
++#define BOOST_HAS_SCHED_YIELD
++
++// boilerplate code:
++#define BOOST_HAS_UNISTD_H
++#include <boost/config/detail/posix_features.hpp>
+diff -ruwN source/boost/interprocess/detail/workaround.hpp source-new/boost/interprocess/detail/workaround.hpp
+--- source/boost/interprocess/detail/workaround.hpp	2025-12-03 20:46:42.000000000 +0700
++++ source-new/boost/interprocess/detail/workaround.hpp	2026-03-13 20:53:19.211459550 +0700
+@@ -41,7 +41,7 @@
+    //////////////////////////////////////////////////////
+    //Check for XSI shared memory objects. They are available in nearly all UNIX platforms
+    //////////////////////////////////////////////////////
+-   #if !defined(__QNXNTO__) && !defined(__ANDROID__) && !defined(__HAIKU__) && !(__VXWORKS__) && !(__EMSCRIPTEN__)
++   #if !defined(__QNXNTO__) && !defined(__ANDROID__) && !defined(__HAIKU__) && !defined(__redox__) && !(__VXWORKS__) && !(__EMSCRIPTEN__)
+       #define BOOST_INTERPROCESS_XSI_SHARED_MEMORY_OBJECTS
+    #endif
+ 
+diff -ruwN source/boost/interprocess/mapped_region.hpp source-new/boost/interprocess/mapped_region.hpp
+--- source/boost/interprocess/mapped_region.hpp	2025-12-03 20:46:42.000000000 +0700
++++ source-new/boost/interprocess/mapped_region.hpp	2026-03-13 21:29:41.935220888 +0700
+@@ -816,7 +816,7 @@
+    }
+    int ret = -1;
+    switch(mode){
+-      #if defined(POSIX_MADV_NORMAL)
++      #if defined(POSIX_MADV_NORMAL) && !defined(__redox__)
+          case mode_padv:
+          {
+          ret = posix_madvise(this->priv_map_address(), this->priv_map_size(), unix_advice);
+diff -ruwN source/boost/process/v2/detail/environment_posix.hpp source-new/boost/process/v2/detail/environment_posix.hpp
+--- source/boost/process/v2/detail/environment_posix.hpp	2025-12-03 20:46:45.000000000 +0700
++++ source-new/boost/process/v2/detail/environment_posix.hpp	2026-03-14 03:07:36.937337542 +0700
+@@ -19,7 +19,7 @@
+ # if !defined(environ)
+ #  define environ (*_NSGetEnviron())
+ # endif
+-#elif defined(__MACH__) || defined(__FreeBSD__) || defined(__DragonFly__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__sun)
++#elif defined(__MACH__) || defined(__FreeBSD__) || defined(__DragonFly__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__sun) || defined(__redox__)
+  extern "C" { extern char **environ; }
+ #endif
+ 
+diff -ruwN source/boost/process/v2/posix/default_launcher.hpp source-new/boost/process/v2/posix/default_launcher.hpp
+--- source/boost/process/v2/posix/default_launcher.hpp	2025-12-03 20:46:45.000000000 +0700
++++ source-new/boost/process/v2/posix/default_launcher.hpp	2026-03-14 03:07:38.549349038 +0700
+@@ -35,7 +35,7 @@
+ # if !defined(environ)
+ #  define environ (*_NSGetEnviron())
+ # endif
+-#elif defined(__MACH__) || defined(__FreeBSD__) || defined(__DragonFly__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__sun)
++#elif defined(__MACH__) || defined(__FreeBSD__) || defined(__DragonFly__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__sun) || defined(__redox__)
+  extern "C" { extern char **environ; }
+ #endif
+ 
+diff -ruwN source/libs/process/src/shell.cpp source-new/libs/process/src/shell.cpp
+--- source/libs/process/src/shell.cpp	2025-12-03 20:46:45.000000000 +0700
++++ source-new/libs/process/src/shell.cpp	2026-03-14 03:24:59.034513769 +0700
+@@ -19,7 +19,7 @@
+ #if defined(BOOST_PROCESS_V2_WINDOWS)
+ #include <windows.h>
+ #include <shellapi.h>
+-#elif !defined(__OpenBSD__) && !defined(__ANDROID__)
++#elif !defined(__OpenBSD__) && !defined(__ANDROID__) && !defined(__redox__)
+ #include <wordexp.h>
+ #endif
+ 
+@@ -30,7 +30,7 @@
+ {
+     return system_category();
+ }
+-#elif !defined(__OpenBSD__) && !defined(__ANDROID__)
++#elif !defined(__OpenBSD__) && !defined(__ANDROID__) && !defined(__redox__)
+ 
+ struct shell_category_t final : public error_category
+ {
+@@ -99,7 +99,7 @@
+     return input_.c_str();
+ }
+ 
+-#elif !defined(__OpenBSD__) && !defined(__ANDROID__)
++#elif !defined(__OpenBSD__) && !defined(__ANDROID__) && !defined(__redox__)
+ 
+ void shell::parse_()
+ {

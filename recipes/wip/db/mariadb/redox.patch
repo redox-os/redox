@@ -1,0 +1,13 @@
+diff -ruwN source/mysys/mysys_priv.h source-new/mysys/mysys_priv.h
+--- source/mysys/mysys_priv.h	2025-11-14 00:00:49.000000000 +0700
++++ source-new/mysys/mysys_priv.h	2026-03-14 05:20:38.369176577 +0700
+@@ -142,7 +142,7 @@
+ #endif
+ #endif
+ 
+-#ifdef O_PATH
++#if defined(O_PATH) && !defined(__redox__) /* need openat */
+ #define HAVE_OPEN_PARENT_DIR_NOSYMLINKS
+ const char *my_open_parent_dir_nosymlinks(const char *pathname, int *pdfd);
+ #define NOSYMLINK_FUNCTION_BODY(AT,NOAT)                                \
+

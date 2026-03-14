@@ -1,19 +1,50 @@
-#TODO not compiled or tested
-# build instructions:
-# https://mariadb.com/kb/en/generic-build-instructions/
-# https://mariadb.com/kb/en/cross-compiling-mariadb/
+#TODO need openat (patched), posix_spawn
 [source]
 tar = "https://dlm.mariadb.com/4509471/MariaDB/mariadb-12.1.2/source/mariadb-12.1.2.tar.gz"
+blake3 = "749a293e1c4fd13be936fbda33de38b1ccc8c737c30a55c187c028d3ce74f70c"
+patches = [
+    "redox.patch"
+]
 [build]
-template = "cmake"
+template = "custom"
 dependencies = [
     "ncurses",
+    "bzip2",
+    "curl",
     "zlib",
+    "pcre2",
+    "lz4",
     "libevent",
     "openssl3",
     "curl",
     "libxml2",
     "boost",
-    "libaio",
 ]
+dev-dependencies = [
+    "host:ncurses",
+    "boost.dev"
+]
+script = """
+DYNAMIC_INIT
 
+# see https://mariadb.com/kb/en/cross-compiling-mariadb/
+mkdir -p host
+pushd host
+# todo: should use native generate_cookbook_cmake_file if possible
+(unset CC CXX AR && cmake ${COOKBOOK_SOURCE} -DWITH_SSL=system -DCMAKE_CROSSCOMPILING=False -DCMAKE_FIND_ROOT_PATH=${COOKBOOK_TOOLCHAIN})
+make import_executables
+popd
+
+export LDFLAGS+=" -lcurl -lnghttp2 -lssl -lcrypto"
+COOKBOOK_CMAKE_FLAGS+=(
+    -DWITH_UNIT_TESTS=OFF
+    -DSTACK_DIRECTION=-1
+    -DHAVE_IB_GCC_ATOMIC_BUILTINS=-1
+    -DCONC_DEFAULT_CHARSET=utf8mb4
+    -DPLUGIN_AWS_KEY_MANAGEMENT=NO
+    -DPLUGIN_COLUMNSTORE=NO
+    -DWITHOUT_ROCKSDB=1
+    -DIMPORT_EXECUTABLES="${COOKBOOK_BUILD}/host/import_executables.cmake"
+)
+cookbook_cmake
+"""

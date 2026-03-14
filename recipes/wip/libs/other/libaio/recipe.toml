@@ -1,5 +1,9 @@
-#TODO missing script for "make", see https://pagure.io/libaio/blob/master/f/INSTALL
+#TODO linux specific <sys/syscall.h>
 [source]
 tar = "https://releases.pagure.org/libaio/libaio-0.3.113.tar.gz"
 [build]
 template = "custom"
+script = """
+DYNAMIC_INIT
+make -C ${COOKBOOK_SOURCE}
+"""
