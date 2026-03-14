@@ -12,7 +12,7 @@ use crate::{
     config::CookConfig,
     cook::{fetch, fs::*, pty::PtyOut},
     log_to_pty,
-    recipe::{BuildKind, CookRecipe, OptionalPackageRecipe, Recipe},
+    recipe::{BuildKind, CookRecipe, OptionalPackageRecipe},
 };
 
 pub fn package(
@@ -192,7 +192,7 @@ pub fn package_toml(
 
     let package = Package {
         name: recipe.name.with_prefix(PackagePrefix::Any),
-        version: package_version(&recipe.recipe),
+        version: recipe.guess_version().unwrap_or("TODO".into()),
         target: recipe.target.to_string(),
         blake3: hash,
         network_size,
@@ -206,22 +206,6 @@ pub fn package_toml(
 
     serialize_and_write(&toml_path, &package)?;
     return Ok(());
-}
-
-fn package_version(recipe: &Recipe) -> String {
-    if recipe.build.kind == BuildKind::None {
-        "".into()
-    } else if let Some(v) = &recipe.package.version {
-        v.to_string()
-    } else if let Some(r) = &recipe.source {
-        if let Some(m) = r.guess_version() {
-            m
-        } else {
-            "TODO".into()
-        }
-    } else {
-        "TODO".into()
-    }
 }
 
 pub fn package_target(name: &PackageName) -> &'static str {
