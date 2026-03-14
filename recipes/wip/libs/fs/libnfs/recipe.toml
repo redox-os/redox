@@ -3,5 +3,6 @@
 [source]
 git = "https://github.com/sahlberg/libnfs"
 rev = "libnfs-6.0.2"
+shallow_clone = true
 [build]
 template = "cmake"

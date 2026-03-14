@@ -12,8 +12,4 @@ dependencies = [
     "libtool",
     "libvorbis",
 ]
-template = "custom"
-script = """
-DYNAMIC_INIT
-cookbook_configure
-"""
+template = "configure"

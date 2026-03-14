@@ -3,8 +3,10 @@
 [source]
 git = "https://github.com/icculus/physfs"
 branch = "stable-3.2"
+shallow_clone = true
 [build]
 template = "cmake"
 cmakeflags = [
+    "-DPHYSFS_BUILD_TEST=OFF",
     "-DPHYSFS_BUILD_DOCS=OFF",
 ]

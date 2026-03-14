@@ -2,5 +2,7 @@
 # build instructions: https://github.com/ZDoom/ZMusic#readme
 [source]
 git = "https://github.com/ZDoom/ZMusic"
+rev = "1.3.0"
+shallow_clone = true
 [build]
 template = "cmake"
