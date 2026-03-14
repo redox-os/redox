@@ -1,0 +1,11 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/ishrut/raclettui"
+shallow_clone = true
+[build]
+template = "cargo"
+cargoexamples = [
+    "cpu_ratatui",
+    "test",
+    "wgpu_ratatui",
+]

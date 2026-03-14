@@ -1,0 +1,38 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/ratatui/ratatui"
+branch = "latest"
+shallow_clone = true
+[build]
+template = "cargo"
+cargopackages = [
+    "async-github",
+    "calendar-explorer",
+    "canvas",
+    "chart",
+    "color-explorer",
+    "colors-rgb",
+    "hyperlink",
+    "hello-world",
+    "inline",
+    "modifiers",
+    "mouse-drawing",
+    "simple",
+    "panic",
+    "popup",
+    "scrollbar",
+    "table",
+    "todo-list",
+    "tracing",
+    "user-input",
+]
+cargoexamples = [
+    "block",
+    "calendar",
+    "canvas",
+    "chart",
+    "logo",
+    "scrollbar",
+    "sparkline",
+    "tabs",
+]

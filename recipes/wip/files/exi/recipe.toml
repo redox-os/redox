@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+[source]
+git = "https://codeberg.org/Rynux/exi"
+shallow_clone = true
+[build]
+template = "cargo"
