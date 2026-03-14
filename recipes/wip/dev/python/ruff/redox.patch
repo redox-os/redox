@@ -1,0 +1,140 @@
+diff --git a/Cargo.lock b/Cargo.lock
+index 2fe49f0b..aa1a7c85 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -573,14 +573,13 @@ checksum = "3a822ea5bc7590f9d40f1ba12c0dc3c2760f3482c6984db1573ad11031420831"
+ [[package]]
+ name = "clearscreen"
+ version = "4.0.5"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "5def4343d62f01f67ff1a49147e4a15112e936c6a6a3f8ff7a29394e76468244"
++source = "git+https://github.com/willnode/clearscreen?branch=redox#f4c6937931b51daaf5ed15e60ecfde5c55e40c18"
+ dependencies = [
+  "nix 0.31.1",
+  "terminfo",
+  "thiserror 2.0.18",
+  "which",
+- "windows-sys 0.60.2",
++ "windows-sys 0.61.0",
+ ]
+ 
+ [[package]]
+@@ -710,7 +709,7 @@ version = "3.1.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "faf9468729b8cbcea668e36183cb69d317348c2e08e994829fb56ebfdfbaac34"
+ dependencies = [
+- "windows-sys 0.59.0",
++ "windows-sys 0.52.0",
+ ]
+ 
+ [[package]]
+@@ -1077,7 +1076,7 @@ dependencies = [
+  "libc",
+  "option-ext",
+  "redox_users",
+- "windows-sys 0.60.2",
++ "windows-sys 0.61.0",
+ ]
+ 
+ [[package]]
+@@ -1169,7 +1168,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb"
+ dependencies = [
+  "libc",
+- "windows-sys 0.59.0",
++ "windows-sys 0.52.0",
+ ]
+ 
+ [[package]]
+@@ -1835,7 +1834,7 @@ dependencies = [
+  "portable-atomic",
+  "portable-atomic-util",
+  "serde_core",
+- "windows-sys 0.59.0",
++ "windows-sys 0.52.0",
+ ]
+ 
+ [[package]]
+@@ -3731,7 +3730,7 @@ dependencies = [
+  "errno",
+  "libc",
+  "linux-raw-sys",
+- "windows-sys 0.59.0",
++ "windows-sys 0.52.0",
+ ]
+ 
+ [[package]]
+@@ -4139,7 +4138,7 @@ dependencies = [
+  "getrandom 0.4.1",
+  "once_cell",
+  "rustix",
+- "windows-sys 0.59.0",
++ "windows-sys 0.52.0",
+ ]
+ 
+ [[package]]
+@@ -5344,7 +5343,7 @@ version = "0.1.11"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
+ dependencies = [
+- "windows-sys 0.59.0",
++ "windows-sys 0.52.0",
+ ]
+ 
+ [[package]]
+diff --git a/Cargo.toml b/Cargo.toml
+index 5bedb191..ff6aa34a 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -73,7 +73,7 @@ cachedir = { version = "0.3.1" }
+ camino = { version = "1.1.7" }
+ clap = { version = "4.5.3", features = ["derive"] }
+ clap_complete_command = { version = "0.6.0" }
+-clearscreen = { version = "4.0.0" }
++clearscreen = { git = "https://github.com/willnode/clearscreen", branch = "redox" }
+ codspeed-criterion-compat = { version = "4.0.4", default-features = false }
+ colored = { version = "3.0.0" }
+ compact_str = "0.9.0"
+@@ -282,8 +282,7 @@ if_not_else = "allow"
+ large_stack_arrays = "allow"
+ 
+ [profile.release]
+-lto = "fat"
+-codegen-units = 16
++lto = "thin"
+ 
+ # Some crates don't change as much but benefit more from
+ # more expensive optimization passes, so we selectively
+diff --git a/crates/ruff/Cargo.toml b/crates/ruff/Cargo.toml
+index b972d4b0..4172e1bd 100644
+--- a/crates/ruff/Cargo.toml
++++ b/crates/ruff/Cargo.toml
+@@ -70,7 +70,7 @@ tracing = { workspace = true, features = ["log"] }
+ walkdir = { workspace = true }
+ wild = { workspace = true }
+ 
+-[target.'cfg(all(not(target_os = "windows"), not(target_os = "openbsd"), not(target_os = "aix"), not(target_os = "android"), any(target_arch = "x86_64", target_arch = "aarch64", target_arch = "powerpc64", target_arch = "riscv64")))'.dependencies]
++[target.'cfg(all(not(target_os = "windows"), not(target_os = "openbsd"), not(target_os = "aix"), not(target_os = "android"), not(target_os = "redox"), any(target_arch = "x86_64", target_arch = "aarch64", target_arch = "powerpc64", target_arch = "riscv64")))'.dependencies]
+ tikv-jemallocator = { workspace = true }
+ 
+ [target.'cfg(target_os = "windows")'.dependencies]
+diff --git a/crates/ruff/src/main.rs b/crates/ruff/src/main.rs
+index 4342a360..19211e58 100644
+--- a/crates/ruff/src/main.rs
++++ b/crates/ruff/src/main.rs
+@@ -17,6 +17,7 @@ static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
+     not(target_os = "openbsd"),
+     not(target_os = "aix"),
+     not(target_os = "android"),
++    not(target_os = "redox"),
+     any(
+         target_arch = "x86_64",
+         target_arch = "aarch64",
+diff --git a/rust-toolchain.toml b/rust-toolchain.toml
+deleted file mode 100644
+index 79d20990..00000000
+--- a/rust-toolchain.toml
++++ /dev/null
+@@ -1,2 +0,0 @@
+-[toolchain]
+-channel = "1.93"
