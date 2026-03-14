@@ -1,11 +1,12 @@
-#TODO fs2 crate error
+#TODO nix and rustix crate error
 [source]
 git = "https://github.com/astral-sh/uv"
+shallow_clone = true
 [build]
 template = "custom"
 dependencies = [
-    "openssl1",
+    "openssl3",
 ]
-script = """
-cookbook_cargo_packages uv
-"""
+cargopackages = [
+    "uv"
+]
