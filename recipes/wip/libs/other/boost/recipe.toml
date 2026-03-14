@@ -1,34 +1,53 @@
-# TODO:
-# * Some libraries require openat or have deps that require openat
-# * wchar.h needs some work before Boost is usable
-
+# TODO: Compiled, not tested
 [source]
-tar = "https://archives.boost.io/release/1.87.0/source/boost_1_87_0.tar.gz"
-blake3 = "9c6eb6bb7866aeb595e14279fcc5a5c7f2279dd41e946e14e2c3d5c1fb8358d3"
+tar = "https://archives.boost.io/release/1.90.0/source/boost_1_90_0.tar.gz"
+blake3 = "1c1b0fe7596e3f72dba529b2d0bc6d330cc00610f8d3b3e3b6f20bad43fc388d"
+patches = [
+    "redox.patch"
+]
 
 [build]
 template = "custom"
 dependencies = [
-    # "libicu",
-    # "liblzma",
-    # "bzip2",
-    # "zlib",
-    # "zstd",
+    # "libiconv", # TODO: more locale functions, relibc locales are stubs anyway
+   # "openssl3", # TODO: not linked
+   # "zstd", # TODO: not linked
 ]
 script = """
-BOOST_ROOT="${COOKBOOK_STAGE}/usr"
-mkdir -p "${BOOST_ROOT}"
+DYNAMIC_INIT
 
+case "${TARGET}" in
+    i586-unknown-redox)   ADDRESS_MODEL=32 ARCHITECTURE=x86 ABI=sysv;;
+    x86_64-unknown-redox) ADDRESS_MODEL=64 ARCHITECTURE=x86 ABI=sysv;;
+    aarch64-unknown-redox) ADDRESS_MODEL=64 ARCHITECTURE=arm ABI=aapcs;;
+    riscv64gc-unknown-redox) ADDRESS_MODEL=64 ARCHITECTURE=riscv ABI=sysv;;
+esac
+
+# See https://beta.boost.org/build/doc/html/bbv2/reference/tools.html#bbv2.reference.tools.compiler.gcc
+echo "using gcc : : ${CXX} : <cflags>\"${CFLAGS} ${CPPFLAGS}\" <cxxflags>\"${CXXFLAGS} ${CPPFLAGS}\" <linkflags>\"${LDFLAGS}\" <link>\"shared\" ; " > ./user-config.jam
+# echo "using openssl ; " >> ./user-config.jam
+# echo "using zstd ; " >> ./user-config.jam
+
+skip_libraries=(
+    stacktrace # requires dlsym(RTLD_NEXT)
+    python     # TODO
+)
+
+export OPENSSL_ROOT="${COOKBOOK_SYSROOT}/usr"
 pushd "${COOKBOOK_SOURCE}"
-
-# Help the bootstrap tool detect our cross compilers
-# See: https://www.boost.org/build/doc/html/bbv2/overview/configuration.html
-# I'm not entirely sure which directory to place it in, so I put the conf in both
-echo "using gcc : : ${TARGET}-gcc ;" >| user-config.jam
-cp -v user-config.jam tools/build/src/
-
-./bootstrap.sh --prefix="${BOOST_ROOT}" --with-toolset=gcc
-./b2 -d2 install
-
+./bootstrap.sh --without-libraries=$(IFS=, ; echo "${skip_libraries[*]}")  \
+    --with-toolset=gcc --with-libraries=all --prefix=${COOKBOOK_STAGE}/usr
+# TODO: add "-sICONV_PATH=${COOKBOOK_SYSROOT}" when locales work
+# TODO: implement target-os=redox
+./b2 "--user-config=${COOKBOOK_BUILD}/user-config.jam" target-os=linux pch=off \
+    "--build-dir=${COOKBOOK_BUILD}" toolset=gcc architecture=${ARCHITECTURE} address-model=${ADDRESS_MODEL} abi=${ABI} binary-format=elf install
 popd
 """
+
+[[optional-packages]]
+name = "dev"
+files = [
+    "usr/include/**",
+    "usr/lib/*.a",
+    "usr/lib/cmake/**",
+]
