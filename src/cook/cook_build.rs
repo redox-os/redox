@@ -2,10 +2,10 @@ use pkg::PackageError;
 use pkg::{Package, PackageName};
 
 use crate::config::CookConfig;
-use crate::cook::fs::*;
 use crate::cook::package::{package_source_paths, package_target};
 use crate::cook::pty::PtyOut;
 use crate::cook::script::*;
+use crate::cook::{fetch, fs::*};
 use crate::recipe::Recipe;
 use crate::recipe::{AutoDeps, CookRecipe};
 use crate::recipe::{BuildKind, OptionalPackageRecipe};
@@ -171,12 +171,13 @@ pub fn build(
     recipe_dir: &Path,
     source_dir: &Path,
     target_dir: &Path,
-    name: &PackageName,
-    recipe: &Recipe,
+    cook_recipe: &CookRecipe,
     cook_config: &CookConfig,
-    check_source: bool,
     logger: &PtyOut,
 ) -> Result<(Vec<PathBuf>, BTreeSet<PackageName>), String> {
+    let recipe = &cook_recipe.recipe;
+    let name = &cook_recipe.name;
+    let check_source = !cook_recipe.is_deps;
     let sysroot_dir = target_dir.join("sysroot");
     let toolchain_dir = target_dir.join("toolchain");
     let stage_dirs = get_stage_dirs(&recipe.optional_packages, target_dir);
@@ -441,6 +442,11 @@ pub fn build(
             }
             if cook_config.offline {
                 command.env("COOKBOOK_OFFLINE", "1");
+            }
+            if let Ok(ident_source) = fetch::fetch_get_source_info(&cook_recipe) {
+                command.env("COOKBOOK_SOURCE_IDENT", ident_source.source_identifier);
+                command.env("COOKBOOK_COMMIT_IDENT", ident_source.commit_identifier);
+                command.env("COOKBOOK_TIME_IDENT", ident_source.time_identifier);
             }
             command
         };
