@@ -697,10 +697,8 @@ fn handle_cook(
         recipe_dir,
         &source_dir,
         &target_dir,
-        &recipe.name,
-        &recipe.recipe,
+        &recipe,
         &config.cook,
-        !recipe.is_deps,
         logger,
     )
     .map_err(|err| anyhow!("failed to build: {:?}", err))?;
