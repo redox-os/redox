@@ -66,26 +66,6 @@ pub enum SourceRecipe {
     },
 }
 
-impl SourceRecipe {
-    pub fn guess_version(&self) -> Option<String> {
-        match self {
-            SourceRecipe::Tar {
-                tar,
-                blake3: _,
-                patches: _,
-                script: _,
-            } => {
-                let re = Regex::new(r"\d+\.\d+\.\d+").unwrap();
-                if let Some(arm) = re.captures(&tar) {
-                    return Some(arm.get(0).unwrap().as_str().to_string());
-                }
-                None
-            }
-            _ => None,
-        }
-    }
-}
-
 /// Specifies how to build a recipe
 #[derive(Debug, Clone, Deserialize, PartialEq, Serialize)]
 #[serde(tag = "template")]
@@ -498,6 +478,62 @@ impl CookRecipe {
 
         Ok(())
     }
+
+    pub fn guess_version(&self) -> Option<String> {
+        let recipe = &self.recipe;
+        if recipe.build.kind == BuildKind::None {
+            return Some("".into()); // signifies a meta package
+        } else if let Some(v) = &recipe.package.version {
+            return Some(v.to_string());
+        }
+
+        let re = VersionExtractor::new();
+        let mut dir = self.dir.to_path_buf();
+        if let Some(r) = &recipe.source {
+            match r {
+                SourceRecipe::Tar {
+                    tar,
+                    blake3: _,
+                    patches: _,
+                    script: _,
+                } => {
+                    if let Some(ver) = re.extract_ver(&tar) {
+                        return Some(ver);
+                    }
+                }
+                SourceRecipe::Git {
+                    git: _,
+                    upstream: _,
+                    branch,
+                    rev,
+                    shallow_clone: _,
+                    patches: _,
+                    script: _,
+                } => {
+                    if let Some(rev) = rev {
+                        if let Some(ver) = re.extract_ver(&rev) {
+                            return Some(ver);
+                        }
+                    }
+                    if let Some(branch) = branch {
+                        if let Some(ver) = re.extract_ver(&branch) {
+                            return Some(ver);
+                        }
+                    }
+                }
+                SourceRecipe::SameAs { same_as } => {
+                    dir = self.dir.join(same_as);
+                }
+                _ => {}
+            }
+        };
+
+        let cargo_path = dir.join("source/Cargo.toml");
+        if let Some(ver) = VersionExtractor::extract_cargo_ver(&cargo_path) {
+            return Some(ver);
+        }
+        None
+    }
 }
 
 // TODO: Wrap these vectors in a struct
@@ -529,6 +565,47 @@ pub fn recipes_flatten_package_names(packages: Vec<CookRecipe>) -> Vec<CookRecip
 #[derive(Serialize, Deserialize)]
 pub struct AutoDeps {
     pub packages: BTreeSet<PackageName>,
+}
+
+pub struct VersionExtractor {
+    regex: Regex,
+}
+
+impl VersionExtractor {
+    pub fn new() -> Self {
+        Self {
+            regex: Regex::new(r"\d+(\.\d+){1,2}").unwrap(),
+        }
+    }
+    pub fn extract_ver(&self, text: &str) -> Option<String> {
+        if let Some(arm) = self.regex.captures(&text) {
+            return Some(arm.get(0)?.as_str().to_string());
+        }
+        None
+    }
+    fn extract_cargo_ver(path: &Path) -> Option<String> {
+        let content = std::fs::read_to_string(path).ok()?;
+        let manifest = content.parse::<toml::Table>().ok()?;
+
+        if let Some(version) = manifest
+            .get("package")
+            .and_then(|pkg| pkg.get("version"))
+            .and_then(|v| v.as_str())
+        {
+            return Some(version.to_string());
+        }
+
+        if let Some(version) = manifest
+            .get("workspace")
+            .and_then(|ws| ws.get("package"))
+            .and_then(|pkg| pkg.get("version"))
+            .and_then(|v| v.as_str())
+        {
+            return Some(version.to_string());
+        }
+
+        None
+    }
 }
 
 #[cfg(test)]
@@ -610,9 +687,6 @@ mod tests {
                 ..Default::default()
             }
         );
-
-        let source = recipe.source.unwrap();
-        assert_eq!(source.guess_version(), Some("1.3.3".to_string()));
     }
 
     #[test]
