@@ -1,31 +1,43 @@
-#TODO not compiled or tested
+#TODO dependency conflict. Glew wants GLX but mesa uses orbital backend.
 # build instructions: https://github.com/yvt/openspades#on-unixes-from-source
 [source]
 git = "https://github.com/siecvi/zerospades"
 shallow_clone = true
+patches = [
+    "redox.patch"
+]
+
 [build]
 template = "custom"
 dependencies = [
-	"glew",
-	"openssl3",
-	"sdl2",
-	"sdl2-image",
-	"freealut",
-	"freetype2",
-	"opus",
-	"opusfile",
-	"libjpeg",
-	"openal",
+    "glew",
+    "openssl3",
+    "sdl2",
+    "sdl2-image",
+    "freealut",
+    "freetype2",
+    "libopus",
+    "opusfile",
+    "libjpeg",
+    "openal",
     "curl",
-    "libxinerama",
-    "libxft",
+    # "libxinerama",
+    # "libxft",
+]
+dev-dependencies = [
+    "libstdcxx",
 ]
 script = """
 DYNAMIC_INIT
+export LDFLAGS+=" $("${PKG_CONFIG}" --libs osmesa)"
 COOKBOOK_CMAKE_FLAGS+=(
     -DOPENSPADES_NONFREE_RESOURCES=OFF
+    -DUSE_INTERNAL_OPENAL=OFF
 )
 cookbook_cmake
-wget https://github.com/DeathByDenim/openspades-free-pak/releases/download/latest/pak001-Free.pak \
-"${COOKBOOK_STAGE}"/usr/share/openspades/Resources
 """
+
+[package]
+dependencies = [
+    "openspades-free-pak"
+]
