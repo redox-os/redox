@@ -1,0 +1,46 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 2f59b92..9f98ab9 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -145,7 +145,7 @@ if(CMAKE_COMPILER_IS_GNUCXX)
+ 
+ 	if(CMAKE_BUILD_TYPE MATCHES "Release")
+ 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
+-		set(CMAKE_EXE_LINKER_FLAGS "-s")
++		set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s")
+ 	endif()
+ 
+ elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+diff --git a/Sources/Audio/ALFuncs.cpp b/Sources/Audio/ALFuncs.cpp
+index 92c63f5..1eff792 100644
+--- a/Sources/Audio/ALFuncs.cpp
++++ b/Sources/Audio/ALFuncs.cpp
+@@ -271,7 +271,8 @@ namespace al {
+ 	}
+ 
+ 	void Link(void) {
+-#ifdef OPENAL_SOFT
++// redox: weak link errors
++#ifndef OPENAL_SOFT
+ 		SPLog("Using OpenAL Soft - direct linking, initializing function pointers.");
+ 		// Directly assign function pointers to OpenAL Soft functions
+ 		qalEnable = alEnable;
+diff --git a/Sources/CMakeLists.txt b/Sources/CMakeLists.txt
+index 4438506..46ace0a 100644
+--- a/Sources/CMakeLists.txt
++++ b/Sources/CMakeLists.txt
+@@ -181,8 +181,8 @@ endif()
+ 
+ if(WIN32)
+ 	target_link_libraries(OpenSpades ws2_32.lib winmm.lib)
+-elseif(UNIX AND NOT APPLE)
+-	target_link_libraries(OpenSpades Xext)
++#elseif(UNIX AND NOT APPLE)
++#	target_link_libraries(OpenSpades Xext)
+ endif()
+ 
+ if(UNIX)
+diff --git a/openal-soft b/openal-soft
+--- a/openal-soft
++++ b/openal-soft
+@@ -1 +1 @@
