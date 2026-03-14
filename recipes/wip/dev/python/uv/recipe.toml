@@ -3,7 +3,7 @@
 git = "https://github.com/astral-sh/uv"
 shallow_clone = true
 [build]
-template = "custom"
+template = "cargo"
 dependencies = [
     "openssl3",
 ]

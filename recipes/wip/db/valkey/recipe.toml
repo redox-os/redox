@@ -1,4 +1,4 @@
-#TODO Compiling, not tested
+#TODO compiled but not tested
 [source]
 git = "https://github.com/valkey-io/valkey"
 shallow_clone = true
