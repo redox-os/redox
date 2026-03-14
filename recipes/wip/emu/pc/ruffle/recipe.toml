@@ -1,4 +1,5 @@
-#TODO camino crate error
+#TODO need wayland support, then patch rfd crate
+#TODO port host:jre (try not to use jdk recipe)
 # build instructions: https://github.com/ruffle-rs/ruffle#building-from-source
 [source]
 git = "https://github.com/ruffle-rs/ruffle"

@@ -1,0 +1,11 @@
+#TODO: network interfaces (ifreq)
+[source]
+tar = "http://www.dest-unreach.org/socat/download/socat-1.8.1.1.tar.bz2"
+[build]
+template = "configure"
+configureflags = [
+    "ac_cv_type_sig_atomic_t=yes",
+    "sc_cv_type_struct_timeval_tv_usec=5",
+    "--disable-ip6",
+    "--disable-termios",
+]
