@@ -1,0 +1,40 @@
+diff --color -ruwN source/meson.build source-new/meson.build
+--- source/meson.build	2026-02-24 04:56:43.000000000 +0700
++++ source-new/meson.build	2026-03-14 10:58:35.570033768 +0700
+@@ -256,6 +256,10 @@
+   # LDFLAGS.
+   ldflags += ['-Wl,-z,now', '-Wl,-z,relro']
+ 
++elif host_system == 'redox'
++  sema_kind = 'unnamed_posix'
++  shmem_kind = 'sysv'
++
+ elif host_system == 'openbsd'
+   # you're ok
+ 
+diff --color -ruwN source/src/include/port/redox.h source-new/src/include/port/redox.h
+--- source/src/include/port/redox.h	1970-01-01 07:00:00.000000000 +0700
++++ source-new/src/include/port/redox.h	2026-03-14 10:50:26.877146350 +0700
+@@ -0,0 +1 @@
++/* src/include/port/redox.h */
+diff --color -ruwN source/src/makefiles/Makefile.redox source-new/src/makefiles/Makefile.redox
+--- source/src/makefiles/Makefile.redox	1970-01-01 07:00:00.000000000 +0700
++++ source-new/src/makefiles/Makefile.redox	2026-03-14 10:51:25.313879766 +0700
+@@ -0,0 +1,6 @@
++rpath = -Wl,-R'$(rpathdir)'
++
++
++# Rule for building a shared library from a single .o file
++%.so: %.o
++	$(CC) $(CFLAGS) $< $(LDFLAGS) $(LDFLAGS_SL) -shared -o $@
+diff --color -ruwN source/src/template/redox source-new/src/template/redox
+--- source/src/template/redox	1970-01-01 07:00:00.000000000 +0700
++++ source-new/src/template/redox	2026-03-14 10:55:40.896750233 +0700
+@@ -0,0 +1,7 @@
++# src/template/redox
++
++# Prefer unnamed POSIX semaphores
++PREFERRED_SEMAPHORES=UNNAMED_POSIX
++
++# Extra CFLAGS for code that will go into a shared library
++CFLAGS_SL="-fPIC"

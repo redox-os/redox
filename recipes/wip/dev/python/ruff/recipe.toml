@@ -1,8 +1,14 @@
-#TODO tikv-jemalloc-sys crate error
+#TODO compiled but not tested
 [source]
-git = "https://github.com/charliermarsh/ruff"
+git = "https://github.com/astral-sh/ruff"
+rev = "93a16bd05fba249439848beb6fbcbf3e8a436f03"
+shallow_clone = true
+patches = [
+    "redox.patch"
+]
+
 [build]
-template = "custom"
-script = """
-cookbook_cargo_packages ruff_cli
-"""
+template = "cargo"
+cargopackages = [
+    "ruff"
+]

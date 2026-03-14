@@ -1,0 +1,15 @@
+#TODO require sys/ipc.h
+[source]
+tar = "https://ftp.postgresql.org/pub/source/v18.3/postgresql-18.3.tar.bz2"
+blake3 = "52696c9d474ce3e2073f97d4ba891af59ffc67a9dfb8f9f5adac409d1fe0dc28"
+patches = [
+    "redox.patch"
+]
+[build]
+template = "meson"
+mesonflags = [
+]
+dependencies = [
+    "zstd",
+    "readline",
+]
