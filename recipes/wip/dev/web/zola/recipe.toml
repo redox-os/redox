@@ -1,5 +1,11 @@
-#TODO camino crate error
+#TODO compiled but not tested yet
 [source]
 git = "https://github.com/getzola/zola"
+shallow_clone = true
+rev = "33f03bb11158464e3ff877cdc5f1c55bbe7337ac"
+patches = [
+    "redox.patch"
+]
+
 [build]
 template = "cargo"

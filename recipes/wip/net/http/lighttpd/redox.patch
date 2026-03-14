@@ -1,0 +1,12 @@
+diff --color -ruwN source/src/fdevent.c source-new/src/fdevent.c
+--- source/src/fdevent.c	2025-09-13 02:08:20.000000000 +0700
++++ source-new/src/fdevent.c	2026-03-14 14:16:21.543520177 +0700
+@@ -321,7 +321,7 @@
+ 	int fd;
+ 	socklen_t len = (socklen_t) *addrlen;
+ 
+-      #if defined(SOCK_CLOEXEC) && defined(SOCK_NONBLOCK)
++      #if defined(SOCK_CLOEXEC) && defined(SOCK_NONBLOCK) && !defined(__redox__)
+        #if defined(__NetBSD__)
+ 	const int sock_cloexec = 1;
+ 	fd = paccept(listenfd, addr, &len, NULL, SOCK_CLOEXEC | SOCK_NONBLOCK);

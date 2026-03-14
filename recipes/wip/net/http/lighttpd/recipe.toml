@@ -1,10 +1,17 @@
-#TODO not compiled or tested
-# build instructions: https://redmine.lighttpd.net/projects/lighttpd/wiki/InstallFromSource
+#TODO compiled but not tested
 [source]
 tar = "https://download.lighttpd.net/lighttpd/releases-1.4.x/lighttpd-1.4.82.tar.xz"
+b3sum = "1890d4d63dab35ed8c6e994f11f408aaf9e6dd7cda959d2533a3c80d20c93029"
+patches = [
+    "redox.patch"
+]
+
 [build]
 template = "cmake"
+cmakeflags = [
+    "-DWITH_OPENSSL=ON"
+]
 dependencies = [
     "pcre2",
-    #"openssl3", # optional
+    "openssl3",
 ]
