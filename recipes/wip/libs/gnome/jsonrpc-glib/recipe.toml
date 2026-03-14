@@ -4,6 +4,10 @@
 tar = "https://download.gnome.org/sources/jsonrpc-glib/3.44/jsonrpc-glib-3.44.0.tar.xz"
 [build]
 template = "meson"
+mesonflags = [
+    "-Dwith_introspection=false",
+    "-Denable_tests=false",
+]
 dependencies = [
     "glib",
 ]

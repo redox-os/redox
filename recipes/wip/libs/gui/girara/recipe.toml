@@ -4,6 +4,10 @@
 tar = "https://pwmt.org/projects/girara/download/girara-0.4.5.tar.xz"
 [build]
 template = "meson"
+mesonflags = [
+    "-Dtests=disabled",
+    "-Ddocs=disabled",
+]
 dependencies = [
     "gtk3",
 ]

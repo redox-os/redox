@@ -1,4 +1,4 @@
-#TODO determine dependencies
+#TODO not compiled or tested
 [source]
 tar = "https://download.gnome.org/sources/gtkmm/2.24/gtkmm-2.24.5.tar.xz"
 [build]

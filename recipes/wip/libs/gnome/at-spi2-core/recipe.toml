@@ -3,8 +3,8 @@
 [source]
 tar = "https://download.gnome.org/sources/at-spi2-core/2.57/at-spi2-core-2.57.0.tar.xz"
 [build]
-template = "custom"
-script = """
-DYNAMIC_INIT
-cookbook_meson
-"""
+template = "meson"
+mesonflags = [
+    "-Ddefault_bus=dbus-daemon",
+    "-Dintrospection=false",
+]

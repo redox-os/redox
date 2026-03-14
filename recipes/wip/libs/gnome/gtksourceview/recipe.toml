@@ -4,6 +4,10 @@
 tar = "https://download.gnome.org/sources/gtksourceview/5.10/gtksourceview-5.10.0.tar.xz"
 [build]
 template = "meson"
+mesonflags = [
+    "-Dbuild-testsuite=false",
+    "-Dintrospection=false",
+]
 dependencies = [
     "glib",
     "gtk4",

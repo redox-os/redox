@@ -1,7 +1,9 @@
-#TODO make gtk4 work
+#TODO not compiled or tested
 [source]
 tar = "https://gitlab.gnome.org/otrocodigo/gspell/-/archive/1.11.1/gspell-1.11.1.tar.bz2"
-script = "./autogen.sh"
+script = """
+autotools_recursive_regenerate
+"""
 [build]
 template = "configure"
 dependencies = [

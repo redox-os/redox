@@ -1,3 +1,4 @@
+#TODO: promote
 [source]
 tar = "https://download.gnome.org/sources/libsoup/3.6/libsoup-3.6.5.tar.xz"
 blake3 = "9e5214dfb310ac1bbf8ceb85724f2c79a1d5c94382f306080a6cdea47230e960"

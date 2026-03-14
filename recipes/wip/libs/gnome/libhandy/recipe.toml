@@ -6,6 +6,7 @@ tar = "https://download.gnome.org/sources/libhandy/1.8/libhandy-1.8.3.tar.xz"
 template = "meson"
 mesonflags = [
     "-Dtests=false"
+    "-Dintrospection=false",
 ]
 dependencies = [
     "glib",

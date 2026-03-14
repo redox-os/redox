@@ -4,6 +4,14 @@
 tar = "https://download.gnome.org/sources/json-glib/1.8/json-glib-1.8.0.tar.xz"
 [build]
 template = "meson"
+mesonflags = [
+    "-Dintrospection=false",
+    "-Ddocumentation=false",
+    "-Dgtk_doc=false",
+    "-Dtests=false",
+    "-Dconformance=false",
+    "-Dinstalled_tests=false",
+]
 dependencies = [
     "glib",
 ]
