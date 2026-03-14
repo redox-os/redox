@@ -1,0 +1,11 @@
+[source]
+git = "https://github.com/DeathByDenim/openspades-free-pak"
+shallow_clone = true
+
+[build]
+template = "custom"
+script = """
+zip -r pak001-Free.pak "${COOKBOOK_SOURCE}"/*
+mkdir -p ${COOKBOOK_STAGE}/usr/share/openspades/Resources
+cp pak001-Free.pak ${COOKBOOK_STAGE}/usr/share/openspades/Resources/
+"""

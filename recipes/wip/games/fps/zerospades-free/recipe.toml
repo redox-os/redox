@@ -12,7 +12,7 @@ dependencies = [
 	"sdl2-image",
 	"freealut",
 	"freetype2",
-	"opus",
+	"libopus",
 	"opusfile",
 	"libjpeg",
 	"openal",
@@ -26,6 +26,4 @@ COOKBOOK_CMAKE_FLAGS+=(
     -DOPENSPADES_NONFREE_RESOURCES=OFF
 )
 cookbook_cmake
-wget https://github.com/DeathByDenim/openspades-free-pak/releases/download/latest/pak001-Free.pak \
-"${COOKBOOK_STAGE}"/usr/share/openspades/Resources
 """
