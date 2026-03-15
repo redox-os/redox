@@ -101,6 +101,7 @@ BINS=(
     truncate
     tsort
     unexpand
+    uname
     uniq
     unlink
     vdir
