@@ -79,6 +79,7 @@ You can read the best practices and guidelines on the [Best practices and guidel
 
 ## Development Recommendations and Tips
 
+- Copy-paste prevent and reduce typos
 - Read the entire [Build System Reference](https://doc.redox-os.org/book/build-system-reference.html) and [Developer FAQ](https://doc.redox-os.org/book/developer-faq.html) pages
 - Make sure your build system is up-to-date, read the [Update The Build System](https://doc.redox-os.org/book/build-system-reference.html#update-the-build-system) section if in doubt.
 - If you want to make local changes in recipe sources it's recommended to automatic recipe source update, read [this](https://doc.redox-os.org/book/configuration-settings.html#local-recipe-changes) section to learn how to this for one or multiple recipes and [this](https://doc.redox-os.org/book/configuration-settings.html#cookbook-offline-mode) section for all recipes.
