@@ -2,9 +2,15 @@
 # build instructions: https://github.com/libjxl/libjxl/blob/main/BUILDING.md
 [source]
 git = "https://github.com/libjxl/libjxl"
-rev = "954b460768c08a147abf47689ad69b0e7beff65e"
+branch = "v0.11.x"
+shallow_clone = true
 [build]
 template = "cmake"
+cmakeflags = [
+    "-DBUILD_TESTING=OFF",
+    "-DJPEGXL_ENABLE_DOXYGEN=OFF",
+    "-DJPEGXL_ENABLE_MANPAGES=OFF",
+]
 dependencies = [
     "libbrotli",
     "libjpeg",

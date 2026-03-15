@@ -3,6 +3,7 @@
 [source]
 git = "https://github.com/pytorch/pytorch"
 branch = "release/2.3"
+shallow_clone = true
 [build]
 template = "cmake"
 cmakeflags = [

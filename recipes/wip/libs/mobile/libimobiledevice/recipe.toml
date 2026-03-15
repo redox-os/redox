@@ -7,5 +7,5 @@ dependencies = [
     "libtatsu",
     "libplist",
     "libusbmuxd",
-    "openssl1",
+    "openssl3",
 ]

@@ -2,5 +2,10 @@
 # build instructions: https://chromium.googlesource.com/codecs/libwebp2/#compiling
 [source]
 git = "https://chromium.googlesource.com/codecs/libwebp2"
+shallow_clone = true
 [build]
 template = "cmake"
+cmakeflags = [
+    "-DWP2_BUILD_TESTS=OFF",
+    "-DWP2_INSTALL_TESTS=OFF",
+]

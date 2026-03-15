@@ -2,15 +2,12 @@
 [source]
 tar = "https://github.com/saitoha/libsixel/releases/download/v1.8.6/libsixel-1.8.6.tar.gz"
 [build]
-template = "custom"
+template = "configure"
+configureflags = [
+    "--with-jpeg",
+    "--with-png",
+]
 dependencies = [
     "libpng",
     "libjpeg",
 ]
-script = """
-COOKBOOK_CONFIGURE_FLAGS+=(
-    --with-jpeg
-    --with-png
-)
-cookbook_configure
-"""
