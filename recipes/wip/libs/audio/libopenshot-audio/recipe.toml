@@ -2,7 +2,7 @@
 #TODO determine minimum dependencies from cmake log
 [source]
 git = "https://github.com/OpenShot/libopenshot-audio"
-rev = "v0.4.0"
+rev = "v0.5.0"
 shallow_clone = true
 [build]
 template = "cmake"

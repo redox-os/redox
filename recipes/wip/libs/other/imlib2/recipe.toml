@@ -8,7 +8,8 @@ autotools_recursive_regenerate
 """
 
 [build]
-template = "custom"
+template = "configure"
+configureflags = ["--without-x-shm-fd"]
 dependencies = [
     "freetype2",
     "libjpeg",
@@ -21,7 +22,3 @@ dependencies = [
     "x11proto",
     "zlib",
 ]
-script = """
-DYNAMIC_INIT
-cookbook_configure --without-x-shm-fd
-"""

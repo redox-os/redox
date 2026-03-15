@@ -1,12 +1,12 @@
-# TODO Needs testing, but it compiles now
-
+#TODO: compiled but not tested
 [source]
-git = "https://github.com/nigels-com/glew"
-# rev = "9fb23c3e61cbd2d581e33ff7d8579b572b38ee26"
-
+tar = "https://github.com/nigels-com/glew/releases/download/glew-2.3.1/glew-2.3.1.tgz"
 [build]
 template = "custom"
-dependencies = ["mesa", "mesa-glu"]
+dependencies = [
+    "mesa",
+    "mesa-glu",
+]
 script = """
 # Build system is a standalone Makefile
 COOKBOOK_CONFIGURE="true"

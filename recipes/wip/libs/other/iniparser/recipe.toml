@@ -1,5 +1,7 @@
-#TODO missing script for a "make", see https://github.com/ndevilla/iniparser#ii---building-project
+#TODO not compiled or tested
 [source]
 git = "https://github.com/ndevilla/iniparser"
+rev = "v4.2.6"
+shallow_clone = true
 [build]
-template = "custom"
+template = "cmake"

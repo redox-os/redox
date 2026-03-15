@@ -2,5 +2,7 @@
 # build instructions: https://github.com/gflags/gflags/blob/master/INSTALL.md#compiling-the-source-code-with-cmake
 [source]
 git = "https://github.com/gflags/gflags"
+rev = "v2.3.0"
+shallow_clone = true
 [build]
 template = "cmake"

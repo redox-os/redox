@@ -1,4 +1,4 @@
-#TODO wait the fix of libgcrypt compilation
+#TODO not compiled or tested
 [source]
 tar = "https://gnupg.org/ftp/gcrypt/gpgme/gpgme-1.20.0.tar.bz2"
 [build]

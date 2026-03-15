@@ -2,6 +2,10 @@
 # build instructions: https://github.com/benhoyt/inih#meson-notes
 [source]
 git = "https://github.com/benhoyt/inih"
-rev = "9cecf0643da0846e77f64d10a126d9f48b9e05e8"
+rev = "r62"
+shallow_clone = true
 [build]
 template = "meson"
+mesonflags = [
+    "-Dtests=false"
+]

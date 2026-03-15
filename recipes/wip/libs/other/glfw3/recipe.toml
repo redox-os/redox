@@ -2,9 +2,15 @@
 # build instructions: https://www.glfw.org/docs/latest/compile.html
 [source]
 git = "https://github.com/glfw/glfw"
-rev = "e2c92645460f680fd272fd2eed591efb2be7dc31"
+rev = "3.4"
+shallow_clone = true
 [build]
 template = "cmake"
+cmakeflags = [
+    "-DGLFW_BUILD_TESTS=OFF",
+    "-DGLFW_BUILD_DOCS=OFF",
+    "-DGLFW_BUILD_WAYLAND=OFF",
+]
 dependencies = [
     "libxkbcommon",
 ]

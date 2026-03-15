@@ -3,10 +3,16 @@
 # build instructions: https://github.com/OpenShot/libopenshot/wiki/Linux-Build-Instructions
 [source]
 git = "https://github.com/OpenShot/libopenshot"
-rev = "v0.4.0"
+rev = "v0.5.0"
 shallow_clone = true
 [build]
 template = "cmake"
+cmakeflags = [
+    "-DENABLE_PARALLEL_CTEST=OFF",
+    "-DENABLE_LIB_DOCS=OFF",
+    "-DUSE_HW_ACCEL=OFF",
+    "-DENABLE_OPENCV=OFF",
+]
 # dependencies = [
 #     "libopenshot-audio",
 #     "ffmpeg6",
@@ -14,7 +20,7 @@ template = "cmake"
 #     "qt5-svg",
 #     "qt5-multimedia",
 #     "libzmq",
-#     "opencv4",
+#     #"opencv4",
 #     "protobuf",
 #     "babl",
 #     "imagemagick",

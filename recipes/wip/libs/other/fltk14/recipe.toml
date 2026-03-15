@@ -1,5 +1,5 @@
 #TODO probably wrong template, see https://github.com/fltk/fltk/blob/master/README.Unix.txt
-# commented out recipes are optional but recommended, needs to be determined
+# commented out dependencies are optional but recommended, needs to be determined
 [source]
 tar = "https://github.com/fltk/fltk/releases/download/release-1.4.4/fltk-1.4.4-source.tar.bz2"
 [build]
