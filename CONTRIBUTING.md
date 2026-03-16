@@ -22,11 +22,8 @@ Please review the `LICENSE` file for the project you are contributing to.
 
 When making a contribution you agree to the following terms:
 
-- I (the contributor) am the copyright owner of these changes
-- I submit these changes according to the project's license with no additional requirements
-- I understand these changes in full and will be able to respond to review comments
-
-This is similar to [Developer Certificate of Origin](https://developercertificate.org/) from Linux Foundation.
+- I understand these changes in full and will be able to respond to review comments.
+- I have read the [Developer Certificate of Origin](https://developercertificate.org/) and certify my contribution under its conditions.
 
 ## AI Policy
 
