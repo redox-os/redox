@@ -518,6 +518,18 @@ diff -ruwN source/Source/WTF/wtf/InlineASM.h source-new/Source/WTF/wtf/InlineASM
      // GNU as-compatible syntax.
  #define LOCAL_LABEL_STRING(name) ".L" #name
  #endif
+diff -ruwN source/Source/WTF/wtf/PlatformEnable.h source-new/Source/WTF/wtf/PlatformEnable.h
+--- source/Source/WTF/wtf/PlatformEnable.h	2025-03-18 15:33:00.063181400 +0700
++++ source-new/Source/WTF/wtf/PlatformEnable.h	2026-03-16 10:49:25.498709796 +0700
+@@ -698,7 +698,7 @@
+ #if !defined(ENABLE_DFG_JIT) && ENABLE(JIT)
+ 
+ /* Enable the DFG JIT on X86 and X86_64. */
+-#if CPU(X86_64) && (OS(DARWIN) || OS(LINUX) || OS(FREEBSD) || OS(HAIKU) || OS(HURD) || OS(WINDOWS))
++#if CPU(X86_64) && (OS(DARWIN) || OS(LINUX) || OS(FREEBSD) || OS(HAIKU) || OS(HURD) || OS(WINDOWS) || defined(__redox__))
+ #define ENABLE_DFG_JIT 1
+ #endif
+ 
 diff -ruwN source/Source/WTF/wtf/PlatformHave.h source-new/Source/WTF/wtf/PlatformHave.h
 --- source/Source/WTF/wtf/PlatformHave.h	2025-04-02 19:09:45.800669000 +0700
 +++ source-new/Source/WTF/wtf/PlatformHave.h	2025-09-09 09:08:03.707988617 +0700
