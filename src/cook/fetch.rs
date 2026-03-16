@@ -261,6 +261,14 @@ pub fn fetch(recipe: &CookRecipe, check_source: bool, logger: &PtyOut) -> Result
                     // git fetch upstream
                 }
 
+                if !patches.is_empty() || script.is_some() {
+                    // Hard reset
+                    let mut command = Command::new("git");
+                    command.arg("-C").arg(&source_dir);
+                    command.arg("reset").arg("--hard");
+                    run_command(command, logger)?;
+                }
+
                 if let Some(rev) = rev {
                     // Check out specified revision
                     let mut command = Command::new("git");
@@ -268,13 +276,6 @@ pub fn fetch(recipe: &CookRecipe, check_source: bool, logger: &PtyOut) -> Result
                     command.arg("checkout").arg(rev);
                     run_command(command, logger)?;
                 } else if !is_redox() {
-                    //If patches exists, we have to drop it
-                    if patches.len() > 0 {
-                        let mut command = Command::new("git");
-                        command.arg("-C").arg(&source_dir);
-                        command.arg("reset").arg("--hard");
-                        run_command(command, logger)?;
-                    }
                     //TODO: complicated stuff to check and reset branch to origin
                     //TODO: redox can't undestand this (got exit status 1)
                     let mut command = Command::new("bash");
@@ -283,14 +284,6 @@ pub fn fetch(recipe: &CookRecipe, check_source: bool, logger: &PtyOut) -> Result
                         command.env("BRANCH", branch);
                     }
                     command.current_dir(&source_dir);
-                    run_command(command, logger)?;
-                }
-
-                if !patches.is_empty() || script.is_some() {
-                    // Hard reset
-                    let mut command = Command::new("git");
-                    command.arg("-C").arg(&source_dir);
-                    command.arg("reset").arg("--hard");
                     run_command(command, logger)?;
                 }
 
