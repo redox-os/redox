@@ -446,7 +446,6 @@ pub fn build(
             if let Ok(ident_source) = fetch::fetch_get_source_info(&cook_recipe) {
                 command.env("COOKBOOK_SOURCE_IDENT", ident_source.source_identifier);
                 command.env("COOKBOOK_COMMIT_IDENT", ident_source.commit_identifier);
-                command.env("COOKBOOK_TIME_IDENT", ident_source.time_identifier);
             }
             command
         };
