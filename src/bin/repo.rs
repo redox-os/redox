@@ -227,9 +227,13 @@ fn main_inner() -> anyhow::Result<()> {
     let verbose = config.cook.verbose;
     for recipe in &recipes {
         match repo_inner(&config, &command, recipe) {
-            Ok(_) => {
+            Ok(cached) => {
                 if !command.is_informational() {
-                    print_success(&command, Some(&recipe.name));
+                    if cached {
+                        print_cached(&command, Some(&recipe.name));
+                    } else {
+                        print_success(&command, Some(&recipe.name));
+                    }
                 }
             }
             Err(e) => {
@@ -298,20 +302,44 @@ fn print_success(command: &CliCommand, recipe: Option<&PackageName>) {
     }
 }
 
+fn print_cached(command: &CliCommand, recipe: Option<&PackageName>) {
+    if let Some(recipe) = recipe {
+        eprintln!(
+            "{}{}{} {} - cached{}{}",
+            style::Bold,
+            color::Fg(color::AnsiValue(45)),
+            command.to_string(),
+            recipe.as_str(),
+            color::Fg(color::Reset),
+            style::Reset,
+        );
+    } else {
+        eprintln!(
+            "{}{}{} - cached{}{}",
+            style::Bold,
+            color::Fg(color::AnsiValue(45)),
+            command.to_string(),
+            color::Fg(color::Reset),
+            style::Reset,
+        );
+    }
+}
+
 fn repo_inner(
     config: &CliConfig,
     command: &CliCommand,
     recipe: &CookRecipe,
-) -> Result<(), anyhow::Error> {
+) -> Result<bool, anyhow::Error> {
     Ok(match *command {
         CliCommand::Fetch | CliCommand::Cook => {
-            let repo_inner_fn = move |logger: &PtyOut| -> Result<(), anyhow::Error> {
+            let repo_inner_fn = move |logger: &PtyOut| -> Result<bool, anyhow::Error> {
                 let is_cook = *command == CliCommand::Cook;
+                let mut cached = false;
                 let source_dir = handle_fetch(recipe, config, is_cook, logger)?;
                 if is_cook {
-                    handle_cook(recipe, config, source_dir, logger)?;
+                    cached = handle_cook(recipe, config, source_dir, logger)?;
                 }
-                Ok(())
+                Ok(cached)
             };
             let Some(log_path) = &config.logs_dir else {
                 return repo_inner_fn(&None);
@@ -359,7 +387,7 @@ fn repo_inner(
                 .send(StatusUpdate::CookThreadFinished)
                 .unwrap_or_default();
             let _ = th.join();
-            result?;
+            result?
         }
         CliCommand::Unfetch | CliCommand::Clean | CliCommand::CleanTarget => {
             handle_clean(recipe, config, command)?
@@ -367,7 +395,10 @@ fn repo_inner(
         CliCommand::Push => unreachable!(),
         CliCommand::PushTree => unreachable!(),
         CliCommand::CookTree => unreachable!(),
-        CliCommand::Find => println!("{}", recipe.dir.display()),
+        CliCommand::Find => {
+            println!("{}", recipe.dir.display());
+            false
+        }
     })
 }
 
@@ -690,10 +721,10 @@ fn handle_cook(
     config: &CliConfig,
     source_dir: PathBuf,
     logger: &PtyOut,
-) -> anyhow::Result<()> {
+) -> anyhow::Result<bool> {
     let recipe_dir = &recipe.dir;
     let target_dir = create_target_dir(recipe_dir, recipe.target).map_err(|e| anyhow!(e))?;
-    let (stage_dirs, auto_deps) = build(
+    let build_result = build(
         recipe_dir,
         &source_dir,
         &target_dir,
@@ -703,12 +734,11 @@ fn handle_cook(
     )
     .map_err(|err| anyhow!("failed to build: {:?}", err))?;
 
-    package(&recipe, &stage_dirs, &auto_deps, &config.cook, logger)
+    package(&recipe, &build_result, &config.cook, logger)
         .map_err(|err| anyhow!("failed to package: {:?}", err))?;
 
     if config.cook.clean_target || config.cook.write_filetree {
-        let stage_dirs = get_stage_dirs(&recipe.recipe.optional_packages, &target_dir);
-        for stage_dir in stage_dirs {
+        for stage_dir in &build_result.stage_dirs {
             if stage_dir.is_dir() {
                 if config.cook.write_filetree {
                     let mut stage_files_buf = String::new();
@@ -723,7 +753,7 @@ fn handle_cook(
             }
         }
     }
-    Ok(())
+    Ok(build_result.cached)
 }
 
 /// delete stage artifacts upon nonstop failure to let repo_builder know
@@ -741,19 +771,22 @@ fn handle_clean(
     recipe: &CookRecipe,
     _config: &CliConfig,
     command: &CliCommand,
-) -> anyhow::Result<()> {
+) -> anyhow::Result<bool> {
     let mut dir = recipe.dir.join("target");
+    let mut cached = true;
     if matches!(*command, CliCommand::CleanTarget) {
         dir = dir.join(redoxer::target())
     }
     if dir.exists() {
         fs::remove_dir_all(&dir).context(format!("failed to delete {}", dir.display()))?;
+        cached = false;
     }
     let dir = recipe.dir.join("source");
     if dir.exists() && matches!(*command, CliCommand::Unfetch) {
         fs::remove_dir_all(&dir).context(format!("failed to delete {}", dir.display()))?;
+        cached = false;
     }
-    Ok(())
+    Ok(cached)
 }
 
 static PUSH_SYSROOT_DIR: OnceLock<PathBuf> = OnceLock::new();
@@ -918,6 +951,7 @@ enum RecipeStatus {
     Fetching,
     Fetched,
     Cooking,
+    Cached,
     Done,
     Failed(String),
 }
@@ -928,7 +962,7 @@ enum StatusUpdate {
     Fetched(CookRecipe),
     FailFetch(CookRecipe, String),
     StartCook(PackageName),
-    Cooked(CookRecipe),
+    Cooked(CookRecipe, bool),
     FailCook(CookRecipe, String),
     PushLog(PackageName, Vec<u8>),
     FlushLog(PackageName, PathBuf),
@@ -1104,12 +1138,19 @@ impl TuiApp {
                 let _ = self.write_log(&name, &path);
                 return;
             }
-            StatusUpdate::Cooked(recipe) => {
+            StatusUpdate::Cooked(recipe, cached) => {
                 if self.active_cook.as_ref() == Some(&recipe.name) {
                     self.active_cook = None;
                 }
                 self.auto_scroll = true;
-                (recipe.name.clone(), RecipeStatus::Done)
+                (
+                    recipe.name.clone(),
+                    if cached {
+                        RecipeStatus::Cached
+                    } else {
+                        RecipeStatus::Done
+                    },
+                )
             }
             StatusUpdate::FailCook(recipe, err) => {
                 self.prompt = Some(FailurePrompt::new(recipe.clone(), err.clone()));
@@ -1189,9 +1230,9 @@ fn run_tui_cook(
                         .unwrap_or_default();
                 }
                 match handler {
-                    Ok(()) => {
+                    Ok(cached) => {
                         cooker_status_tx
-                            .send(StatusUpdate::Cooked(recipe))
+                            .send(StatusUpdate::Cooked(recipe, cached))
                             .unwrap_or_default();
                         if cooker_config.cook.nonstop
                             && cooker_prompting.load(Ordering::SeqCst) == 4
