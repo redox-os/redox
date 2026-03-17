@@ -1187,7 +1187,7 @@ impl TuiApp {
         self.done = self
             .recipes
             .iter()
-            .filter(|(_, s)| *s == RecipeStatus::Done)
+            .filter(|(_, s)| *s == RecipeStatus::Done || *s == RecipeStatus::Cached)
             .map(|(r, _)| r.name.clone())
             .collect();
     }
@@ -1455,20 +1455,23 @@ fn run_tui_cook(
                     *s == RecipeStatus::Fetched
                         || *s == RecipeStatus::Cooking
                         || *s == RecipeStatus::Done
+                        || *s == RecipeStatus::Cached
                         || matches!(s, RecipeStatus::Failed(_))
                 })
                 .map(|(r, s)| {
                     let style = match s {
-                        RecipeStatus::Fetched => Style::default().fg(Color::Cyan),
+                        RecipeStatus::Fetched => Style::default(),
                         RecipeStatus::Cooking => Style::default().fg(Color::Yellow),
                         RecipeStatus::Done => Style::default().fg(Color::Green),
+                        RecipeStatus::Cached => Style::default().fg(Color::Cyan),
                         RecipeStatus::Failed(_) => Style::default().fg(Color::Red),
                         _ => Style::default(),
                     };
                     let icon = match s {
                         RecipeStatus::Fetched => ' ',
                         RecipeStatus::Cooking => spin,
-                        RecipeStatus::Done => ' ',
+                        RecipeStatus::Done => '+',
+                        RecipeStatus::Cached => ' ',
                         RecipeStatus::Failed(_) => 'X',
                         _ => '?',
                     };
