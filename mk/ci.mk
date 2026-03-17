@@ -4,6 +4,7 @@ IMG_TAG?=$(shell git describe --tags)
 IMG_SEPARATOR?=_
 IMG_DIR?=build/img/$(ARCH)
 OS_TEST_DIR?=build/os-test/$(ARCH)
+CI_COOKBOOK_CONFIG?=CI=1 COOKBOOK_LOGS=true COOKBOOK_CLEAN_BUILD=true COOKBOOK_VERBOSE=false COOKBOOK_COMPRESSED=true
 
 # CI image target - build standard images
 # To leave out the build tag, set both IMG_TAG and IMG_SEPARATOR to null
@@ -17,7 +18,8 @@ ci-img: FORCE
 # The name of the target must match the name of the filesystem config file
 server desktop demo: FORCE
 	rm -f "build/$(ARCH)/$@/harddrive.img" "build/$(ARCH)/$@/redox-live.iso"
-	$(MAKE) CONFIG_NAME=$@ build/$(ARCH)/$@/harddrive.img build/$(ARCH)/$@/redox-live.iso
+	export $(CI_COOKBOOK_CONFIG) REPO_NONSTOP=0 && \
+		$(MAKE) CONFIG_NAME=$@ build/$(ARCH)/$@/harddrive.img build/$(ARCH)/$@/redox-live.iso
 	mkdir -p $(IMG_DIR)
 	cp "build/$(ARCH)/$@/harddrive.img" "$(IMG_DIR)/redox_$(@)$(IMG_SEPARATOR)$(IMG_TAG)_harddrive.img"
 	cp "build/$(ARCH)/$@/redox-live.iso" "$(IMG_DIR)/redox_$(@)$(IMG_SEPARATOR)$(IMG_TAG)_livedisk.iso"
@@ -45,7 +47,7 @@ ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
 	$(HOST_CARGO) build --manifest-path Cargo.toml --release
-	export CI=1 COOKBOOK_LOGS=true COOKBOOK_CLEAN_BUILD=true PATH="$(PREFIX_PATH):$$PATH" COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
+	export $(CI_COOKBOOK_CONFIG) REPO_NONSTOP=1 PATH="$(PREFIX_PATH):$$PATH" COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
 	$(REPO_BIN) cook --with-package-deps "--filesystem=config/$(ARCH)/ci.toml"
 endif
 
