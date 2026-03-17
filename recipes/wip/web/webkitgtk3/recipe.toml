@@ -11,7 +11,6 @@ dependencies = [
     "libatomic",
     "libgcrypt",
     "libsoup",
-    "libstdcxx-v3",
     "libtasn1",
     "libwebp",
     "sqlite3",
@@ -49,7 +48,7 @@ COOKBOOK_CMAKE_FLAGS+=(
     -DUSE_LIBSECRET=OFF
     -DUSE_SKIA=OFF
     -DUSE_SYSPROF_CAPTURE=OFF
-    -DUSE_SYSTEM_MALLOC=OFF
+    -DUSE_SYSTEM_MALLOC=ON
     -DUSE_SYSTEM_SYSPROF_CAPTURE=OFF
     -DUSE_WOFF2=OFF
     #TODO: remove these when runtime hangs solved
