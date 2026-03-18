@@ -10,20 +10,20 @@ use pkgar_core::HeaderFlags;
 use crate::{
     blake3::hash_to_hex,
     config::CookConfig,
-    cook::{fetch, fs::*, pty::PtyOut},
+    cook::{cook_build::BuildResult, fetch, fs::*, pty::PtyOut},
     log_to_pty,
     recipe::{BuildKind, CookRecipe, OptionalPackageRecipe},
 };
 
 pub fn package(
     recipe: &CookRecipe,
-    stage_dirs: &Vec<PathBuf>,
-    auto_deps: &BTreeSet<PackageName>,
+    build_result: &BuildResult,
     cook_config: &CookConfig,
     logger: &PtyOut,
 ) -> Result<(), String> {
     let name = &recipe.name;
     let target_dir = &recipe.target_dir();
+    let auto_deps = &build_result.auto_deps;
     if recipe.recipe.build.kind == BuildKind::None {
         // metapackages don't have stage dir and optional packages
         package_toml(
@@ -51,21 +51,12 @@ pub fn package(
             .map_err(|err| format!("failed to save pkgar secret key: {:?}", err))?;
     }
 
-    let Ok(stage_modified) = modified_all(stage_dirs, modified_dir) else {
-        // stage dirs doesn't exist, assume safe only when clean_target = true
-        if !crate::config::get_config().cook.clean_target {
-            return Err("Stage directory is not present at packaging step".into());
-        } else {
-            return Ok(());
-        }
-    };
-
     let packages = recipe.recipe.get_packages_list();
 
     for package in packages {
         let (stage_dir, package_file, package_meta) = package_stage_paths(package, target_dir);
         // Rebuild package if stage is newer
-        if package_file.is_file() && modified(&package_file)? < stage_modified {
+        if package_file.is_file() && !build_result.cached {
             log_to_pty!(logger, "DEBUG: updating '{}'", package_file.display());
             remove_all(&package_file)?;
             if package_meta.is_file() {

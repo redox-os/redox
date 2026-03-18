@@ -167,6 +167,30 @@ fn auto_deps_from_static_package_deps(
     Ok(pkgs.into_iter().collect())
 }
 
+pub struct BuildResult {
+    pub stage_dirs: Vec<PathBuf>,
+    pub auto_deps: BTreeSet<PackageName>,
+    pub cached: bool,
+}
+
+impl BuildResult {
+    pub fn new(stage_dirs: Vec<PathBuf>, auto_deps: BTreeSet<PackageName>) -> Self {
+        BuildResult {
+            stage_dirs,
+            auto_deps,
+            cached: false,
+        }
+    }
+
+    pub fn cached(stage_dirs: Vec<PathBuf>, auto_deps: BTreeSet<PackageName>) -> Self {
+        BuildResult {
+            stage_dirs,
+            auto_deps,
+            cached: true,
+        }
+    }
+}
+
 pub fn build(
     recipe_dir: &Path,
     source_dir: &Path,
@@ -174,7 +198,7 @@ pub fn build(
     cook_recipe: &CookRecipe,
     cook_config: &CookConfig,
     logger: &PtyOut,
-) -> Result<(Vec<PathBuf>, BTreeSet<PackageName>), String> {
+) -> Result<BuildResult, String> {
     let recipe = &cook_recipe.recipe;
     let name = &cook_recipe.name;
     let check_source = !cook_recipe.is_deps;
@@ -189,7 +213,7 @@ pub fn build(
     let cli_jobs = cook_config.jobs;
     if recipe.build.kind == BuildKind::None {
         // metapackages don't need to do anything here
-        return Ok((stage_dirs, BTreeSet::new()));
+        return Ok(BuildResult::new(stage_dirs, BTreeSet::new()));
     }
 
     let mut dep_pkgars = BTreeSet::new();
@@ -234,7 +258,7 @@ pub fn build(
                 log_to_pty!(logger, "DEBUG: using cached build, not checking source");
             }
             let auto_deps = make_auto_deps!()?;
-            return Ok((stage_dirs, auto_deps));
+            return Ok(BuildResult::cached(stage_dirs, auto_deps));
         }
     }
 
@@ -276,7 +300,7 @@ pub fn build(
         if cook_config.clean_target {
             // stop early otherwise we'll end up rebuilding
             let auto_deps = make_auto_deps!()?;
-            return Ok((stage_dirs, auto_deps));
+            return Ok(BuildResult::cached(stage_dirs, auto_deps));
         }
     }
 
@@ -493,7 +517,7 @@ pub fn build(
     }
 
     let auto_deps = make_auto_deps!()?;
-    Ok((stage_dirs, auto_deps))
+    Ok(BuildResult::new(stage_dirs, auto_deps))
 }
 
 pub fn remove_stage_dir(stage_dir: &PathBuf) -> Result<(), String> {
@@ -661,7 +685,7 @@ pub fn build_remote(
     recipe: &Recipe,
     target_dir: &Path,
     cook_config: &CookConfig,
-) -> Result<(Vec<PathBuf>, BTreeSet<PackageName>), String> {
+) -> Result<BuildResult, String> {
     let source_toml = target_dir.join("source.toml");
     let source_pubkey = "build/remotes/pub_key_static.redox-os.org.toml";
 
@@ -714,7 +738,7 @@ pub fn build_remote(
         serialize_and_write(&auto_deps_path, &wrapper)?;
         wrapper.packages
     };
-    Ok((stage_dirs, auto_deps))
+    Ok(BuildResult::new(stage_dirs, auto_deps))
 }
 
 #[cfg(test)]
