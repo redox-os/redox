@@ -348,7 +348,7 @@ fn repo_inner(
             let (status_tx, status_rx) = mpsc::channel::<StatusUpdate>();
             let (mut stdout_writer, mut stderr_writer) = setup_logger(&status_tx, &recipe.name);
             let mut app = TuiApp::new(vec![recipe.clone()]);
-            app.dump_logs_anyway = config.cook.verbose || !config.cook.nonstop;
+            app.dump_logs_anyway = config.cook.verbose;
             let dump_fail_logs = !app.dump_logs_anyway;
             let th = thread::spawn(move || {
                 while let Ok(update) = status_rx.recv() {
@@ -480,11 +480,6 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
         fs::create_dir_all(c.join(redoxer::target())).map_err(|e| anyhow!(e))?;
         fs::create_dir_all(c.join(redoxer::host_target())).map_err(|e| anyhow!(e))?;
     }
-    if override_filesystem_repo_binary {
-        if let Some(conf) = config.filesystem.as_mut() {
-            conf.general.repo_binary = Some(true);
-        }
-    }
 
     let command = command.ok_or(anyhow!("Error: No command specified."))?;
     let command: CliCommand = str::parse(&command)?;
@@ -552,7 +547,7 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
     }
 
     let mut recipes = if let Some(conf) = config.filesystem.as_ref() {
-        let repo_binary = conf.general.repo_binary == Some(true);
+        let repo_binary = override_filesystem_repo_binary;
 
         // Expand deps for "source" + "local" and "binary"
         // This is the complete map from filesystem config

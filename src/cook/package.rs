@@ -158,7 +158,7 @@ pub fn package_toml(
                     .map_err(|e| format!("Unable to get lzma entry: {e}"))?;
                 for entry in entries {
                     let data_reader = package
-                        .data_reader(entry)
+                        .data_reader(&entry)
                         .map_err(|e| format!("Unable to read lzma entry: {e}"))?;
                     size += data_reader.unpacked_size;
                     package
