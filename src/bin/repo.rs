@@ -5,13 +5,13 @@ use cookbook::cook::cook_build::{build, get_stage_dirs, remove_stage_dir};
 use cookbook::cook::fetch::{fetch, fetch_offline};
 use cookbook::cook::fs::{create_target_dir, run_command};
 use cookbook::cook::ident;
-use cookbook::cook::package::package;
+use cookbook::cook::package::{package, package_handle_push};
 use cookbook::cook::pty::{PtyOut, UnixSlavePty, flush_pty, setup_pty};
 use cookbook::cook::script::KILL_ALL_PID;
 use cookbook::cook::tree::{self, WalkTreeEntry};
 use cookbook::log_to_pty;
 use cookbook::recipe::{CookRecipe, recipes_flatten_package_names, recipes_mark_as_deps};
-use pkg::PackageName;
+use pkg::{PackageName, PackageState};
 use ratatui::Terminal;
 use ratatui::layout::{Constraint, Direction, Layout, Position, Rect};
 use ratatui::prelude::TermionBackend;
@@ -798,15 +798,17 @@ fn handle_push(recipes: &Vec<CookRecipe>, config: &CliConfig) -> anyhow::Result<
                                   _is_last: bool,
                                   entry: &WalkTreeEntry|
           -> anyhow::Result<()> {
-        let public_path = "build/id_ed25519.pub.toml";
         let r = match entry {
             WalkTreeEntry::Built(archive_path, _) => {
-                let sysroot_dir = PUSH_SYSROOT_DIR.get().unwrap();
-                pkgar::extract(public_path, archive_path.as_path(), sysroot_dir).context(format!(
-                    "failed to install '{}' in '{}'",
-                    archive_path.display(),
-                    sysroot_dir.display(),
-                ))
+                let install_path = PUSH_SYSROOT_DIR.get().unwrap();
+                let mut state =
+                    PackageState::from_sysroot(install_path).map_err(|e| anyhow!("{e:?}"))?;
+                let r = package_handle_push(&mut state, archive_path, &install_path, false)
+                    .map_err(|e| anyhow!("{e:?}"));
+                if matches!(r, Ok(false)) {
+                    state.to_sysroot(install_path)?;
+                }
+                r
             }
             WalkTreeEntry::NotBuilt => Err(anyhow!(
                 "Package {} has not been built",
@@ -817,7 +819,11 @@ fn handle_push(recipes: &Vec<CookRecipe>, config: &CliConfig) -> anyhow::Result<
             }
         };
         match r {
-            Ok(()) => {
+            Ok(true) => {
+                print_cached(&CliCommand::Push, Some(package_name));
+                Ok(())
+            }
+            Ok(false) => {
                 print_success(&CliCommand::Push, Some(package_name));
                 Ok(())
             }

@@ -7,10 +7,7 @@ use std::{
 
 use pkg::{PackageError, PackageName, recipes};
 use regex::Regex;
-use serde::{
-    Deserialize, Serialize,
-    de::{Error as DeErrorT, value::Error as DeError},
-};
+use serde::{Deserialize, Serialize};
 
 use crate::{WALK_DEPTH, cook::package as cook_package};
 
@@ -198,9 +195,9 @@ impl Recipe {
             return Err(PackageError::FileMissing(file.clone()));
         }
         let toml = fs::read_to_string(&file)
-            .map_err(|err| PackageError::Parse(DeError::custom(err), Some(file.clone())))?;
-        let recipe: Recipe = toml::from_str(&toml)
-            .map_err(|err| PackageError::Parse(DeError::custom(err), Some(file.clone())))?;
+            .map_err(|err| PackageError::FileError(err.raw_os_error(), file.clone()))?;
+        let recipe: Recipe =
+            toml::from_str(&toml).map_err(|err| PackageError::Parse(err, Some(file.clone())))?;
         Ok(recipe)
     }
 

@@ -3,7 +3,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use pkg::{Package, PackageName, PackagePrefix};
+use pkg::{InstallState, Package, PackageName, PackagePrefix, PackageState};
 use pkgar::ext::PackageSrcExt;
 use pkgar_core::HeaderFlags;
 
@@ -251,4 +251,49 @@ fn get_package_name_inner(name: &str, package: Option<&str>) -> String {
         prefix_name.push_str(package);
     }
     prefix_name
+}
+
+pub fn package_handle_push(
+    state: &mut PackageState,
+    archive_path: &Path,
+    sysroot_dir: &Path,
+    reinstall: bool,
+) -> crate::Result<bool> {
+    let archive_toml = archive_path.with_extension("toml");
+    let pkey_path = "build/id_ed25519.pub.toml";
+    let pkg_toml = Package::from_file(&archive_toml)?;
+    match state.installed.get(&pkg_toml.name) {
+        Some(s) if !reinstall && pkg_toml.blake3 == s.blake3 => Ok(true),
+        Some(s) => {
+            // "local" is what remote name from installer is hardcoded into
+            let remote_name = "local".to_string();
+
+            let install_state =
+                InstallState::from_package(&pkg_toml, remote_name, s.manual, s.dependents.clone());
+
+            // TODO: use pkgar::replace unless forced reinstall
+            pkgar::extract(pkey_path, &archive_path, sysroot_dir)?;
+
+            state.installed.insert(pkg_toml.name.clone(), install_state);
+
+            Ok(false)
+        }
+        None => {
+            // "local" is what remote name from installer is hardcoded into
+            let remote_name = "local".to_string();
+
+            // TODO: Handle manual & depedents
+            let install_state =
+                InstallState::from_package(&pkg_toml, remote_name, true, BTreeSet::new());
+
+            pkgar::extract(pkey_path, &archive_path, sysroot_dir)?;
+
+            // TODO: Inject dependencies
+            // TODO: Check if we need to inject remote key
+
+            state.installed.insert(pkg_toml.name.clone(), install_state);
+
+            Ok(false)
+        }
+    }
 }

@@ -12,6 +12,7 @@ use walkdir::{DirEntry, WalkDir};
 use crate::{
     config::translate_mirror,
     cook::pty::{PtyOut, spawn_to_pipe},
+    wrap_io_err,
 };
 
 //TODO: pub(crate) for all of these functions
@@ -312,6 +313,10 @@ pub fn download_wget(url: &str, dest: &PathBuf, logger: &PtyOut) -> Result<(), S
         rename(&dest_tmp, &dest)?;
     }
     Ok(())
+}
+
+pub fn read_to_string(path: &Path) -> crate::Result<String> {
+    fs::read_to_string(path).map_err(wrap_io_err!(path, "Reading file to string"))
 }
 
 /// get commit rev and return if it's detached or not
