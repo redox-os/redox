@@ -26,7 +26,7 @@ image-tree: $(FSTOOLS_TAG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
-	@$(REPO_BIN) push-tree $(COOKBOOK_OPTS) --with-package-deps
+	@$(REPO_BIN) push-tree $(COOKBOOK_OPTS)
 endif
 
 # Clean specific target to all recipes, similar to repo_clean but more specific
@@ -133,10 +133,6 @@ ifeq ($(ALLOW_FSTOOLS),1)
 	fi
 endif
 
-# Push compiled package with their package dependencies
-pp.%: $(FSTOOLS_TAG) FORCE
-	$(MAKE) p.$*,--with-package-deps
-
 # Show what to push
 pt.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
@@ -144,10 +140,6 @@ ifeq ($(PODMAN_BUILD),1)
 else
 	$(REPO_BIN) push-tree $(foreach f,$(subst $(comma), ,$*),$(f)) $(COOKBOOK_OPTS)
 endif
-
-# Show what to push (with deps)
-ppt.%: prefix $(FSTOOLS_TAG) FORCE
-	$(MAKE) pt.$*,--with-package-deps
 
 # Push all recipes specified by the filesystem config
 push: $(FSTOOLS_TAG) FORCE
@@ -169,6 +161,12 @@ ifeq ($(ALLOW_FSTOOLS),1)
 	else echo "\033[1;33;49mNot unmounting by ourself, don't forget to do it\033[0m"; \
 	fi
 endif
+
+# Rebuild and push all recipes specified by the filesystem config
+rebuild-push: $(FSTOOLS_TAG) FORCE
+	rm -f $(REPO_TAG)
+	$(MAKE) repo
+	$(MAKE) push
 
 # Invoke unfetch for one or more targets separated by comma
 u.%: $(FSTOOLS_TAG) FORCE
@@ -217,17 +215,17 @@ endif
 # Invoke repo.sh and push for one of more targets separated by comma
 # Don't use podman here, as the p target cannot mount inside podman
 rp.%: $(FSTOOLS_TAG) FORCE
-	$(MAKE) r.$*
+	$(MAKE) r.$*,--with-package-deps
 	$(MAKE) p.$*
 
 # Invoke clean, repo.sh and push for one of more targets separated by comma
 crp.%: $(FSTOOLS_TAG) FORCE
-	$(MAKE) cr.$*
+	$(MAKE) cr.$*,--with-package-deps
 	$(MAKE) p.$*
 
 # Invoke unfetch. clean, repo.sh and push for one of more targets separated by comma
 ucrp.%: $(FSTOOLS_TAG) FORCE
-	$(MAKE) ucr.$*
+	$(MAKE) ucr.$*,--with-package-deps
 	$(MAKE) p.$*
 
 export DEBUG_BIN?=
