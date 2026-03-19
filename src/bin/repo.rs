@@ -57,7 +57,7 @@ const REPO_HELP_STR: &str = r#"
         --repo=<repo_dir>          the "repo" folder, default to $PWD/repo
         --sysroot=<sysroot_dir>    the "root" folder used for "push" command
             For Redox, defaults to "/", else default to $PWD/sysroot
-        --with-package-deps        include package deps
+        --with-package-deps        include package deps (always implied in push command)
         --all                      apply to all recipes in <cookbook_dir>
         --category=<category>      apply to all recipes in <cookbook_dir>/<category>
         --filesystem=<filesystem>  override recipes config using installer file
@@ -601,48 +601,46 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
             }
         }
 
-        if config.with_package_deps {
+        if config.with_package_deps || command.is_pushing() {
             source_recipe_names =
                 CookRecipe::get_package_deps_recursive(&source_recipe_names, true)?;
             binary_recipe_names =
                 CookRecipe::get_package_deps_recursive(&binary_recipe_names, true)?;
         }
 
-        let mut recipes =
-            if command.is_building() || (command.is_pushing() && config.with_package_deps) {
-                // Pushing do not need dev deps, so does binary recipes at building
-                let include_dev = command.is_building();
-                if include_dev && default_rule == "source" {
-                    // let's cover a very specific case, binary -> source -> binary -> dev
-                    // in this case, we need to move that "source" to "binary", because
-                    // that would include dev from its binary child, which is unnecessary
-                    let mut i = 0;
-                    while i < source_recipe_names.len() {
-                        let name = &source_recipe_names[i];
-                        match special_rules.get(name) {
-                            Some(s) if s.as_str() == "source" => {
-                                if binary_names.contains(name) {
-                                    let bin = source_recipe_names.remove(i);
-                                    binary_recipe_names.push(bin);
-                                    continue;
-                                }
+        let mut recipes = if command.is_building() || command.is_pushing() {
+            // Pushing do not need dev deps, so does binary recipes at building
+            let include_dev = command.is_building();
+            if include_dev && default_rule == "source" {
+                // let's cover a very specific case, binary -> source -> binary -> dev
+                // in this case, we need to move that "source" to "binary", because
+                // that would include dev from its binary child, which is unnecessary
+                let mut i = 0;
+                while i < source_recipe_names.len() {
+                    let name = &source_recipe_names[i];
+                    match special_rules.get(name) {
+                        Some(s) if s.as_str() == "source" => {
+                            if binary_names.contains(name) {
+                                let bin = source_recipe_names.remove(i);
+                                binary_recipe_names.push(bin);
+                                continue;
                             }
-                            _ => {}
                         }
-                        i += 1;
+                        _ => {}
                     }
+                    i += 1;
                 }
-                CookRecipe::get_build_deps_recursive(&source_recipe_names, include_dev)?
-            } else {
-                CookRecipe::from_list(source_recipe_names.clone())?
-            };
+            }
+            CookRecipe::get_build_deps_recursive(&source_recipe_names, include_dev)?
+        } else {
+            CookRecipe::from_list(source_recipe_names.clone())?
+        };
 
-        let binary_recipes =
-            if command.is_building() || (command.is_pushing() && config.with_package_deps) {
-                CookRecipe::get_build_deps_recursive(&binary_recipe_names, false)?
-            } else {
-                CookRecipe::from_list(binary_recipe_names.clone())?
-            };
+        let binary_recipes = if command.is_building() || command.is_pushing() {
+            CookRecipe::get_build_deps_recursive(&binary_recipe_names, false)?
+        } else {
+            CookRecipe::from_list(binary_recipe_names.clone())?
+        };
 
         let ignore_recipes = CookRecipe::from_list(ignore_recipe_names.clone())?;
 
@@ -677,10 +675,10 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
 
         recipes
     } else {
-        if config.with_package_deps {
+        if config.with_package_deps || command.is_pushing() {
             recipe_names = CookRecipe::get_package_deps_recursive(&recipe_names, true)?;
         }
-        if command.is_building() || (command.is_pushing() && config.with_package_deps) {
+        if command.is_building() || command.is_pushing() {
             let include_dev = command.is_building();
             CookRecipe::get_build_deps_recursive(&recipe_names, include_dev)?
         } else {
@@ -688,7 +686,7 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
         }
     };
 
-    if command.is_pushing() || !config.with_package_deps {
+    if !config.with_package_deps || command.is_informational() {
         // In CliCommand::Cook, is_deps==true will make it skip checking source
         recipes_mark_as_deps(&recipe_names, &mut recipes);
     }
@@ -789,15 +787,15 @@ fn handle_push(recipes: &Vec<CookRecipe>, config: &CliConfig) -> anyhow::Result<
     let recipe_map: HashMap<&PackageName, &CookRecipe> =
         recipes.iter().map(|r| (&r.name, r)).collect();
     let mut total_size: u64 = 0;
+    let mut total_count: u64 = 0;
     let mut visited: HashSet<PackageName> = HashSet::new();
-    let roots: Vec<&CookRecipe> = recipes.iter().filter(|r| !r.is_deps).collect();
-    let num_roots = roots.len();
+    let num_recipes = recipes.len();
     PUSH_SYSROOT_DIR.set(config.sysroot_dir.clone()).unwrap();
     let handle_push_inner = move |package_name: &PackageName,
                                   _prefix: &str,
                                   _is_last: bool,
                                   entry: &WalkTreeEntry|
-          -> anyhow::Result<()> {
+          -> anyhow::Result<bool> {
         let r = match entry {
             WalkTreeEntry::Built(archive_path, _) => {
                 let install_path = PUSH_SYSROOT_DIR.get().unwrap();
@@ -815,62 +813,41 @@ fn handle_push(recipes: &Vec<CookRecipe>, config: &CliConfig) -> anyhow::Result<
                 package_name.name()
             )),
             WalkTreeEntry::Deduped | WalkTreeEntry::Missing => {
-                return Ok(());
+                // does not matter
+                return Ok(false);
             }
         };
         match r {
             Ok(true) => {
                 print_cached(&CliCommand::Push, Some(package_name));
-                Ok(())
+                Ok(true)
             }
             Ok(false) => {
                 print_success(&CliCommand::Push, Some(package_name));
-                Ok(())
+                Ok(false)
             }
             Err(e) => {
                 print_failed(&CliCommand::Push, package_name);
                 if get_config().cook.nonstop {
-                    Ok(())
+                    Ok(true)
                 } else {
                     Err(e)
                 }
             }
         }
     };
-    if config.with_package_deps {
-        for (i, root) in roots.iter().enumerate() {
-            tree::walk_tree_entry(
-                &root.name,
-                &recipe_map,
-                "",
-                i == num_roots - 1,
-                false,
-                &mut visited,
-                &mut total_size,
-                handle_push_inner,
-            )?;
-        }
-    } else {
-        for (i, root) in roots.iter().enumerate() {
-            let archive_path = config
-                .repo_dir
-                .join(redoxer::target())
-                .join(format!("{}.pkgar", root.name));
-            let metadata = std::fs::metadata(&archive_path);
-            handle_push_inner(
-                &root.name,
-                "",
-                i == num_roots - 1,
-                &match metadata {
-                    Ok(m) => {
-                        total_size += m.len();
-                        visited.insert(root.name.clone());
-                        WalkTreeEntry::Built(&archive_path, m.len())
-                    }
-                    Err(_) => WalkTreeEntry::NotBuilt,
-                },
-            )?;
-        }
+    for (i, recipe) in recipes.iter().enumerate() {
+        tree::walk_tree_entry(
+            &recipe.name,
+            &recipe_map,
+            "",
+            i == num_recipes - 1,
+            false,
+            &mut visited,
+            &mut total_size,
+            &mut total_count,
+            handle_push_inner,
+        )?;
     }
 
     if config.cook.verbose {
@@ -878,8 +855,8 @@ fn handle_push(recipes: &Vec<CookRecipe>, config: &CliConfig) -> anyhow::Result<
         println!(
             "Pushed {} of {} {}",
             tree::format_size(total_size),
-            visited.len(),
-            if visited.len() == 1 {
+            total_count,
+            if total_count == 1 {
                 "package"
             } else {
                 "packages"
@@ -898,6 +875,7 @@ fn handle_tree(
     let recipe_map: HashMap<&PackageName, &CookRecipe> =
         recipes.iter().map(|r| (&r.name, r)).collect();
     let mut total_size: u64 = 0;
+    let mut total_count: u64 = 0;
     let mut visited: HashSet<PackageName> = HashSet::new();
     let roots: Vec<&CookRecipe> = recipes.iter().filter(|r| !r.is_deps).collect();
     let num_roots = roots.len();
@@ -910,6 +888,7 @@ fn handle_tree(
             is_build_tree,
             &mut visited,
             &mut total_size,
+            &mut total_count,
         )?;
     }
 

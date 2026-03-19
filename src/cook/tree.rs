@@ -24,6 +24,7 @@ pub fn display_tree_entry(
     is_build_tree: bool,
     visited: &mut HashSet<PackageName>,
     total_size: &mut u64,
+    total_count: &mut u64,
 ) -> anyhow::Result<()> {
     walk_tree_entry(
         package_name,
@@ -33,6 +34,7 @@ pub fn display_tree_entry(
         is_build_tree,
         visited,
         total_size,
+        total_count,
         display_pkg_fn,
     )
 }
@@ -45,7 +47,8 @@ pub fn walk_tree_entry(
     is_build_tree: bool,
     visited: &mut HashSet<PackageName>,
     total_size: &mut u64,
-    op: fn(&PackageName, &str, bool, &WalkTreeEntry) -> anyhow::Result<()>,
+    total_count: &mut u64,
+    op: fn(&PackageName, &str, bool, &WalkTreeEntry) -> anyhow::Result<bool>,
 ) -> anyhow::Result<()> {
     let cook_recipe = match recipe_map.get(package_name) {
         Some(r) => r,
@@ -65,21 +68,24 @@ pub fn walk_tree_entry(
         (Err(_), _) => WalkTreeEntry::NotBuilt,
     };
 
-    op(package_name, prefix, is_last, &entry)?;
+    let cached = op(package_name, prefix, is_last, &entry)?;
 
-    if deduped {
+    if deduped || cached {
         return Ok(());
     }
 
     visited.insert(package_name.clone());
-    if is_build_tree {
-        if matches!(entry, WalkTreeEntry::NotBuilt) {
-            *total_size += 1;
+    if !cached {
+        if is_build_tree {
+            if matches!(entry, WalkTreeEntry::NotBuilt) {
+                *total_size += 1;
+            }
+        } else {
+            if let WalkTreeEntry::Built(_p, pkg_size) = &entry {
+                *total_size += pkg_size;
+            }
         }
-    } else {
-        if let WalkTreeEntry::Built(_p, pkg_size) = &entry {
-            *total_size += pkg_size;
-        }
+        *total_count += 1;
     }
     let pkg_meta: Package;
 
@@ -112,6 +118,7 @@ pub fn walk_tree_entry(
             is_build_tree,
             visited,
             total_size,
+            total_count,
             op,
         )?;
     }
@@ -124,7 +131,7 @@ pub fn display_pkg_fn(
     prefix: &str,
     is_last: bool,
     entry: &WalkTreeEntry,
-) -> anyhow::Result<()> {
+) -> anyhow::Result<bool> {
     let size_str = match entry {
         WalkTreeEntry::Built(_path_buf, size) => format!("[{}]", format_size(*size)),
         WalkTreeEntry::NotBuilt => "(not built)".to_string(),
@@ -133,7 +140,8 @@ pub fn display_pkg_fn(
     };
     let line_prefix = if is_last { "└── " } else { "├── " };
     println!("{}{}{} {}", prefix, line_prefix, package_name, size_str);
-    Ok(())
+    // TODO: check dirty build by checking source ident
+    Ok(false)
 }
 
 pub fn walk_file_tree(dir: &PathBuf, prefix: &str, buffer: &mut String) -> std::io::Result<u64> {
