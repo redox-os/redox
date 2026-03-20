@@ -17,8 +17,7 @@ dependencies = [
     "pcre2",
     "zlib",
 ]
-template = "custom"
-script = """
-DYNAMIC_INIT
-cookbook_configure --disable-asm
-"""
+template = "configure"
+configureflags = [
+    "--disable-asm"
+]

@@ -1,5 +1,10 @@
-#TODO missing script for building, lacking build instructions
+#TODO not compiled or tested
 [source]
-tar = "https://kerberos.org/dist/krb5/1.21/krb5-1.21.2.tar.gz"
+tar = "https://kerberos.org/dist/krb5/1.21/krb5-1.21.3.tar.gz"
 [build]
 template = "custom"
+script = """
+COOKBOOK_SOURCE="${COOKBOOK_SOURCE}/src"
+DYNAMIC_INIT
+cookbook_configure
+"""

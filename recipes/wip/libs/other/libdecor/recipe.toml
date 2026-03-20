@@ -1,9 +1,12 @@
 #TODO not compiled or tested
 # build instructions: https://gitlab.freedesktop.org/libdecor/libdecor#build--install
 [source]
-tar = "https://gitlab.freedesktop.org/libdecor/libdecor/uploads/ee5ef0f2c3a4743e8501a855d61cb397/libdecor-0.1.1.tar.xz"
+tar = "https://gitlab.freedesktop.org/libdecor/libdecor/-/releases/0.2.5/downloads/libdecor-0.2.5.tar.xz"
 [build]
 template = "meson"
+mesonflags = [
+    "-Ddbus=disabled"
+]
 dependencies = [
     "pango",
     "libwayland",

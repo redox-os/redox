@@ -2,6 +2,7 @@
 # build instructions: https://aomedia.googlesource.com/aom/#basic-build
 [source]
 git = "https://aomedia.googlesource.com/aom"
-rev = "aca387522ccc0a1775716923d5489dd2d4b1e628"
+rev = "v3.13.2"
+shallow_clone = true
 [build]
 template = "cmake"

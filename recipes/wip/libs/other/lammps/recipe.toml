@@ -1,7 +1,13 @@
 #TODO not compiled or tested
 # build instructions: https://docs.lammps.org/Build_cmake.html
 [source]
-git = "https://github.com/lammps/lammps"
-rev = "27e8d0f19cfd60ff513828af74d07d2c8f3c4451"
+tar = "https://github.com/lammps/lammps/releases/download/stable_22Jul2025_update3/lammps-src-22Jul2025_update3.tar.gz"
 [build]
-template = "cmake"
+template = "custom"
+script = """
+DYNAMIC_INIT
+COOKBOOK_CMAKE_FLAGS+=(
+    -DENABLE_TESTING=False
+)
+cookbook_cmake "${COOKBOOK_SOURCE}"/cmake
+"""

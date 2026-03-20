@@ -1,6 +1,7 @@
-#TODO missing script for building, see https://github.com/google/double-conversion#building
+#TODO not compiled or tested
 [source]
 git = "https://github.com/google/double-conversion"
-rev = "4f7a25d8ced8c7cf6eee6fd09d6788eaa23c9afe"
+rev = "v3.4.0"
+shallow_clone = true
 [build]
-template = "custom"
+template = "cmake"

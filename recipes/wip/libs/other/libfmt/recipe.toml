@@ -2,6 +2,11 @@
 # build instructions: https://fmt.dev/latest/usage.html#building-the-library
 [source]
 git = "https://github.com/fmtlib/fmt"
-rev = "f5e54359df4c26b6230fc61d38aa294581393084"
+rev = "12.1.0"
+shallow_clone = true
 [build]
 template = "cmake"
+cmakeflags = [
+    "-DFMT_DOC=OFF",
+    "-DFMT_TEST=OFF",
+]

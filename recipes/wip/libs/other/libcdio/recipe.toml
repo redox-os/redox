@@ -1,6 +1,5 @@
-#TODO missing script for building, see https://git.savannah.gnu.org/cgit/libcdio.git/tree/INSTALL
+#TODO not compiled or tested
 [source]
-git = "https://git.savannah.gnu.org/git/libcdio.git"
-rev = "9c7a2779846da161279bc1501e83c849cf89a594"
+tar = "https://github.com/libcdio/libcdio/releases/download/2.3.0/libcdio-2.3.0.tar.bz2"
 [build]
-template = "custom"
+template = "configure"

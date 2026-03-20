@@ -1,9 +1,13 @@
 #TODO compiles, not tested
 [source]
 tar = "https://github.com/libevent/libevent/releases/download/release-2.1.12-stable/libevent-2.1.12-stable.tar.gz"
-
 [build]
 template = "cmake"
+cmakeflags = [
+    "-DEVENT__DISABLE_DEBUG_MODE=ON",
+    "-DEVENT__DISABLE_TESTS=ON",
+    "-DEVENT__DISABLE_REGRESS=ON",
+]
 dependencies = [
     "openssl3",
 ]

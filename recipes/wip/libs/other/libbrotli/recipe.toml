@@ -2,6 +2,10 @@
 # build instructions: https://github.com/google/brotli#cmake
 [source]
 git = "https://github.com/google/brotli"
-rev = "ed738e842d2fbdf2d6459e39267a633c4a9b2f5d"
+branch = "v1.2"
+shallow_clone = true
 [build]
 template = "cmake"
+cmakeflags = [
+    "-DBROTLI_DISABLE_TESTS=TRUE"
+]

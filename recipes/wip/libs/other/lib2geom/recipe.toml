@@ -2,7 +2,8 @@
 # build instructions: https://gitlab.com/inkscape/lib2geom#building
 [source]
 git = "https://gitlab.com/inkscape/lib2geom"
-rev = "18fc32f9972dfaee597055b3226c5b7ef3bfbb4c"
+branch = "1.4.x"
+shallow_clone = true
 [build]
 template = "cmake"
 dependencies = [

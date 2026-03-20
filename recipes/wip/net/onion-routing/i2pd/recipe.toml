@@ -5,9 +5,14 @@ git = "https://github.com/PurpleI2P/i2pd"
 rev = "2.59.0"
 shallow_clone = true
 [build]
-template = "cmake"
+template = "custom"
 dependencies = [
     "boost",
     "openssl3",
     "zlib",
 ]
+script = """
+COOKBOOK_SOURCE="${COOKBOOK_SOURCE}/build"
+DYNAMIC_INIT
+cookbook_cmake
+"""

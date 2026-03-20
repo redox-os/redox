@@ -1,5 +1,10 @@
-#TODO missing "configure" file, see https://github.com/williamh/dotconf/blob/master/INSTALL
+#TODO not compiled or tested
 [source]
 git = "https://github.com/williamh/dotconf"
+rev = "v1.4.1"
+shallow_clone = true
+script = """
+autotools_recursive_regenerate
+"""
 [build]
-template = "custom"
+template = "configure"

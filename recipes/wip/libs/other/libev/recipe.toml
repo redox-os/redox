@@ -6,8 +6,4 @@ autotools_recursive_regenerate
 """
 
 [build]
-template = "custom"
-script = """
-DYNAMIC_INIT
-cookbook_configure
-"""
+template = "configure"

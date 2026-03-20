@@ -1,6 +1,5 @@
-#TODO missing script for building
+#TODO not compiled or tested
 [source]
-git = "https://github.com/rocky/libcdio-paranoia"
-rev = "db4dfff9e11c516ae35d87e568f511002ddae9d7"
+tar = "https://github.com/libcdio/libcdio-paranoia/releases/download/release-10.2%2B2.0.2/libcdio-paranoia-10.2+2.0.2.tar.bz2"
 [build]
-template = "custom"
+template = "configure"

@@ -1,6 +1,6 @@
-#TODO make all dependencies work
+#TODO not compiled or tested
 [source]
-tar = "https://dev-www.libreoffice.org/src/libcdr/libcdr-0.1.7.tar.xz"
+tar = "https://dev-www.libreoffice.org/src/libcdr/libcdr-0.1.8.tar.xz"
 [build]
 template = "configure"
 dependencies = [
