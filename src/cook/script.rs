@@ -263,7 +263,12 @@ EOF
 
 function cookbook_cmake {
 
-    generate_cookbook_cmake_file $TARGET $GNU_TARGET- "$COOKBOOK_SYSROOT" cross_file.cmake
+    if [ "$TARGET" = "$COOKBOOK_HOST_TARGET" ]; then
+        GCC_PREFIX=
+    else
+        GCC_PREFIX=$GNU_TARGET-
+    fi
+    generate_cookbook_cmake_file $TARGET $GCC_PREFIX "$COOKBOOK_SYSROOT" cross_file.cmake
 
     "${COOKBOOK_CMAKE}" "${COOKBOOK_SOURCE}" \
         -DCMAKE_BUILD_TYPE=Release \
