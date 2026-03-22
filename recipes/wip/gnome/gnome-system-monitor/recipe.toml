@@ -1,0 +1,14 @@
+#TODO not compiled or tested
+# build instructions: https://gitlab.gnome.org/GNOME/gnome-system-monitor#building
+[source]
+tar = "https://download.gnome.org/sources/gnome-system-monitor/49/gnome-system-monitor-49.1.tar.xz"
+[build]
+template = "meson"
+mesonflags = ["-Dsystemd=false"]
+dependencies = [
+    "glibmm",
+    "gtk4mm",
+    "libadwaita",
+    "librsvg",
+    "libgtop",
+]

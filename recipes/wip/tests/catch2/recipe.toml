@@ -1,0 +1,11 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/catchorg/Catch2"
+rev = "v3.13.0"
+shallow_clone = true
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DCATCH_INSTALL_DOCS=OFF",
+    "-DCATCH_ENABLE_REPRODUCIBLE_BUILD=OFF",
+]

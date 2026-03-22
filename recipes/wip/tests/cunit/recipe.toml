@@ -1,0 +1,5 @@
+#TODO not compiled or tested
+[source]
+tar = "https://downloads.sourceforge.net/project/cunit/CUnit/2.1-3/CUnit-2.1-3.tar.bz2"
+[build]
+template = "configure"
