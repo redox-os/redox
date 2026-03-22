@@ -29,7 +29,7 @@ If your desktop is customized (common) you should use the "Custom" word on the "
 
 A customized laptop should only be reported if you replaced the original CPU, report the CPU vendor and model in the "Model" category.
 
-We also recommend to add your `pciutils` log on [this](https://gitlab.redox-os.org/redox-os/base/-/blob/main/drivers/COMMUNITY-HW.md) document to help us with probable porting.
+We also recommend to add your `pciutils` log as a comment on [this](https://gitlab.redox-os.org/redox-os/redox/-/issues/1797) tracking issue to help us with probable device porting.
 
 ## Status
 
