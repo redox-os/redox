@@ -1,7 +1,6 @@
 #TODO not compiled or tested
 # build instructions: https://imath.readthedocs.io/en/latest/install.html#linux-macos
 [source]
-git = "https://github.com/AcademySoftwareFoundation/Imath"
-rev = "d690a3fcff4e877ead5ae56c7e964595ade8a35e"
+tar = "https://github.com/AcademySoftwareFoundation/Imath/releases/download/v3.2.2/Imath-3.2.2.tar.gz"
 [build]
 template = "cmake"
