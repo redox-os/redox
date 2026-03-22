@@ -2,7 +2,8 @@
 # build instructions: https://github.com/libusb/hidapi/blob/master/BUILD.cmake.md
 [source]
 git = "https://github.com/libusb/hidapi"
-rev = "d3013f0af3f4029d82872c1a9487ea461a56dee4"
+rev = "hidapi-0.15.0"
+shallow_clone = true
 [build]
 template = "cmake"
 dependencies = [

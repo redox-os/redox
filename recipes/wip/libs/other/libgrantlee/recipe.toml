@@ -4,6 +4,9 @@
 tar = "https://github.com/steveire/grantlee/releases/download/v5.3.1/grantlee-5.3.1.tar.gz"
 [build]
 template = "cmake"
+cmakeflags = [
+    "-DBUILD_TESTS=FALSE"
+]
 dependencies = [
     "qt5-base",
 ]

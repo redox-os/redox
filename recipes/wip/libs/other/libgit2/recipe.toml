@@ -2,9 +2,13 @@
 # build instructions: https://github.com/libgit2/libgit2#building-libgit2---using-cmake
 [source]
 git = "https://github.com/libgit2/libgit2"
-rev = "a2bde63741977ca0f4ef7db2f609df320be67a08"
+rev = "v1.9.2"
+shallow_clone = true
 [build]
 template = "cmake"
+cmakeflags = [
+    "-DBUILD_TESTS=OFF"
+]
 dependencies = [
-    "openssl1",
+    "openssl3",
 ]
