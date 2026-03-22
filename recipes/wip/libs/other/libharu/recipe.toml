@@ -1,10 +1,7 @@
-#TODO the git repository contents aren't copied to the "build" folder
+#TODO not compiled or tested
 [source]
 git = "https://github.com/libharu/libharu"
-rev = "0c598becaadaef8e3d12b883f9fc2864a118c12d"
+rev = "v2.4.5"
+shallow_clone = true
 [build]
-template = "custom"
-script = """
-./buildconf.sh
-cookbook_configure
-"""
+template = "cmake"

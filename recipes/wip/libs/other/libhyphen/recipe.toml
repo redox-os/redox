@@ -1,5 +1,9 @@
-#TODO missing script for building, see https://github.com/hunspell/hyphen/blob/master/README#L49
+#TODO not compiled or tested
 [source]
 git = "https://github.com/hunspell/hyphen"
+shallow_clone = true
+script = """
+autotools_recursive_regenerate
+"""
 [build]
-template = "custom"
+template = "configure"

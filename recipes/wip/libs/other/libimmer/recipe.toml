@@ -2,6 +2,11 @@
 # build instructions: https://github.com/arximboldi/immer#usage
 [source]
 git = "https://github.com/arximboldi/immer"
-rev = "5875f7739a6c642ad58cbedadb509c86d421217e"
+rev = "v0.9.1"
+shallow_clone = true
 [build]
 template = "cmake"
+cmakeflags = [
+    "-Dimmer_BUILD_TESTS=off",
+    "-Dimmer_BUILD_DOCS=off",
+]

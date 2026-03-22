@@ -1,7 +1,8 @@
 #TODO not compiled or tested
 [source]
 git = "https://github.com/kdave/xfstests"
-rev = "2cba4b54e6ab21d9324000f3cd009dbe9cad9c19"
+rev = "v2026.03.20"
+shallow_clone = true
 [build]
 template = "custom"
 script = """
