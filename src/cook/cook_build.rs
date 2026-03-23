@@ -269,16 +269,14 @@ pub fn build(
         }
     }
 
-    let deps_modified = dep_pkgars
-        .iter()
-        .map(|(_dep, pkgar)| modified(pkgar))
-        .max()
-        .unwrap_or(Ok(SystemTime::UNIX_EPOCH))?;
-    let deps_host_modified = dep_host_pkgars
-        .iter()
-        .map(|(_dep, pkgar)| modified(pkgar))
-        .max()
-        .unwrap_or(Ok(SystemTime::UNIX_EPOCH))?;
+    let deps_modified = modified_all_btree(
+        dep_pkgars.iter().map(|(_dep, pkgar)| pkgar.as_path()),
+        modified,
+    )?;
+    let deps_host_modified = modified_all_btree(
+        dep_host_pkgars.iter().map(|(_dep, pkgar)| pkgar.as_path()),
+        modified,
+    )?;
 
     // check stage dir modified against pkgar files, any files missing will result in UNIX_EPOCH
     let stage_modified = modified_all(&stage_pkgars, modified).unwrap_or(SystemTime::UNIX_EPOCH);
