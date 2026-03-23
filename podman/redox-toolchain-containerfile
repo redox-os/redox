@@ -1,0 +1,46 @@
+# Configuration file to build linux toolchain using lower glibc constraint
+
+FROM docker.io/library/debian:oldstable-backports
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends -t oldstable-backports \
+        autoconf \
+        autoconf2.69 \
+        automake \
+        autopoint \
+        bison \
+        build-essential \
+        cmake \
+        curl \
+        dos2unix \
+        doxygen \
+        expect \
+        file \
+        flex \
+        fuse3 \
+        g++ \
+        git \
+        git-lfs \
+        help2man \
+        libfuse3-dev \
+        lzip \
+        m4 \
+        make \
+        meson \
+        nano \
+        nasm \
+        ninja-build \
+        patch \
+        patchelf \
+        perl \
+        pkg-config \
+        po4a \
+        python3 \
+        rsync \
+        scons \
+        texinfo \
+        unifdef \
+        unzip \
+        wget \
+        zip \
+        zstd
