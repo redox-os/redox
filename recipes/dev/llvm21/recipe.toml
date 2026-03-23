@@ -13,6 +13,8 @@ script = """
 DYNAMIC_INIT
 ARCH="$(echo "${TARGET}" | cut -d - -f1)"
 
+generate_cookbook_cmake_file "$COOKBOOK_HOST_TARGET" "" "$COOKBOOK_TOOLCHAIN" native.cmake
+
 case "${ARCH}" in
     x86 | x86_64) LLVM_TARGETS_TO_BUILD="X86";;
     aarch64) LLVM_TARGETS_TO_BUILD="AArch64";;

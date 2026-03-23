@@ -15,7 +15,7 @@ script = """
 DYNAMIC_INIT
 ARCH="$(echo "${TARGET}" | cut -d - -f1)"
 
-generate_cookbook_cmake_file $COOKBOOK_HOST_TARGET "" "$COOKBOOK_TOOLCHAIN" native.cmake
+generate_cookbook_cmake_file "$COOKBOOK_HOST_TARGET" "" "$COOKBOOK_TOOLCHAIN" native.cmake
 
 if [ "$TARGET" = "$COOKBOOK_HOST_TARGET" ]; then
 COOKBOOK_CMAKE_FLAGS+=( -DLLVM_TABLEGEN_EXE=${COOKBOOK_TOOLCHAIN}/bin/llvm-tblgen )
