@@ -10,41 +10,36 @@ use std::{
 use walkdir::{DirEntry, WalkDir};
 
 use crate::{
+    Error, Result, bail_other_err,
     config::translate_mirror,
     cook::pty::{PtyOut, spawn_to_pipe},
-    wrap_io_err,
+    wrap_io_err, wrap_other_err,
 };
 
 //TODO: pub(crate) for all of these functions
 
-pub fn remove_all(path: &Path) -> Result<(), String> {
+pub fn remove_all(path: &Path) -> Result<()> {
     if path.is_dir() {
         fs::remove_dir_all(path)
     } else {
         fs::remove_file(path)
     }
-    .map_err(|err| format!("failed to remove '{}': {}\n{:?}", path.display(), err, err))
+    .map_err(wrap_io_err!(path, "Removing all"))
 }
 
-pub fn create_dir(dir: &Path) -> Result<(), String> {
-    fs::create_dir(dir)
-        .map_err(|err| format!("failed to create '{}': {}\n{:?}", dir.display(), err, err))
+pub fn create_dir(dir: &Path) -> Result<()> {
+    fs::create_dir_all(dir).map_err(wrap_io_err!(dir, "Recursively creating dir"))
 }
 
-pub fn create_dir_clean(dir: &Path) -> Result<(), String> {
+pub fn create_dir_clean(dir: &Path) -> Result<()> {
     if dir.is_dir() {
         remove_all(dir)?;
     }
-    fs::create_dir_all(dir)
-        .map_err(|err| format!("failed to create '{}': {}\n{:?}", dir.display(), err, err))
+    create_dir(dir)
 }
 
-pub fn create_target_dir(recipe_dir: &Path, target: &'static str) -> Result<PathBuf, String> {
-    let target_parent_dir = recipe_dir.join("target");
-    if !target_parent_dir.is_dir() {
-        create_dir(&target_parent_dir)?;
-    }
-    let target_dir = target_parent_dir.join(target);
+pub fn create_target_dir(recipe_dir: &Path, target: &'static str) -> Result<PathBuf> {
+    let target_dir = recipe_dir.join("target").join(target);
     if !target_dir.is_dir() {
         create_dir(&target_dir)?;
     }
@@ -102,41 +97,26 @@ fn move_dir_all_inner_fn<'a>(
     Ok(())
 }
 
-pub fn symlink(original: impl AsRef<Path>, link: impl AsRef<Path>) -> Result<(), String> {
-    std::os::unix::fs::symlink(&original, &link).map_err(|err| {
-        format!(
-            "failed to symlink '{}' to '{}': {}\n{:?}",
-            original.as_ref().display(),
-            link.as_ref().display(),
-            err,
-            err
-        )
-    })
+pub fn symlink(original: impl AsRef<Path>, link: impl AsRef<Path>) -> Result<()> {
+    std::os::unix::fs::symlink(&original, &link)
+        .map_err(wrap_io_err!(link.as_ref(), "Creating symlink"))
 }
 
-pub fn modified(path: &Path) -> Result<SystemTime, String> {
-    let metadata = fs::metadata(path).map_err(|err| {
-        format!(
-            "failed to get metadata of '{}': {}\n{:#?}",
-            path.display(),
-            err,
-            err
-        )
-    })?;
-    metadata.modified().map_err(|err| {
-        format!(
-            "failed to get modified time of '{}': {}\n{:#?}",
-            path.display(),
-            err,
-            err
-        )
-    })
+fn modified_inner(path: &Path, metadata: fs::Metadata) -> Result<SystemTime> {
+    metadata
+        .modified()
+        .map_err(wrap_io_err!(path, "Reading modified time"))
+}
+
+pub fn modified(path: &Path) -> Result<SystemTime> {
+    let metadata = fs::metadata(path).map_err(wrap_io_err!(path, "Reading metadata"))?;
+    modified_inner(path, metadata)
 }
 
 pub fn modified_all(
     path: &Vec<PathBuf>,
-    func: fn(path: &Path) -> Result<SystemTime, String>,
-) -> Result<SystemTime, String> {
+    func: fn(path: &Path) -> Result<SystemTime>,
+) -> Result<SystemTime> {
     let mut newest = SystemTime::UNIX_EPOCH;
     for entry_res in path {
         let modified = func(entry_res)?;
@@ -147,14 +127,13 @@ pub fn modified_all(
     Ok(newest)
 }
 
-pub fn modified_dir_inner<F: FnMut(&DirEntry) -> bool>(
-    dir: &Path,
-    filter: F,
-) -> io::Result<SystemTime> {
-    let mut newest = fs::metadata(dir)?.modified()?;
-    for entry_res in WalkDir::new(dir).into_iter().filter_entry(filter) {
-        let entry = entry_res?;
-        let modified = entry.metadata()?.modified()?;
+pub fn modified_all_btree<'a>(
+    path: impl Iterator<Item = &'a Path>,
+    func: fn(path: &Path) -> Result<SystemTime>,
+) -> Result<SystemTime> {
+    let mut newest = SystemTime::UNIX_EPOCH;
+    for entry_res in path {
+        let modified = func(entry_res)?;
         if modified > newest {
             newest = modified;
         }
@@ -162,18 +141,23 @@ pub fn modified_dir_inner<F: FnMut(&DirEntry) -> bool>(
     Ok(newest)
 }
 
-pub fn modified_dir(dir: &Path) -> Result<SystemTime, String> {
-    modified_dir_inner(dir, |_| true).map_err(|err| {
-        format!(
-            "failed to get modified time of '{}': {}\n{:#?}",
-            dir.display(),
-            err,
-            err
-        )
-    })
+fn modified_dir_inner<F: FnMut(&DirEntry) -> bool>(dir: &Path, filter: F) -> Result<SystemTime> {
+    let mut newest = modified(dir)?;
+    for entry_res in WalkDir::new(dir).into_iter().filter_entry(filter) {
+        let entry = entry_res?;
+        let modified = modified_inner(entry.path(), entry.metadata()?)?;
+        if modified > newest {
+            newest = modified;
+        }
+    }
+    Ok(newest)
 }
 
-pub fn modified_dir_ignore_git(dir: &Path) -> Result<SystemTime, String> {
+pub fn modified_dir(dir: &Path) -> Result<SystemTime> {
+    modified_dir_inner(dir, |_| true)
+}
+
+pub fn modified_dir_ignore_git(dir: &Path) -> Result<SystemTime> {
     modified_dir_inner(dir, |entry| {
         entry
             .file_name()
@@ -181,24 +165,14 @@ pub fn modified_dir_ignore_git(dir: &Path) -> Result<SystemTime, String> {
             .map(|s| s != ".git")
             .unwrap_or(true)
     })
-    .map_err(|err| {
-        format!(
-            "failed to get modified time of '{}': {}\n{:#?}",
-            dir.display(),
-            err,
-            err
-        )
-    })
 }
 
-pub fn check_files_present(dir: &Path, expected_files: &BTreeSet<&str>) -> Result<bool, String> {
-    let entries = fs::read_dir(dir)
-        .map_err(|err| format!("failed to get list files of '{}': {:?}", dir.display(), err))?;
+pub fn check_files_present(dir: &Path, expected_files: &BTreeSet<&str>) -> Result<bool> {
+    let entries = fs::read_dir(dir).map_err(wrap_io_err!(dir, "Reading list files"))?;
 
     let mut matches = 0;
     for entry_res in entries {
-        let entry = entry_res
-            .map_err(|err| format!("failed to get file entry of '{}': {:?}", dir.display(), err))?;
+        let entry = entry_res.map_err(wrap_io_err!(dir, "Reading file entry"))?;
 
         let filename = entry.file_name();
         let Some(filename) = filename.to_str() else {
@@ -217,29 +191,17 @@ pub fn check_files_present(dir: &Path, expected_files: &BTreeSet<&str>) -> Resul
     Ok(matches == expected_files.len())
 }
 
-pub fn rename(src: &Path, dst: &Path) -> Result<(), String> {
-    fs::rename(src, dst).map_err(|err| {
-        format!(
-            "failed to rename '{}' to '{}': {}\n{:?}",
-            src.display(),
-            dst.display(),
-            err,
-            err
-        )
-    })
+pub fn rename(src: &Path, dst: &Path) -> Result<()> {
+    fs::rename(src, dst).map_err(wrap_io_err!(src, dst, "Renaming"))
 }
 
-pub fn run_command(mut command: process::Command, stdout_pipe: &PtyOut) -> Result<(), String> {
-    let status = spawn_to_pipe(&mut command, stdout_pipe)
-        .map_err(|err| format!("failed to run {:?}: {}\n{:#?}", command, err, err))?
+pub fn run_command(mut command: process::Command, stdout_pipe: &PtyOut) -> Result<()> {
+    let status = spawn_to_pipe(&mut command, stdout_pipe)?
         .wait()
-        .map_err(|err| format!("failed to run {:?}: {}\n{:#?}", command, err, err))?;
+        .map_err(wrap_io_err!("waiting to exit"))?;
 
     if !status.success() {
-        return Err(format!(
-            "failed to run {:?}: exited with status {}",
-            command, status
-        ));
+        return Err(Error::Command(command, status));
     }
 
     Ok(())
@@ -249,61 +211,51 @@ pub fn run_command_stdin(
     mut command: process::Command,
     stdin_data: &[u8],
     stdout_pipe: &PtyOut,
-) -> Result<(), String> {
+) -> Result<()> {
     command.stdin(Stdio::piped());
-    let mut child = spawn_to_pipe(&mut command, stdout_pipe)
-        .map_err(|err| format!("failed to spawn {:?}: {}\n{:#?}", command, err, err))?;
+    let mut child = spawn_to_pipe(&mut command, stdout_pipe)?;
 
     if let Some(ref mut stdin) = child.stdin {
-        stdin.write_all(stdin_data).map_err(|err| {
-            format!(
-                "failed to write stdin of {:?}: {}\n{:#?}",
-                command, err, err
-            )
-        })?;
+        stdin
+            .write_all(stdin_data)
+            .map_err(wrap_io_err!("Writing to stdin"))?;
     } else {
-        return Err(format!("failed to find stdin of {:?}", command));
+        bail_other_err!("stdin is not captured");
     }
 
-    let status = child
-        .wait()
-        .map_err(|err| format!("failed to run {:?}: {}\n{:#?}", command, err, err))?;
+    let status = child.wait().map_err(wrap_io_err!("Spawning"))?;
 
     if !status.success() {
-        return Err(format!(
-            "failed to run {:?}: exited with status {}",
-            command, status
-        ));
+        return Err(Error::Command(command, status));
     }
 
     Ok(())
 }
 
-pub fn serialize_and_write<T: Serialize>(file_path: &Path, content: &T) -> Result<(), String> {
+pub fn serialize_and_write<T: Serialize>(file_path: &Path, content: &T) -> Result<()> {
     let toml_content = toml::to_string(content).map_err(|err| {
-        format!(
+        wrap_other_err!(
             "Failed to serialize content for '{}': {}",
             file_path.display(),
             err
-        )
+        )()
     })?;
 
-    fs::write(file_path, toml_content)
-        .map_err(|err| format!("Failed to write to file '{}': {}", file_path.display(), err))?;
+    fs::write(file_path, toml_content).map_err(wrap_io_err!(file_path, "Writing to file"))?;
     Ok(())
 }
 
-pub fn offline_check_exists(path: &PathBuf) -> Result<(), String> {
+pub fn offline_check_exists(path: &PathBuf) -> Result<()> {
     if !path.exists() {
-        return Err(format!(
-            "'{path}' is not exist and unable to continue in offline mode",
+        bail_other_err!(
+            "{path:?} is not exist and unable to continue in offline mode",
             path = path.display(),
-        ))?;
+        );
     }
     Ok(())
 }
 
-pub fn download_wget(url: &str, dest: &PathBuf, logger: &PtyOut) -> Result<(), String> {
+pub fn download_wget(url: &str, dest: &PathBuf, logger: &PtyOut) -> Result<()> {
     if !dest.is_file() {
         let dest_tmp = PathBuf::from(format!("{}.tmp", dest.display()));
         let mut command = Command::new("wget");
@@ -315,21 +267,19 @@ pub fn download_wget(url: &str, dest: &PathBuf, logger: &PtyOut) -> Result<(), S
     Ok(())
 }
 
-pub fn read_to_string(path: &Path) -> crate::Result<String> {
-    fs::read_to_string(path).map_err(wrap_io_err!(path, "Reading file to string"))
+pub fn read_to_string(path: &Path) -> Result<String> {
+    fs::read_to_string(path).map_err(wrap_io_err!(path, "Reading file"))
 }
 
 /// get commit rev and return if it's detached or not
-pub fn get_git_head_rev(dir: &PathBuf) -> Result<(String, bool), String> {
+pub fn get_git_head_rev(dir: &PathBuf) -> Result<(String, bool)> {
     let git_head = dir.join(".git/HEAD");
-    let head_str = fs::read_to_string(&git_head)
-        .map_err(|e| format!("unable to read {path}: {e}", path = git_head.display()))?;
+    let head_str = read_to_string(&git_head)?;
     if head_str.starts_with("ref: ") {
         let entry = head_str["ref: ".len()..].trim_end();
         let git_ref = dir.join(".git").join(entry);
         let ref_str = if git_ref.is_file() {
-            fs::read_to_string(&git_ref)
-                .map_err(|e| format!("unable to read {path}: {e}", path = git_ref.display()))?
+            read_to_string(&git_ref)?
         } else {
             get_git_ref_entry(dir, entry)?
         };
@@ -340,44 +290,35 @@ pub fn get_git_head_rev(dir: &PathBuf) -> Result<(String, bool), String> {
 }
 
 /// get commit from "rev" which either a full commit hash or a tag name
-pub fn get_git_tag_rev(dir: &PathBuf, tag: &str) -> Result<String, String> {
+pub fn get_git_tag_rev(dir: &PathBuf, tag: &str) -> Result<String> {
     if tag.len() == 40 && tag.chars().all(|f| f.is_ascii_hexdigit()) {
         return Ok(tag.to_string());
     }
     get_git_ref_entry(dir, &format!("refs/tags/{tag}"))
 }
-pub fn get_git_ref_entry(dir: &PathBuf, entry: &str) -> Result<String, String> {
+
+pub fn get_git_ref_entry(dir: &PathBuf, entry: &str) -> Result<String> {
     let git_refs = dir.join(".git/packed-refs");
-    let refs_str = fs::read_to_string(&git_refs)
-        .map_err(|e| format!("unable to read {path}: {e}", path = git_refs.display()))?;
+    let refs_str = read_to_string(&git_refs)?;
     for line in refs_str.lines() {
         if line.contains(entry) {
             let sha = line
                 .split_whitespace()
                 .next()
-                .ok_or_else(|| "packed-refs line is malformed.".to_string())?;
+                .ok_or_else(wrap_other_err!("Packed-refs line is malformed"))?;
 
             return Ok(sha.to_string());
         }
     }
 
-    Err(format!("Could not find a rev for {}", entry))
+    Err(wrap_other_err!("Could not find a rev for {}", entry)())
 }
 
 /// get commit rev after fetch
-pub fn get_git_fetch_rev(
-    dir: &PathBuf,
-    remote_url: &str,
-    remote_branch: &str,
-) -> Result<String, String> {
+pub fn get_git_fetch_rev(dir: &PathBuf, remote_url: &str, remote_branch: &str) -> Result<String> {
     let git_fetch_head = dir.join(".git/FETCH_HEAD");
 
-    let fetch_head_content = fs::read_to_string(&git_fetch_head).map_err(|e| {
-        format!(
-            "unable to read {path}: {e}",
-            path = git_fetch_head.display()
-        )
-    })?;
+    let fetch_head_content = read_to_string(&git_fetch_head)?;
 
     let expected_comment_part = format!("branch '{}' of {}", remote_branch, remote_url);
 
@@ -386,26 +327,25 @@ pub fn get_git_fetch_rev(
             let sha = line
                 .split_whitespace()
                 .next()
-                .ok_or_else(|| "FETCH_HEAD line is malformed.".to_string())?;
+                .ok_or_else(wrap_other_err!("FETCH_HEAD line is malformed"))?;
 
             return Ok(sha.to_string());
         }
     }
 
-    Err(format!(
+    Err(wrap_other_err!(
         "Could not find a fetch target for tracking {}",
         expected_comment_part
-    ))
+    )())
 }
 
 /// (local_branch_name, remote_branch, remote_name, remote_url)
 ///    -> ("fix_stuff", "master", "origin", "https://gitlab.redox-os.org/willnode/redox")
-pub fn get_git_remote_tracking(dir: &PathBuf) -> Result<(String, String, String, String), String> {
+pub fn get_git_remote_tracking(dir: &PathBuf) -> Result<(String, String, String, String)> {
     let git_head = dir.join(".git/HEAD");
     let git_config = dir.join(".git/config");
 
-    let head_content = fs::read_to_string(&git_head)
-        .map_err(|e| format!("unable to read {path}: {e}", path = git_head.display()))?;
+    let head_content = read_to_string(&git_head)?;
 
     if !head_content.starts_with("ref: ") {
         let sha = head_content.trim_end().to_string();
@@ -415,8 +355,7 @@ pub fn get_git_remote_tracking(dir: &PathBuf) -> Result<(String, String, String,
     let local_branch_path = head_content["ref: ".len()..].trim_end();
     let local_branch_name = get_git_branch_name(local_branch_path)?;
 
-    let config_content = fs::read_to_string(&git_config)
-        .map_err(|e| format!("unable to read {path}: {e}", path = git_config.display()))?;
+    let config_content = read_to_string(&git_config)?;
 
     let branch_section = format!("[branch \"{}\"]", local_branch_name);
     let mut remote_name: Option<String> = None;
@@ -446,8 +385,10 @@ pub fn get_git_remote_tracking(dir: &PathBuf) -> Result<(String, String, String,
         }
     }
 
-    let remote_name_str = remote_name
-        .ok_or_else(|| format!("Branch '{}' is not tracking a remote.", local_branch_name))?;
+    let remote_name_str = remote_name.ok_or_else(wrap_other_err!(
+        "Branch {:?} is not tracking a remote",
+        local_branch_name
+    ))?;
     let remote_branch_str = remote_branch.unwrap_or("".into());
 
     let remote_section = format!("[remote \"{}\"]", remote_name_str);
@@ -476,12 +417,10 @@ pub fn get_git_remote_tracking(dir: &PathBuf) -> Result<(String, String, String,
         }
     }
 
-    let remote_url_str = remote_url.ok_or_else(|| {
-        format!(
-            "Could not find URL for remote '{}' in .git/config.",
-            remote_name_str
-        )
-    })?;
+    let remote_url_str = remote_url.ok_or_else(wrap_other_err!(
+        "Could not find URL for remote {:?} in .git/config.",
+        remote_name_str
+    ))?;
 
     Ok((
         local_branch_name,
@@ -498,11 +437,14 @@ pub(crate) fn chop_dot_git(url: &str) -> &str {
     url
 }
 
-fn get_git_branch_name(local_branch_path: &str) -> Result<String, String> {
+fn get_git_branch_name(local_branch_path: &str) -> Result<String> {
     // TODO: incorrectly handle branch with slashes
     Ok(local_branch_path
         .split('/')
         .last()
-        .ok_or_else(|| format!("Failed to parse branch name of {:?}", local_branch_path))?
+        .ok_or_else(wrap_other_err!(
+            "Failed to parse branch name of {:?}",
+            local_branch_path
+        ))?
         .to_string())
 }

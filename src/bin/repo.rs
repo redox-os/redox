@@ -704,7 +704,7 @@ fn handle_fetch(
         true => fetch_offline(&recipe, logger),
         false => fetch(&recipe, !recipe.is_deps, logger),
     }
-    .map_err(|e| anyhow!("failed to fetch: {:?}", e))?;
+    .map_err(|e| anyhow!("failed to fetch: {}", e))?;
 
     Ok(source_dir)
 }
@@ -725,10 +725,10 @@ fn handle_cook(
         &config.cook,
         logger,
     )
-    .map_err(|err| anyhow!("failed to build: {:?}", err))?;
+    .map_err(|err| anyhow!("failed to build: {}", err))?;
 
     package(&recipe, &build_result, &config.cook, logger)
-        .map_err(|err| anyhow!("failed to package: {:?}", err))?;
+        .map_err(|err| anyhow!("failed to package: {}", err))?;
 
     if config.cook.clean_target || config.cook.write_filetree {
         for stage_dir in &build_result.stage_dirs {

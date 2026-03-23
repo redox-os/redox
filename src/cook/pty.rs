@@ -1,4 +1,3 @@
-use anyhow::{Error, bail};
 use libc::{self, winsize};
 use std::fs::File;
 use std::io::{Read, Write};
@@ -14,6 +13,8 @@ use std::{
 };
 
 pub use std::os::unix::io::RawFd;
+
+use crate::{Error, Result, wrap_io_err};
 
 #[macro_export]
 macro_rules! log_to_pty {
@@ -66,10 +67,10 @@ pub fn flush_pty(logger: &mut PtyOut) {
     let _ = file.flush();
 }
 
-pub fn spawn_to_pipe(command: &mut Command, stdout_pipe: &PtyOut) -> Result<Child, Error> {
+pub fn spawn_to_pipe(command: &mut Command, stdout_pipe: &PtyOut) -> Result<Child> {
     match stdout_pipe {
         Some(stdout) => stdout.0.spawn_command(command.into()),
-        None => Ok(command.spawn()?),
+        None => Ok(command.spawn().map_err(wrap_io_err!("Spawning"))?),
     }
 }
 
@@ -107,7 +108,7 @@ impl Default for PtySize {
     }
 }
 
-fn openpty(size: PtySize) -> anyhow::Result<(UnixMasterPty, UnixSlavePty)> {
+fn openpty(size: PtySize) -> Result<(UnixMasterPty, UnixSlavePty)> {
     let mut master: RawFd = -1;
     let mut slave: RawFd = -1;
 
@@ -131,7 +132,7 @@ fn openpty(size: PtySize) -> anyhow::Result<(UnixMasterPty, UnixSlavePty)> {
     };
 
     if result != 0 {
-        bail!("failed to openpty: {:?}", io::Error::last_os_error());
+        return Err(Error::from_last_io_error("Opening openpty"));
     }
 
     let master = UnixMasterPty {
@@ -159,7 +160,7 @@ pub struct PtyPair {
 }
 
 impl UnixPtySystem {
-    fn openpty(&self, size: PtySize) -> anyhow::Result<PtyPair> {
+    fn openpty(&self, size: PtySize) -> Result<PtyPair> {
         let (master, slave) = openpty(size)?;
         Ok(PtyPair {
             master: master,
@@ -177,7 +178,7 @@ impl std::ops::Deref for PtyFd {
 }
 
 impl Read for PtyFd {
-    fn read(&mut self, buf: &mut [u8]) -> Result<usize, io::Error> {
+    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
         match self.0.read(buf) {
             Err(ref e) if e.raw_os_error() == Some(libc::EIO) => {
                 // EIO indicates that the slave pty has been closed.
@@ -192,7 +193,7 @@ impl Read for PtyFd {
 }
 
 impl PtyFd {
-    fn resize(&self, size: PtySize) -> Result<(), Error> {
+    fn resize(&self, size: PtySize) -> Result<()> {
         let ws_size = winsize {
             ws_row: size.rows,
             ws_col: size.cols,
@@ -208,16 +209,13 @@ impl PtyFd {
             )
         } != 0
         {
-            bail!(
-                "failed to ioctl(TIOCSWINSZ): {:?}",
-                io::Error::last_os_error()
-            );
+            return Err(Error::from_last_io_error("ioctl resize (TIOCSWINSZ)"));
         }
 
         Ok(())
     }
 
-    fn get_size(&self) -> Result<PtySize, Error> {
+    fn get_size(&self) -> Result<PtySize> {
         let mut size: winsize = unsafe { mem::zeroed() };
         if unsafe {
             libc::ioctl(
@@ -227,10 +225,7 @@ impl PtyFd {
             )
         } != 0
         {
-            bail!(
-                "failed to ioctl(TIOCGWINSZ): {:?}",
-                io::Error::last_os_error()
-            );
+            return Err(Error::from_last_io_error("ioctl get size (TIOCGWINSZ)"));
         }
         Ok(PtySize {
             rows: size.ws_row,
@@ -240,12 +235,12 @@ impl PtyFd {
         })
     }
 
-    fn spawn_command(&self, cmd: &mut Command) -> anyhow::Result<std::process::Child> {
+    fn spawn_command(&self, cmd: &mut Command) -> Result<std::process::Child> {
         unsafe {
             cmd
                 // .stdin(self.as_stdio()?)
-                .stdout(self.try_clone()?)
-                .stderr(self.try_clone()?)
+                .stdout(self.try_clone().map_err(wrap_io_err!("Cloning pty"))?)
+                .stderr(self.try_clone().map_err(wrap_io_err!("Cloning pty"))?)
                 .pre_exec(move || {
                     // Clean up a few things before we exec the program
                     // Clear out any potentially problematic signal
@@ -273,7 +268,7 @@ impl PtyFd {
                 })
         };
 
-        let mut child = cmd.spawn()?;
+        let mut child = cmd.spawn().map_err(wrap_io_err!("Spawning cmd"))?;
 
         // Ensure that we close out the slave fds that Child retains;
         // they are not what we need (we need the master side to reference
@@ -287,8 +282,8 @@ impl PtyFd {
         Ok(child)
     }
 
-    fn flush(&mut self) -> std::io::Result<()> {
-        self.0.flush()
+    fn flush(&mut self) -> Result<()> {
+        self.0.flush().map_err(wrap_io_err!("Flushing pty"))
     }
 }
 
@@ -305,46 +300,44 @@ pub struct UnixSlavePty {
 }
 
 /// Helper function to set the close-on-exec flag for a raw descriptor
-fn cloexec(fd: RawFd) -> Result<(), Error> {
+fn cloexec(fd: RawFd) -> Result<()> {
     let flags = unsafe { libc::fcntl(fd, libc::F_GETFD) };
     if flags == -1 {
-        bail!(
-            "fcntl to read flags failed: {:?}",
-            io::Error::last_os_error()
-        );
+        return Err(Error::from_last_io_error("fcntl to read flags"));
     }
     let result = unsafe { libc::fcntl(fd, libc::F_SETFD, flags | libc::FD_CLOEXEC) };
     if result == -1 {
-        bail!(
-            "fcntl to set CLOEXEC failed: {:?}",
-            io::Error::last_os_error()
-        );
+        return Err(Error::from_last_io_error("fcntl to set CLOEXEC"));
     }
     Ok(())
 }
 
 impl UnixSlavePty {
-    fn spawn_command(&self, builder: &mut Command) -> Result<std::process::Child, Error> {
+    fn spawn_command(&self, builder: &mut Command) -> Result<std::process::Child> {
         Ok(self.fd.spawn_command(builder)?)
     }
-    fn flush(&mut self) -> Result<(), anyhow::Error> {
-        Ok(self.fd.flush()?)
+    fn flush(&mut self) -> Result<()> {
+        self.fd.flush()
     }
 }
 
 impl UnixMasterPty {
     #[allow(unused)]
-    fn resize(&self, size: PtySize) -> Result<(), Error> {
+    fn resize(&self, size: PtySize) -> Result<()> {
         self.fd.resize(size)
     }
 
     #[allow(unused)]
-    fn get_size(&self) -> Result<PtySize, Error> {
+    fn get_size(&self) -> Result<PtySize> {
         self.fd.get_size()
     }
 
-    fn try_clone_reader(&self) -> Result<Box<dyn Read + Send>, Error> {
-        let fd = PtyFd(self.fd.try_clone()?);
+    fn try_clone_reader(&self) -> Result<Box<dyn Read + Send>> {
+        let fd = PtyFd(
+            self.fd
+                .try_clone()
+                .map_err(wrap_io_err!("Cloning pty fd"))?,
+        );
         Ok(Box::new(fd))
     }
 }
