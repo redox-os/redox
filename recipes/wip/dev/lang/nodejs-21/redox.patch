@@ -470,6 +470,16 @@ diff -ruwN source/tools/gyp/pylib/gyp/common.py source-new/tools/gyp/pylib/gyp/c
 diff -ruwN source/tools/gyp/pylib/gyp/generator/make.py source-new/tools/gyp/pylib/gyp/generator/make.py
 --- source/tools/gyp/pylib/gyp/generator/make.py	2024-04-10 19:46:15.000000000 +0700
 +++ source-new/tools/gyp/pylib/gyp/generator/make.py	2025-10-10 14:27:51.496602771 +0700
+@@ -1739,7 +1739,8 @@
+                 libraries = gyp.common.uniquer(libraries)
+                 if self.flavor == "mac":
+                     libraries = self.xcode_settings.AdjustLibraries(libraries)
+-            self.WriteList(libraries, "LIBS")
++            # patch out unneeded libraries for host toolchain (js2c)
++            self.WriteList(libraries if self.toolset != "host" else ['-luv', '-L%s/usr/lib' % os.environ['COOKBOOK_TOOLCHAIN']], "LIBS")
+             self.WriteLn(
+                 "%s: GYP_LDFLAGS := $(LDFLAGS_$(BUILDTYPE))"
+                 % QuoteSpaces(self.output_binary)
 @@ -1868,7 +1868,7 @@
                  self.flavor not in ("mac", "openbsd", "netbsd", "win")
                  and not self.is_standalone_static_library
