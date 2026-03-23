@@ -1,0 +1,40 @@
+# The Redox build server configuration for host tools
+
+# Packages listed here is to aid the build server to compile `host:` recipes
+# commonly found within dev dependencies of packages and distribute them.
+# This is not a replacement for cross compilers that exist within the prebuilt
+# prefix: GCC, Rust, LLVM and Clang. This is the place for the rest of
+# cross compilers that's might be needed by other recipes, such as Go or Zig.
+
+# General settings
+[general]
+# Do not prompt if settings are not defined
+prompt = false
+
+[packages]
+# Binaries
+#dotnet10 = {}
+#go = {}
+gperf = {}
+installer = {}
+itstool = {}
+luajit = {}
+neovim = {}
+nodejs-21 = {}
+#openjdk21 = {}
+#perl5 = {}
+#protobuf = {}
+python312 = {}
+redoxfs = {}
+redoxer = {}
+#ruby = {}
+xz = {}
+#zig = {}
+
+# Libraries
+libarchive = {}
+libjpeg = {}
+libogg = {}
+libxml = {}
+libxslt = {}
+ncurses = {}
