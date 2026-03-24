@@ -1,15 +1,20 @@
-#TODO missing script for building, see https://github.com/AcademySoftwareFoundation/OpenImageIO/blob/master/INSTALL.md#building-openimageio-on-linux-or-os-x
-# optional dependencies are disabled to make the program work with less effort
+#TODO not compiled or tested
+# build instructions: https://github.com/AcademySoftwareFoundation/OpenImageIO/blob/master/INSTALL.md#building-openimageio-on-linux-or-os-x
+# the dependencies are optional
 [source]
-git = "https://github.com/AcademySoftwareFoundation/OpenImageIO"
-rev = "5c29caab40a3913d415ac5d37cd84983e824c75b"
+tar = "https://github.com/AcademySoftwareFoundation/OpenImageIO/releases/download/v3.1.11.0/OpenImageIO-3.1.11.0.tar.gz"
 [build]
-template = "custom"
+template = "cmake"
+cmakeflags = [
+    "-DBUILD_DOCS=OFF",
+    "-DOIIO_BUILD_TESTS=OFF",
+]
 dependencies = [
     "imath",
     "libtiff",
     "libjpeg",
     "openexr",
+    "opencolorio",
     "libfmt",
     #"libpng",
     #"boost",

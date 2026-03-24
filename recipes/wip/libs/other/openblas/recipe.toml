@@ -1,6 +1,9 @@
-#TODO missing script for "make", see https://github.com/OpenMathLib/OpenBLAS/wiki/Installation-Guide
+#TODO not compiled or tested
 #TODO require the Fortran frontend from GCC
 [source]
-tar = "https://github.com/OpenMathLib/OpenBLAS/releases/download/v0.3.25/OpenBLAS-0.3.25.tar.gz"
+tar = "https://github.com/OpenMathLib/OpenBLAS/releases/download/v0.3.32/OpenBLAS-0.3.32.tar.gz"
 [build]
-template = "custom"
+template = "cmake"
+cmakeflags = [
+    "-DBUILD_TESTING=OFF"
+]

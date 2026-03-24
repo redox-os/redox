@@ -1,9 +1,11 @@
-#TODO missing dependencies, see https://docs.open-mpi.org/en/v5.0.x/installing-open-mpi/required-support-libraries.html
-#TODO make libevent works
+#TODO not compiled or tested
 [source]
-tar = "https://download.open-mpi.org/release/open-mpi/v5.0/openmpi-5.0.0.tar.bz2"
+tar = "https://www.open-mpi.org/software/ompi/v5.0/downloads/openmpi-5.0.10.tar.bz2"
 [build]
 template = "configure"
 dependencies = [
     "libevent",
+    "hwloc",
+    "openpmix",
+    "prrte",
 ]
