@@ -1,0 +1,7 @@
+[source]
+git = "https://chromium.googlesource.com/libyuv/libyuv"
+branch = "stable"
+shallow_clone = true
+
+[build]
+template = "cmake"
