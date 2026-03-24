@@ -1,5 +1,5 @@
-#TODO compiled but not tested
+#TODO not compiled or tested
 [source]
-tar = "https://download.savannah.gnu.org/releases/lzip/lzlib/lzlib-1.14.tar.gz"
+tar = "https://download.savannah.gnu.org/releases/lzip/lzlib/lzlib-1.16.tar.gz"
 [build]
 template = "configure"

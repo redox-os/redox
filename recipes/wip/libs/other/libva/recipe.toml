@@ -1,5 +1,5 @@
 #TODO can't recognize the redox target
-#TODO probably require libdrm
+# probably require libdrm
 [source]
 tar = "https://github.com/intel/libva/releases/download/2.19.0/libva-2.19.0.tar.bz2"
 [build]

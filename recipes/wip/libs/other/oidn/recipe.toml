@@ -1,7 +1,7 @@
 #TODO not compiled or tested
 # build instructions: https://github.com/OpenImageDenoise/oidn#compiling-on-linuxmacos
 [source]
-git = "https://github.com/OpenImageDenoise/oidn"
+tar = "https://github.com/RenderKit/oidn/releases/download/v2.4.1/oidn-2.4.1.src.tar.gz"
 [build]
 template = "cmake"
 dependencies = [

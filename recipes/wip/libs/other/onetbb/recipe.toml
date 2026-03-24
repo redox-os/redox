@@ -1,7 +1,11 @@
 #TODO not compiled or tested
 # build instructions: https://github.com/oneapi-src/oneTBB/blob/master/INSTALL.md
 [source]
-git = "https://github.com/oneapi-src/oneTBB"
-rev = "8b829acc65569019edb896c5150d427f288e8aba"
+git = "https://github.com/uxlfoundation/oneTBB"
+rev = "v2022.3.0"
+shallow_clone = true
 [build]
 template = "cmake"
+cmakeflags = [
+    "-DTBB_TEST=OFF",
+]

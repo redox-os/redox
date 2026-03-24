@@ -1,5 +1,11 @@
-#TODO missing script for building, lacking build instructions
+#TODO not tested
 [source]
-tar = "https://dlcdn.apache.org/maven/maven-3/3.9.5/source/apache-maven-3.9.5-src.tar.gz"
+tar = "https://dlcdn.apache.org/maven/maven-3/3.9.14/binaries/apache-maven-3.9.14-bin.tar.gz"
 [build]
 template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
+cp -rv "${COOKBOOK_SOURCE}"/bin/* "${COOKBOOK_STAGE}/usr/bin"
+"""
+[package]
+dependencies = ["openjdk21"]

@@ -1,5 +1,8 @@
 #TODO not compiled or tested
 [source]
-tar = "https://github.com/uriparser/uriparser/releases/download/uriparser-0.9.8/uriparser-0.9.8.tar.bz2"
+tar = "https://github.com/uriparser/uriparser/releases/download/uriparser-1.0.0/uriparser-1.0.0.tar.bz2"
 [build]
 template = "cmake"
+cmakeflags = [
+    "-DURIPARSER_BUILD_DOCS=OFF"
+]

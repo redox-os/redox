@@ -1,6 +1,9 @@
 #TODO not compiled or tested
 # build instructions: https://github.com/mltframework/mlt#readme
 [source]
-tar = "https://github.com/mltframework/mlt/releases/download/v7.22.0/mlt-7.22.0.tar.gz"
+tar = "https://github.com/mltframework/mlt/releases/download/v7.36.1/mlt-7.36.1.tar.gz"
 [build]
 template = "cmake"
+cmakeflags = [
+    "-DBUILD_TESTS_WITH_QT6=OFF"
+]

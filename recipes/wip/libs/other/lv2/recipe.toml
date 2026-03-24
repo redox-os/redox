@@ -4,3 +4,7 @@
 tar = "https://lv2plug.in/spec/lv2-1.18.10.tar.xz"
 [build]
 template = "meson"
+mesonflags = [
+    "-Dtests=disabled",
+    "-Ddocs=disabled",
+]

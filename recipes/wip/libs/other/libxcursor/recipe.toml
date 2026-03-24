@@ -1,4 +1,4 @@
-#TODO make dependencies work
+#TODO verify current status
 [source]
 tar = "https://www.x.org/releases/individual/lib/libXcursor-1.2.1.tar.xz"
 script = """

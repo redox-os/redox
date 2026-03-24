@@ -2,15 +2,26 @@
 # build instructions: https://github.com/LibVNC/libvncserver#how-to-build
 [source]
 git = "https://github.com/LibVNC/libvncserver"
-rev = "10e9eb75f73e973725dc75c373de5d89807af028"
+rev = "LibVNCServer-0.9.15"
+shallow_clone = true
 [build]
 template = "cmake"
 cmakeflags = [
     "-DWITH_OPENSSL=ON",
     "-DWITH_GCRYPT=OFF",
+    "-DWITH_GTK=OFF",
+    "-DWITH_FFMPEG=OFF",
+    "-DWITH_QT=OFF",
+    "-DWITH_XCB=OFF",
+    "-DWITH_SYSTEMD=OFF",
+    "-DWITH_TESTS=OFF",
+    "-DWITH_IPv6=OFF",
 ]
 dependencies = [
-    "openssl1",
-    "ffmpeg6",
+    "openssl3",
+    #"ffmpeg6",
     "libssh2",
+    "sdl2",
+    "libpng",
+    "libjpeg",
 ]

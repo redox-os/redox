@@ -2,6 +2,10 @@
 # build instructions: https://github.com/microsoft/mimalloc#macos-linux-bsd-etc
 [source]
 git = "https://github.com/microsoft/mimalloc"
-rev = "43ce4bd7fd34bcc730c1c7471c99995597415488"
+rev = "v3.2.8"
+shallow_clone = true
 [build]
 template = "cmake"
+cmakeflags = [
+    "-DMI_BUILD_TESTS=OFF"
+]

@@ -2,8 +2,14 @@
 # build instructions: https://github.com/arximboldi/zug#usage
 [source]
 git = "https://github.com/arximboldi/zug"
+rev = "v0.1.2"
+shallow_clone = true
 [build]
 template = "cmake"
+cmakeflags = [
+    "-Dzug_BUILD_TESTS=OFF",
+    "-Dzug_BUILD_DOCS=OFF",
+]
 dependencies = [
     "boost",
 ]

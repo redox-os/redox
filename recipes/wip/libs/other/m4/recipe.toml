@@ -1,5 +1,5 @@
-#TODO compilation error
+#TODO not compiled or tested
 [source]
-tar = "https://ftp.gnu.org/gnu/m4/m4-1.4.19.tar.xz"
+tar = "https://ftp.gnu.org/gnu/m4/m4-1.14.21.tar.xz"
 [build]
 template = "configure"

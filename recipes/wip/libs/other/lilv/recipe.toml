@@ -1,6 +1,10 @@
 #TODO not compiled or tested
 # build instructions: https://gitlab.com/lv2/lilv/-/blob/master/INSTALL.md?ref_type=heads
 [source]
-tar = "https://download.drobilla.net/lilv-0.24.20.tar.xz"
+tar = "https://gitlab.com/lv2/lilv/-/archive/v0.26.4/lilv-v0.26.4.tar.bz2"
 [build]
 template = "meson"
+mesonflags = [
+    "-Dtests=disabled",
+    "-Ddocs=disabled",
+]

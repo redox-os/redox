@@ -1,10 +1,15 @@
 #TODO not compiled or tested
 # build instructions: https://oneapi-src.github.io/oneDNN/dev_guide_build.html#linux-macos
 [source]
-git = "https://github.com/oneapi-src/oneDNN"
-rev = "16720eaaab9557158ff77ebf3bc610e9682928d6"
+git = "https://github.com/uxlfoundation/oneDNN"
+rev = "v3.11.1"
+shallow_clone = true
 [build]
 template = "cmake"
+cmakeflags = [
+    "-DDNNL_BUILD_DOC=FALSE",
+    "-DDNNL_BUILD_TESTS=FLASE",
+]
 dependencies = [
     "onetbb",
 ]

@@ -1,5 +1,8 @@
-#TODO missing script for installation, lacking a build system
+#TODO not compiled or tested
 [source]
-tar = "https://github.com/nlohmann/json/releases/download/v3.11.2/json.tar.xz"
+tar = "https://github.com/nlohmann/json/releases/download/v3.12.0/json.tar.xz"
 [build]
-template = "custom"
+template = "cmake"
+cmakeflags = [
+    "-DJSON_BuildTests=OFF"
+]
