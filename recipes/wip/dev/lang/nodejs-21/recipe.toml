@@ -20,16 +20,7 @@ dependencies = [
 ]
 
 dev-dependencies = [
-    "host:libbrotli",
-    "host:c-ares",
-    "host:libuv",
-    "host:ngtcp2",
-    "host:nghttp2",
-    "host:nghttp3",
-    "host:openssl3",
-    "host:sqlite3",
-    "host:zlib",
-    "host:zstd",
+    "host:libuv"
 ]
 
 script = """
