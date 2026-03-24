@@ -1,8 +1,12 @@
-#TODO not compiled or tested
+#TODO compiled but not tested
 # build instructions: https://github.com/AOMediaCodec/libavif#build-notes
 [source]
 git = "https://github.com/AOMediaCodec/libavif"
 rev = "v1.4.0"
 shallow_clone = true
+
 [build]
 template = "cmake"
+dependencies = [
+    "libyuf"
+]
