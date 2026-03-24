@@ -17,7 +17,7 @@ script = """
 DYNAMIC_INIT
 ARCH="$(echo "${TARGET}" | cut -d - -f1)"
 
-generate_cookbook_cmake_file $COOKBOOK_HOST_TARGET "" "$COOKBOOK_TOOLCHAIN" native.cmake
+generate_cookbook_cmake_file "$COOKBOOK_HOST_TARGET" "" "$COOKBOOK_TOOLCHAIN" native.cmake
 
 COOKBOOK_CMAKE_FLAGS+=(
     -DLLVM_ROOT="${COOKBOOK_SYSROOT}"
