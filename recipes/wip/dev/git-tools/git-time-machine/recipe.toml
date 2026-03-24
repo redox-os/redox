@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/dinakars777/git-time-machine"
+shallow_clone = true
+[build]
+template = "cargo"
