@@ -2,6 +2,11 @@
 # build instructions: https://github.com/stevengj/nlopt#readme
 [source]
 git = "https://github.com/stevengj/nlopt"
-rev = "09b3c2a6da71cabcb98d2c8facc6b83d2321ed71"
+rev = "v2.10.1"
+shallow_clone = true
 [build]
 template = "cmake"
+cmakeflags = [
+    "-DNLOPT_GUILE=OFF",
+    "-DNLOPT_JAVA=OFF",
+]

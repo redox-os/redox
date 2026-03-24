@@ -1,5 +1,6 @@
-#TODO customization - https://librdf.org/raptor/INSTALL.html
+#TODO not compiled or tested
 #TODO pending dependency configuration
+# customization: https://librdf.org/raptor/INSTALL.html
 [source]
 tar = "http://download.librdf.org/source/raptor2-2.0.16.tar.gz"
 [build]

@@ -2,6 +2,11 @@
 # build instructions: https://github.com/Reference-LAPACK/lapack#installation
 [source]
 git = "https://github.com/Reference-LAPACK/lapack"
-rev = "04b044e020a3560ccfa9988c8a80a1fb7083fc2e"
+rev = "v3.12.1"
+shallow_clone = true
 [build]
 template = "cmake"
+cmakeflags = [
+    "-D_is_coverage_build=0",
+    "-DLAPACK_TESTING_USE_PYTHON=OFF",
+]

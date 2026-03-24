@@ -1,4 +1,4 @@
-#TODO needs encoding data - https://poppler.freedesktop.org/poppler-data-0.4.12.tar.gz
+#TODO needs encoding data: https://poppler.freedesktop.org/poppler-data-0.4.12.tar.gz
 [source]
 tar = "https://poppler.freedesktop.org/poppler-25.08.0.tar.xz"
 blake3 = "0732ef20594d084ae3c24cb75079a2be347df78acac80fdcbd6149b8dce197d4"

@@ -1,5 +1,8 @@
-#TODO missing script for building, see https://pugixml.org/docs/quickstart.html#install
+#TODO missing script for compilation
+# build instructions:
+# https://pugixml.org/docs/quickstart.html#install
+# https://pugixml.org/docs/manual.html#install.building
 [source]
-tar = "https://github.com/zeux/pugixml/releases/download/v1.14/pugixml-1.14.tar.gz"
+tar = "https://github.com/zeux/pugixml/releases/download/v1.15/pugixml-1.15.tar.gz"
 [build]
 template = "custom"

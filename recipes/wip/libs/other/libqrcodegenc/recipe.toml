@@ -1,6 +1,10 @@
-#TODO missing script to build the C implementation, see https://github.com/nayuki/QR-Code-generator/tree/master/c
+#TODO missing script to build the C implementation: https://github.com/nayuki/QR-Code-generator/tree/master/c
 [source]
 git = "https://github.com/nayuki/QR-Code-generator"
-rev = "720f62bddb7226106071d4728c292cb1df519ceb"
+rev = "8329a7108fc22be3e1eec0a9f9318978579e3621"
+shallow_clone = true
 [build]
 template = "custom"
+script = """
+COOKBOOK_SOURCE="${COOKBOOK_SOURCE}/c"
+"""

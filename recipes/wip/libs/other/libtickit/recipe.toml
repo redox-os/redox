@@ -1,4 +1,4 @@
-#TODO missing script for building, see https://github.com/leonerd/libtickit
+#TODO verify current status
 [source]
 tar = "https://www.leonerd.org.uk/code/libtickit/libtickit-0.4.5.tar.gz"
 [build]

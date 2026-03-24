@@ -1,9 +1,10 @@
+#TODO: promote
 [source]
 git = "https://github.com/kkos/oniguruma"
 rev = "f95747b462de672b6f8dbdeb478245ddf061ca53"
+shallow_clone = true
 script = """
 autotools_recursive_regenerate
 """
-
 [build]
 template = "configure"

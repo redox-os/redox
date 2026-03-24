@@ -1,5 +1,5 @@
-#TODO customization - https://librdf.org/rasqal/INSTALL.html
 #TODO compilation error
+# customization: https://librdf.org/rasqal/INSTALL.html
 [source]
 tar = "http://download.librdf.org/source/rasqal-0.9.33.tar.gz"
 [build]

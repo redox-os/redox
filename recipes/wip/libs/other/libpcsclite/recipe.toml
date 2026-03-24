@@ -1,4 +1,4 @@
-#TODO require POSIX threads support
+#TODO not compiled or tested
 [source]
 tar = "https://pcsclite.apdu.fr/files/pcsc-lite-2.0.3.tar.bz2"
 [build]
