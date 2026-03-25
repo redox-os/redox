@@ -6,7 +6,7 @@ b3sum = "5001ca0b8562feeef2010bf16c05657e3875fda3ed5fdedbf48b9135e5cdfcbc"
 [build]
 template = "meson"
 mesonflags = [
-    "-Denable-wayland=false"
+    "-Denable-wayland=false",
     "-Denable-x11=false"
 ]
 dependencies = [
