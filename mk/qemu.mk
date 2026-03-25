@@ -39,6 +39,7 @@ else ifeq ($(ARCH),x86_64)
 		ifeq ($(FIRMWARE),)
 			PFLASH0=$(firstword \
 				$(wildcard /usr/share/qemu/edk2-x86_64-code.fd) \
+				$(wildcard /run/libvirt/nix-ovmf/edk2-x86_64-code.fd) \
 				$(wildcard /opt/homebrew/opt/qemu/share/qemu/edk2s-x86_64-code.fd) \
 			)
 		endif
@@ -77,6 +78,7 @@ else ifeq ($(ARCH),aarch64)
 			ifeq ($(FIRMWARE),)
 				PFLASH0=$(firstword \
 					$(wildcard /usr/share/qemu/edk2-aarch64-code.fd) \
+					$(wildcard /run/libvirt/nix-ovmf/edk2-aarch64-code.fd) \
 					$(wildcard /opt/homebrew/opt/qemu/share/qemu/edk2-aarch64-code.fd) \
 				)
 			endif
@@ -110,12 +112,14 @@ else ifeq ($(ARCH),riscv64gc)
 		$(wildcard /usr/share/qemu-efi-riscv64/RISCV_VIRT_CODE.fd) \
 		$(wildcard /usr/share/edk2/riscv/RISCV_VIRT_CODE.fd) \
 		$(wildcard /usr/share/qemu/edk2-riscv-code.fd) \
+		$(wildcard /run/libvirt/nix-ovmf/edk2-riscv-code.fd) \
 		$(wildcard /opt/homebrew/opt/qemu/share/qemu/edk2-riscv-code.fd) \
 	)
 	PFLASH1=$(firstword \
 		$(wildcard /usr/share/qemu-efi-riscv64/RISCV_VIRT_VARS.fd) \
 		$(wildcard /usr/share/edk2/riscv/RISCV_VIRT_VARS.fd) \
 		$(wildcard /usr/share/qemu/edk2-riscv-vars.fd) \
+		$(wildcard /run/libvirt/nix-ovmf/edk2-riscv-vars.fd) \
 		$(wildcard /opt/homebrew/opt/qemu/share/qemu/edk2-riscv-vars.fd) \
 	)
 	ifneq ($(usb),no)
