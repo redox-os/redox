@@ -66,11 +66,11 @@ pub fn generate_web(all_packages: &Vec<String>, config: &CliWebConfig) {
         let Some(recipe_path) = staged_pkg::find(package_name.name()) else {
             continue;
         };
-        let Ok(package) = staged_pkg::from_path(&recipe_path, package_name.suffix()) else {
+        let Ok(mut package) = staged_pkg::from_path(&recipe_path, package_name.suffix()) else {
             // TODO: report failed build
             continue;
         };
-        let Ok(recipe) = CookRecipe::from_path(&recipe_path, true, false) else {
+        let Ok(mut recipe) = CookRecipe::from_path(&recipe_path, true, false) else {
             continue;
         };
 
@@ -80,6 +80,11 @@ pub fn generate_web(all_packages: &Vec<String>, config: &CliWebConfig) {
                 .or_default()
                 .insert(package.name.to_string());
         }
+
+        // TODO: temporary bug fix in the suffix lost
+        package.name = package_name.clone();
+        // CookRecipe::from_path always have no suffix
+        recipe.name = package_name;
 
         valid_packages.push((package, recipe));
     }

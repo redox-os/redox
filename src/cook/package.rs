@@ -8,6 +8,7 @@ use pkgar::ext::PackageSrcExt;
 use pkgar_core::HeaderFlags;
 
 use crate::{
+    Error,
     config::CookConfig,
     cook::{cook_build::BuildResult, fetch, fs::*, pty::PtyOut},
     log_to_pty,
@@ -28,6 +29,7 @@ pub fn package(
         package_toml(
             target_dir.join("stage.toml"),
             recipe,
+            None,
             None,
             recipe.recipe.package.dependencies.clone(),
             &auto_deps,
@@ -109,6 +111,7 @@ pub fn package(
                 package_meta,
                 recipe,
                 Some((Path::new(public_path), &package_file)),
+                package,
                 package_deps,
                 &deps,
             )?;
@@ -122,6 +125,7 @@ pub fn package_toml(
     toml_path: PathBuf,
     recipe: &CookRecipe,
     package_file: Option<(&Path, &PathBuf)>,
+    package_suffix: Option<&OptionalPackageRecipe>,
     mut package_deps: Vec<PackageName>,
     auto_deps: &BTreeSet<PackageName>,
 ) -> Result<(), String> {
@@ -149,9 +153,13 @@ pub fn package_toml(
             )
         })?;
         let package_size = mt.len();
-        let storage_size = match package.header().flags.packaging() {
+        let header = package.header();
+        let storage_size = match header.flags.packaging() {
             pkgar_core::Packaging::LZMA2 => {
-                let mut size = 0;
+                let mut size = header
+                    .total_size()
+                    .map_err(|e| Error::Pkgar(pkgar::Error::Core(e)))?
+                    as u64;
                 let entries = package
                     .read_entries()
                     .map_err(|e| format!("Unable to get lzma entry: {e}"))?;
@@ -183,7 +191,11 @@ pub fn package_toml(
     let ident_source = fetch::fetch_get_source_info(recipe)?;
 
     let package = Package {
-        name: recipe.name.with_prefix(PackagePrefix::Any),
+        name: PackageName::new(get_package_name(
+            recipe.name.without_prefix(),
+            package_suffix,
+        ))
+        .unwrap(),
         version: recipe.guess_version().unwrap_or("TODO".into()),
         target: recipe.target.to_string(),
         blake3: hash,

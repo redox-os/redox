@@ -214,7 +214,7 @@ impl CookRecipe {
     pub fn new(name: PackageName, dir: PathBuf, mut recipe: Recipe) -> Result<Self, PackageError> {
         let target = cook_package::package_target(&name);
         if name.is_host() {
-            let thisname = name.name();
+            let thisname = name.without_host();
             let fn_map = |p: PackageName| {
                 if p.is_host() {
                     if p.name() == thisname { None } else { Some(p) }

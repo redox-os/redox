@@ -95,8 +95,8 @@ pub fn new_recursive(
     }
 }
 
-// list ordered success packages and map of failed packages
-// a package can be both success and failed if dependencies aren't satistied
+/// List ordered success packages and map of failed packages.
+/// A package can be both success and failed if dependencies aren't satistied.
 pub fn new_recursive_nonstop(
     names: &[PackageName],
     recursion: usize,
@@ -137,7 +137,7 @@ pub fn new_recursive_nonstop(
                         has_invalid_dependency = true;
                     }
                 }
-                // TODO: this if check is redundant
+                // TODO: this check is redundant
                 if !packages_map.contains_key(name) {
                     packages_map.insert(
                         name.clone(),
