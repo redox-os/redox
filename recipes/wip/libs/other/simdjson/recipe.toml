@@ -1,9 +1,8 @@
+#TODO: promote
+#TODO update to 4.x version
 [source]
 git = "https://github.com/simdjson/simdjson"
-rev = "0c0ce1bd48baa0677dc7c0945ea7cd1e8b52b297" # 3.13.0
+rev = "v3.13.0"
+shallow_clone = true
 [build]
-template = "custom"
-script = """
-DYNAMIC_INIT
-cookbook_cmake
-"""
+template = "cmake"

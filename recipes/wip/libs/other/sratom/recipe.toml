@@ -1,6 +1,10 @@
 #TODO not compiled or tested
 # build instructions: https://gitlab.com/lv2/sratom/-/blob/master/INSTALL.md?ref_type=heads
 [source]
-tar = "https://download.drobilla.net/sratom-0.6.14.tar.xz"
+tar = "https://gitlab.com/lv2/sratom/-/archive/v0.6.22/sratom-v0.6.22.tar.bz2"
 [build]
 template = "meson"
+mesonflags = [
+    "-Dtests=disabled",
+    "-Ddocs=disabled",
+]

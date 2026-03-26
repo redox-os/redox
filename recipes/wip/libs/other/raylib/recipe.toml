@@ -2,10 +2,15 @@
 # build instructions: https://github.com/raysan5/raylib/wiki/Working-on-GNU-Linux
 [source]
 git = "https://github.com/raysan5/raylib"
-rev = "ae50bfa2cc569c0f8d5bc4315d39db64005b1b08"
+rev = "5.5"
+shallow_clone = true
 [build]
 template = "cmake"
+cmakeflags = [
+    "-DPLATFORM=SDL"
+]
 dependencies = [
-    "mesa",
-    "libxkbcommon",
+    "sdl2"
+#    "mesa",
+#    "libxkbcommon",
 ]

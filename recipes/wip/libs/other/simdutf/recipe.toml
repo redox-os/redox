@@ -1,9 +1,11 @@
+#TODO: promote
+#TODO update to 8.x version
 [source]
 git = "https://github.com/simdutf/simdutf"
-rev = "df8bfed3256cf5ca29969a9dd1db677e835b2c6c" # 7.3.5
+rev = "v7.3.5"
+shallow_clone = true
 [build]
-template = "custom"
-script = """
-DYNAMIC_INIT
-cookbook_cmake
-"""
+template = "cmake"
+cmakeflags = [
+    "-DSIMDUTF_TESTS=OFF"
+]

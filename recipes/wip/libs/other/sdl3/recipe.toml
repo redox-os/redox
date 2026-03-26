@@ -19,7 +19,7 @@ cmakeflags = [
     "-DSDL_LIBUDEV=OFF",
     "-DSDL_AUDIO=OFF",
 ]
-dependencies = [
-    #"liborbital",
-    "mesa",
-]
+#dependencies = [
+#    "liborbital",
+#    "mesa",
+#]

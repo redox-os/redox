@@ -1,12 +1,18 @@
-#TODO missing script for GNU Autotools, see https://github.com/tux4kids/t4kcommon/blob/master/INSTALL#L33
+#TODO not compiled or tested
+# build instructions: https://github.com/tux4kids/t4kcommon/blob/master/INSTALL#L33
 [source]
 git = "https://github.com/tux4kids/t4kcommon"
+rev = "9fd11c1bd1b78fc84141fc32cd9755f373eafae3"
+shallow_clone = true
+script = """
+autotools_recursive_regenerate
+"""
 [build]
-template = "custom"
+template = "configure"
 dependencies = [
     "sdl1",
-    "sdl1_mixer",
-    "sdl1_image",
+    "sdl1-mixer",
+    "sdl1-image",
     "sdl-pango",
     "sdl2-net",
     "libpng",

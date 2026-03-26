@@ -1,6 +1,11 @@
 #TODO not compiled or tested
-# build instructions: https://hg.sr.ht/~breakfastquay/rubberband/browse/COMPILING.md?rev=tip
+# build instructions: https://github.com/breakfastquay/rubberband/blob/default/COMPILING.md
 [source]
-tar = "https://breakfastquay.com/files/releases/rubberband-3.2.1.tar.bz2"
+git = "https://github.com/breakfastquay/rubberband"
+rev = "v4.0.0"
+shallow_clone = true
 [build]
 template = "meson"
+mesonflags = [
+    "-Dtests=disabled"
+]

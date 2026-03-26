@@ -2,6 +2,10 @@
 # build instructions: https://github.com/google/snappy#building
 [source]
 git = "https://github.com/google/snappy"
-rev = "dc05e026488865bc69313a68bcc03ef2e4ea8e83"
+rev = "1.2.2"
+shallow_clone = true
 [build]
 template = "cmake"
+cmakeflags = [
+    "-DSNAPPY_BUILD_TESTS=OFF"
+]

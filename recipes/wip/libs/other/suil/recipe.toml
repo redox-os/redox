@@ -1,6 +1,10 @@
 #TODO not compiled or tested
 # build instructions: https://gitlab.com/lv2/suil/-/blob/master/INSTALL.md?ref_type=heads
 [source]
-tar = "https://download.drobilla.net/suil-0.10.18.tar.xz"
+tar = "https://gitlab.com/lv2/suil/-/archive/v0.10.26/suil-v0.10.26.tar.bz2"
 [build]
 template = "meson"
+mesonflags = [
+    "-Dtests=disabled",
+    "-Ddocs=disabled",
+]

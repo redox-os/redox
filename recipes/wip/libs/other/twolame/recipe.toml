@@ -1,4 +1,4 @@
-#TODO Compiled but not tested
+#TODO compiled but not tested
 [source]
 tar = "https://downloads.sourceforge.net/twolame/twolame-0.4.0.tar.gz"
 [build]

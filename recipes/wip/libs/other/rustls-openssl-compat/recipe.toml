@@ -1,8 +1,6 @@
-#TODO missing script for GNU Make
+#TODO missing script for gnu make
 [source]
 git = "https://github.com/rustls/rustls-openssl-compat"
+shallow_clone = true
 [build]
 template = "custom"
-script = """
-COOKBOOK_SOURCE="${COOKBOOK_SOURCE}/rustls-libssl"
-"""

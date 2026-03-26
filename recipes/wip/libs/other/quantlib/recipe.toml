@@ -1,9 +1,12 @@
-#TODO make boost work
-#TODO probably wrong template, see https://www.quantlib.org/install/linux.shtml
+#TODO not compiled or tested
+# build instructions: https://www.quantlib.org/install/cmake.shtml
 [source]
-tar = "https://github.com/lballabio/QuantLib/releases/download/v1.32/QuantLib-1.32.tar.gz"
+tar = "https://github.com/lballabio/QuantLib/releases/download/v1.41/QuantLib-1.41.tar.gz"
 [build]
-template = "configure"
+template = "cmake"
+cmakeflags = [
+    "-DQL_BUILD_TEST_SUITE=OFF"
+]
 dependencies = [
     "boost",
 ]

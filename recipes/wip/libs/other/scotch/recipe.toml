@@ -1,8 +1,9 @@
 #TODO not compiled or tested
 # build instructions: https://gitlab.inria.fr/scotch/scotch#installation
-#TODO probably missing dependencies
 [source]
-git = "https://gitlab.inria.fr/scotch/scotch"
-rev = "82ec87f558f4acb7ccb69a079f531be380504c92"
+tar = "https://gitlab.inria.fr/scotch/scotch/-/archive/v7.0.11/scotch-v7.0.11.tar.bz2"
 [build]
 template = "cmake"
+cmakeflags = [
+    "-DENABLE_TESTS=OFF"
+]
