@@ -1,10 +1,8 @@
-pub mod blake3;
 pub mod config;
 pub mod cook;
 pub mod recipe;
+pub mod staged_pkg;
 pub mod web;
-
-mod progress_bar;
 
 /// Default for maximum number of levels to descend down dependencies tree.
 pub const WALK_DEPTH: usize = 16;

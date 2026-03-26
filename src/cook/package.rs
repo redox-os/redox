@@ -8,7 +8,6 @@ use pkgar::ext::PackageSrcExt;
 use pkgar_core::HeaderFlags;
 
 use crate::{
-    blake3::hash_to_hex,
     config::CookConfig,
     cook::{cook_build::BuildResult, fetch, fs::*, pty::PtyOut},
     log_to_pty,
@@ -171,7 +170,9 @@ pub fn package_toml(
         };
 
         (
-            hash_to_hex(package.header().blake3),
+            blake3::Hash::from_bytes(package.header().blake3)
+                .to_hex()
+                .to_string(),
             package_size,
             storage_size,
         )
