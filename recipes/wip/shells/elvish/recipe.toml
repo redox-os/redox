@@ -1,0 +1,8 @@
+#TODO missing script for go
+# build instructions: https://github.com/elves/elvish/blob/main/docs/building.md
+[source]
+git = "https://github.com/elves/elvish"
+branch = "v0.21-release"
+shallow_clone = true
+[build]
+template = "custom"

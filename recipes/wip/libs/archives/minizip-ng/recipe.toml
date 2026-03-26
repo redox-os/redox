@@ -1,0 +1,7 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/zlib-ng/minizip-ng"
+branch = "master"
+shallow_clone = true
+[build]
+template = "cmake"

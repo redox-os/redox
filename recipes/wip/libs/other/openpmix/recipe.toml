@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+# build instructions: https://docs.openpmix.org/en/latest/installing-pmix/index.html
+[source]
+tar = "https://github.com/openpmix/openpmix/releases/download/v6.1.0/pmix-6.1.0.tar.bz2"
+[build]
+template = "configure"
+dependencies = [
+    "libevent",
+    "hwloc",
+]
