@@ -149,7 +149,8 @@ pub fn walk_file_tree(dir: &PathBuf, prefix: &str, buffer: &mut String) -> std::
         return Ok(0);
     }
     let fmt_err = std::io::Error::other;
-    let entries: Vec<_> = std::fs::read_dir(dir)?.filter_map(|e| e.ok()).collect();
+    let mut entries: Vec<_> = std::fs::read_dir(dir)?.filter_map(|e| e.ok()).collect();
+    entries.sort_by(|a, b| a.file_name().cmp(&b.file_name()));
     let mut total_size = 0;
     for (index, entry) in entries.iter().enumerate() {
         let path = entry.path();

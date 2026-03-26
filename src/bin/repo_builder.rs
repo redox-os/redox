@@ -1,9 +1,9 @@
-use cookbook::WALK_DEPTH;
 use cookbook::cook::ident::{get_ident, init_ident};
 use cookbook::cook::{fetch, package as cook_package};
 use cookbook::recipe::CookRecipe;
 use cookbook::web::{CliWebConfig, generate_web};
-use pkg::{Package, PackageName, recipes};
+use cookbook::{WALK_DEPTH, staged_pkg};
+use pkg::PackageName;
 use pkg::{Repository, SourceIdentifier};
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::env;
@@ -85,7 +85,7 @@ fn publish_packages(config: &CliConfig) -> anyhow::Result<()> {
     //
     // The following adds the package dependencies of the recipes to the repo as
     // well.
-    let (recipe_list, recipe_map) = Package::new_recursive_nonstop(target_packages, WALK_DEPTH);
+    let (recipe_list, recipe_map) = staged_pkg::new_recursive_nonstop(target_packages, WALK_DEPTH);
 
     if recipe_list.len() == 0 {
         // Fail-Safe
@@ -99,7 +99,7 @@ fn publish_packages(config: &CliConfig) -> anyhow::Result<()> {
     // === 1. Push recipes in list ===
     for recipe_toml in &recipe_list {
         let recipe = &recipe_toml.name;
-        let Some(recipe_path) = recipes::find(recipe.name()) else {
+        let Some(recipe_path) = staged_pkg::find(recipe.name()) else {
             eprintln!("recipe {} not found", recipe);
             continue;
         };
@@ -191,7 +191,7 @@ fn publish_packages(config: &CliConfig) -> anyhow::Result<()> {
             recipe
         );
 
-        let Some(recipe_path) = recipes::find(recipe.name()) else {
+        let Some(recipe_path) = staged_pkg::find(recipe.name()) else {
             eprintln!("recipe {} not found", recipe);
             continue;
         };

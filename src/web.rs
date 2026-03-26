@@ -8,6 +8,7 @@ use pkg::{Package, PackageName};
 
 use crate::{
     recipe::CookRecipe,
+    staged_pkg,
     web::html::{generate_html_index, generate_html_pkg},
 };
 
@@ -59,14 +60,17 @@ pub fn generate_web(all_packages: &Vec<String>, config: &CliWebConfig) {
     let mut dependents_map: HashMap<String, BTreeSet<String>> = HashMap::new();
 
     for package_name in all_packages {
-        let Some(recipe_path) = pkg::recipes::find(package_name) else {
+        let Ok(package_name) = PackageName::new(package_name) else {
             continue;
         };
-        // TODO: Package::from_path
-        let Ok(package) = Package::new(&PackageName::new(package_name).unwrap()) else {
+        let Some(recipe_path) = staged_pkg::find(package_name.name()) else {
             continue;
         };
-        let Ok(recipe) = CookRecipe::from_path(&recipe_path, true, false) else {
+        let Ok(mut package) = staged_pkg::from_path(&recipe_path, package_name.suffix()) else {
+            // TODO: report failed build
+            continue;
+        };
+        let Ok(mut recipe) = CookRecipe::from_path(&recipe_path, true, false) else {
             continue;
         };
 
@@ -76,6 +80,11 @@ pub fn generate_web(all_packages: &Vec<String>, config: &CliWebConfig) {
                 .or_default()
                 .insert(package.name.to_string());
         }
+
+        // TODO: temporary bug fix in the suffix lost
+        package.name = package_name.clone();
+        // CookRecipe::from_path always have no suffix
+        recipe.name = package_name;
 
         valid_packages.push((package, recipe));
     }
