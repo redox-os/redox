@@ -2,7 +2,7 @@
 # launch instructions: https://github.com/OpenShot/openshot-qt#launch
 [source]
 git = "https://github.com/OpenShot/openshot-qt"
-rev = "v3.3.0"
+rev = "v3.4.0"
 shallow_clone = true
 [build]
 template = "custom"
