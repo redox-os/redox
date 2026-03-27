@@ -77,13 +77,14 @@ You can read the best practices and guidelines on the [Best practices and guidel
 ## Development Recommendations and Tips
 
 - Copy-paste prevent and reduce typos
+- Comment out configuration or code while testing is better than removal, to remember the testing conditions and prevent mistakes from forgotten logic
 - Read the entire [Build System Reference](https://doc.redox-os.org/book/build-system-reference.html) and [Developer FAQ](https://doc.redox-os.org/book/developer-faq.html) pages
 - Make sure your build system is up-to-date, read the [Update The Build System](https://doc.redox-os.org/book/build-system-reference.html#update-the-build-system) section if in doubt.
 - If you want to make local changes in recipe sources it's recommended to automatic recipe source update, read [this](https://doc.redox-os.org/book/configuration-settings.html#local-recipe-changes) section to learn how to this for one or multiple recipes and [this](https://doc.redox-os.org/book/configuration-settings.html#cookbook-offline-mode) section for all recipes.
 - If you want to make changes to system components, drivers or RedoxFS you need to manually update initfs, read [this](https://doc.redox-os.org/book/coding-and-building.html#how-to-update-initfs) section to learn how to do that.
 - If some program can't build or work, something can be missing/hiding on [relibc](https://gitlab.redox-os.org/redox-os/relibc), like a POSIX/Linux function or bug.
 - If you have some error on QEMU remember to test different settings or verify your operating system (Pop_OS!, Ubuntu, Debian and Fedora are the recommend Linux distributions to do testing/development for Redox).
-- Remember to log all errors, you can use this command as example:
+- Remember to log all errors, you can use the following command as example:
 
 ```sh
 your-command 2>&1 | tee file-name.log
