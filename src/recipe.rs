@@ -5,11 +5,11 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use pkg::{PackageError, PackageName, recipes};
+use pkg::{PackageError, PackageName};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 
-use crate::{WALK_DEPTH, cook::package as cook_package};
+use crate::{WALK_DEPTH, cook::package as cook_package, staged_pkg};
 
 /// Specifies how to download the source for a recipe
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
@@ -214,7 +214,7 @@ impl CookRecipe {
     pub fn new(name: PackageName, dir: PathBuf, mut recipe: Recipe) -> Result<Self, PackageError> {
         let target = cook_package::package_target(&name);
         if name.is_host() {
-            let thisname = name.name();
+            let thisname = name.without_host();
             let fn_map = |p: PackageName| {
                 if p.is_host() {
                     if p.name() == thisname { None } else { Some(p) }
@@ -248,7 +248,7 @@ impl CookRecipe {
     }
 
     pub fn from_name(name: PackageName) -> Result<Self, PackageError> {
-        let dir = recipes::find(name.name())
+        let dir = staged_pkg::find(name.name())
             .ok_or_else(|| PackageError::PackageNotFound(name.clone()))?;
         let file = dir.join("recipe.toml");
         let recipe = Recipe::new(&file)?;

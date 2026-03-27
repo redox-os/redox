@@ -9,8 +9,8 @@ use cookbook::cook::package::{package, package_handle_push};
 use cookbook::cook::pty::{PtyOut, UnixSlavePty, flush_pty, setup_pty};
 use cookbook::cook::script::KILL_ALL_PID;
 use cookbook::cook::tree::{self, WalkTreeEntry};
-use cookbook::log_to_pty;
 use cookbook::recipe::{CookRecipe, recipes_flatten_package_names, recipes_mark_as_deps};
+use cookbook::{log_to_pty, staged_pkg};
 use pkg::{PackageName, PackageState};
 use ratatui::Terminal;
 use ratatui::layout::{Constraint, Direction, Layout, Position, Rect};
@@ -507,8 +507,8 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
                 );
             }
             let all_recipes_path = match &config.category {
-                None => pkg::recipes::list(""),
-                Some(prefix) => pkg::recipes::list("")
+                None => staged_pkg::list(""),
+                Some(prefix) => staged_pkg::list("")
                     .into_iter()
                     .filter(|p| p.starts_with(prefix))
                     .collect(),

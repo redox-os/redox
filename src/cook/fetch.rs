@@ -10,7 +10,8 @@ use crate::is_redox;
 use crate::log_to_pty;
 use crate::recipe::BuildKind;
 use crate::recipe::CookRecipe;
-use crate::{blake3, recipe::SourceRecipe};
+use crate::recipe::SourceRecipe;
+use crate::wrap_io_err;
 use pkg::SourceIdentifier;
 use pkg::net_backend::DownloadBackendWriter;
 use std::cell::RefCell;
@@ -21,20 +22,13 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::rc::Rc;
 
-pub(crate) fn get_blake3(path: &PathBuf, show_progress: bool) -> Result<String, String> {
-    if show_progress {
-        blake3::blake3_progress(&path)
-    } else {
-        blake3::blake3_silent(&path)
-    }
-    .map_err(|err| {
-        format!(
-            "failed to calculate blake3 of '{}': {}\n{:?}",
-            path.display(),
-            err,
-            err
-        )
-    })
+pub(crate) fn get_blake3(path: &PathBuf) -> crate::Result<String> {
+    let mut f = fs::File::open(&path).map_err(wrap_io_err!(path, "Opening file for blake3"))?;
+    let hash = blake3::Hasher::new()
+        .update_reader(&mut f)
+        .map_err(wrap_io_err!(path, "Reading file for blake3"))?
+        .finalize();
+    Ok(hash.to_hex().to_string())
 }
 
 pub fn fetch_offline(recipe: &CookRecipe, logger: &PtyOut) -> Result<PathBuf, String> {
@@ -86,7 +80,7 @@ pub fn fetch_offline(recipe: &CookRecipe, logger: &PtyOut) -> Result<PathBuf, St
         }) => {
             if !source_dir.is_dir() {
                 let source_tar = recipe_dir.join("source.tar");
-                let source_tar_blake3 = get_blake3(&source_tar, true && logger.is_none())?;
+                let source_tar_blake3 = get_blake3(&source_tar)?;
                 if source_tar.exists() {
                     if let Some(blake3) = blake3 {
                         if source_tar_blake3 != *blake3 {
@@ -329,7 +323,7 @@ pub fn fetch(recipe: &CookRecipe, check_source: bool, logger: &PtyOut) -> Result
                 if !check_source {
                     break;
                 }
-                let source_tar_blake3 = get_blake3(&source_tar, tar_updated && logger.is_none())?;
+                let source_tar_blake3 = get_blake3(&source_tar)?;
                 if let Some(blake3) = blake3 {
                     if source_tar_blake3 == *blake3 {
                         break;

@@ -6,8 +6,8 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background-color: #f9f9fb;
-    color: #24292e;
+    background-color: #eee;
+    color: #222;
     line-height: 1.6;
 }
 
@@ -23,8 +23,8 @@ body {
 
 .category-title {
     font-size: 1.5rem;
-    color: #24292e;
-    border-bottom: 2px solid #e1e4e8;
+    color: #222;
+    border-bottom: 2px solid #eee;
     padding-bottom: 10px;
     margin-bottom: 20px;
     font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
@@ -38,8 +38,8 @@ body {
 }
 
 .package-card {
-    background-color: #ffffff;
-    border: 1px solid #e1e4e8;
+    background-color: #fff;
+    border: 1px solid #eee;
     border-radius: 6px;
     padding: 15px;
     margin: 10px;
@@ -74,16 +74,16 @@ body {
     align-items: center;
     color: #6a737d;
     font-size: 0.9rem;
-    border-top: 1px solid #e1e4e8;
+    border-top: 1px solid #eee;
     padding-top: 10px;
 }
 
 .package-card .pkg-version {
     font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
-    background-color: #f3f4f6;
+    background-color: #fff;
     padding: 3px 6px;
     border-radius: 4px;
-    color: #24292e;
+    color: #222;
 }
 
 .package-card .pkg-size {
@@ -91,14 +91,14 @@ body {
 }
 
 a {
-    color: #24292e;
+    color: #222;
     text-decoration: none;
-    border-bottom: 1px solid #e1e4e8;
+    border-bottom: 1px solid #eee;
 }
 
 a:hover {
     color: #000000;
-    border-bottom: 1px solid #24292e;
+    border-bottom: 1px solid #222;
 }
 
 h1, h2, h3 {
@@ -108,7 +108,7 @@ h1, h2, h3 {
 
 code {
     font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
-    background-color: #f3f4f6;
+    background-color: #fff;
     padding: 0.2em 0.4em;
     border-radius: 3px;
     font-size: 0.9em;
@@ -116,7 +116,7 @@ code {
 
 .card {
     background-color: #ffffff;
-    border: 1px solid #e1e4e8;
+    border: 1px solid #eee;
     border-radius: 6px;
     padding: 20px;
     margin-bottom: 20px;
@@ -124,7 +124,7 @@ code {
 
 .pkg-header, .index-header {
     background-color: #ffffff;
-    border-bottom: 1px solid #d1d5da;
+    border-bottom: 1px solid #ddd;
     padding: 40px 0;
     margin-bottom: 40px;
     text-align: center;
@@ -157,19 +157,19 @@ code {
 }
 
 .back-link:hover {
-    color: #24292e;
+    color: #222;
     border: none;
 }
 
 .install-action {
     display: inline-block; 
-    background-color: #f3f4f6;
-    border: 1px solid #d1d5da;
+    background-color: #fff;
+    border: 1px solid #ddd;
     border-radius: 6px;
     padding: 12px 20px;
     font-family: ui-monospace, SFMono-Regular, monospace;
     font-size: 1.1rem;
-    color: #24292e;
+    color: #222;
 }
 
 .install-action .prompt {
@@ -220,7 +220,7 @@ table {
 th, td {
     padding: 10px 0;
     text-align: left;
-    border-bottom: 1px solid #e1e4e8;
+    border-bottom: 1px solid #eee;
 }
 
 th {
@@ -241,6 +241,52 @@ th {
 
 .pkg-deps li, .pkg-dependents li {
     padding: 8px 0;
-    border-bottom: 1px solid #e1e4e8;
+    border-bottom: 1px solid #eee;
     width: 50%;
+}
+
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: #000;
+        color: #ccc;
+    }
+
+    .package-card, .card, .pkg-header, .index-header {
+        background-color: #111;
+        border-color: #333;
+    }
+
+    .category-title {
+        color: #f0f6fc;
+        border-bottom-color: #333;
+    }
+
+    .package-card .pkg-stats {
+        color: #8b949e;
+        border-top-color: #333;
+    }
+
+    .package-card .pkg-version, code, .install-action {
+        background-color: #222;
+        color: #cdd;
+        border-color: #333;
+    }
+
+    a, .pkg-header h1, .back-link:hover {
+        color: #5af;
+        border-bottom-color: #333;
+    }
+
+    a:hover {
+        color: #7cf;
+        border-bottom-color: #7cf;
+    }
+
+    .pkg-header .version, .pkg-header .description, .back-link, .install-action .prompt, th {
+        color: #999;
+    }
+
+    th, td, .pkg-deps li, .pkg-dependents li {
+        border-bottom-color: #333;
+    }
 }

@@ -108,7 +108,7 @@ pub fn generate_html_pkg(
             &config.this_repo,
             host,
             &package.commit_identifier,
-            Some(&format!("recipes/{category}/{name}/recipe.toml")),
+            Some(&format!("recipes/{category}/{}/recipe.toml", name.name())),
         );
         let short_commit = get_short_commit(&package.commit_identifier);
         source_html += &format!(
