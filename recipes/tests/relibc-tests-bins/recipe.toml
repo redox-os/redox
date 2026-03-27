@@ -6,7 +6,7 @@ template = "custom"
 script = """
 rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 
-make install-tests DESTDIR="${COOKBOOK_STAGE}/home/user"
+make install-tests DESTDIR="${COOKBOOK_STAGE}/home/user" NATIVE_LIBC=1 IS_REDOX=1
 
 if [ -n "$TESTBIN" ]; then
 "${COOKBOOK_REDOXER}" write-exec sh -c "cd /home/user/relibc-tests; make run-once TESTBIN=bins_dynamic/$TESTBIN"
