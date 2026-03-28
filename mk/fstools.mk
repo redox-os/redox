@@ -21,8 +21,8 @@ else
 	# Compile installer and redoxfs for host (may be outside of podman container)
 	cd $@.partial && \
 		export CARGO_TARGET_DIR=../$@-target && \
-		$(HOST_CARGO) install --root . --path recipes/core/installer/source $(INSTALLER_FEATURES) && \
-		$(HOST_CARGO) install --root . --path recipes/core/redoxfs/source $(REDOXFS_FEATURES)
+		$(HOST_CARGO) install --root . --path recipes/core/installer/source --locked $(INSTALLER_FEATURES) && \
+		$(HOST_CARGO) install --root . --path recipes/core/redoxfs/source --locked $(REDOXFS_FEATURES)
 
 	mv $@.partial $@
 	touch $@
