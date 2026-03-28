@@ -248,11 +248,8 @@ pub fn build(
     }
 
     if !check_source {
-        let stage_present = if cook_config.clean_target {
-            stage_pkgars.iter().all(|file| file.is_file())
-        } else {
-            stage_dirs.iter().all(|file| file.is_dir())
-        };
+        // TODO: when stage_dirs does not exist due to clean_target was true, extract from stage.pkgar?
+        let stage_present = stage_pkgars.iter().all(|file| file.is_file());
         if stage_present {
             if cli_verbose {
                 log_to_pty!(logger, "DEBUG: using cached build, not checking source");
@@ -295,11 +292,9 @@ pub fn build(
         if cli_verbose {
             log_to_pty!(logger, "DEBUG: using cached build");
         }
-        if cook_config.clean_target {
-            // stop early otherwise we'll end up rebuilding
-            let auto_deps = make_auto_deps!()?;
-            return Ok(BuildResult::cached(stage_dirs, auto_deps));
-        }
+        // stop early otherwise we'll end up rebuilding
+        let auto_deps = make_auto_deps!()?;
+        return Ok(BuildResult::cached(stage_dirs, auto_deps));
     }
 
     // Rebuild sysroot if source is newer
@@ -642,16 +637,12 @@ fn build_auto_deps(
     logger: &PtyOut,
 ) -> Result<BTreeSet<PackageName>, String> {
     let auto_deps_path = target_dir.join("auto_deps.toml");
-    if auto_deps_path.is_file() && !cook_config.clean_target {
+    if auto_deps_path.is_file() {
         if modified(&auto_deps_path)? < modified_all(stage_dirs, modified)? {
             if cook_config.verbose {
                 log_to_pty!(logger, "DEBUG: updating {}", auto_deps_path.display());
             }
             remove_all(&auto_deps_path)?;
-        } else {
-            if cook_config.verbose {
-                log_to_pty!(logger, "DEBUG: Using cached auto deps");
-            }
         }
     }
 
