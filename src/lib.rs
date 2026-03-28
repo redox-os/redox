@@ -14,6 +14,12 @@ pub fn is_redox() -> bool {
     cfg!(target_os = "redox")
 }
 
+pub fn cross_target() -> Option<String> {
+    std::env::var("COOKBOOK_CROSS_TARGET")
+        .ok()
+        .and_then(|s| if s.is_empty() { None } else { Some(s) })
+}
+
 // Errors
 
 use std::fmt::Display;
