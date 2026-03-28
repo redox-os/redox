@@ -235,7 +235,7 @@ pub fn run_command_stdin(
 pub fn serialize_and_write<T: Serialize>(file_path: &Path, content: &T) -> Result<()> {
     let toml_content = toml::to_string(content).map_err(|err| {
         wrap_other_err!(
-            "Failed to serialize content for '{}': {}",
+            "Failed to serialize content for {:?}: {}",
             file_path.display(),
             err
         )()
