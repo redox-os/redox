@@ -1,4 +1,5 @@
 use crate::config::translate_mirror;
+use crate::cook::cook_build;
 use crate::cook::fetch_repo;
 use crate::cook::fetch_repo::PlainPtyCallback;
 use crate::cook::fs::*;
@@ -392,13 +393,32 @@ pub fn fetch(recipe: &CookRecipe, check_source: bool, logger: &PtyOut) -> Result
         cargoexamples: _,
     } = &recipe.recipe.build.kind
     {
-        // TODO: No need to fetch if !check_source and already fetched?
-        fetch_cargo(&source_dir, cargopath.as_ref(), logger)?;
+        if fetch_will_build(recipe) {
+            fetch_cargo(&source_dir, cargopath.as_ref(), logger)?;
+        }
     }
 
     fetch_apply_source_info(recipe, ident)?;
 
     Ok(source_dir)
+}
+
+/// This does the same check as in cook_build
+fn fetch_will_build(recipe: &CookRecipe) -> bool {
+    let check_source = !recipe.is_deps;
+    if !check_source {
+        // there could be more check here, but it's heavy so just assume it will build
+        return true;
+    }
+
+    let stage_dirs =
+        cook_build::get_stage_dirs(&recipe.recipe.optional_packages, &recipe.target_dir());
+    let stage_pkgars: Vec<PathBuf> = stage_dirs
+        .iter()
+        .map(|p| p.with_added_extension("pkgar"))
+        .collect();
+    let stage_present = stage_pkgars.iter().all(|file| file.is_file());
+    !stage_present
 }
 
 pub(crate) fn fetch_make_symlink(source_dir: &PathBuf, same_as: &String) -> Result<(), String> {

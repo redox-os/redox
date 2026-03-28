@@ -356,6 +356,7 @@ pub fn build(
             return build_remote(stage_dirs, recipe, target_dir, cook_config);
         }
 
+        let mut allow_cargo_offline = false;
         //TODO: better integration with redoxer (library instead of binary)
         //TODO: configurable target
         //TODO: Add more configurability, convert scripts to Rust?
@@ -366,6 +367,7 @@ pub fn build(
                 cargopackages,
                 cargoexamples,
             } => {
+                allow_cargo_offline = true;
                 let mut script = format!(
                     "DYNAMIC_INIT\n{}\nCOOKBOOK_CARGO_PATH={} ",
                     flags_fn("COOKBOOK_CARGO_FLAGS", cargoflags),
@@ -455,8 +457,10 @@ pub fn build(
             if cli_verbose {
                 command.env("COOKBOOK_VERBOSE", "1");
             }
-            if cook_config.offline {
+            if cook_config.offline && allow_cargo_offline {
                 command.env("COOKBOOK_OFFLINE", "1");
+            } else {
+                command.env_remove("COOKBOOK_OFFLINE");
             }
             if let Ok(ident_source) = fetch::fetch_get_source_info(&cook_recipe) {
                 command.env("COOKBOOK_SOURCE_IDENT", ident_source.source_identifier);
