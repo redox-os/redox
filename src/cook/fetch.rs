@@ -1,3 +1,6 @@
+use crate::Error;
+use crate::Result;
+use crate::bail_other_err;
 use crate::config::translate_mirror;
 use crate::cook::cook_build;
 use crate::cook::fetch_repo;
@@ -23,7 +26,12 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::rc::Rc;
 
-pub(crate) fn get_blake3(path: &PathBuf) -> crate::Result<String> {
+pub struct FetchResult {
+    pub source_dir: PathBuf,
+    pub cached: bool,
+}
+
+pub(crate) fn get_blake3(path: &PathBuf) -> Result<String> {
     let mut f = fs::File::open(&path).map_err(wrap_io_err!(path, "Opening file for blake3"))?;
     let hash = blake3::Hasher::new()
         .update_reader(&mut f)
@@ -32,7 +40,7 @@ pub(crate) fn get_blake3(path: &PathBuf) -> crate::Result<String> {
     Ok(hash.to_hex().to_string())
 }
 
-pub fn fetch_offline(recipe: &CookRecipe, logger: &PtyOut) -> Result<PathBuf, String> {
+pub fn fetch_offline(recipe: &CookRecipe, logger: &PtyOut) -> Result<PathBuf> {
     let recipe_dir = &recipe.dir;
     let source_dir = recipe_dir.join("source");
     match recipe.recipe.build.kind {
@@ -85,19 +93,19 @@ pub fn fetch_offline(recipe: &CookRecipe, logger: &PtyOut) -> Result<PathBuf, St
                 if source_tar.exists() {
                     if let Some(blake3) = blake3 {
                         if source_tar_blake3 != *blake3 {
-                            return Err(format!(
-                                "The downloaded tar blake3 '{source_tar_blake3}' is not equal to blake3 in recipe.toml."
-                            ));
+                            bail_other_err!(
+                                "The downloaded tar blake3 {source_tar_blake3:?} is not equal to blake3 in recipe.toml"
+                            );
                         }
                         create_dir(&source_dir)?;
                         fetch_extract_tar(source_tar, &source_dir, logger)?;
                         fetch_apply_patches(recipe_dir, patches, script, &source_dir, logger)?;
                     } else {
                         // need to trust this tar file
-                        return Err(format!(
+                        bail_other_err!(
                             "Please add blake3 = \"{source_tar_blake3}\" to '{recipe}'",
                             recipe = recipe_dir.join("recipe.toml").display(),
-                        ));
+                        );
                     }
                 } else {
                     offline_check_exists(&source_dir)?;
@@ -112,7 +120,7 @@ pub fn fetch_offline(recipe: &CookRecipe, logger: &PtyOut) -> Result<PathBuf, St
     Ok(source_dir)
 }
 
-pub fn fetch(recipe: &CookRecipe, check_source: bool, logger: &PtyOut) -> Result<PathBuf, String> {
+pub fn fetch(recipe: &CookRecipe, check_source: bool, logger: &PtyOut) -> Result<PathBuf> {
     let recipe_dir = &recipe.dir;
     let source_dir = recipe_dir.join("source");
     match recipe.recipe.build.kind {
@@ -197,10 +205,10 @@ pub fn fetch(recipe: &CookRecipe, check_source: bool, logger: &PtyOut) -> Result
                 true
             } else {
                 if !source_dir.join(".git").is_dir() {
-                    return Err(format!(
-                        "'{}' is not a git repository, but recipe indicated git source",
-                        source_dir.display(),
-                    ));
+                    bail_other_err!(
+                        "{:?} is not a git repository, but recipe indicated git source",
+                        source_dir.display()
+                    );
                 }
 
                 // Reset origin
@@ -330,9 +338,9 @@ pub fn fetch(recipe: &CookRecipe, check_source: bool, logger: &PtyOut) -> Result
                         break;
                     }
                     if tar_updated {
-                        return Err(format!(
-                            "The downloaded tar blake3 '{source_tar_blake3}' is not equal to blake3 in recipe.toml"
-                        ));
+                        bail_other_err!(
+                            "The downloaded tar blake3 {source_tar_blake3:?} is not equal to blake3 in recipe.toml"
+                        )
                     } else {
                         log_to_pty!(
                             logger,
@@ -421,15 +429,15 @@ fn fetch_will_build(recipe: &CookRecipe) -> bool {
     !stage_present
 }
 
-pub(crate) fn fetch_make_symlink(source_dir: &PathBuf, same_as: &String) -> Result<(), String> {
+pub(crate) fn fetch_make_symlink(source_dir: &PathBuf, same_as: &String) -> Result<()> {
     let target_dir = Path::new(same_as).join("source");
     if !source_dir.is_symlink() {
         if source_dir.is_dir() {
-            return Err(format!(
-                "'{dir}' is a directory, but recipe indicated a symlink. \n\
-                        try removing '{dir}' if you haven't made any changes that would be lost",
+            bail_other_err!(
+                "'{dir:?}' is a directory, but recipe indicated a symlink. \n\
+                        try removing '{dir:?}' if you haven't made any changes that would be lost",
                 dir = source_dir.display(),
-            ));
+            )
         }
         std::os::unix::fs::symlink(&target_dir, source_dir).map_err(|err| {
             format!(
@@ -448,7 +456,7 @@ pub(crate) fn fetch_resolve_canon(
     recipe_dir: &Path,
     same_as: &String,
     is_host: bool,
-) -> Result<CookRecipe, String> {
+) -> Result<CookRecipe> {
     let canon_dir = Path::new(recipe_dir).join(same_as);
     if canon_dir
         .to_str()
@@ -458,20 +466,19 @@ pub(crate) fn fetch_resolve_canon(
         .count()
         > 50
     {
-        return Err(format!("Infinite loop detected"));
+        bail_other_err!("Infinite loop detected");
     }
     if !canon_dir.exists() {
-        return Err(format!("'{dir}' is not exists.", dir = canon_dir.display()));
+        bail_other_err!("{dir:?} is not exists", dir = canon_dir.display());
     }
-    CookRecipe::from_path(canon_dir.as_path(), true, is_host)
-        .map_err(|e| format!("Unable to load {dir}: {e:?}", dir = canon_dir.display()))
+    CookRecipe::from_path(canon_dir.as_path(), true, is_host).map_err(Error::from)
 }
 
 pub(crate) fn fetch_extract_tar(
     source_tar: PathBuf,
     source_dir_tmp: &PathBuf,
     logger: &PtyOut,
-) -> Result<(), String> {
+) -> Result<()> {
     let mut command = Command::new("tar");
     let verbose = crate::config::get_config().cook.verbose;
     if is_redox() {
@@ -495,7 +502,7 @@ pub(crate) fn fetch_cargo(
     source_dir: &PathBuf,
     cargopath: Option<&String>,
     logger: &PtyOut,
-) -> Result<(), String> {
+) -> Result<()> {
     let mut source_dir = source_dir.clone();
     if let Some(cargopath) = cargopath {
         source_dir = source_dir.join(cargopath);
@@ -522,7 +529,7 @@ pub fn fetch_remote(
     recipe: &CookRecipe,
     offline_mode: bool,
     logger: &PtyOut,
-) -> Result<(), String> {
+) -> Result<()> {
     let (mut manager, repository) = fetch_repo::get_binary_repo();
     let target_dir = create_target_dir(recipe_dir, recipe.target)?;
     if logger.is_some() {
@@ -541,9 +548,7 @@ pub fn fetch_remote(
         let (_, source_pkgar, source_toml) = package_source_paths(package, &target_dir);
         let source_name = get_package_name(name, package);
         let Some(repo_blake3) = repository.packages.get(&source_name) else {
-            return Err(format!(
-                "Package {source_name} does not exist in server repository"
-            ));
+            bail_other_err!("Package {source_name} does not exist in server repository")
         };
 
         if !offline_mode {
@@ -605,7 +610,7 @@ pub fn fetch_remote(
     Ok(())
 }
 
-fn read_source_toml(source_toml: &Path) -> Result<pkg::Package, String> {
+fn read_source_toml(source_toml: &Path) -> Result<pkg::Package> {
     let mut file =
         File::open(source_toml).map_err(|e| format!("Unable to open source.toml: {e:?}"))?;
     let mut contents = String::new();
@@ -620,16 +625,13 @@ pub(crate) fn fetch_is_patches_newer(
     recipe_dir: &Path,
     patches: &Vec<String>,
     source_dir: &PathBuf,
-) -> Result<bool, String> {
+) -> Result<bool> {
     // don't check source files inside as it can be mixed with user patches
     let source_time = modified(&source_dir)?;
     for patch_name in patches {
         let patch_file = recipe_dir.join(patch_name);
         if !patch_file.is_file() {
-            return Err(format!(
-                "failed to find patch file '{}'",
-                patch_file.display()
-            ));
+            bail_other_err!("Failed to find patch file {:?}", patch_file.display());
         }
 
         let patch_time = modified(&patch_file)?;
@@ -646,14 +648,11 @@ pub(crate) fn fetch_apply_patches(
     script: &Option<String>,
     source_dir_tmp: &PathBuf,
     logger: &PtyOut,
-) -> Result<(), String> {
+) -> Result<()> {
     for patch_name in patches {
         let patch_file = recipe_dir.join(patch_name);
         if !patch_file.is_file() {
-            return Err(format!(
-                "failed to find patch file '{}'",
-                patch_file.display()
-            ));
+            bail_other_err!("Failed to find patch file {:?}", patch_file.display());
         }
 
         let patch = fs::read_to_string(&patch_file).map_err(|err| {
@@ -685,7 +684,7 @@ pub(crate) fn fetch_apply_patches(
 pub(crate) fn fetch_apply_source_info(
     recipe: &CookRecipe,
     source_identifier: String,
-) -> Result<(), String> {
+) -> Result<()> {
     let ident = crate::cook::ident::get_ident();
     let info = SourceIdentifier {
         commit_identifier: ident.commit.to_string(),
@@ -699,14 +698,14 @@ pub(crate) fn fetch_apply_source_info(
 pub(crate) fn fetch_apply_source_info_from_remote(
     recipe: &CookRecipe,
     info: &SourceIdentifier,
-) -> Result<(), String> {
+) -> Result<()> {
     let target_dir = create_target_dir(&recipe.dir, recipe.target)?;
     let source_toml_path = target_dir.join("source_info.toml");
     serialize_and_write(&source_toml_path, &info)?;
     Ok(())
 }
 
-pub fn fetch_get_source_info(recipe: &CookRecipe) -> Result<SourceIdentifier, String> {
+pub fn fetch_get_source_info(recipe: &CookRecipe) -> Result<SourceIdentifier> {
     let target_dir = recipe.target_dir();
     let source_toml_path = target_dir.join("source_info.toml");
     let toml_content = fs::read_to_string(source_toml_path)
