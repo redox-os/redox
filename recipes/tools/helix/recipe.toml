@@ -3,7 +3,7 @@
 #TODO configuration - https://docs.helix-editor.com/install.html#configuring-helixs-runtime-files
 [source]
 git = "https://github.com/greyshaman/helix.git"
-rev = "34b91f42d9e9b04ba39cb6cc0f7c044d8ca4261d"
+branch = "port-to-redoxos"
 
 [build]
 template = "custom"
