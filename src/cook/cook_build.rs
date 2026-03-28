@@ -23,7 +23,6 @@ use crate::{is_redox, log_to_pty};
 
 fn auto_deps_from_dynamic_linking(
     stage_dirs: &[PathBuf],
-    target_dir: &Path,
     dep_pkgars: &BTreeSet<(PackageName, PathBuf)>,
     logger: &PtyOut,
 ) -> BTreeSet<PackageName> {
@@ -34,14 +33,14 @@ fn auto_deps_from_dynamic_linking(
     let mut walk = VecDeque::new();
 
     for stage_dir in stage_dirs {
-        walk.push_back(stage_dir.join("usr/bin"));
-        walk.push_back(stage_dir.join("usr/games"));
-        walk.push_back(stage_dir.join("usr/lib"));
-        walk.push_back(stage_dir.join("usr/libexec"));
+        walk.push_back((stage_dir, stage_dir.join("usr/bin")));
+        walk.push_back((stage_dir, stage_dir.join("usr/games")));
+        walk.push_back((stage_dir, stage_dir.join("usr/lib")));
+        walk.push_back((stage_dir, stage_dir.join("usr/libexec")));
     }
 
     // Recursively (DFS) walk each directory to ensure nested libs and bins are checked.
-    while let Some(dir) = walk.pop_front() {
+    while let Some((rel_path, dir)) = walk.pop_front() {
         let Ok(dir) = dir.canonicalize() else {
             continue;
         };
@@ -69,15 +68,15 @@ fn auto_deps_from_dynamic_linking(
                 continue;
             };
             if file_type.is_file() {
-                paths.insert(entry.path());
+                paths.insert((rel_path, entry.path()));
             } else if file_type.is_dir() {
-                walk.push_front(entry.path());
+                walk.push_front((rel_path, entry.path()));
             }
         }
     }
 
     let mut needed = BTreeSet::new();
-    for path in paths {
+    for (rel_path, path) in paths {
         let Ok(file) = fs::File::open(&path) else {
             continue;
         };
@@ -96,7 +95,7 @@ fn auto_deps_from_dynamic_linking(
                 let Ok(name) = str::from_utf8(val) else {
                     continue;
                 };
-                if let Ok(relative_path) = path.strip_prefix(target_dir) {
+                if let Ok(relative_path) = path.strip_prefix(rel_path) {
                     if verbose {
                         log_to_pty!(logger, "DEBUG: {} needs {}", relative_path.display(), name);
                     }
@@ -204,6 +203,7 @@ pub fn build(
     let check_source = !cook_recipe.is_deps;
     let sysroot_dir = get_sub_target_dir(target_dir, "sysroot");
     let toolchain_dir = get_sub_target_dir(target_dir, "toolchain");
+    let auto_deps_file = get_sub_target_dir(target_dir, "auto_deps.toml");
     let stage_dirs = get_stage_dirs(&recipe.optional_packages, target_dir);
     let stage_pkgars: Vec<PathBuf> = stage_dirs
         .iter()
@@ -235,11 +235,12 @@ pub fn build(
     }
 
     macro_rules! make_auto_deps {
-        () => {
+        ($cached:expr) => {
             build_auto_deps(
                 recipe,
-                target_dir,
+                &auto_deps_file,
                 &stage_dirs,
+                $cached,
                 cook_config,
                 dep_pkgars,
                 logger,
@@ -250,11 +251,11 @@ pub fn build(
     if !check_source {
         // TODO: when stage_dirs does not exist due to clean_target was true, extract from stage.pkgar?
         let stage_present = stage_pkgars.iter().all(|file| file.is_file());
-        if stage_present {
+        if stage_present && auto_deps_file.is_file() {
             if cli_verbose {
                 log_to_pty!(logger, "DEBUG: using cached build, not checking source");
             }
-            let auto_deps = make_auto_deps!()?;
+            let auto_deps = make_auto_deps!(true)?;
             return Ok(BuildResult::cached(stage_dirs, auto_deps));
         }
     }
@@ -281,6 +282,7 @@ pub fn build(
     if stage_modified < source_modified
         || stage_modified < deps_modified
         || stage_modified < deps_host_modified
+        || !auto_deps_file.is_file()
     {
         for stage_dir in &stage_dirs {
             if stage_dir.is_dir() {
@@ -293,7 +295,7 @@ pub fn build(
             log_to_pty!(logger, "DEBUG: using cached build");
         }
         // stop early otherwise we'll end up rebuilding
-        let auto_deps = make_auto_deps!()?;
+        let auto_deps = make_auto_deps!(true)?;
         return Ok(BuildResult::cached(stage_dirs, auto_deps));
     }
 
@@ -511,7 +513,7 @@ pub fn build(
         // don't remove stage dir yet
     }
 
-    let auto_deps = make_auto_deps!()?;
+    let auto_deps = make_auto_deps!(false)?;
     Ok(BuildResult::new(stage_dirs, auto_deps))
 }
 
@@ -628,20 +630,18 @@ fn build_deps_dir(
 /// Calculate automatic dependencies
 fn build_auto_deps(
     recipe: &Recipe,
-    target_dir: &Path,
+    auto_deps_path: &Path,
     stage_dirs: &Vec<PathBuf>,
+    cached: bool,
     cook_config: &CookConfig,
     mut dep_pkgars: BTreeSet<(PackageName, PathBuf)>,
     logger: &PtyOut,
 ) -> Result<BTreeSet<PackageName>, String> {
-    let auto_deps_path = target_dir.join("auto_deps.toml");
-    if auto_deps_path.is_file() {
-        if modified(&auto_deps_path)? < modified_all(stage_dirs, modified)? {
-            if cook_config.verbose {
-                log_to_pty!(logger, "DEBUG: updating {}", auto_deps_path.display());
-            }
-            remove_all(&auto_deps_path)?;
+    if auto_deps_path.is_file() && !cached {
+        if cook_config.verbose {
+            log_to_pty!(logger, "DEBUG: updating {}", auto_deps_path.display());
         }
+        remove_all(&auto_deps_path)?;
     }
 
     let auto_deps = if auto_deps_path.exists() {
@@ -651,8 +651,7 @@ fn build_auto_deps(
             toml::from_str(&toml_content).map_err(|_| "failed to deserialize cached auto_deps")?;
         wrapper.packages
     } else {
-        let mut dynamic_deps =
-            auto_deps_from_dynamic_linking(stage_dirs, target_dir, &dep_pkgars, logger);
+        let mut dynamic_deps = auto_deps_from_dynamic_linking(stage_dirs, &dep_pkgars, logger);
         dep_pkgars.retain(|x| recipe.build.dependencies.contains(&x.0));
         let package_deps =
             auto_deps_from_static_package_deps(&dep_pkgars, &dynamic_deps).unwrap_or_default();
@@ -750,12 +749,8 @@ mod tests {
             "Expected a loop where {dir:?} points to {root:?}"
         );
 
-        let entries = super::auto_deps_from_dynamic_linking(
-            &vec![root.clone()],
-            &root.join(".."),
-            &Default::default(),
-            &None,
-        );
+        let entries =
+            super::auto_deps_from_dynamic_linking(&vec![root.clone()], &Default::default(), &None);
         assert!(
             entries.is_empty(),
             "auto_deps shouldn't have yielded any libraries"
