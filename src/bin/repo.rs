@@ -2,7 +2,7 @@ use ansi_to_tui::IntoText;
 use anyhow::{Context, anyhow, bail};
 use cookbook::config::{CookConfig, get_config, init_config};
 use cookbook::cook::cook_build::{build, get_stage_dirs, remove_stage_dir};
-use cookbook::cook::fetch::{fetch, fetch_offline};
+use cookbook::cook::fetch::{FetchResult, fetch, fetch_offline};
 use cookbook::cook::fs::{create_target_dir, run_command};
 use cookbook::cook::ident;
 use cookbook::cook::package::{package, package_handle_push};
@@ -334,11 +334,12 @@ fn repo_inner(
         CliCommand::Fetch | CliCommand::Cook => {
             let repo_inner_fn = move |logger: &PtyOut| -> Result<bool, anyhow::Error> {
                 let is_cook = *command == CliCommand::Cook;
-                let mut cached = false;
-                let source_dir = handle_fetch(recipe, config, is_cook, logger)?;
-                if is_cook {
-                    cached = handle_cook(recipe, config, source_dir, logger)?;
-                }
+                let fetch_result = handle_fetch(recipe, config, is_cook, logger)?;
+                let cached = if is_cook {
+                    handle_cook(recipe, config, fetch_result.source_dir, logger)?
+                } else {
+                    fetch_result.cached
+                };
                 Ok(cached)
             };
             let Some(log_path) = &config.logs_dir else {
@@ -699,7 +700,7 @@ fn handle_fetch(
     config: &CliConfig,
     allow_offline: bool,
     logger: &PtyOut,
-) -> anyhow::Result<PathBuf> {
+) -> anyhow::Result<FetchResult> {
     let source_dir = match config.cook.offline && allow_offline {
         true => fetch_offline(&recipe, logger),
         false => fetch(&recipe, !recipe.is_deps, logger),
@@ -1177,7 +1178,7 @@ fn run_tui_cook(
     config: CliConfig,
     recipes: Vec<CookRecipe>,
 ) -> anyhow::Result<Option<(PackageName, String)>> {
-    let (work_tx, work_rx) = mpsc::channel::<(CookRecipe, PathBuf)>();
+    let (work_tx, work_rx) = mpsc::channel::<(CookRecipe, FetchResult)>();
     let (status_tx, status_rx) = mpsc::channel::<StatusUpdate>();
 
     let running = Arc::new(AtomicBool::new(true));
@@ -1189,7 +1190,7 @@ fn run_tui_cook(
     let cooker_status_tx = status_tx.clone();
     let cooker_prompting = prompting.clone();
     let cooker_handle = thread::spawn(move || {
-        'done: for (mut recipe, source_dir) in work_rx {
+        'done: for (mut recipe, fetch_result) in work_rx {
             let name = recipe.name.clone();
             let (mut stdout_writer, mut stderr_writer) = setup_logger(&cooker_status_tx, &name);
             let mut logger = Some((&mut stdout_writer, &mut stderr_writer));
@@ -1198,7 +1199,12 @@ fn run_tui_cook(
                     .send(StatusUpdate::StartCook(name.clone()))
                     .unwrap();
                 let _ = recipe.reload_recipe(); // reread recipe.toml in case we're retrying
-                let handler = handle_cook(&recipe, &cooker_config, source_dir.clone(), &logger);
+                let handler = handle_cook(
+                    &recipe,
+                    &cooker_config,
+                    fetch_result.source_dir.clone(),
+                    &logger,
+                );
                 if let Some(log_path) = cooker_config.logs_dir.as_ref() {
                     if let Err(err_ctx) = &handler {
                         log_to_pty!(&logger, "\n{:?}", err_ctx)
@@ -1315,11 +1321,11 @@ fn run_tui_cook(
                         .unwrap_or_default();
                 }
                 match handler {
-                    Ok(source_dir) => {
+                    Ok(fetch) => {
                         fetcher_status_tx
                             .send(StatusUpdate::Fetched(recipe.clone()))
                             .unwrap();
-                        if work_tx.send((recipe.clone(), source_dir)).is_err() {
+                        if work_tx.send((recipe.clone(), fetch)).is_err() {
                             // Cooker thread died
                             break 'done;
                         }
