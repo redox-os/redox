@@ -202,8 +202,8 @@ pub fn build(
     let recipe = &cook_recipe.recipe;
     let name = &cook_recipe.name;
     let check_source = !cook_recipe.is_deps;
-    let sysroot_dir = target_dir.join("sysroot");
-    let toolchain_dir = target_dir.join("toolchain");
+    let sysroot_dir = get_sub_target_dir(target_dir, "sysroot");
+    let toolchain_dir = get_sub_target_dir(target_dir, "toolchain");
     let stage_dirs = get_stage_dirs(&recipe.optional_packages, target_dir);
     let stage_pkgars: Vec<PathBuf> = stage_dirs
         .iter()
@@ -307,7 +307,6 @@ pub fn build(
         let updated = build_deps_dir(
             logger,
             &sysroot_dir,
-            target_dir.join("sysroot.tmp"),
             if name.is_host() {
                 &dep_host_pkgars
             } else {
@@ -324,7 +323,6 @@ pub fn build(
         let updated = build_deps_dir(
             logger,
             &toolchain_dir,
-            target_dir.join("toolchain.tmp"),
             &dep_host_pkgars,
             source_modified,
             deps_host_modified,
@@ -337,7 +335,7 @@ pub fn build(
     let stage_dir = stage_dirs
         .last()
         .expect("Should have atleast one stage dir");
-    let build_dir = get_build_dir(target_dir);
+    let build_dir = get_sub_target_dir(target_dir, "build");
     if !stage_dir.is_dir() {
         // Create stage.tmp
         let stage_dir_tmp = target_dir.join("stage.tmp");
@@ -539,11 +537,9 @@ pub fn remove_stage_dir(stage_dir: &PathBuf) -> Result<(), String> {
 
 pub fn get_stage_dirs(features: &Vec<OptionalPackageRecipe>, target_dir: &Path) -> Vec<PathBuf> {
     let mut target_dir = target_dir.to_path_buf();
-    if let Some(cross_target) = std::env::var("COOKBOOK_CROSS_TARGET").ok() {
-        if cross_target != "" {
-            // TODO: automatically pass COOKBOOK_CROSS_GNU_TARGET?
-            target_dir = target_dir.join(cross_target)
-        }
+    if let Some(cross_target) = crate::cross_target() {
+        // TODO: automatically pass COOKBOOK_CROSS_GNU_TARGET?
+        target_dir = target_dir.join(cross_target)
     }
     let mut v = Vec::new();
     for f in features {
@@ -554,25 +550,23 @@ pub fn get_stage_dirs(features: &Vec<OptionalPackageRecipe>, target_dir: &Path) 
     v
 }
 
-pub fn get_build_dir(target_dir: &Path) -> PathBuf {
+pub fn get_sub_target_dir(target_dir: &Path, sub_path: &str) -> PathBuf {
     let mut target_dir = target_dir.to_path_buf();
-    if let Some(cross_target) = std::env::var("COOKBOOK_CROSS_TARGET").ok() {
-        if cross_target != "" {
-            // TODO: automatically pass COOKBOOK_CROSS_GNU_TARGET?
-            target_dir = target_dir.join(cross_target)
-        }
+    if let Some(cross_target) = crate::cross_target() {
+        // TODO: automatically pass COOKBOOK_CROSS_GNU_TARGET?
+        target_dir = target_dir.join(cross_target)
     }
-    target_dir.join("build")
+    target_dir.join(sub_path)
 }
 
 fn build_deps_dir(
     logger: &PtyOut,
     deps_dir: &PathBuf,
-    deps_dir_tmp: PathBuf,
     dep_pkgars: &BTreeSet<(PackageName, PathBuf)>,
     source_modified: SystemTime,
     deps_modified: SystemTime,
 ) -> Result<bool, String> {
+    let deps_dir_tmp = deps_dir.with_added_extension("tmp");
     if deps_dir.is_dir() {
         let tags_dir = deps_dir.join(".tags");
         let sysroot_modified = modified_dir(&tags_dir).unwrap_or(SystemTime::UNIX_EPOCH);
