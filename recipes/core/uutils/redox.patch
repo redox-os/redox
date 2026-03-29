@@ -1,5 +1,5 @@
 diff --git a/Cargo.toml b/Cargo.toml
-index b0015fa6f..cfb2b1b30 100644
+index 5f417bd42..b7b895a9c 100644
 --- a/Cargo.toml
 +++ b/Cargo.toml
 @@ -326,6 +326,7 @@ feat_os_unix_redox = [
@@ -49,10 +49,10 @@ index fd1f30303..c508f6b9b 100644
  mod tests {
      // Note this useful idiom: importing names from outer (for mod tests) scope.
 diff --git a/src/uucore/src/lib/mods/locale.rs b/src/uucore/src/lib/mods/locale.rs
-index e7d05f4c7..d86e51e98 100644
+index b670f8976..a4ff9f983 100644
 --- a/src/uucore/src/lib/mods/locale.rs
 +++ b/src/uucore/src/lib/mods/locale.rs
-@@ -212,10 +212,11 @@ fn init_localization(
+@@ -211,10 +211,11 @@ fn init_localization(
          }
      };
  
@@ -66,7 +66,7 @@ index e7d05f4c7..d86e51e98 100644
      Ok(())
  }
  
-@@ -431,10 +432,12 @@ pub fn setup_localization(p: &str) -> Result<(), LocalizationError> {
+@@ -422,10 +423,12 @@ pub fn setup_localization(p: &str) -> Result<(), LocalizationError> {
          let english_bundle = create_english_bundle_from_embedded(&default_locale, p)?;
          let localizer = Localizer::new(english_bundle);
  
@@ -78,6 +78,6 @@ index e7d05f4c7..d86e51e98 100644
                  .map_err(|_| LocalizationError::Bundle("Localizer already initialized".into()))
 -        })?;
 +        });
+         Ok(())
      }
-     LOCALIZER_IS_SET.with(|f| f.set(true));
-     Ok(())
+ }

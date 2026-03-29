@@ -1,8 +1,9 @@
 # TODO Fix coreutils i18n/l10n behavior on Redox
 # TODO Fix locale init bug on aarch64 before removing patches
+# TODO https://github.com/uutils/coreutils/commit/e6f7ad06 broke locales on x86_64
 [source]
 git = "https://github.com/uutils/coreutils"
-rev = "0.7.0"
+rev = "1f7c81f5d2d3e56c518349c0392158871a1ea9ec"
 patches = [
   "redox.patch"
 ]
