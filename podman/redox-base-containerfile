@@ -75,6 +75,7 @@ RUN apt-get update \
         xutils-dev \
         xxd \
         zip \
+        zstd \
     && if [ "$(uname -m)" = "x86_64" ]; then \
          apt-get install -y --no-install-recommends \
             libc6-dev-i386 \
