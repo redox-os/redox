@@ -4,9 +4,6 @@ git = "https://gitlab.redox-os.org/redox-os/relibc.git"
 [build]
 template = "custom"
 script = """
-# obscure crash if jobs number is too much
-COOKBOOK_MAKE_JOBS="$(( ${COOKBOOK_MAKE_JOBS} > 8 ? 8 : ${COOKBOOK_MAKE_JOBS} ))"
-
 # rustup workaround https://github.com/rust-lang/rustup/issues/988
 if [ "${COOKBOOK_HOST_SYSROOT}" = "/usr" ]; then
 if command -v rustup >/dev/null 2>&1; then
