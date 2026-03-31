@@ -1,0 +1,16 @@
+#TODO not compiled or tested
+[source]
+tar = "https://github.com/solvespace/solvespace/releases/download/v3.2/solvespace-3.2.tar.xz"
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DENABLE_TESTS=OFF"
+]
+dependencies = [
+    "zlib",
+    "libpng",
+    "cairo",
+    "freetype2",
+    "fontconfig",
+    "gtk3mm",
+]

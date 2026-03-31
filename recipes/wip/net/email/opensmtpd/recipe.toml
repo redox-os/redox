@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+# build instructions on the INSTALL document in the tarball
+[source]
+tar = "https://www.opensmtpd.org/archives/opensmtpd-7.8.0p1.tar.gz"
+[build]
+template = "configure"

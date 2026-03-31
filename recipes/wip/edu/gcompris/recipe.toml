@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+#TODO discover minimum dependencies from cmake log
+[source]
+git = "https://invent.kde.org/education/gcompris"
+branch = "KDE/26.0"
+shallow_clone = true
+[build]
+template = "cmake"

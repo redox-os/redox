@@ -1,0 +1,5 @@
+#TODO missing script, read the INSTALL document in the tarball
+[source]
+tar = "https://ftp.sendmail.org/sendmail.8.18.2.tar.gz"
+[build]
+template = "custom"

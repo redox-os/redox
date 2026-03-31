@@ -1,0 +1,16 @@
+#TODO not compiled or tested
+#TODO discover minimum dependencies from cmake log
+[source]
+git = "https://invent.kde.org/education/labplot"
+branch = "release/2.12"
+shallow_clone = true
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DENABLE_TESTS=OFF",
+    "-DENABLE_SDK=OFF",
+]
+dependencies = [
+    "libgsl",
+    "qads",
+]

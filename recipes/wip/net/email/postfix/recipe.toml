@@ -1,0 +1,5 @@
+#TODO missing script for gnu make: https://www.postfix.org/INSTALL.html
+[source]
+tar = "https://archive.mgm51.com/mirrors/postfix-source/official/postfix-3.11.1.tar.gz"
+[build]
+template = "custom"

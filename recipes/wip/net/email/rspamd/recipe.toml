@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+# configuration: https://docs.rspamd.com/tutorials/quickstart/
+[source]
+git = "https://github.com/rspamd/rspamd"
+rev = "4.0.0"
+shallow_clone = true
+[build]
+template = "cmake"
