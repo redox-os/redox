@@ -206,15 +206,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "crossbeam-channel"
-version = "0.5.15"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "82b8f8f868b36967f9606790d1903570de9ceaf870a7bf9fbbd3016d636a2cb2"
-dependencies = [
- "crossbeam-utils",
-]
-
-[[package]]
 name = "crossbeam-deque"
 version = "0.8.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -710,20 +701,9 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "04744f49eae99ab78e0d5c0b603ab218f515ea8cfe5a456d7629ad883a3b6e7d"
 
 [[package]]
-name = "pbr"
-version = "1.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ed5827dfa0d69b6c92493d6c38e633bbaa5937c153d0d7c28bf12313f8c6d514"
-dependencies = [
- "crossbeam-channel",
- "libc",
- "winapi",
-]
-
-[[package]]
 name = "pkgar"
-version = "0.2.1"
-source = "git+https://gitlab.redox-os.org/redox-os/pkgar.git#8835aab69a164a5610737e6f595b9681db9fba0b"
+version = "0.2.2"
+source = "git+https://gitlab.redox-os.org/redox-os/pkgar.git#ee2bcb2af97eba496ebd8eaf44f5acbed452c4ec"
 dependencies = [
  "blake3",
  "bytemuck",
@@ -735,8 +715,8 @@ dependencies = [
 
 [[package]]
 name = "pkgar-core"
-version = "0.2.1"
-source = "git+https://gitlab.redox-os.org/redox-os/pkgar.git#8835aab69a164a5610737e6f595b9681db9fba0b"
+version = "0.2.2"
+source = "git+https://gitlab.redox-os.org/redox-os/pkgar.git#ee2bcb2af97eba496ebd8eaf44f5acbed452c4ec"
 dependencies = [
  "bitflags",
  "blake3",
@@ -746,16 +726,13 @@ dependencies = [
 
 [[package]]
 name = "pkgar-keys"
-version = "0.2.1"
-source = "git+https://gitlab.redox-os.org/redox-os/pkgar.git#8835aab69a164a5610737e6f595b9681db9fba0b"
+version = "0.2.2"
+source = "git+https://gitlab.redox-os.org/redox-os/pkgar.git#ee2bcb2af97eba496ebd8eaf44f5acbed452c4ec"
 dependencies = [
- "dirs",
  "hex",
- "lazy_static",
  "pkgar-core",
  "seckey",
  "serde",
- "termion",
  "thiserror",
  "toml",
 ]
@@ -879,11 +856,10 @@ dependencies = [
 
 [[package]]
 name = "redox-pkg"
-version = "0.3.0"
-source = "git+https://gitlab.redox-os.org/redox-os/pkgutils.git#e46f60d7be2341ccee2ea3cae6e7a4ac27aa8744"
+version = "0.3.1"
+source = "git+https://gitlab.redox-os.org/redox-os/pkgutils.git#52f7930f8e6dfbe85efd115b3848ea802e1a56f0"
 dependencies = [
  "hex",
- "ignore",
  "serde",
  "serde_derive",
  "thiserror",
@@ -901,7 +877,6 @@ dependencies = [
  "ignore",
  "libc",
  "object",
- "pbr",
  "pkgar",
  "pkgar-core",
  "pkgar-keys",
@@ -920,7 +895,7 @@ dependencies = [
 [[package]]
 name = "redox_installer"
 version = "0.2.42"
-source = "git+https://gitlab.redox-os.org/redox-os/installer.git#0ace1223e41f08602d5622957d017b1ab3deac68"
+source = "git+https://gitlab.redox-os.org/redox-os/installer.git#1c2534e44c68ace0a21db2a1bc9503945a38c809"
 dependencies = [
  "anyhow",
  "arg_parser",
