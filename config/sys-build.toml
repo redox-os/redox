@@ -26,6 +26,6 @@ data = """
 #!/usr/bin/env ion
 export RUST_BACKTRACE=full
 cd /home/user/cookbook
-./repo.sh sys
+make prefix r.sys,--with-package-deps
 shutdown
 """
