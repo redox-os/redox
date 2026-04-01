@@ -6,8 +6,6 @@ tar = "https://github.com/crawl/crawl/releases/download/0.34.1/stone_soup-0.34.1
 [build]
 template = "custom"
 dependencies = [
-    "gcc13",
-    "gnu-make",
     "lua54",
     "ncursesw",
     "pcre",
