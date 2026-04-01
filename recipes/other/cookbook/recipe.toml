@@ -27,5 +27,9 @@ dependencies = [
     "pkgar",
     "python312",
     "sed",
-    "wget",
+# toolchains are dynamically linked, so this is needed
+    "libgmp",
+    "libmpfr",
+    "mpc",
+    "curl",
 ]

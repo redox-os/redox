@@ -25,7 +25,6 @@ cc = "COOKBOOK_GNU_TARGET-gcc"
 cxx = "COOKBOOK_GNU_TARGET-g++"
 ar = "COOKBOOK_GNU_TARGET-ar"
 linker = "COOKBOOK_GNU_TARGET-gcc"
-rpath = false
 crt-static = false
 llvm-config = "COOKBOOK_SYSROOT/bin/llvm-config"
 
