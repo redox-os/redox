@@ -20,7 +20,6 @@ DYNAMIC_INIT
 # Copy source to build directory
 rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 
-export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include/ncurses"
 
 cd "${COOKBOOK_SOURCE}/"source
 "${COOKBOOK_MAKE}" -j"$($NPROC)"
