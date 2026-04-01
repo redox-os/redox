@@ -1,0 +1,11 @@
+#TODO not compiled or tested
+[source]
+tar = "https://download.gnome.org/sources/gom/0.5/gom-0.5.6.tar.xz"
+[build]
+template = "meson"
+dependencies = [
+    "glib",
+    "gobject-introspection",
+    "sqlite3",
+    "gdkpixbuf",
+]

@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+# build instructions: https://cran.r-project.org/doc/manuals/r-release/R-admin.html#Installing-R-under-Unix_002dalikes
+[source]
+tar = "https://cloud.r-project.org/src/base/R-4/R-4.5.3.tar.gz"
+[build]
+template = "configure"

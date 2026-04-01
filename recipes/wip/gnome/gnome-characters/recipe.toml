@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+[source]
+tar = "https://download.gnome.org/sources/gnome-characters/49/gnome-characters-49.1.tar.xz"
+[build]
+template = "meson"
+dependencies = [
+    "gtk4",
+    "libadwaita",
+    "gjs",
+]

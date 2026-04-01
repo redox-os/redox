@@ -1,0 +1,18 @@
+#TODO missing script for gnu make: https://github.com/JuliaLang/julia#building-julia
+#TODO missing dependencies: https://github.com/JuliaLang/julia/blob/master/doc/src/devdocs/build/build.md#required-build-tools-and-external-libraries
+[source]
+tar = "https://github.com/JuliaLang/julia/releases/download/v1.12.5/julia-1.12.5.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "openblas",
+    "lapack",
+    "libgmp",
+    "libmpfr",
+    "pcre2",
+    "libgit2",
+    "libssh2",
+    "curl",
+    "openssl3",
+    "libunwind",
+]

@@ -1,0 +1,16 @@
+#TODO not compiled or tested
+#TODO require the rustc-demangle library for rust support: https://github.com/rust-lang/rustc-demangle
+[source]
+git = "https://invent.kde.org/sdk/heaptrack"
+branch = "1.5"
+shallow_clone = true
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DHEAPTRACK_BUILD_ANALYZE_DEFAULT=OFF"
+]
+dependencies = [
+    "zlib",
+    "boost",
+    "libunwind",
+]

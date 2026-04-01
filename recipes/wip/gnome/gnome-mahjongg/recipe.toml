@@ -1,0 +1,11 @@
+#TODO not compiled or tested
+[source]
+tar = "https://download.gnome.org/sources/gnome-mahjongg/49/gnome-mahjongg-49.1.1.tar.xz"
+[build]
+template = "meson"
+dependencies = [
+    "glib",
+    "gtk4",
+    "libadwaita",
+    "librsvg",
+]

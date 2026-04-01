@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+[source]
+tar = "https://download.gnome.org/sources/manuals/49/manuals-49.0.tar.xz"
+[build]
+template = "meson"
+dependencies = [
+    "glib",
+    "gtk4",
+    "webkitgtk4",
+]

@@ -1,0 +1,14 @@
+#TODO not compiled or tested
+[source]
+tar = "https://download.gnome.org/sources/gnome-font-viewer/49/gnome-font-viewer-49.0.tar.xz"
+[build]
+template = "meson"
+dependencies = [
+    "glib",
+    "gtk4",
+    "libadwaita",
+    "harfbuzz",
+    "fontconfig",
+    "freetype2",
+    "fribidi",
+]

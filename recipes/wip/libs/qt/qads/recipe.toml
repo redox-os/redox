@@ -1,0 +1,12 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/githubuser0xFFFF/Qt-Advanced-Docking-System"
+rev = "4.5.0"
+shallow_clone = true
+[build]
+template = "cmake"
+dependencies = [
+    "qt6-base",
+    "qt6-svg",
+    "qt6-declarative",
+]
