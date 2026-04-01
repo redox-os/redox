@@ -25,5 +25,5 @@ cd "${COOKBOOK_SOURCE}/"source
 "${COOKBOOK_MAKE}" -j"$($NPROC)"
 
 mkdir -pv "${COOKBOOK_STAGE}/usr/games"
-cp -v ./crawl "${COOKBOOK_STAGE}/usr/games/crawl"
+cp -v "${COOKBOOK_BUILD}/crawl" "${COOKBOOK_STAGE}/usr/games"
 """
