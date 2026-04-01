@@ -9,9 +9,6 @@ dependencies = [
     "lua54",
     "ncursesw",
     "pcre",
-    "perl5",
-    "pkg-config",
-    "python312",
     "sqlite3",
     "zlib",
 ]
