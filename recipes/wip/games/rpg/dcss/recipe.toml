@@ -22,7 +22,7 @@ DYNAMIC_INIT
 rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 
 
-cd "${COOKBOOK_SOURCE}/"source
+cd source
 "${COOKBOOK_MAKE}" -j"$($NPROC)"
 
 mkdir -pv "${COOKBOOK_STAGE}/usr/games"
