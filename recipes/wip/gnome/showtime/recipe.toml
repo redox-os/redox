@@ -7,5 +7,4 @@ dependencies = [
     "gtk4",
     "libadwaita",
 ]
-[package]
-dependencies = ["blueprint"]
+dev-dependencies = ["blueprint"]

@@ -3,7 +3,7 @@
 # build instructions: https://docs.krita.org/en/untranslatable_pages/building_krita.html#building-on-linux
 [source]
 git = "https://invent.kde.org/graphics/krita"
-branch = "release/5.2.14"
+branch = "krita/6.0"
 shallow_clone = true
 [build]
 template = "cmake"
@@ -24,24 +24,24 @@ cmakeflags = [
 #     "libpng",
 #     "libtiff",
 #     "libwebp",
-#     "qt5-base",
-#     "qt5-svg",
+#     "qt6-base",
+#     "qt6-svg",
 #     "zlib",
 #     "libmypaint",
 #     "boost",
 #     "libheif",
 #     "libjpeg",
 #     "libjxl",
-#     "kf5-extra-cmake-modules",
-#     "kf5-completion",
-#     "kf5-config",
-#     "kf5-coreaddons",
-#     "kf5-crash",
-#     "kf5-guiaddons",
-#     "kf5-i18n",
-#     "kf5-itemviews",
-#     "kf5-widgetaddons",
-#     "kf5-windowsystem",
+#     "kf6-extra-cmake-modules",
+#     "kf6-completion",
+#     "kf6-config",
+#     "kf6-coreaddons",
+#     "kf6-crash",
+#     "kf6-guiaddons",
+#     "kf6-i18n",
+#     "kf6-itemviews",
+#     "kf6-widgetaddons",
+#     "kf6-windowsystem",
 #     "mlt",
 #     "opencolorio",
 #     "openexr",
