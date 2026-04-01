@@ -428,7 +428,6 @@ pub fn build(
             let local_redoxer = Path::new("target/release/cookbook_redoxer");
             let mut command = if is_redox() && !local_redoxer.is_file() {
                 let mut command = Command::new("cookbook_redoxer");
-                command.arg(bash_args);
                 command.env("COOKBOOK_REDOXER", "cookbook_redoxer");
                 command
             } else {
@@ -436,10 +435,10 @@ pub fn build(
                     .canonicalize()
                     .unwrap_or(PathBuf::from("/bin/false"));
                 let mut command = Command::new(&cookbook_redoxer);
-                command.arg("env").arg("bash").arg(bash_args);
                 command.env("COOKBOOK_REDOXER", &cookbook_redoxer);
                 command
             };
+            command.arg("env").arg("bash").arg(bash_args);
             command.current_dir(&cookbook_build);
             command.env("TARGET", package_target(name));
             command.env("COOKBOOK_BUILD", &cookbook_build);
