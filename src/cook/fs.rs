@@ -298,6 +298,7 @@ pub fn get_git_tag_rev(dir: &PathBuf, tag: &str) -> Result<String> {
 }
 
 pub fn get_git_ref_entry(dir: &PathBuf, entry: &str) -> Result<String> {
+    // https://git-scm.com/book/en/v2/Git-Internals-Maintenance-and-Data-Recovery
     let git_refs = dir.join(".git/packed-refs");
     let refs_str = read_to_string(&git_refs)?;
     for line in refs_str.lines() {

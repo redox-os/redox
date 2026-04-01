@@ -238,14 +238,18 @@ pub fn fetch(recipe: &CookRecipe, check_source: bool, logger: &PtyOut) -> Result
                 run_command(command, logger)?;
 
                 let (head_rev, detached_rev) = get_git_head_rev(&source_dir)?;
-                if detached_rev {
-                    if let Some(rev) = rev
+                if rev.is_some() {
+                    if !detached_rev {
+                        false
+                    } else if let Some(rev) = rev
                         && let Ok(exp_rev) = get_git_tag_rev(&source_dir, &rev)
                     {
                         exp_rev == head_rev
                     } else {
                         false
                     }
+                } else if detached_rev {
+                    false
                 } else {
                     let (_, remote_branch, remote_name, remote_url) =
                         get_git_remote_tracking(&source_dir)?;
