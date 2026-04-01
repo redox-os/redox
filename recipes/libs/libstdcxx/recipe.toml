@@ -1,8 +1,9 @@
 [build]
 template = "custom"
 script = """
+# Avoid replacing host libstdc++ when using "host:"
 if [ "$TARGET" != "$COOKBOOK_HOST_TARGET" ]; then
-mkdir -p "${COOKBOOK_STAGE}/lib"
-cp -av ${COOKBOOK_HOST_SYSROOT}/${GNU_TARGET}/lib/libstdc++.so* ${COOKBOOK_STAGE}/lib/
+mkdir -p "${COOKBOOK_STAGE}/usr/lib"
+cp -av ${COOKBOOK_HOST_SYSROOT}/${GNU_TARGET}/lib/libstdc++.so* ${COOKBOOK_STAGE}/usr/lib/
 fi
 """
