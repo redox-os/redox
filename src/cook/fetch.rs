@@ -238,39 +238,43 @@ pub fn fetch(recipe: &CookRecipe, check_source: bool, logger: &PtyOut) -> Result
                 run_command(command, logger)?;
 
                 let (head_rev, detached_rev) = get_git_head_rev(&source_dir)?;
-                if rev.is_some() {
-                    if !detached_rev {
-                        false
-                    } else if let Some(rev) = rev
-                        && let Ok(exp_rev) = get_git_tag_rev(&source_dir, &rev)
-                    {
-                        exp_rev == head_rev
-                    } else {
-                        false
-                    }
-                } else if detached_rev {
-                    false
-                } else {
-                    let (_, remote_branch, remote_name, remote_url) =
-                        get_git_remote_tracking(&source_dir)?;
-                    // TODO: how to get default branch and compare it here?
-                    if let Some(branch) = branch
-                        && branch != &remote_branch
-                    {
-                        false
-                    } else if remote_name != "origin" {
-                        false
-                    } else if &remote_url != chop_dot_git(git) {
-                        false
-                    } else {
-                        match get_git_fetch_rev(&source_dir, &remote_url, &remote_branch) {
-                            Ok(fetch_rev) => fetch_rev == head_rev,
-                            Err(e) => {
-                                log_to_pty!(logger, "{}", e);
+                match (rev, detached_rev) {
+                    (Some(rev), true) => {
+                        if let Ok(exp_rev) = get_git_tag_rev(&source_dir, &rev) {
+                            exp_rev == head_rev
+                        } else {
+                            let mut command = Command::new("git");
+                            command.arg("-C").arg(&source_dir);
+                            command.arg("gc");
+                            run_command(command, logger)?;
+                            if let Ok(exp_rev) = get_git_tag_rev(&source_dir, &rev) {
+                                exp_rev == head_rev
+                            } else {
                                 false
                             }
                         }
                     }
+                    (None, false) => {
+                        let (_, remote_branch, remote_name, remote_url) =
+                            get_git_remote_tracking(&source_dir)?;
+                        // TODO: how to get default branch and compare it here?
+                        if let Some(branch) = branch
+                            && branch != &remote_branch
+                        {
+                            false
+                        } else if remote_name != "origin" || &remote_url != chop_dot_git(git) {
+                            false
+                        } else {
+                            match get_git_fetch_rev(&source_dir, &remote_url, &remote_branch) {
+                                Ok(fetch_rev) => fetch_rev == head_rev,
+                                Err(e) => {
+                                    log_to_pty!(logger, "{}", e);
+                                    false
+                                }
+                            }
+                        }
+                    }
+                    _ => false,
                 }
             };
 

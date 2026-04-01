@@ -301,13 +301,18 @@ pub fn get_git_ref_entry(dir: &PathBuf, entry: &str) -> Result<String> {
     // https://git-scm.com/book/en/v2/Git-Internals-Maintenance-and-Data-Recovery
     let git_refs = dir.join(".git/packed-refs");
     let refs_str = read_to_string(&git_refs)?;
-    for line in refs_str.lines() {
+    let mut lines = refs_str.lines();
+    while let Some(line) = lines.next() {
         if line.contains(entry) {
-            let sha = line
+            let mut sha = line
                 .split_whitespace()
                 .next()
                 .ok_or_else(wrap_other_err!("Packed-refs line is malformed"))?;
-
+            if let Some(next_line) = lines.next() {
+                if next_line.starts_with('^') {
+                    sha = &next_line[1..];
+                }
+            }
             return Ok(sha.to_string());
         }
     }
