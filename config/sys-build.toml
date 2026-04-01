@@ -1,0 +1,31 @@
+# Configuration for automated self-hosted system compilation testing
+
+include = ["server.toml"]
+
+# General settings
+[general]
+# Filesystem size in MiB
+filesystem_size = 10000
+
+# Package settings
+[packages]
+cookbook = {}
+bottom = "ignore"
+kibi = "ignore"
+
+[[files]]
+path = "/usr/lib/init.d/30_console"
+data = """
+requires_weak 10_net
+ion /usr/lib/sys_build.ion
+"""
+
+[[files]]
+path = "/usr/lib/sys_build.ion"
+data = """
+#!/usr/bin/env ion
+export RUST_BACKTRACE=full
+cd /home/user/cookbook
+make prefix r.sys,--with-package-deps
+shutdown
+"""
