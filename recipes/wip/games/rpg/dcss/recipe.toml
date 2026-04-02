@@ -12,9 +12,6 @@ dependencies = [
     "sqlite3",
     "zlib",
 ]
-dev-dependencies = [
-    "host:perl5",
-    "host:python312",
 ]
 script = """
 DYNAMIC_INIT
