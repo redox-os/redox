@@ -61,6 +61,7 @@ RUN apt-get update \
         python3-libxml2 \
         python3-mako \
         python3-venv \
+        python3-yaml \
         rsync \
         ruby \
         scons \
