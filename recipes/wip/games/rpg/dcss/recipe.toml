@@ -1,6 +1,6 @@
 # TODO make this the no tiles variant, may want separate dcss-tiles recipe for tiles
 # TODO compilation instructions: https://github.com/crawl/crawl/blob/master/crawl-ref/INSTALL.md#compiling
-# TODO not sure how to get PyYAML installed, may need to be separately packaged
+# TODO see https://gitlab.redox-os.org/redox-os/redox/-/issues/1800
 [source]
 tar = "https://github.com/crawl/crawl/releases/download/0.34.1/stone_soup-0.34.1-nodeps.tar.xz"
 [build]
@@ -12,12 +12,10 @@ dependencies = [
     "sqlite3",
     "zlib",
 ]
-]
 script = """
 DYNAMIC_INIT
 # Copy source to build directory
 rsync -av --delete "${COOKBOOK_SOURCE}/" ./
-
 
 cd source
 "${COOKBOOK_MAKE}" -j"$($NPROC)"
