@@ -1,19 +1,27 @@
-#TODO missing script for gnu make: https://github.com/crawl/crawl/blob/master/crawl-ref/INSTALL.md#compiling
+# TODO make this the no tiles variant, may want separate dcss-tiles recipe for tiles
+# TODO compilation instructions: https://github.com/crawl/crawl/blob/master/crawl-ref/INSTALL.md#compiling
+# TODO not sure how to get PyYAML installed, may need to be separately packaged
 [source]
-tar = "https://github.com/crawl/crawl/releases/download/0.33.1/stone_soup-0.33.1.tar.xz"
+tar = "https://github.com/crawl/crawl/releases/download/0.34.1/stone_soup-0.34.1-nodeps.tar.xz"
 [build]
 template = "custom"
 dependencies = [
-    "sdl2",
-    "sdl2-image",
-    "sqlite3",
-    "ncurses",
+    "lua54",
+    "ncursesw",
     "pcre",
+    "sqlite3",
     "zlib",
-    "libpng",
+]
 ]
 script = """
 DYNAMIC_INIT
+# Copy source to build directory
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+
+
+cd source
+"${COOKBOOK_MAKE}" -j"$($NPROC)"
+
+mkdir -pv "${COOKBOOK_STAGE}/usr/games"
+cp -v "${COOKBOOK_BUILD}/crawl" "${COOKBOOK_STAGE}/usr/games"
 """
-[package]
-dependencies = ["dejavu"]
