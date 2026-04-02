@@ -112,7 +112,7 @@ Each "Vendor" has its own alphabetical order in "Model", independent from models
 |------------|-----------|-------------------|----------------|-------------|----------------------|--------------------------|------------|
 | ASUS | PN41 | 0.8.0 | 2024-05-30 | server | x86-64 | Unknown | Aborts after panic in xhcid |
 | BEELINK | U59 | 0.8.0 | 2024-05-30 | server | x86-64 | Unknown | Aborts after panic in xhcid |
-| Framework | Laptop 16 (AMD Ryzen 7040 Series) | 0.9.0 | 2024-09-07 | server, demo | x86-64 | UEFI | Black screen and unresponsive after the bootloader and resolution selection |
+| Framework | Laptop 16 (AMD Ryzen 7040 Series) | 0.9.0 | 2026-3-29 | desktop, demo | x86-64 | UEFI | Crash due to unimplemented acpi function, see [jackpot51/acpi #3](https://github.com/jackpot51/acpi/pull/3) on GitHub |
 | HP | Compaq nc6120 | 0.9.0 | 2024-11-08 | desktop, server | i686 | BIOS | Unloads into memory at a rate slower than 1MB/s after selecting resolution. When unloading is complete the logger initializes and crashes after kernel::acpi, some information about APIC is printed. Boot logs do not progress after this point. |
 | HP | EliteBook 2570p | 0.8.0 | 2022-11-23 | demo | x86-64 | BIOS (CSM mode?) | Gets to resolution selection, Fails assert in `src/os/bios/mod.rs:77` after selecting resolution |
 | Lenovo | G570 | 0.8.0 | 2022-11-11 | desktop | x86-64 | BIOS | Bootloader panics in `alloc_zeroed_page_aligned`, Correct video mode not offered (firmware issue) |
