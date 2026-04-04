@@ -9,11 +9,5 @@ GNU_CONFIG_GET config.sub
 dependencies = [
     "gettext",
     "glib",
-    "libiconv",
-    "pcre2",
 ]
-template = "custom"
-script = """
-DYNAMIC_INIT
-cookbook_configure
-"""
+template = "configure"

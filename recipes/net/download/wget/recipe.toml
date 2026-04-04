@@ -1,5 +1,6 @@
 [source]
 tar = "https://ftp.gnu.org/gnu/wget/wget-1.21.4.tar.gz"
+blake3 = "1c3c31259d23ed3890535fd3b8713082c74e41d459c8f290c1650ab1afab8f35"
 [build]
 dependencies = [
     "openssl3",
