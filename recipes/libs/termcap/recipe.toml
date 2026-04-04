@@ -1,5 +1,6 @@
 [source]
 tar = "https://ftp.gnu.org/gnu/termcap/termcap-1.3.1.tar.gz"
+blake3 = "57c095e0bb6e60e7b4a0597f51f7ac15b501ca0f95d37424d8d13978d28b8da3"
 [build]
 template = "custom"
 script = """

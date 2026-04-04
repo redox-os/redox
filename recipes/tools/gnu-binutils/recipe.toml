@@ -1,5 +1,6 @@
 [source]
 tar = "https://ftp.gnu.org/gnu/binutils/binutils-2.43.1.tar.xz"
+blake3 = "f074c81313b70eabc58ce9a9411cd771c5fa2433792d0ad8abcc45f603f58ed6"
 patches = ["01_build_fix.patch"]
 script = """
 DYNAMIC_INIT
