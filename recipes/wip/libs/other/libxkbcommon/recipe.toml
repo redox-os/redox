@@ -1,7 +1,7 @@
 #TODO: promote
 [source]
 tar = "https://xkbcommon.org/download/libxkbcommon-1.7.0.tar.xz"
-b3sum = "5001ca0b8562feeef2010bf16c05657e3875fda3ed5fdedbf48b9135e5cdfcbc"
+blake3 = "5001ca0b8562feeef2010bf16c05657e3875fda3ed5fdedbf48b9135e5cdfcbc"
 
 [build]
 template = "meson"

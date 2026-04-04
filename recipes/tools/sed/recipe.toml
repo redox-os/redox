@@ -1,5 +1,6 @@
 [source]
 tar = "https://ftp.gnu.org/gnu/sed/sed-4.4.tar.xz"
+blake3 = "a88c12b2b4304e53e3c7ae2eb0499d02e28873c1b9e1a6871e5347c6886a1ecd"
 patches = [
     "sed.patch"
 ]
