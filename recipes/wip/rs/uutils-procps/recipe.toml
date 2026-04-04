@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/uutils/procps"
+shallow_clone = true
+[build]
+template = "cargo"
