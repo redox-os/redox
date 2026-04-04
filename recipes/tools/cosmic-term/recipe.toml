@@ -1,6 +1,6 @@
 [source]
 git = "https://github.com/pop-os/cosmic-term.git"
-branch = "master"
+rev = "epoch-1.0.8"
 
 [build]
 template = "custom"
