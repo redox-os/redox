@@ -36,7 +36,6 @@ globset = "0.4"
 libc = "0.2"
 ignore = "0.4"
 object = { version = "0.38", features = ["build_core"] }
-pbr = "1.0.2"
 pkgar = { git = "https://gitlab.redox-os.org/redox-os/pkgar.git" }
 pkgar-core = { git = "https://gitlab.redox-os.org/redox-os/pkgar.git" }
 pkgar-keys = { git = "https://gitlab.redox-os.org/redox-os/pkgar.git" }
