@@ -47,15 +47,27 @@ else
 	cp -r "$(PREFIX)/gcc-install/". "$@.partial"
 	cp -r "$(PREFIX)/rust-install/". "$@.partial"
 	cp -r "$(PREFIX)/clang-install/". "$@.partial"
+ifneq ($(HOSTED_REDOX),1)
 	rm -rf "$@.partial/$(GNU_TARGET)/include/"*
 	cp -r "$(PREFIX)/gcc-install/$(GNU_TARGET)/include/c++" "$@.partial/$(GNU_TARGET)/include/c++"
+else
+	rm -rf "$@.partial/include/"*
+	cp -r "$(PREFIX)/gcc-install/include/c++" "$@.partial/include/c++"
+endif
 	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
 	export CARGO="env -u CARGO cargo" $(PREFIX_CONFIG) && \
 	$(REPO_BIN) cook relibc
+ifneq ($(HOSTED_REDOX),1)
 	cp -r "$(RELIBC_TARGET)/stage/usr/". "$@.partial/$(GNU_TARGET)"
 	mkdir -p "$@.partial/$(GNU_TARGET)/usr"
 	ln -s "../include" "$@.partial/$(GNU_TARGET)/usr/include"
 	ln -s "../lib" "$@.partial/$(GNU_TARGET)/usr/lib"
+else
+	cp -r "$(RELIBC_TARGET)/stage/usr/". "$@.partial"
+	mkdir -p "$@.partial/usr"
+	ln -s "../include" "$@.partial/usr/include"
+	ln -s "../lib" "$@.partial/usr/lib"
+endif
 	touch "$@.partial"
 	mv "$@.partial" "$@"
 endif
@@ -139,6 +151,8 @@ else
 	pkgar extract --pkey $(PREFIX)/id_ed25519.pub.toml --archive "$(PREFIX)/gcc13.cxx.pkgar" "$@.partial"
 	pkgar extract --pkey $(PREFIX)/id_ed25519.pub.toml --archive "$(PREFIX)/libgcc.pkgar" "$@.partial"
 	pkgar extract --pkey $(PREFIX)/id_ed25519.pub.toml --archive "$(PREFIX)/libstdcxx.pkgar" "$@.partial"
+	mv "$@.partial/usr"/* "$@.partial"
+	rmdir "$@.partial/usr"
 	touch "$@.partial"
 	mv "$@.partial" "$@"
 endif
@@ -151,6 +165,8 @@ else
 	mkdir -p "$@.partial"
 	pkgar extract --pkey $(PREFIX)/id_ed25519.pub.toml --archive "$(PREFIX)/llvm21.pkgar" "$@.partial"
 	pkgar extract --pkey $(PREFIX)/id_ed25519.pub.toml --archive "$(PREFIX)/rust.pkgar" "$@.partial"
+	mv "$@.partial/usr"/* "$@.partial"
+	rmdir "$@.partial/usr"
 	touch "$@.partial"
 	mv "$@.partial" "$@"
 endif
@@ -164,6 +180,8 @@ else
 	pkgar extract --pkey $(PREFIX)/id_ed25519.pub.toml --archive "$(PREFIX)/llvm21.runtime.pkgar" "$@.partial"
 	pkgar extract --pkey $(PREFIX)/id_ed25519.pub.toml --archive "$(PREFIX)/clang21.pkgar" "$@.partial"
 	pkgar extract --pkey $(PREFIX)/id_ed25519.pub.toml --archive "$(PREFIX)/lld21.pkgar" "$@.partial"
+	mv "$@.partial/usr"/* "$@.partial"
+	rmdir "$@.partial/usr"
 	touch "$@.partial"
 	mv "$@.partial" "$@"
 endif
