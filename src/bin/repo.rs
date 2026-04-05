@@ -204,13 +204,26 @@ fn main_inner() -> anyhow::Result<()> {
         ident::init_ident();
     }
     if command == CliCommand::Cook && config.cook.tui {
-        if let Some((name, e)) = run_tui_cook(config.clone(), recipes.clone())? {
-            let _ = stderr().write(e.as_bytes());
-            let _ = stderr().write(b"\n\n");
-            print_failed(&command, &name);
-            return Err(anyhow!("Execution has failed"));
-        } else {
-            print_success(&command, None);
+        match run_tui_cook(config.clone(), recipes.clone()) {
+            Ok(TuiApp {
+                dump_logs_on_exit: Some((name, err)),
+                ..
+            }) => {
+                let _ = stderr().write(err.as_bytes());
+                let _ = stderr().write(b"\n\n");
+                print_failed(&command, &name);
+                return Err(anyhow!("Execution has failed"));
+            }
+            Ok(app) => {
+                for (recipe, status) in app.recipes {
+                    match status {
+                        RecipeStatus::Cached => print_cached(&command, &recipe.name),
+                        RecipeStatus::Done => print_success(&command, &recipe.name),
+                        _ => unreachable!(),
+                    }
+                }
+            }
+            Err(e) => return Err(anyhow!(e)),
         }
         return publish_packages(&recipes, &config.repo_dir);
     }
@@ -230,9 +243,9 @@ fn main_inner() -> anyhow::Result<()> {
             Ok(cached) => {
                 if !command.is_informational() {
                     if cached {
-                        print_cached(&command, Some(&recipe.name));
+                        print_cached(&command, &recipe.name);
                     } else {
-                        print_success(&command, Some(&recipe.name));
+                        print_success(&command, &recipe.name);
                     }
                 }
             }
@@ -279,50 +292,28 @@ fn print_failed(command: &CliCommand, recipe: &PackageName) {
     );
 }
 
-fn print_success(command: &CliCommand, recipe: Option<&PackageName>) {
-    if let Some(recipe) = recipe {
-        eprintln!(
-            "{}{}{} {} - successful{}{}",
-            style::Bold,
-            color::Fg(color::AnsiValue(46)),
-            command.to_string(),
-            recipe.as_str(),
-            color::Fg(color::Reset),
-            style::Reset,
-        );
-    } else {
-        eprintln!(
-            "{}{}{} - successful{}{}",
-            style::Bold,
-            color::Fg(color::AnsiValue(46)),
-            command.to_string(),
-            color::Fg(color::Reset),
-            style::Reset,
-        );
-    }
+fn print_success(command: &CliCommand, recipe: &PackageName) {
+    eprintln!(
+        "{}{}{} {} - successful{}{}",
+        style::Bold,
+        color::Fg(color::AnsiValue(46)),
+        command.to_string(),
+        recipe.as_str(),
+        color::Fg(color::Reset),
+        style::Reset,
+    );
 }
 
-fn print_cached(command: &CliCommand, recipe: Option<&PackageName>) {
-    if let Some(recipe) = recipe {
-        eprintln!(
-            "{}{}{} {} - cached{}{}",
-            style::Bold,
-            color::Fg(color::AnsiValue(45)),
-            command.to_string(),
-            recipe.as_str(),
-            color::Fg(color::Reset),
-            style::Reset,
-        );
-    } else {
-        eprintln!(
-            "{}{}{} - cached{}{}",
-            style::Bold,
-            color::Fg(color::AnsiValue(45)),
-            command.to_string(),
-            color::Fg(color::Reset),
-            style::Reset,
-        );
-    }
+fn print_cached(command: &CliCommand, recipe: &PackageName) {
+    eprintln!(
+        "{}{}{} {} - cached{}{}",
+        style::Bold,
+        color::Fg(color::AnsiValue(45)),
+        command.to_string(),
+        recipe.as_str(),
+        color::Fg(color::Reset),
+        style::Reset,
+    );
 }
 
 fn repo_inner(
@@ -820,11 +811,11 @@ fn handle_push(recipes: &Vec<CookRecipe>, config: &CliConfig) -> anyhow::Result<
         };
         match r {
             Ok(true) => {
-                print_cached(&CliCommand::Push, Some(package_name));
+                print_cached(&CliCommand::Push, package_name);
                 Ok(true)
             }
             Ok(false) => {
-                print_success(&CliCommand::Push, Some(package_name));
+                print_success(&CliCommand::Push, package_name);
                 Ok(false)
             }
             Err(e) => {
@@ -1174,10 +1165,7 @@ impl TuiApp {
     }
 }
 
-fn run_tui_cook(
-    config: CliConfig,
-    recipes: Vec<CookRecipe>,
-) -> anyhow::Result<Option<(PackageName, String)>> {
+fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> Result<TuiApp, cookbook::Error> {
     let (work_tx, work_rx) = mpsc::channel::<(CookRecipe, FetchResult)>();
     let (status_tx, status_rx) = mpsc::channel::<StatusUpdate>();
 
@@ -1380,8 +1368,17 @@ fn run_tui_cook(
             .unwrap_or_default();
     });
 
-    let mut terminal = Terminal::new(TermionBackend::new(stdout()))?;
-    terminal.clear()?;
+    let mut terminal =
+        Terminal::new(TermionBackend::new(stdout())).map_err(|e| cookbook::Error::Io {
+            source: e,
+            path: None,
+            context: "Reading terminal pty",
+        })?;
+    terminal.clear().map_err(|e| cookbook::Error::Io {
+        source: e,
+        path: None,
+        context: "Clearing terminal",
+    })?;
 
     let mut app = TuiApp::new(recipes);
 
@@ -1390,7 +1387,7 @@ fn run_tui_cook(
 
     while running.load(Ordering::SeqCst) {
         let frame_start = Instant::now();
-        terminal.draw(|f| {
+        let r = terminal.draw(|f| {
             spinner_i = (spinner_i + 1) % spinner.len();
             let spin = spinner[spinner_i];
 
@@ -1638,6 +1635,12 @@ fn run_tui_cook(
                     handle_main_event(&mut app, &event);
                 }
             }
+        });
+
+        r.map_err(|e| cookbook::Error::Io {
+            source: e,
+            path: None,
+            context: "Drawing terminal",
         })?;
 
         while let Ok(update) = status_rx.try_recv() {
@@ -1663,7 +1666,7 @@ fn run_tui_cook(
     let _ = fetcher_handle.join();
     let _ = cooker_handle.join();
 
-    Ok(app.dump_logs_on_exit)
+    Ok(app)
 }
 
 fn join_logs(log: &Vec<String>, line: Option<Cow<'_, str>>) -> String {
