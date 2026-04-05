@@ -16,7 +16,6 @@ pub use std::os::unix::io::RawFd;
 
 use crate::{Error, Result, wrap_io_err};
 
-#[macro_export]
 macro_rules! log_to_pty {
     ($logger:expr, $($arg:tt)+) => {
         if $logger.is_some() {
@@ -29,6 +28,8 @@ macro_rules! log_to_pty {
         }
     };
 }
+
+pub(crate) use log_to_pty;
 
 pub type PtyOut<'a> = Option<(&'a mut UnixSlavePty, &'a mut PipeWriter)>;
 
@@ -72,6 +73,10 @@ pub fn spawn_to_pipe(command: &mut Command, stdout_pipe: &PtyOut) -> Result<Chil
         Some(stdout) => stdout.0.spawn_command(command.into()),
         None => Ok(command.spawn().map_err(wrap_io_err!("Spawning"))?),
     }
+}
+
+pub fn write_to_pty(pty: &PtyOut, text: &str) {
+    log_to_pty!(pty, "{}", text);
 }
 
 //

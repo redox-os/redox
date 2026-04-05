@@ -53,6 +53,9 @@ impl Error {
     pub fn from_last_io_error(context: &'static str) -> Error {
         wrap_io_err!(context)(io::Error::last_os_error())
     }
+    pub fn from_io_error(err: io::Error, context: &'static str) -> Error {
+        wrap_io_err!(context)(err)
+    }
 }
 
 impl Display for Error {
@@ -194,10 +197,12 @@ impl From<walkdir::Error> for Error {
     }
 }
 
-pub(crate) type Result<T> = std::result::Result<T, Error>;
+pub type Result<T> = std::result::Result<T, Error>;
 
 pub(crate) use wrap_io_err;
 
 pub(crate) use wrap_other_err;
 
 pub(crate) use bail_other_err;
+
+pub(crate) use cook::pty::log_to_pty;

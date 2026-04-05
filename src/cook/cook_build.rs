@@ -516,7 +516,7 @@ pub fn build(
     Ok(BuildResult::new(stage_dirs, auto_deps))
 }
 
-pub fn remove_stage_dir(stage_dir: &PathBuf) -> Result<(), String> {
+pub fn remove_stage_dir(stage_dir: &PathBuf) -> crate::Result<()> {
     if stage_dir.is_dir() {
         remove_all(&stage_dir)?;
     }
