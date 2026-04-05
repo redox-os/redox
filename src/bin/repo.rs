@@ -6,11 +6,11 @@ use cookbook::cook::fetch::{FetchResult, fetch, fetch_offline};
 use cookbook::cook::fs::{create_target_dir, run_command};
 use cookbook::cook::ident;
 use cookbook::cook::package::{package, package_handle_push};
-use cookbook::cook::pty::{PtyOut, UnixSlavePty, flush_pty, setup_pty};
+use cookbook::cook::pty::{PtyOut, UnixSlavePty, flush_pty, setup_pty, write_to_pty};
 use cookbook::cook::script::KILL_ALL_PID;
 use cookbook::cook::tree::{self, WalkTreeEntry};
 use cookbook::recipe::{CookRecipe, recipes_flatten_package_names, recipes_mark_as_deps};
-use cookbook::{log_to_pty, staged_pkg};
+use cookbook::{Error, staged_pkg};
 use pkg::{PackageName, PackageState};
 use ratatui::Terminal;
 use ratatui::layout::{Constraint, Direction, Layout, Position, Rect};
@@ -359,7 +359,7 @@ fn repo_inner(
             let mut logger = Some((&mut stdout_writer, &mut stderr_writer));
             let result = repo_inner_fn(&logger);
             if let Err(err_ctx) = &result {
-                log_to_pty!(&logger, "\n{:?}", err_ctx)
+                write_to_pty(&logger, &format!("\n{:?}", err_ctx));
             }
             // successful fetch is not that useful to log
             if *command == CliCommand::Cook || result.is_err() {
@@ -742,12 +742,11 @@ fn handle_cook(
 }
 
 /// delete stage artifacts upon nonstop failure to let repo_builder know
-fn handle_nonstop_fail(recipe: &CookRecipe) -> anyhow::Result<()> {
+fn handle_nonstop_fail(recipe: &CookRecipe) -> cookbook::Result<()> {
     let target_dir = recipe.target_dir();
     let stage_dirs = get_stage_dirs(&recipe.recipe.optional_packages, &target_dir);
     for stage_dir in stage_dirs {
-        remove_stage_dir(&stage_dir)
-            .map_err(|err| anyhow!("failed to remove stage dir: {:?}", err))?;
+        remove_stage_dir(&stage_dir)?;
     }
     Ok(())
 }
@@ -957,6 +956,8 @@ impl ToString for JobType {
         .to_string()
     }
 }
+
+const PROMPT_WAIT: Duration = Duration::from_millis(101);
 
 struct TuiApp {
     recipes: Vec<(CookRecipe, RecipeStatus)>,
@@ -1195,7 +1196,7 @@ fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> Result<TuiApp, c
                 );
                 if let Some(log_path) = cooker_config.logs_dir.as_ref() {
                     if let Err(err_ctx) = &handler {
-                        log_to_pty!(&logger, "\n{:?}", err_ctx)
+                        write_to_pty(&logger, &format!("\n{:?}", err_ctx));
                     }
                     flush_pty(&mut logger);
                     let log_path = log_path.join(format!("{}/{}.log", recipe.target, name.name()));
@@ -1228,13 +1229,13 @@ fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> Result<TuiApp, c
                             break;
                         }
                         while cooker_prompting.load(Ordering::SeqCst) != 0 {
-                            thread::sleep(Duration::from_millis(101)); // wait other prompt
+                            thread::sleep(PROMPT_WAIT); // wait other prompt
                         }
                         cooker_prompting.swap(1, Ordering::SeqCst);
                         'wait: loop {
                             match cooker_prompting.load(Ordering::SeqCst) {
                                 0 => break 'again,
-                                1 => thread::sleep(Duration::from_millis(101)),
+                                1 => thread::sleep(PROMPT_WAIT),
                                 2 => {
                                     cooker_prompting.swap(0, Ordering::SeqCst);
                                     break 'wait;
@@ -1296,11 +1297,11 @@ fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> Result<TuiApp, c
                 let _ = recipe.reload_recipe(); // reread recipe.toml in case we're retrying
                 let handler = handle_fetch(&recipe, &fetcher_config, true, &logger);
                 if let Some(log_path) = fetcher_config.logs_dir.as_ref()
-                    // successful fetch log usually not that helpful
+                    // successful fetch log is not helpful, better to retain last build log
                     && handler.is_err()
                 {
                     if let Err(err_ctx) = &handler {
-                        log_to_pty!(&logger, "\n{:?}", err_ctx)
+                        write_to_pty(&logger, &format!("\n{:?}", err_ctx));
                     }
                     flush_pty(&mut logger);
                     let log_path = log_path.join(format!("{}/{}.log", recipe.target, name.name()));
@@ -1336,13 +1337,13 @@ fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> Result<TuiApp, c
                             break;
                         }
                         while fetcher_prompting.load(Ordering::SeqCst) != 0 {
-                            thread::sleep(Duration::from_millis(101)); // wait other prompt
+                            thread::sleep(PROMPT_WAIT); // wait other prompt
                         }
                         fetcher_prompting.swap(1, Ordering::SeqCst);
                         'wait: loop {
                             match fetcher_prompting.load(Ordering::SeqCst) {
                                 0 => break 'again,
-                                1 => thread::sleep(Duration::from_millis(101)),
+                                1 => thread::sleep(PROMPT_WAIT),
                                 2 => {
                                     fetcher_prompting.swap(0, Ordering::SeqCst);
                                     break 'wait;
@@ -1368,17 +1369,11 @@ fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> Result<TuiApp, c
             .unwrap_or_default();
     });
 
-    let mut terminal =
-        Terminal::new(TermionBackend::new(stdout())).map_err(|e| cookbook::Error::Io {
-            source: e,
-            path: None,
-            context: "Reading terminal pty",
-        })?;
-    terminal.clear().map_err(|e| cookbook::Error::Io {
-        source: e,
-        path: None,
-        context: "Clearing terminal",
-    })?;
+    let mut terminal = Terminal::new(TermionBackend::new(stdout()))
+        .map_err(|e| Error::from_io_error(e, "Reading terminal pty"))?;
+    terminal
+        .clear()
+        .map_err(|e| Error::from_io_error(e, "Clearing terminal pty"))?;
 
     let mut app = TuiApp::new(recipes);
 
@@ -1637,11 +1632,7 @@ fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> Result<TuiApp, c
             }
         });
 
-        r.map_err(|e| cookbook::Error::Io {
-            source: e,
-            path: None,
-            context: "Drawing terminal",
-        })?;
+        r.map_err(|e| Error::from_io_error(e, "Drawing to terminal pty"))?;
 
         while let Ok(update) = status_rx.try_recv() {
             app.update_status(update);
