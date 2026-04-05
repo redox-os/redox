@@ -6,11 +6,11 @@ use cookbook::cook::fetch::{FetchResult, fetch, fetch_offline};
 use cookbook::cook::fs::{create_target_dir, run_command};
 use cookbook::cook::ident;
 use cookbook::cook::package::{package, package_handle_push};
-use cookbook::cook::pty::{PtyOut, UnixSlavePty, flush_pty, setup_pty};
+use cookbook::cook::pty::{PtyOut, UnixSlavePty, flush_pty, setup_pty, write_to_pty};
 use cookbook::cook::script::KILL_ALL_PID;
 use cookbook::cook::tree::{self, WalkTreeEntry};
 use cookbook::recipe::{CookRecipe, recipes_flatten_package_names, recipes_mark_as_deps};
-use cookbook::{log_to_pty, staged_pkg};
+use cookbook::{Error, staged_pkg};
 use pkg::{PackageName, PackageState};
 use ratatui::Terminal;
 use ratatui::layout::{Constraint, Direction, Layout, Position, Rect};
@@ -204,13 +204,31 @@ fn main_inner() -> anyhow::Result<()> {
         ident::init_ident();
     }
     if command == CliCommand::Cook && config.cook.tui {
-        if let Some((name, e)) = run_tui_cook(config.clone(), recipes.clone())? {
-            let _ = stderr().write(e.as_bytes());
-            let _ = stderr().write(b"\n\n");
-            print_failed(&command, &name);
-            return Err(anyhow!("Execution has failed"));
-        } else {
-            print_success(&command, None);
+        match run_tui_cook(config.clone(), recipes.clone()) {
+            Ok(TuiApp {
+                dump_logs_on_exit: Some((name, err)),
+                ..
+            }) => {
+                let _ = stderr().write(err.as_bytes());
+                let _ = stderr().write(b"\n\n");
+                print_failed(&command, &name);
+                return Err(anyhow!("Execution has failed"));
+            }
+            Ok(app) => {
+                for (recipe, status) in app.recipes {
+                    match status {
+                        RecipeStatus::Cached => print_cached(&command, &recipe.name),
+                        RecipeStatus::Done => print_success(&command, &recipe.name),
+                        RecipeStatus::Failed(err) => {
+                            let _ = stderr().write(err.as_bytes());
+                            let _ = stderr().write(b"\n\n");
+                            print_failed(&command, &recipe.name)
+                        }
+                        _ => unreachable!(),
+                    }
+                }
+            }
+            Err(e) => return Err(anyhow!(e)),
         }
         return publish_packages(&recipes, &config.repo_dir);
     }
@@ -230,9 +248,9 @@ fn main_inner() -> anyhow::Result<()> {
             Ok(cached) => {
                 if !command.is_informational() {
                     if cached {
-                        print_cached(&command, Some(&recipe.name));
+                        print_cached(&command, &recipe.name);
                     } else {
-                        print_success(&command, Some(&recipe.name));
+                        print_success(&command, &recipe.name);
                     }
                 }
             }
@@ -279,50 +297,28 @@ fn print_failed(command: &CliCommand, recipe: &PackageName) {
     );
 }
 
-fn print_success(command: &CliCommand, recipe: Option<&PackageName>) {
-    if let Some(recipe) = recipe {
-        eprintln!(
-            "{}{}{} {} - successful{}{}",
-            style::Bold,
-            color::Fg(color::AnsiValue(46)),
-            command.to_string(),
-            recipe.as_str(),
-            color::Fg(color::Reset),
-            style::Reset,
-        );
-    } else {
-        eprintln!(
-            "{}{}{} - successful{}{}",
-            style::Bold,
-            color::Fg(color::AnsiValue(46)),
-            command.to_string(),
-            color::Fg(color::Reset),
-            style::Reset,
-        );
-    }
+fn print_success(command: &CliCommand, recipe: &PackageName) {
+    eprintln!(
+        "{}{}{} {} - successful{}{}",
+        style::Bold,
+        color::Fg(color::AnsiValue(46)),
+        command.to_string(),
+        recipe.as_str(),
+        color::Fg(color::Reset),
+        style::Reset,
+    );
 }
 
-fn print_cached(command: &CliCommand, recipe: Option<&PackageName>) {
-    if let Some(recipe) = recipe {
-        eprintln!(
-            "{}{}{} {} - cached{}{}",
-            style::Bold,
-            color::Fg(color::AnsiValue(45)),
-            command.to_string(),
-            recipe.as_str(),
-            color::Fg(color::Reset),
-            style::Reset,
-        );
-    } else {
-        eprintln!(
-            "{}{}{} - cached{}{}",
-            style::Bold,
-            color::Fg(color::AnsiValue(45)),
-            command.to_string(),
-            color::Fg(color::Reset),
-            style::Reset,
-        );
-    }
+fn print_cached(command: &CliCommand, recipe: &PackageName) {
+    eprintln!(
+        "{}{}{} {} - cached{}{}",
+        style::Bold,
+        color::Fg(color::AnsiValue(45)),
+        command.to_string(),
+        recipe.as_str(),
+        color::Fg(color::Reset),
+        style::Reset,
+    );
 }
 
 fn repo_inner(
@@ -368,10 +364,10 @@ fn repo_inner(
             let mut logger = Some((&mut stdout_writer, &mut stderr_writer));
             let result = repo_inner_fn(&logger);
             if let Err(err_ctx) = &result {
-                log_to_pty!(&logger, "\n{:?}", err_ctx)
+                write_to_pty(&logger, &format!("\n{:?}", err_ctx));
             }
-            // successful fetch is not that useful to log
-            if *command == CliCommand::Cook || result.is_err() {
+            // successful cached build is not that useful to log
+            if !matches!(result, Ok(true)) {
                 flush_pty(&mut logger);
                 let log_path =
                     log_path.join(format!("{}/{}.log", recipe.target, recipe.name.name()));
@@ -751,12 +747,11 @@ fn handle_cook(
 }
 
 /// delete stage artifacts upon nonstop failure to let repo_builder know
-fn handle_nonstop_fail(recipe: &CookRecipe) -> anyhow::Result<()> {
+fn handle_nonstop_fail(recipe: &CookRecipe) -> cookbook::Result<()> {
     let target_dir = recipe.target_dir();
     let stage_dirs = get_stage_dirs(&recipe.recipe.optional_packages, &target_dir);
     for stage_dir in stage_dirs {
-        remove_stage_dir(&stage_dir)
-            .map_err(|err| anyhow!("failed to remove stage dir: {:?}", err))?;
+        remove_stage_dir(&stage_dir)?;
     }
     Ok(())
 }
@@ -820,11 +815,11 @@ fn handle_push(recipes: &Vec<CookRecipe>, config: &CliConfig) -> anyhow::Result<
         };
         match r {
             Ok(true) => {
-                print_cached(&CliCommand::Push, Some(package_name));
+                print_cached(&CliCommand::Push, package_name);
                 Ok(true)
             }
             Ok(false) => {
-                print_success(&CliCommand::Push, Some(package_name));
+                print_success(&CliCommand::Push, package_name);
                 Ok(false)
             }
             Err(e) => {
@@ -967,6 +962,8 @@ impl ToString for JobType {
     }
 }
 
+const PROMPT_WAIT: Duration = Duration::from_millis(101);
+
 struct TuiApp {
     recipes: Vec<(CookRecipe, RecipeStatus)>,
     fetch_queue: VecDeque<CookRecipe>,
@@ -1104,9 +1101,10 @@ impl TuiApp {
                     let _ = std::io::stdout().write_all(&chunk);
                 }
                 let log_list = self.logs.entry(name.clone()).or_default();
+                // TODO: multibyte-aware line split?
                 while let Some(newline_pos) = buffer.iter().position(|&b| b == b'\n') {
-                    let line_bytes = buffer.drain(..=newline_pos).collect::<Vec<u8>>();
-                    let line_str = String::from_utf8_lossy(&line_bytes).into_owned();
+                    let line_bytes = buffer.drain(..=newline_pos);
+                    let line_str = String::from_utf8_lossy(&line_bytes.as_slice());
                     let line_str_pos = line_str.trim_end();
                     let line_str = line_str_pos.rsplit('\r').next().unwrap_or(&line_str_pos);
                     log_list.push(line_str.to_owned());
@@ -1174,10 +1172,7 @@ impl TuiApp {
     }
 }
 
-fn run_tui_cook(
-    config: CliConfig,
-    recipes: Vec<CookRecipe>,
-) -> anyhow::Result<Option<(PackageName, String)>> {
+fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> Result<TuiApp, cookbook::Error> {
     let (work_tx, work_rx) = mpsc::channel::<(CookRecipe, FetchResult)>();
     let (status_tx, status_rx) = mpsc::channel::<StatusUpdate>();
 
@@ -1205,9 +1200,12 @@ fn run_tui_cook(
                     fetch_result.source_dir.clone(),
                     &logger,
                 );
-                if let Some(log_path) = cooker_config.logs_dir.as_ref() {
+                if let Some(log_path) = cooker_config.logs_dir.as_ref()
+                    // prefer to retain full build logs
+                    && !matches!(handler, Ok(true))
+                {
                     if let Err(err_ctx) = &handler {
-                        log_to_pty!(&logger, "\n{:?}", err_ctx)
+                        write_to_pty(&logger, &format!("\n{:?}", err_ctx));
                     }
                     flush_pty(&mut logger);
                     let log_path = log_path.join(format!("{}/{}.log", recipe.target, name.name()));
@@ -1240,13 +1238,13 @@ fn run_tui_cook(
                             break;
                         }
                         while cooker_prompting.load(Ordering::SeqCst) != 0 {
-                            thread::sleep(Duration::from_millis(101)); // wait other prompt
+                            thread::sleep(PROMPT_WAIT); // wait other prompt
                         }
                         cooker_prompting.swap(1, Ordering::SeqCst);
                         'wait: loop {
                             match cooker_prompting.load(Ordering::SeqCst) {
                                 0 => break 'again,
-                                1 => thread::sleep(Duration::from_millis(101)),
+                                1 => thread::sleep(PROMPT_WAIT),
                                 2 => {
                                     cooker_prompting.swap(0, Ordering::SeqCst);
                                     break 'wait;
@@ -1308,11 +1306,11 @@ fn run_tui_cook(
                 let _ = recipe.reload_recipe(); // reread recipe.toml in case we're retrying
                 let handler = handle_fetch(&recipe, &fetcher_config, true, &logger);
                 if let Some(log_path) = fetcher_config.logs_dir.as_ref()
-                    // successful fetch log usually not that helpful
-                    && handler.is_err()
+                    // prefer to retain full build logs
+                    && !matches!(handler, Ok(FetchResult { cached: true, .. }))
                 {
                     if let Err(err_ctx) = &handler {
-                        log_to_pty!(&logger, "\n{:?}", err_ctx)
+                        write_to_pty(&logger, &format!("\n{:?}", err_ctx));
                     }
                     flush_pty(&mut logger);
                     let log_path = log_path.join(format!("{}/{}.log", recipe.target, name.name()));
@@ -1348,13 +1346,13 @@ fn run_tui_cook(
                             break;
                         }
                         while fetcher_prompting.load(Ordering::SeqCst) != 0 {
-                            thread::sleep(Duration::from_millis(101)); // wait other prompt
+                            thread::sleep(PROMPT_WAIT); // wait other prompt
                         }
                         fetcher_prompting.swap(1, Ordering::SeqCst);
                         'wait: loop {
                             match fetcher_prompting.load(Ordering::SeqCst) {
                                 0 => break 'again,
-                                1 => thread::sleep(Duration::from_millis(101)),
+                                1 => thread::sleep(PROMPT_WAIT),
                                 2 => {
                                     fetcher_prompting.swap(0, Ordering::SeqCst);
                                     break 'wait;
@@ -1380,8 +1378,11 @@ fn run_tui_cook(
             .unwrap_or_default();
     });
 
-    let mut terminal = Terminal::new(TermionBackend::new(stdout()))?;
-    terminal.clear()?;
+    let mut terminal = Terminal::new(TermionBackend::new(stdout()))
+        .map_err(|e| Error::from_io_error(e, "Reading terminal pty"))?;
+    terminal
+        .clear()
+        .map_err(|e| Error::from_io_error(e, "Clearing terminal pty"))?;
 
     let mut app = TuiApp::new(recipes);
 
@@ -1390,7 +1391,7 @@ fn run_tui_cook(
 
     while running.load(Ordering::SeqCst) {
         let frame_start = Instant::now();
-        terminal.draw(|f| {
+        let r = terminal.draw(|f| {
             spinner_i = (spinner_i + 1) % spinner.len();
             let spin = spinner[spinner_i];
 
@@ -1638,7 +1639,9 @@ fn run_tui_cook(
                     handle_main_event(&mut app, &event);
                 }
             }
-        })?;
+        });
+
+        r.map_err(|e| Error::from_io_error(e, "Drawing to terminal pty"))?;
 
         while let Ok(update) = status_rx.try_recv() {
             app.update_status(update);
@@ -1663,7 +1666,7 @@ fn run_tui_cook(
     let _ = fetcher_handle.join();
     let _ = cooker_handle.join();
 
-    Ok(app.dump_logs_on_exit)
+    Ok(app)
 }
 
 fn join_logs(log: &Vec<String>, line: Option<Cow<'_, str>>) -> String {
