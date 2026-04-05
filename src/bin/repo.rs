@@ -361,8 +361,8 @@ fn repo_inner(
             if let Err(err_ctx) = &result {
                 write_to_pty(&logger, &format!("\n{:?}", err_ctx));
             }
-            // successful fetch is not that useful to log
-            if *command == CliCommand::Cook || result.is_err() {
+            // successful cached build is not that useful to log
+            if !matches!(result, Ok(true)) {
                 flush_pty(&mut logger);
                 let log_path =
                     log_path.join(format!("{}/{}.log", recipe.target, recipe.name.name()));
@@ -1096,9 +1096,10 @@ impl TuiApp {
                     let _ = std::io::stdout().write_all(&chunk);
                 }
                 let log_list = self.logs.entry(name.clone()).or_default();
+                // TODO: multibyte-aware line split?
                 while let Some(newline_pos) = buffer.iter().position(|&b| b == b'\n') {
-                    let line_bytes = buffer.drain(..=newline_pos).collect::<Vec<u8>>();
-                    let line_str = String::from_utf8_lossy(&line_bytes).into_owned();
+                    let line_bytes = buffer.drain(..=newline_pos);
+                    let line_str = String::from_utf8_lossy(&line_bytes.as_slice());
                     let line_str_pos = line_str.trim_end();
                     let line_str = line_str_pos.rsplit('\r').next().unwrap_or(&line_str_pos);
                     log_list.push(line_str.to_owned());
@@ -1194,7 +1195,10 @@ fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> Result<TuiApp, c
                     fetch_result.source_dir.clone(),
                     &logger,
                 );
-                if let Some(log_path) = cooker_config.logs_dir.as_ref() {
+                if let Some(log_path) = cooker_config.logs_dir.as_ref()
+                    // prefer to retain full build logs
+                    && !matches!(handler, Ok(true))
+                {
                     if let Err(err_ctx) = &handler {
                         write_to_pty(&logger, &format!("\n{:?}", err_ctx));
                     }
@@ -1297,8 +1301,8 @@ fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> Result<TuiApp, c
                 let _ = recipe.reload_recipe(); // reread recipe.toml in case we're retrying
                 let handler = handle_fetch(&recipe, &fetcher_config, true, &logger);
                 if let Some(log_path) = fetcher_config.logs_dir.as_ref()
-                    // successful fetch log is not helpful, better to retain last build log
-                    && handler.is_err()
+                    // prefer to retain full build logs
+                    && !matches!(handler, Ok(FetchResult { cached: true, .. }))
                 {
                     if let Err(err_ctx) = &handler {
                         write_to_pty(&logger, &format!("\n{:?}", err_ctx));
