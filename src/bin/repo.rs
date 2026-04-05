@@ -219,6 +219,11 @@ fn main_inner() -> anyhow::Result<()> {
                     match status {
                         RecipeStatus::Cached => print_cached(&command, &recipe.name),
                         RecipeStatus::Done => print_success(&command, &recipe.name),
+                        RecipeStatus::Failed(err) => {
+                            let _ = stderr().write(err.as_bytes());
+                            let _ = stderr().write(b"\n\n");
+                            print_failed(&command, &recipe.name)
+                        }
                         _ => unreachable!(),
                     }
                 }
