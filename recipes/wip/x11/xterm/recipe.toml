@@ -22,7 +22,7 @@ dependencies = [
     "libxpm",
     "libxrender",
     "libxt",
-    "ncurses",
+    "ncursesw",
     "pcre2",
     "x11proto",
     "zlib",

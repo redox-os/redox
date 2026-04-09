@@ -206,6 +206,7 @@ strace = {}
 syobonaction = {}
 terminfo = {}
 timidity = {}
+tmux = {}
 tokei = {}
 ttf-hack = {}
 userutils = {}
