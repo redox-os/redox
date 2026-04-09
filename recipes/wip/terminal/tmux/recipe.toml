@@ -1,4 +1,4 @@
-#TODO Promote
+#TODO can't exit from terminal, can't clean socket itself
 [source]
 tar = "https://github.com/tmux/tmux/releases/download/3.6a/tmux-3.6a.tar.gz"
 blake3 = "43a9a5fd4ebe403efccd666c7b620fcf65489b123092df70113466a2b5aedb5a"
@@ -6,12 +6,8 @@ patches = [
     "redox.patch"
 ]
 [build]
-template = "custom"
+template = "configure"
 dependencies = [
     "ncursesw",
     "libevent",
 ]
-script = """
-export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include/ncurses"
-cookbook_configure
-"""
