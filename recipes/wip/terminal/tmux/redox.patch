@@ -1,0 +1,95 @@
+diff --color -ruwN source/compat/base64.c source-new/compat/base64.c
+--- source/compat/base64.c	2022-04-25 15:25:13.000000000 +0700
++++ source-new/compat/base64.c	2026-04-09 07:15:37.515384719 +0700
+@@ -46,10 +46,10 @@
+ #include <sys/socket.h>
+ #include <netinet/in.h>
+ #include <arpa/inet.h>
+-#include <arpa/nameser.h>
++// #include <arpa/nameser.h>
+ 
+ #include <ctype.h>
+-#include <resolv.h>
++// #include <resolv.h>
+ #include <stdio.h>
+ 
+ #include <stdlib.h>
+diff --color -ruwN source/compat/reallocarray.c source-new/compat/reallocarray.c
+--- source/compat/reallocarray.c	2022-04-25 15:25:13.000000000 +0700
++++ source-new/compat/reallocarray.c	2026-04-09 07:15:37.515516254 +0700
+@@ -22,6 +22,7 @@
+ 
+ #include "compat.h"
+ 
++#ifndef __redox__
+ /*
+  * This is sqrt(SIZE_MAX+1), as s1*s2 <= SIZE_MAX
+  * if both s1 < MUL_NO_OVERFLOW and s2 < MUL_NO_OVERFLOW
+@@ -38,3 +39,4 @@
+ 	}
+ 	return realloc(optr, size * nmemb);
+ }
++#endif
+diff --color -ruwN source/input.c source-new/input.c
+--- source/input.c	2025-12-05 12:37:44.000000000 +0700
++++ source-new/input.c	2026-04-09 07:15:37.515731613 +0700
+@@ -21,7 +21,7 @@
+ #include <netinet/in.h>
+ 
+ #include <ctype.h>
+-#include <resolv.h>
++// #include <resolv.h>
+ #include <stdlib.h>
+ #include <string.h>
+ #include <time.h>
+diff --color -ruwN source/tmux.c source-new/tmux.c
+--- source/tmux.c	2025-10-29 15:49:16.000000000 +0700
++++ source-new/tmux.c	2026-04-09 07:17:30.947212475 +0700
+@@ -222,10 +222,13 @@
+ 		xasprintf(cause, "%s is not a directory", base);
+ 		goto fail;
+ 	}
++// FIXME: mkdir set wrong permission
++#ifndef __redox__
+ 	if (sb.st_uid != uid || (sb.st_mode & TMUX_SOCK_PERM) != 0) {
+ 		xasprintf(cause, "directory %s has unsafe permissions", base);
+ 		goto fail;
+ 	}
++#endif
+ 	xasprintf(&path, "%s/%s", base, label);
+ 	free(base);
+ 	return (path);
+diff --color -ruwN source/tty.c source-new/tty.c
+--- source/tty.c	2025-12-05 12:37:44.000000000 +0700
++++ source-new/tty.c	2026-04-09 07:15:37.516745754 +0700
+@@ -24,7 +24,7 @@
+ #include <curses.h>
+ #include <errno.h>
+ #include <fcntl.h>
+-#include <resolv.h>
++// #include <resolv.h>
+ #include <stdlib.h>
+ #include <string.h>
+ #include <termios.h>
+@@ -347,8 +347,7 @@
+ 	tio.c_iflag &= ~(IXON|IXOFF|ICRNL|INLCR|IGNCR|IMAXBEL|ISTRIP);
+ 	tio.c_iflag |= IGNBRK;
+ 	tio.c_oflag &= ~(OPOST|ONLCR|OCRNL|ONLRET);
+-	tio.c_lflag &= ~(IEXTEN|ICANON|ECHO|ECHOE|ECHONL|ECHOCTL|ECHOPRT|
+-	    ECHOKE|ISIG);
++	tio.c_lflag &= ~(IEXTEN|ICANON|ECHO|ECHOE|ECHONL|ECHOPRT|ISIG);
+ 	tio.c_cc[VMIN] = 1;
+ 	tio.c_cc[VTIME] = 0;
+ 	if (tcsetattr(c->fd, TCSANOW, &tio) == 0)
+diff --color -ruwN source/tty-keys.c source-new/tty-keys.c
+--- source/tty-keys.c	2025-12-05 12:37:44.000000000 +0700
++++ source-new/tty-keys.c	2026-04-09 07:15:37.516964363 +0700
+@@ -23,7 +23,7 @@
+ 
+ #include <ctype.h>
+ #include <limits.h>
+-#include <resolv.h>
++// #include <resolv.h>
+ #include <stdlib.h>
+ #include <string.h>
+ #include <termios.h>
