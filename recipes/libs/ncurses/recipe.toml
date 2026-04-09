@@ -12,10 +12,11 @@ DYNAMIC_INIT
 COOKBOOK_CONFIGURE_FLAGS+=(
     --disable-db-install
     --disable-stripping
+    --disable-widec
+    --enable-pc-files
     --without-ada
     --without-manpages
     --without-tests
-    --enable-pc-files
     --with-terminfo-dirs=/usr/share/terminfo
     --with-pkg-config-libdir=/usr/lib/pkgconfig
     cf_cv_func_mkstemp=yes
