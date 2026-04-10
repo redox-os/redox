@@ -1,5 +1,6 @@
 [source]
-git = "https://gitlab.redox-os.org/redox-os/liborbital.git"
+git = "https://gitlab.redox-os.org/willnode/liborbital.git"
+branch = "soft-blit"
 
 [build]
 template = "custom"

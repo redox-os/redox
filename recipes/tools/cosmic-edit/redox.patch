@@ -1,0 +1,132 @@
+diff --git a/Cargo.lock b/Cargo.lock
+index 968b42d..4c1ca89 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -1429,7 +1429,7 @@ dependencies = [
+  "cosmic-settings-daemon",
+  "dirs 6.0.0",
+  "futures-util",
+- "iced_futures",
++ "iced_futures 0.14.0-dev (git+https://github.com/pop-os/libcosmic.git)",
+  "known-folders",
+  "notify",
+  "ron 0.12.0",
+@@ -3288,7 +3288,7 @@ dependencies = [
+  "dnd",
+  "iced_accessibility",
+  "iced_core",
+- "iced_futures",
++ "iced_futures 0.14.0-dev (git+https://github.com/pop-os/libcosmic.git)",
+  "iced_renderer",
+  "iced_widget",
+  "iced_winit",
+@@ -3310,7 +3310,7 @@ dependencies = [
+ [[package]]
+ name = "iced_core"
+ version = "0.14.0-dev"
+-source = "git+https://github.com/pop-os/libcosmic.git#384e8f6e219bb458720eafa5bb971b832c057f23"
++source = "git+https://github.com/willnode/iced?branch=cosmic-orbital#82cbe7c45dabefe2d07db8af9e00c029dc2b7e30"
+ dependencies = [
+  "bitflags 2.11.0",
+  "bytes",
+@@ -3331,6 +3331,19 @@ dependencies = [
+  "window_clipboard",
+ ]
+ 
++[[package]]
++name = "iced_futures"
++version = "0.14.0-dev"
++source = "git+https://github.com/willnode/iced?branch=cosmic-orbital#82cbe7c45dabefe2d07db8af9e00c029dc2b7e30"
++dependencies = [
++ "futures",
++ "iced_core",
++ "log",
++ "rustc-hash 2.1.1",
++ "wasm-bindgen-futures",
++ "wasm-timer",
++]
++
+ [[package]]
+ name = "iced_futures"
+ version = "0.14.0-dev"
+@@ -3360,14 +3373,14 @@ dependencies = [
+ [[package]]
+ name = "iced_graphics"
+ version = "0.14.0-dev"
+-source = "git+https://github.com/pop-os/libcosmic.git#384e8f6e219bb458720eafa5bb971b832c057f23"
++source = "git+https://github.com/willnode/iced?branch=cosmic-orbital#82cbe7c45dabefe2d07db8af9e00c029dc2b7e30"
+ dependencies = [
+  "bitflags 2.11.0",
+  "bytemuck",
+  "cosmic-text",
+  "half",
+  "iced_core",
+- "iced_futures",
++ "iced_futures 0.14.0-dev (git+https://github.com/willnode/iced?branch=cosmic-orbital)",
+  "image",
+  "kamadak-exif",
+  "log",
+@@ -3400,7 +3413,7 @@ dependencies = [
+  "cosmic-client-toolkit",
+  "dnd",
+  "iced_core",
+- "iced_futures",
++ "iced_futures 0.14.0-dev (git+https://github.com/pop-os/libcosmic.git)",
+  "raw-window-handle",
+  "thiserror 1.0.69",
+  "window_clipboard",
+@@ -3409,7 +3422,7 @@ dependencies = [
+ [[package]]
+ name = "iced_tiny_skia"
+ version = "0.14.0-dev"
+-source = "git+https://github.com/pop-os/libcosmic.git#384e8f6e219bb458720eafa5bb971b832c057f23"
++source = "git+https://github.com/willnode/iced?branch=cosmic-orbital#82cbe7c45dabefe2d07db8af9e00c029dc2b7e30"
+ dependencies = [
+  "bytemuck",
+  "cosmic-text",
+@@ -3479,7 +3492,7 @@ source = "git+https://github.com/pop-os/libcosmic.git#384e8f6e219bb458720eafa5bb
+ dependencies = [
+  "cosmic-client-toolkit",
+  "dnd",
+- "iced_futures",
++ "iced_futures 0.14.0-dev (git+https://github.com/pop-os/libcosmic.git)",
+  "iced_graphics",
+  "iced_runtime",
+  "log",
+@@ -4554,7 +4567,7 @@ dependencies = [
+  "i18n-embed-fl",
+  "iced",
+  "iced_core",
+- "iced_futures",
++ "iced_futures 0.14.0-dev (git+https://github.com/pop-os/libcosmic.git)",
+  "iced_renderer",
+  "iced_runtime",
+  "iced_tiny_skia",
+@@ -7094,7 +7107,7 @@ dependencies = [
+ [[package]]
+ name = "softbuffer"
+ version = "0.4.1"
+-source = "git+https://github.com/pop-os/softbuffer?tag=cosmic-4.0#a3f77e251e7422803f693df6e3fc313c010c4dcb"
++source = "git+https://github.com/willnode/softbuffer?branch=cosmic-orbital#acd19a58e96e6e729a2ce6c334cbb4cdef84f1dd"
+ dependencies = [
+  "as-raw-xcb-connection",
+  "bytemuck",
+diff --git a/Cargo.toml b/Cargo.toml
+index 9ae4b0f..9633bcb 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -70,6 +70,14 @@ debug = true
+ onig = { git = "https://github.com/rust-onig/rust-onig.git", branch = "main" }
+ onig_sys = { git = "https://github.com/rust-onig/rust-onig.git", branch = "main" }
+ 
++[patch.'https://github.com/pop-os/softbuffer']
++softbuffer = { git = "https://github.com/willnode/softbuffer", branch = "cosmic-orbital" }
++
++[patch.'https://github.com/pop-os/libcosmic']
++iced_tiny_skia = { git = "https://github.com/willnode/iced", branch = "cosmic-orbital" }
++iced_graphics = { git = "https://github.com/willnode/iced", branch = "cosmic-orbital" }
++iced_core = { git = "https://github.com/willnode/iced", branch = "cosmic-orbital" }
++
+ # [patch.'https://github.com/pop-os/libcosmic']
+ # libcosmic = { path = "../libcosmic" }
+ # cosmic-config = { path = "../libcosmic/cosmic-config" }

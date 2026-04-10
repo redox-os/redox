@@ -1,5 +1,6 @@
 [source]
-git = "https://gitlab.redox-os.org/redox-os/orbital.git"
+git = "https://gitlab.redox-os.org/willnode/orbital.git"
+branch = "soft-blit"
 
 [build]
 template = "cargo"
