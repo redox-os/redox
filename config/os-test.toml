@@ -16,7 +16,7 @@ os-test-bins = {} # Provides source and cross-compiled binaries
 [[files]]
 path = "/usr/lib/init.d/30_console"
 data = """
-requires_weak 10_net
+requires_weak 10_net.target
 RUST_BACKTRACE=full os-test-runner
 shutdown
 """
