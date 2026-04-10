@@ -28,6 +28,12 @@ MAKEFLAGS=(
     BLK_SHA1=1
     V=1
 )
+
+if [ "${COOKBOOK_DYNAMIC}" != "1" ]; then
+# git does not use pkgconfig to be aware with zstd
+    MAKEFLAGS+=(  EXTLIBS="-lzstd -lnghttp2 -lz" )
+fi
+
 export CURL_CONFIG="${COOKBOOK_SYSROOT}/usr/bin/curl-config"
 ./configure \
     --host="${GNU_TARGET}" \
