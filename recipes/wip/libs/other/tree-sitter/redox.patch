@@ -1,27 +1,206 @@
-diff --color -ruwN source/Cargo.toml source-new/Cargo.toml
---- source/Cargo.toml	2025-07-14 01:32:42.000000000 +0700
-+++ source-new/Cargo.toml	2025-09-16 11:37:28.820646655 +0700
-@@ -118,7 +118,7 @@
+diff -ruwN source/Cargo.lock source-new/Cargo.lock
+--- source/Cargo.lock	2026-04-01 00:31:10.000000000 +0700
++++ source-new/Cargo.lock	2026-04-11 09:21:14.731631283 +0700
+@@ -71,7 +71,7 @@
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "40c48f72fd53cd289104fc64099abca73db4166ad86ea0b4341abe65af83dadc"
+ dependencies = [
+- "windows-sys 0.61.2",
++ "windows-sys 0.60.2",
+ ]
+ 
+ [[package]]
+@@ -82,7 +82,7 @@
+ dependencies = [
+  "anstyle",
+  "once_cell_polyfill",
+- "windows-sys 0.61.2",
++ "windows-sys 0.60.2",
+ ]
+ 
+ [[package]]
+@@ -621,7 +621,7 @@
+ checksum = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb"
+ dependencies = [
+  "libc",
+- "windows-sys 0.61.2",
++ "windows-sys 0.60.2",
+ ]
+ 
+ [[package]]
+@@ -690,12 +690,11 @@
+ 
+ [[package]]
+ name = "fs4"
+-version = "0.12.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "c29c30684418547d476f0b48e84f4821639119c483b1eccd566c8cd0cd05f521"
++version = "0.13.1"
++source = "git+https://github.com/al8n/fs4-rs#473289159ec3038a9e837913d13212118c57ab4c"
+ dependencies = [
+- "rustix 0.38.44",
+- "windows-sys 0.52.0",
++ "rustix",
++ "windows-sys 0.59.0",
+ ]
+ 
+ [[package]]
+@@ -1044,9 +1043,8 @@
+ 
+ [[package]]
+ name = "libc"
+-version = "0.2.180"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "bcc35a38544a891a5f7c865aca548a982ccb3b8650a5b06d0fd33a10283c56fc"
++version = "0.2.184"
++source = "git+https://github.com/willnode/libc?branch=redox-sema-port#ccb27af35075003bf6ef157b9ef2707756ee78f6"
+ 
+ [[package]]
+ name = "libloading"
+@@ -1076,12 +1074,6 @@
+ 
+ [[package]]
+ name = "linux-raw-sys"
+-version = "0.4.15"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "d26c52dbd32dccf2d10cac7725f8eae5296885fb5703b261f7d0a0739ec807ab"
+-
+-[[package]]
+-name = "linux-raw-sys"
+ version = "0.11.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "df1d3c3b53da64cf5760482273a98e575c651a67eec7f77df96b5b642de8f039"
+@@ -1119,7 +1111,7 @@
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "ad38eb12aea514a0466ea40a80fd8cc83637065948eb4a426e4aa46261175227"
+ dependencies = [
+- "rustix 1.1.3",
++ "rustix",
+ ]
+ 
+ [[package]]
+@@ -1148,9 +1140,8 @@
+ 
+ [[package]]
+ name = "nix"
+-version = "0.31.1"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "225e7cfe711e0ba79a68baeddb2982723e4235247aefce1482f2f16c27865b66"
++version = "0.31.2"
++source = "git+https://github.com/nix-rust/nix?rev=0708c8c#0708c8c321215147ef6fdd745ad6ddd5d8e83f71"
+ dependencies = [
+  "bitflags 2.11.0",
+  "cfg-if",
+@@ -1580,28 +1571,14 @@
+ 
+ [[package]]
+ name = "rustix"
+-version = "0.38.44"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "fdb5bc1ae2baa591800df16c9ca78619bf65c0488b41b96ccec5d11220d8c154"
+-dependencies = [
+- "bitflags 2.11.0",
+- "errno",
+- "libc",
+- "linux-raw-sys 0.4.15",
+- "windows-sys 0.59.0",
+-]
+-
+-[[package]]
+-name = "rustix"
+ version = "1.1.3"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "146c9e247ccc180c1f61615433868c99f3de3ae256a30a43b49f67c2d9171f34"
++source = "git+https://github.com/bytecodealliance/rustix?rev=8bf15a0#8bf15a0eb444087e4c3ed04e01ed488cc429af2d"
+ dependencies = [
+  "bitflags 2.11.0",
+  "errno",
+  "libc",
+- "linux-raw-sys 0.11.0",
+- "windows-sys 0.61.2",
++ "linux-raw-sys",
++ "windows-sys 0.59.0",
+ ]
+ 
+ [[package]]
+@@ -1803,8 +1780,8 @@
+  "fastrand",
+  "getrandom 0.4.1",
+  "once_cell",
+- "rustix 1.1.3",
+- "windows-sys 0.61.2",
++ "rustix",
++ "windows-sys 0.60.2",
+ ]
+ 
+ [[package]]
+@@ -2348,7 +2325,7 @@
+  "once_cell",
+  "postcard",
+  "pulley-interpreter",
+- "rustix 1.1.3",
++ "rustix",
+  "serde",
+  "serde_derive",
+  "smallvec",
+@@ -2460,7 +2437,7 @@
+  "cc",
+  "cfg-if",
+  "libc",
+- "rustix 1.1.3",
++ "rustix",
+  "wasmtime-internal-asm-macros",
+  "wasmtime-internal-versioned-export-macros",
+  "windows-sys 0.60.2",
+@@ -2582,7 +2559,7 @@
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
+ dependencies = [
+- "windows-sys 0.61.2",
++ "windows-sys 0.60.2",
+ ]
+ 
+ [[package]]
+@@ -2621,15 +2598,6 @@
+ ]
+ 
+ [[package]]
+-name = "windows-sys"
+-version = "0.52.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "282be5f36a8ce781fad8c8ae18fa3f9beff57ec1b52cb3de0789201425d9a33d"
+-dependencies = [
+- "windows-targets 0.52.6",
+-]
+-
+-[[package]]
+ name = "windows-sys"
+ version = "0.59.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+diff -ruwN source/Cargo.toml source-new/Cargo.toml
+--- source/Cargo.toml	2026-04-01 00:31:10.000000000 +0700
++++ source-new/Cargo.toml	2026-04-11 08:47:06.487627130 +0700
+@@ -122,7 +122,7 @@
+ ctrlc = { version = "3.5.0", features = ["termination"] }
  dialoguer = { version = "0.11.0", features = ["fuzzy-select"] }
- etcetera = "0.8.0"
- filetime = "0.2.25"
+ etcetera = "0.11.0"
 -fs4 = "0.12.0"
 +fs4 = { git = "https://github.com/al8n/fs4-rs" } # for redox support, still not published yet
- git2 = "0.20.0"
- glob = "0.3.2"
+ glob = "0.3.3"
  heck = "0.5.0"
-@@ -151,7 +151,7 @@
- url = { version = "2.5.4", features = ["serde"] }
- walkdir = "2.5.0"
- wasmparser = "0.224.0"
--webbrowser = "1.0.3"
-+webbrowser = "1.0.5"
+ html-escape = "0.2.13"
+@@ -161,3 +161,8 @@
+ tree-sitter-tags = { version = "0.26.8", path = "./crates/tags" }
  
- tree-sitter = { version = "0.25.1", path = "./lib" }
- tree-sitter-generate = { version = "0.25.1", path = "./cli/generate" }
-diff --color -ruwN source/cli/src/fuzz/allocations.rs source-new/cli/src/fuzz/allocations.rs
---- source/cli/src/fuzz/allocations.rs	2025-07-14 01:32:42.000000000 +0700
-+++ source-new/cli/src/fuzz/allocations.rs	2025-09-16 11:39:56.112458323 +0700
+ tree-sitter-language = { version = "0.1", path = "./crates/language" }
++
++[patch.crates-io]
++rustix = { git = "https://github.com/bytecodealliance/rustix", rev = "8bf15a0" }
++nix = { git = "https://github.com/nix-rust/nix", rev = "0708c8c" }
++libc = { git = "https://github.com/willnode/libc", branch = "redox-sema-port" }
+diff -ruwN source/crates/cli/src/fuzz/allocations.rs source-new/crates/cli/src/fuzz/allocations.rs
+--- source/crates/cli/src/fuzz/allocations.rs	2026-04-01 00:31:10.000000000 +0700
++++ source-new/crates/cli/src/fuzz/allocations.rs	2026-04-11 08:47:06.487741558 +0700
 @@ -7,6 +7,7 @@
      },
  };
@@ -30,16 +209,14 @@ diff --color -ruwN source/cli/src/fuzz/allocations.rs source-new/cli/src/fuzz/al
  #[ctor::ctor]
  unsafe fn initialize_allocation_recording() {
      tree_sitter::set_allocator(
-diff --color -ruwN source/lib/src/portable/endian.h source-new/lib/src/portable/endian.h
---- source/lib/src/portable/endian.h	2025-07-14 01:32:42.000000000 +0700
-+++ source-new/lib/src/portable/endian.h	2025-09-16 11:27:12.315211556 +0700
-@@ -24,7 +24,8 @@
+diff -ruwN source/lib/src/portable/endian.h source-new/lib/src/portable/endian.h
+--- source/lib/src/portable/endian.h	2026-04-01 00:31:10.000000000 +0700
++++ source-new/lib/src/portable/endian.h	2026-04-11 08:47:06.487835899 +0700
+@@ -23,6 +23,7 @@
+     defined(__redox__) || \
+     defined(__NetBSD__) || \
+     defined(__OpenBSD__) || \
++    defined(__redox__) || \
      defined(__CYGWIN__) || \
      defined(__MSYS__) || \
      defined(__EMSCRIPTEN__) || \
--    defined(__wasi__)
-+    defined(__wasi__) || \
-+    defined(__redox__)
- 
- #if defined(__NetBSD__)
- #define _NETBSD_SOURCE 1
