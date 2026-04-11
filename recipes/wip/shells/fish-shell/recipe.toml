@@ -6,7 +6,7 @@ patches = ["redox.patch"]
 
 [build]
 template = "custom"
-dependencies = ["gettext", "ncurses", "pcre"]
+dependencies = ["gettext", "ncursesw", "pcre"]
 script = """
 DYNAMIC_INIT
 

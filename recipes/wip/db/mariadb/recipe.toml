@@ -8,7 +8,7 @@ patches = [
 [build]
 template = "custom"
 dependencies = [
-    "ncurses",
+    "ncursesw",
     "bzip2",
     "curl",
     "zlib",

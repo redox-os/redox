@@ -5,7 +5,7 @@ git = "https://github.com/hrkfdn/ncspot"
 template = "custom"
 dependencies = [
     "openssl3",
-    "ncurses",
+    "ncursesw",
 ]
 script = """
 export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include/ncurses"

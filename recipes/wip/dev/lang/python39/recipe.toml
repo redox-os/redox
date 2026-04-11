@@ -11,7 +11,7 @@ dependencies = [
     "bzip2",
     "libffi",
     "libuuid",
-    "ncurses",
+    "ncursesw",
     "ncursesw",
     "openssl3",
     "readline",

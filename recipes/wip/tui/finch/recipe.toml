@@ -4,7 +4,7 @@ tar = "https://sourceforge.net/projects/pidgin/files/Pidgin/2.14.12/pidgin-2.14.
 [build]
 template = "custom"
 dependencies = [
-    "ncurses",
+    "ncursesw",
 ]
 script = """
 COOKBOOK_CONFIGURE_FLAGS+=(

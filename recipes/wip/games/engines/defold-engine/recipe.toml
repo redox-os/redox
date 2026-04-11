@@ -15,7 +15,7 @@ dependencies = [
     "freeglut",
     "libuuid",
     "openal",
-    "ncurses",
+    "ncursesw",
 ]
 script = """
 export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include/ncurses"

@@ -7,7 +7,7 @@ tar = "https://archive.mariadb.org/mariadb-10.11.6/source/mariadb-10.11.6.tar.gz
 [build]
 template = "cmake"
 dependencies = [
-    "ncurses",
+    "ncursesw",
     "zlib",
     "libevent",
     "openssl3",

@@ -24,7 +24,7 @@ dependencies = [
     "libxml2",
     "libiconv",
     "libzip",
-    "ncurses",
+    "ncursesw",
     "nghttp2",
     "openssl3",
     "pcre",

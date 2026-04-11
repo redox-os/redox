@@ -6,7 +6,7 @@ rev = "v0.2.2"
 [build]
 template = "custom"
 dependencies = [
-    "ncurses",
+    "ncursesw",
 ]
 [package]
 dependencies = [

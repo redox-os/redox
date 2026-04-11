@@ -9,5 +9,5 @@ configureflags = [
     "--without-gpm-mouse",
 ]
 dependencies = [
-    "ncurses",
+    "ncursesw",
 ]

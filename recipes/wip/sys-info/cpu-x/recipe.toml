@@ -7,7 +7,7 @@ rev = "41f5d1ac3b13e60aa30212f2b9f38de646fd2b07"
 template = "custom"
 dependencies = [
     #"gtk3mm",
-    "ncurses",
+    "ncursesw",
     #"glfw3",
     #"libvulkan",
     "libstatgrab",

@@ -11,7 +11,7 @@ dependencies = [
     "freetyoe2",
     "harfbuzz",
     "libssh2",
-    "ncurses",
+    "ncursesw",
     "qt6-base",
     "qt6-declarative",
     "qt6-multimedia",

@@ -5,7 +5,7 @@ rev = "ade6e2a7253d7a256e87fdac3da17c9158e6700e"
 [build]
 template = "custom"
 dependencies = [
-    "ncurses",
+    "ncursesw",
 ]
 script = """
 export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include/ncurses"
