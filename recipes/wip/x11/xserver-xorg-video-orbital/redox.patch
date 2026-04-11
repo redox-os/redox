@@ -1,6 +1,6 @@
-diff -ruwN source-old/src/dummy_driver.c source/src/dummy_driver.c
---- source-old/src/dummy_driver.c	2023-05-07 14:27:44.000000000 -0600
-+++ source/src/dummy_driver.c	2025-10-29 11:13:11.863430241 -0600
+diff -ruwN source/src/dummy_driver.c source-new/src/dummy_driver.c
+--- source/src/dummy_driver.c	2023-05-08 03:27:44.000000000 +0700
++++ source-new/src/dummy_driver.c	2026-04-10 12:32:15.781945854 +0700
 @@ -39,6 +39,7 @@
  /* These need to be checked */
  #include <X11/X.h>
@@ -219,7 +219,7 @@ diff -ruwN source-old/src/dummy_driver.c source/src/dummy_driver.c
      pScrn->vtSema = FALSE;
      pScreen->CloseScreen = dPtr->CloseScreen;
      return (*pScreen->CloseScreen)(CLOSE_SCREEN_ARGS);
-@@ -1009,6 +1135,31 @@
+@@ -1009,6 +1135,52 @@
  Atom VFB_PROP  = 0;
  #define  VFB_PROP_NAME  "VFB_IDENT"
  
@@ -232,18 +232,39 @@ diff -ruwN source-old/src/dummy_driver.c source/src/dummy_driver.c
 +    dPtr->BlockHandler = pScreen->BlockHandler;
 +    pScreen->BlockHandler = DUMMYBlockHandler;
 +
-+    if (dPtr->damage) {
-+        RegionPtr dirty = DamageRegion(dPtr->damage);
-+        if (RegionNil(dirty)) {
-+            // Do not sync if damage empty
-+            return;
-+        }
-+        DamageEmpty(dPtr->damage);
++    if (!dPtr->orb_window) {
++        return;
 +    }
 +
-+    if (dPtr->orb_window) {
-+        //TODO: use damage region?
-+        //printf("orb_window_sync %p\n", dPtr->orb_window);
++    if (dPtr->damage) {
++        RegionPtr dirty = DamageRegion(dPtr->damage);
++        
++        if (!RegionNil(dirty)) {
++            int nrects = RegionNumRects(dirty);
++            BoxPtr pBox = RegionRects(dirty);
++
++            if (nrects > 0) {
++                int32_t *rects = (int32_t *)malloc(nrects * 4 * sizeof(int32_t));
++                
++                if (rects) {
++                    for (int i = 0; i < nrects; i++) {
++                        rects[i * 4 + 0] = (int32_t)pBox[i].x1;
++                        rects[i * 4 + 1] = (int32_t)pBox[i].y1;
++                        rects[i * 4 + 2] = (int32_t)(pBox[i].x2 - pBox[i].x1);
++                        rects[i * 4 + 3] = (int32_t)(pBox[i].y2 - pBox[i].y1);
++                    }
++
++                    orb_window_update_rects(dPtr->orb_window, rects, (uintptr_t)nrects);
++                    
++                    free(rects);
++                } else {
++                    orb_window_sync(dPtr->orb_window);
++                }
++            }
++
++            DamageEmpty(dPtr->damage);
++        }
++    } else {
 +        orb_window_sync(dPtr->orb_window);
 +    }
 +}
@@ -251,9 +272,9 @@ diff -ruwN source-old/src/dummy_driver.c source/src/dummy_driver.c
  static Bool
  DUMMYCreateWindow(WindowPtr pWin)
  {
-diff -ruwN source-old/src/dummy.h source/src/dummy.h
---- source-old/src/dummy.h	2023-05-07 14:27:44.000000000 -0600
-+++ source/src/dummy.h	2025-10-29 10:11:23.172517830 -0600
+diff -ruwN source/src/dummy.h source-new/src/dummy.h
+--- source/src/dummy.h	2023-05-08 03:27:44.000000000 +0700
++++ source-new/src/dummy.h	2026-03-05 04:27:37.507961929 +0700
 @@ -4,6 +4,7 @@
  #include "xf86_OSproc.h"
  

@@ -1,5 +1,6 @@
 [source]
-git = "https://gitlab.redox-os.org/redox-os/sdl1.2.git"
+git = "https://gitlab.redox-os.org/willnode/sdl1.2.git"
+branch = "soft-blit"
 
 [build]
 template = "custom"
