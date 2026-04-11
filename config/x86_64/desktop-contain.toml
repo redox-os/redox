@@ -17,8 +17,7 @@ include = ["../desktop.toml"]
 [[files]]
 path = "/usr/lib/init.d/20_orbital"
 data = """
-requires_weak 10_net.target
-notify audiod
+requires_weak 10_net.target 20_audiod.service
 nowait VT=3 orbital contain_orblogin launcher
 """
 

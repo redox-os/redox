@@ -55,8 +55,7 @@ glib-compile-schemas /usr/share/glib-2.0/schemas/
 [[files]]
 path = "/usr/lib/init.d/20_orbital"
 data = """
-requires_weak 10_dbus 10_xenv
-notify audiod
+requires_weak 10_dbus 10_xenv 20_audiod.service
 nowait BROWSER=/bin/netsurf-fb VT=3 orbital orbital-x11
 """
 
