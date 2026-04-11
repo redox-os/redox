@@ -15,7 +15,7 @@ dependencies = [
     "nghttp2",
 #   "http-parser",
     "nghttp3",
-    "openssl1",
+    "openssl3",
     "simdjson",
     "simdutf",
     "sqlite3",

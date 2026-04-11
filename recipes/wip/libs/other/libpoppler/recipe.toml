@@ -24,7 +24,7 @@ dependencies = [
     "libxau",
     "libxcb",
     "nghttp2",
-    "openssl1",
+    "openssl3",
     "pcre2",
     "pixman",
     #TODO: compile dylib "libtiff",

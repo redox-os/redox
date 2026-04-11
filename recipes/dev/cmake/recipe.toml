@@ -15,7 +15,7 @@ dependencies = [
     # "librhash",
     "libuv",
     "nghttp2",
-    "openssl1",
+    "openssl3",
     "zlib",
     "zstd",
 ]

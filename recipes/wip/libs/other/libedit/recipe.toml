@@ -7,7 +7,7 @@ patches = [
 [build]
 template = "configure"
 dependencies = [
-    "ncurses",
+    "ncursesw",
     "termcap",
     "terminfo",
 ]

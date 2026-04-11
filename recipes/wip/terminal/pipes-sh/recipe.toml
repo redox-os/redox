@@ -12,5 +12,5 @@ chmod a+x "${COOKBOOK_STAGE}"/usr/bin/pipes
 [package]
 dependencies = [
     "bash",
-    "ncurses",
+    "ncursesw",
 ]

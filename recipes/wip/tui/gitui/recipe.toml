@@ -5,7 +5,7 @@ git = "https://github.com/extrawurst/gitui"
 [build]
 template = "custom"
 dependencies = [
-    "openssl1",
+    "openssl3",
 ]
 script = """
 DYNAMIC_INIT

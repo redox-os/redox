@@ -12,7 +12,7 @@ dependencies = [
     "libffi",
     "libiconv",
     "libpng",
-    "openssl1",
+    "openssl3",
     "pcre",
     "zlib",
 ]

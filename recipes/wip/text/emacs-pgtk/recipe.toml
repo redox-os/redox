@@ -14,7 +14,7 @@ dependencies = [
     "sqlite3",
     "libxml2",
     "zlib",
-    "ncurses",
+    "ncursesw",
     "cairo",
     "fontconfig",
     "freetype2",

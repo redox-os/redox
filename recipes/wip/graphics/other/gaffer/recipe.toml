@@ -20,7 +20,7 @@ dependencies = [
     "libtiff",
     "openexr",
     "openimageio",
-    "openssl1",
+    "openssl3",
     "onetbb",
     "zlib",
     "qt5-full",

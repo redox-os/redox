@@ -6,7 +6,7 @@ tar = "https://download.gluster.org/pub/gluster/glusterfs/9/LATEST/glusterfs-9.6
 [build]
 template = "configure"
 dependencies = [
-    "openssl1",
+    "openssl3",
     "libxml2",
     "libaio",
     "sqlite3",

@@ -10,5 +10,5 @@ dependencies = [
     "libfuse2",
     "curl",
     "libxml2",
-    "openssl1",
+    "openssl3",
 ]

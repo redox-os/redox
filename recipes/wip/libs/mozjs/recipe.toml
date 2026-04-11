@@ -17,7 +17,7 @@ dependencies = [
     "libx11",
     "libxcb",
     "libpng",
-    "openssl1",
+    "openssl3",
     "pcre",
     "zlib",
 

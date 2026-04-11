@@ -4,5 +4,5 @@ git = "https://github.com/simeg/eureka"
 [build]
 template = "cargo"
 dependencies = [
-    "openssl1",
+    "openssl3",
 ]

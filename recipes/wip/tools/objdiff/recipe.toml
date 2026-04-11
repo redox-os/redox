@@ -4,7 +4,7 @@ git = "https://github.com/encounter/objdiff"
 [build]
 template = "custom"
 dependencies = [
-    "openssl1",
+    "openssl3",
     "fontconfig",
 ]
 script = """

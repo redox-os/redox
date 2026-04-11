@@ -6,7 +6,7 @@ git = "https://github.com/gamebooster/soundboard"
 template = "custom"
 dependencies = [
     "glib",
-    "openssl1",
+    "openssl3",
 ]
 script = """
 cookbook_cargo --features full

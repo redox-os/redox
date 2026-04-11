@@ -8,6 +8,6 @@ shallow_clone = true
 template = "cmake"
 dependencies = [
     "sdl2",
-    "openssl1",
+    "openssl3",
     "mesa",
 ]

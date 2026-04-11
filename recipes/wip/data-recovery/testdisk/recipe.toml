@@ -6,7 +6,7 @@ tar = "https://www.cgsecurity.org/testdisk-7.2.tar.bz2"
 [build]
 template = "custom"
 dependencies = [
-    "ncurses",
+    "ncursesw",
 ]
 script = """
 export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include/ncurses"

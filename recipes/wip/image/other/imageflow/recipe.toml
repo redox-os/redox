@@ -4,7 +4,7 @@ git = "https://github.com/imazen/imageflow"
 [build]
 template = "custom"
 dependencies = [
-    "openssl1",
+    "openssl3",
     "libpng",
 ]
 script = """

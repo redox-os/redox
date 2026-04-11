@@ -10,7 +10,7 @@ dependencies = [
     "dbus",
     "mesa",
     "libxt",
-    "openssl1",
+    "openssl3",
     "sqlite3",
     "libpulse",
     "libalsa",

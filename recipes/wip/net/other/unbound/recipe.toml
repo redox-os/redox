@@ -5,5 +5,5 @@ tar = "https://nlnetlabs.nl/downloads/unbound/unbound-1.17.1.tar.gz"
 template = "configure"
 dependencies = [
     "expat",
-    "openssl1",
+    "openssl3",
 ]

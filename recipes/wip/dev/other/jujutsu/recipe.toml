@@ -4,7 +4,7 @@ git = "https://github.com/martinvonz/jj"
 [build]
 template = "custom"
 dependencies = [
-    "openssl1",
+    "openssl3",
 ]
 script = """
 cookbook_cargo_packages jj-cli

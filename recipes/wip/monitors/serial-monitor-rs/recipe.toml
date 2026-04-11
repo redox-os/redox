@@ -5,5 +5,5 @@ git = "https://github.com/hacknus/serial-monitor-rust"
 template = "cargo"
 dependencies = [
     "libxkbcommon",
-    "openssl1",
+    "openssl3",
 ]

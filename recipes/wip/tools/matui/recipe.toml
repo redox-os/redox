@@ -4,5 +4,5 @@ git = "https://github.com/pkulak/matui"
 [build]
 template = "cargo"
 dependencies = [
-    "openssl1",
+    "openssl3",
 ]
