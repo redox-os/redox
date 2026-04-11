@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+#TODO determine minimum dependencies from meson log
+[source]
+tar = "https://download.gnome.org/sources/gnome-music/49/gnome-music-49.1.tar.xz"
+[build]
+template = "meson"
+dependencies = [
+    "gtk4",
+    "libadwaita",
+]

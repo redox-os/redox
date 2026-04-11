@@ -1,0 +1,14 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/panxinmiao/myth"
+shallow_clone = true
+[build]
+template = "cargo"
+cargoexamples = [
+    "bloom",
+    "box",
+    "earth",
+    "hello_triangle",
+    "rotating_cube",
+    "shadows",
+]

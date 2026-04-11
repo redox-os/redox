@@ -1,0 +1,6 @@
+#TODO missing script for build.sh
+# build instructions: https://renode.readthedocs.io/en/latest/advanced/building_from_sources.html
+[source]
+tar = "https://github.com/renode/renode/releases/download/v1.16.1/renode_1.16.1_source.tar.xz"
+[build]
+template = "custom"

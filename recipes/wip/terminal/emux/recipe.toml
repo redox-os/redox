@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/cris-01000011/emux"
+shallow_clone = true
+[build]
+template = "cargo"

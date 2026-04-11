@@ -1,0 +1,11 @@
+#TODO not compiled or tested
+[source]
+git = "https://gitlab.gnome.org/World/amberol"
+shallow_clone = true
+[build]
+template = "meson"
+dependencies = [
+    "gtk4",
+    "libadwaita",
+    "gstreamer",
+]
