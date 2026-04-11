@@ -68,7 +68,7 @@ esac
 rm -rf "${COOKBOOK_BUILD}/initfs"
 mkdir -p "${COOKBOOK_BUILD}/initfs/lib/init.d"
 
-cp "${COOKBOOK_SOURCE}/init.d"/* "${COOKBOOK_BUILD}/initfs/lib/init.d/"
+cp "${COOKBOOK_SOURCE}/init.initfs.d"/* "${COOKBOOK_BUILD}/initfs/lib/init.d/"
 
 mkdir -pv "${COOKBOOK_BUILD}/initfs/lib/pcid.d"
 cp -v "${COOKBOOK_SOURCE}/drivers/initfs.toml" "${COOKBOOK_BUILD}/initfs/lib/pcid.d/initfs.toml"
