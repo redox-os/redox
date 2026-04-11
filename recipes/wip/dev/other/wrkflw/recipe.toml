@@ -4,7 +4,7 @@ git = "https://github.com/bahdotsh/wrkflw"
 [build]
 template = "custom"
 dependencies = [
-    "openssl1",
+    "openssl3",
 ]
 script = """
 cookbook_cargo_packages wrkflw

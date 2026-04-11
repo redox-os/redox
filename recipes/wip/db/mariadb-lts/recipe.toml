@@ -10,7 +10,7 @@ dependencies = [
     "ncurses",
     "zlib",
     "libevent",
-    "openssl1",
+    "openssl3",
     "curl",
     "libxml2",
     "boost",

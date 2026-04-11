@@ -5,7 +5,7 @@ git = "https://github.com/alvr-org/ALVR"
 [build]
 template = "custom"
 dependencies = [
-    "openssl1",
+    "openssl3",
     "gtk3",
     "libvulkan",
     "libunwind",

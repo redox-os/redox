@@ -11,7 +11,7 @@ dependencies = [
     "bzip2",
     "json-c",
     "pcre",
-    "openssl1",
+    "openssl3",
     "libxml2",
     "zlib",
 ]

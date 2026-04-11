@@ -46,7 +46,7 @@ dependencies = [
     "mesa-x11",
     "nghttp2",
     #TODO: "openal",
-    "openssl1",
+    "openssl3",
     "pango",
     "pcre2",
     "pixman",

@@ -13,7 +13,7 @@ dependencies = [
     "libuuid",
     "ncurses",
     "ncursesw",
-    "openssl1",
+    "openssl3",
     "readline",
     "sqlite3",
     "zlib",

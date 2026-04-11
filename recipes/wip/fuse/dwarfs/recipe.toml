@@ -10,7 +10,7 @@ dependencies = [
     "boost",
     "libbrotli",
     "libevent",
-    "openssl1",
+    "openssl3",
     "lz4",
     "xz",
     "libunwind",

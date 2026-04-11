@@ -6,6 +6,6 @@ git = "https://github.com/Dusk-Labs/dim"
 template = "custom"
 dependencies = [
     "sqlite3",
-    "openssl1",
+    "openssl3",
     "ffmpeg6",
 ]

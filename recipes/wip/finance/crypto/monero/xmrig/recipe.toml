@@ -10,6 +10,6 @@ template = "cmake"
 #    "-DOPENSSL_ROOT_DIR=${COOKBOOK_SYSROOT}" # test if the program need this
 #]
 dependencies = [
-    "openssl1",
+    "openssl3",
     "libuv",
 ]

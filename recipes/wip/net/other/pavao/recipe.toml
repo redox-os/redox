@@ -5,7 +5,7 @@ git = "https://github.com/jackpot51/pavao.git"
 [build]
 template = "custom"
 dependencies = [
-    "openssl1"
+    "openssl3"
 ]
 script = """
 DYNAMIC_INIT

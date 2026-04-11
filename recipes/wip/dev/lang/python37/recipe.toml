@@ -9,7 +9,7 @@ patches = [
 [build]
 template = "custom"
 dependencies = [
-    "openssl1",
+    "openssl3",
 ]
 script = """
 cp ../config.site ./

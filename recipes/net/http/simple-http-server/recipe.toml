@@ -3,7 +3,7 @@ git = "https://github.com/TheWaWaR/simple-http-server"
 [build]
 template = "custom"
 dependencies = [
-    "openssl1",
+    "openssl3",
 ]
 script = """
 DYNAMIC_INIT
