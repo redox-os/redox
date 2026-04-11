@@ -17,7 +17,7 @@ orbutils = {}
 [[files]]
 path = "/usr/lib/init.d/20_orbital"
 data = """
-requires_weak 10_net
+requires_weak 10_net.target
 notify audiod
 nowait VT=3 orbital orblogin launcher
 """
