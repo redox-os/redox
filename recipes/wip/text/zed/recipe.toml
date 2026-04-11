@@ -9,7 +9,7 @@ template = "custom"
 dependencies = [
     "fontconfig",
     "libxkbcommon",
-    "openssl1",
+    "openssl3",
     "zstd",
     "libgit2",
     "sqlite3",

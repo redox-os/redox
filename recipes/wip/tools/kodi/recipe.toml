@@ -32,7 +32,7 @@ dependencies = [
     "libogg",
     "pcre",
     "libpng",
-    "openssl1",
+    "openssl3",
     "libtiff",
     "sqlite3",
     "libevdev",

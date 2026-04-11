@@ -7,7 +7,7 @@ rev = "bbdc7081aec27daafca07fc40523335a2ea0a992"
 template = "custom"
 dependencies = [
     "imlib2",
-    "ncurses",
+    "ncursesw",
     "libxml2",
     "curl",
 ]

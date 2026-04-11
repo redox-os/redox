@@ -4,5 +4,5 @@ git = "https://github.com/sebastienrousseau/shokunin"
 [build]
 template = "cargo"
 dependencies = [
-    "openssl1",
+    "openssl3",
 ]

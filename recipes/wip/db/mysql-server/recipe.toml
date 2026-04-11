@@ -6,6 +6,6 @@ tar = "https://dev.mysql.com/downloads/file/?id=523432"
 template = "cmake"
 dependencies = [
     "boost",
-    "ncurses",
+    "ncursesw",
     "openssl3",
 ]

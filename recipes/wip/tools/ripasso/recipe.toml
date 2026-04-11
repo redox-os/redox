@@ -4,7 +4,7 @@ git = "https://github.com/cortex/ripasso"
 [build]
 template = "custom"
 dependencies = [
-    "openssl1",
+    "openssl3",
     "libgpg-error",
 ]
 script = """

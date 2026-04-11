@@ -5,5 +5,5 @@ git = "https://github.com/Lea-fish/Leafish"
 template = "cargo"
 dependencies = [
     "gtk3",
-    "openssl1",
+    "openssl3",
 ]

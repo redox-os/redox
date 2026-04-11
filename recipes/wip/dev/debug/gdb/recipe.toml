@@ -6,7 +6,7 @@ template = "custom"
 dependencies = [
     "libgmp",
     "libmpfr",
-    "ncurses",
+    "ncursesw",
     "readline",
 ]
 script = """

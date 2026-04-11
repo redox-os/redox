@@ -10,7 +10,7 @@ cargopackages = [
 ]
 dependencies = [
     "libiberty",
-    "ncurses",
+    "ncursesw",
     "sqlite3",
     "libunwind",
 ]

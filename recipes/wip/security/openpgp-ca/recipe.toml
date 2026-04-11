@@ -7,6 +7,6 @@ script = """
 cookbook_cargo_packages openpgp-ca openpgp-ca-restd
 """
 dependencies = [
-    "openssl1",
+    "openssl3",
     "libpcsclite",
 ]

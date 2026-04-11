@@ -4,7 +4,7 @@ git = "https://github.com/printfn/fend"
 
 [build]
 dependencies = [
-    "openssl1",
+    "openssl3",
 ]
 template = "custom"
 script = """

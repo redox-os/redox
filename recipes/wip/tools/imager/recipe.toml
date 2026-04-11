@@ -5,7 +5,7 @@ git = "https://github.com/imager-io/imager"
 template = "custom"
 dependencies = [
     "xz",
-    "openssl1",
+    "openssl3",
 ]
 script = """
 cookbook_cargo_packages imager

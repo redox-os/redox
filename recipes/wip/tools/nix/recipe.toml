@@ -6,7 +6,7 @@ rev = "50f8f1c8bc019a4c0fd098b9ac674b94cfc6af0d"
 template = "custom"
 dependencies = [
     "libbrotili",
-    "openssl1",
+    "openssl3",
     "curl",
     "sqlite3",
     "libeditline",

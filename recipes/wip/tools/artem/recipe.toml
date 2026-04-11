@@ -4,7 +4,7 @@ git = "https://github.com/FineFindus/artem"
 [build]
 template = "custom"
 dependencies = [
-    "openssl1",
+    "openssl3",
 ]
 script = """
 export OPENSSL_DIR="${COOKBOOK_SYSROOT}"

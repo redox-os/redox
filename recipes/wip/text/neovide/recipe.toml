@@ -5,7 +5,7 @@ git = "https://github.com/neovide/neovide"
 template = "cargo"
 dependencies = [
     "neovim",
-    "openssl1",
+    "openssl3",
     "freetype2",
     "expat",
     "bzip2",

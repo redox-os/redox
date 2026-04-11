@@ -19,7 +19,7 @@ dependencies = [
     "libxau",
     "libx11",
     "libxcb",
-    "openssl1",
+    "openssl3",
     "freetype2", 
     "libwayland",
     "libfontenc", 

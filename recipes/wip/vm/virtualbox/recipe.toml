@@ -18,7 +18,7 @@ dependencies = [
     "qt5-tools",
     "sdl1",
     "sdl2-ttf",
-    "openssl1",
+    "openssl3",
     "libvpx",
     "libxml2",
     "libxslt",

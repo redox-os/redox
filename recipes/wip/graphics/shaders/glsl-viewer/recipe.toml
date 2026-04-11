@@ -7,7 +7,7 @@ rev = "7eb6254cb4cedf03f1c78653f90905fe0c3b48fb"
 template = "custom"
 dependencies = [
     "mesa-glu",
-    "ncurses",
+    "ncursesw",
     "ncursesw",
     "ffmpeg6",
     "glfw3",

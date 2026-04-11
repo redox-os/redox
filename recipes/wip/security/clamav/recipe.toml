@@ -7,11 +7,11 @@ tar = "https://www.clamav.net/downloads/production/clamav-1.5.0.tar.gz"
 template = "custom"
 dependencies = [
     "curl",
-    "ncurses",
+    "ncursesw",
     "bzip2",
     "json-c",
     "pcre",
-    "openssl1",
+    "openssl3",
     "libxml2",
     "zlib",
 ]
