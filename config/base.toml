@@ -23,34 +23,6 @@ uutils = {}
 
 ## Configuration files
 [[files]]
-path = "/usr/lib/init.d/00_base"
-data = """
-# clear and recreate tmpdir with 0o1777 permission
-rm -rf /tmp
-mkdir -m a=rwxt /tmp
-
-notify ipcd
-notify ptyd
-nowait sudo --daemon
-"""
-
-[[files]]
-path = "/usr/lib/init.d/00_drivers"
-data = """
-requires_weak 00_base
-pcid-spawner
-"""
-
-## Network init
-[[files]]
-path = "/usr/lib/init.d/10_net"
-data = """
-requires_weak 00_drivers
-notify smolnetd
-nowait dhcpd
-"""
-
-[[files]]
 path = "/etc/login_schemes.toml"
 data = """
 [user_schemes.root]

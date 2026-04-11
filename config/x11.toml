@@ -25,7 +25,7 @@ zenity = {}
 [[files]]
 path = "/usr/lib/init.d/10_dbus"
 data = """
-requires_weak 10_net
+requires_weak 10_net.target
 bash /usr/bin/start-dbus.sh
 """
 
@@ -47,7 +47,7 @@ dbus-daemon --system
 [[files]]
 path = "/usr/lib/init.d/10_xenv"
 data = """
-requires_weak 10_net
+requires_weak 10_net.target
 glib-compile-schemas /usr/share/glib-2.0/schemas/
 """
 

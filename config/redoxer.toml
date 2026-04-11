@@ -17,17 +17,23 @@ sed = {}
 
 # Override to not background dhcpd
 [[files]]
-path = "/usr/lib/init.d/10_net"
+path = "/usr/lib/init.d/10_dhcpd.service"
 data = """
-requires_weak 00_drivers
-notify smolnetd
-dhcpd
+[unit]
+description = "Network configuration using DHCP"
+requires_weak = [
+    "10_smolnetd.service",
+]
+
+[service]
+cmd = "dhcpd"
+type = "oneshot"
 """
 
 [[files]]
 path = "/usr/lib/init.d/30_redoxer"
 data = """
-requires_weak 10_net
+requires_weak 10_net.target
 ion /usr/lib/run_redoxer.ion
 """
 
