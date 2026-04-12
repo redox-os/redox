@@ -1,0 +1,10 @@
+[source]
+same_as = "../kernel"
+
+[build]
+template = "custom"
+script = """
+make -f ${COOKBOOK_SOURCE}/Makefile KERNEL_CARGO_FEATURES=profiling
+mkdir -pv "${COOKBOOK_STAGE}/usr/lib/boot"
+cp -v kernel "${COOKBOOK_STAGE}/usr/lib/boot"
+"""
