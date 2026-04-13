@@ -1,12 +1,15 @@
-# TODO make this the no tiles variant, may want separate dcss-tiles recipe for tiles
-# TODO compilation instructions: https://github.com/crawl/crawl/blob/master/crawl-ref/INSTALL.md#compiling
-# TODO see https://gitlab.redox-os.org/redox-os/redox/-/issues/1800
+#TODO: null pointer crash
 [source]
 tar = "https://github.com/crawl/crawl/releases/download/0.34.1/stone_soup-0.34.1-nodeps.tar.xz"
+patches = [
+    "redox.patch"
+]
+
 [build]
 template = "custom"
 dependencies = [
     "lua54",
+    "luajit",
     "ncursesw",
     "pcre",
     "sqlite3",
@@ -18,8 +21,22 @@ DYNAMIC_INIT
 rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 
 cd source
-"${COOKBOOK_MAKE}" -j"$($NPROC)"
-
-mkdir -pv "${COOKBOOK_STAGE}/usr/games"
-cp -v "${COOKBOOK_BUILD}/crawl" "${COOKBOOK_STAGE}/usr/games"
+MAKEFLAGS=(
+    USE_PCRE=y
+    USE_LUAJIT=y
+    EXTERNAL_FLAGS="${CPPFLAGS}"
+    EXTERNAL_LDFLAGS="${LDFLAGS}"
+    EXTRA_LIBS="-llua"
+    NO_TRY_LLD=y
+    NO_TRY_GOLD=y
+    V=1
+    CC="${CC}"
+    CXX="${CXX}"
+    PKGCONFIG="${PKG_CONFIG}"
+    STRIP="$STRIP"
+)
+mkdir -pv "${COOKBOOK_STAGE}/usr/games/crawl"
+"${COOKBOOK_MAKE}" install install-xdg-data -j"$COOKBOOK_MAKE_JOBS" "${MAKEFLAGS[@]}" DESTDIR="$COOKBOOK_STAGE/usr/games/crawl"
+mv "${COOKBOOK_STAGE}/usr/games/crawl/share" "${COOKBOOK_STAGE}/usr/share"
+sed -i "s|Exec=|Exec=/usr/games/crawl|g" "${COOKBOOK_STAGE}/usr/share/applications/org.develz.Crawl_console.desktop"
 """
