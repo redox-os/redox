@@ -1,8 +1,8 @@
 diff --git a/runtime/CMakeLists.txt b/runtime/CMakeLists.txt
-index d103b5f4..37d9444e 100644
+index f5f5527d..ffa3c4fb 100644
 --- a/runtime/CMakeLists.txt
 +++ b/runtime/CMakeLists.txt
-@@ -24,37 +24,6 @@ add_custom_command(OUTPUT ${GENERATED_SYN_VIM}
+@@ -32,37 +32,6 @@ add_custom_command(OUTPUT ${GENERATED_SYN_VIM}
  
  file(GLOB PACKAGES CONFIGURE_DEPENDS ${PROJECT_SOURCE_DIR}/runtime/pack/dist/opt/*)
  
@@ -15,7 +15,7 @@ index d103b5f4..37d9444e 100644
 -    add_custom_command(OUTPUT "${GENERATED_PACKAGE_DIR}/${PACKNAME}/doc/tags"
 -      COMMAND ${CMAKE_COMMAND} -E copy_directory
 -        ${PACKAGE} ${GENERATED_PACKAGE_DIR}/${PACKNAME}
--      COMMAND $<TARGET_FILE:nvim_bin>
+-      COMMAND ${NVIM_HOST_PRG}
 -        -u NONE -i NONE -e --headless -c "helptags doc" -c quit
 -      DEPENDS
 -        nvim_bin
@@ -40,16 +40,16 @@ index d103b5f4..37d9444e 100644
  set(BUILDDOCFILES)
  foreach(DF ${DOCFILES})
    get_filename_component(F ${DF} NAME)
-@@ -65,8 +34,6 @@ add_custom_command(OUTPUT ${GENERATED_HELP_TAGS}
+@@ -73,8 +42,6 @@ add_custom_command(OUTPUT ${GENERATED_HELP_TAGS}
    COMMAND ${CMAKE_COMMAND} -E remove_directory doc
    COMMAND ${CMAKE_COMMAND} -E copy_directory
      ${PROJECT_SOURCE_DIR}/runtime/doc doc
--  COMMAND $<TARGET_FILE:nvim_bin>
+-  COMMAND ${NVIM_HOST_PRG}
 -    -u NONE -i NONE -e --headless -c "helptags ++t doc" -c quit
    DEPENDS
      nvim_bin
      nvim_runtime_deps
-@@ -78,7 +45,6 @@ add_custom_target(
+@@ -86,7 +53,6 @@ add_custom_target(
    DEPENDS
      ${GENERATED_SYN_VIM}
      ${GENERATED_HELP_TAGS}
@@ -57,7 +57,7 @@ index d103b5f4..37d9444e 100644
  )
  
  # CMake is painful here.  It will create the destination using the user's
-@@ -87,10 +53,6 @@ add_custom_target(
+@@ -95,10 +61,6 @@ add_custom_target(
  # seems like the best compromise.  If we create it, then everyone can see it.
  # If it's preexisting, leave it alone.
  
@@ -69,14 +69,15 @@ index d103b5f4..37d9444e 100644
    FILES ${GENERATED_SYN_VIM}
    DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/nvim/runtime/syntax/vim)
 diff --git a/src/nvim/CMakeLists.txt b/src/nvim/CMakeLists.txt
-index 4a8fe4c6..55a9ede1 100644
+index b8160fea..c9a2857b 100644
 --- a/src/nvim/CMakeLists.txt
 +++ b/src/nvim/CMakeLists.txt
-@@ -93,19 +93,6 @@ if(NOT MSVC)
+@@ -97,21 +97,6 @@ if(NOT MSVC)
+   target_compile_definitions(main_lib INTERFACE _GNU_SOURCE)
  endif()
  
- # -fstack-protector breaks Mingw-w64 builds
--if(NOT MINGW)
+-# -fstack-protector breaks Mingw-w64 builds
+-if(NOT MINGW AND NOT CMAKE_SYSTEM_NAME STREQUAL "Haiku")
 -  check_c_compiler_flag(-fstack-protector-strong HAS_FSTACK_PROTECTOR_STRONG_FLAG)
 -  if(HAS_FSTACK_PROTECTOR_STRONG_FLAG)
 -    target_compile_options(main_lib INTERFACE -fstack-protector-strong)
@@ -89,24 +90,15 @@ index 4a8fe4c6..55a9ede1 100644
 -    endif()
 -  endif()
 -endif()
- 
+-
  # Compiler specific options
  if(MSVC)
-@@ -145,9 +132,6 @@ endif()
- # Platform specific options
- if(UNIX)
-   target_link_libraries(main_lib INTERFACE m)
--  if (NOT CMAKE_SYSTEM_NAME STREQUAL "SunOS")
--    target_link_libraries(main_lib INTERFACE util)
--  endif()
- endif()
- 
- if(CMAKE_SYSTEM_NAME MATCHES "Windows")
+   target_compile_options(main_lib INTERFACE -W3)
 diff --git a/src/nvim/main.c b/src/nvim/main.c
-index 5c1e415c..fa6fa859 100644
+index 62500066..6478fcd6 100644
 --- a/src/nvim/main.c
 +++ b/src/nvim/main.c
-@@ -698,6 +698,12 @@ void getout(int exitval)
+@@ -751,6 +751,12 @@ void getout(int exitval)
    assert(!ui_client_channel_id);
    exiting = true;
  
@@ -133,10 +125,10 @@ index db575e00..b42cee2a 100644
  
  #define BASENAMELEN (NAME_MAX - 5)
 diff --git a/src/nvim/os/shell.c b/src/nvim/os/shell.c
-index 7dff8a1b..ebc61542 100644
+index 799ac33d..1438fe63 100644
 --- a/src/nvim/os/shell.c
 +++ b/src/nvim/os/shell.c
-@@ -880,7 +880,16 @@ static int do_os_system(char **argv, const char *input, size_t len, char **outpu
+@@ -902,7 +902,16 @@ static int do_os_system(char **argv, const char *input, size_t len, char **outpu
    MultiQueue *events = multiqueue_new_child(main_loop.events);
    proc->events = events;
    proc->argv = argv;
