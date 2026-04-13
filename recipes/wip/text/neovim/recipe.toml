@@ -2,7 +2,7 @@
 #TODO no documentation
 [source]
 git = "https://github.com/neovim/neovim"
-rev = "v0.11.5"
+rev = "0cb6dde5eecc7bbae7762c5703628f95e6148621" # nightly 0.13
 shallow_clone = true
 patches = [
   "redox.patch"
@@ -12,11 +12,11 @@ patches = [
 template = "custom"
 dependencies = [
     "libiconv",
-    "libuv",
+    "target:libuv",
     "luv",
     "lpeg",
     "tree-sitter",
-    "gettext",
+    "target:gettext",
     "unibilium",
     "utf8proc",
 ]
