@@ -418,8 +418,10 @@ ifeq ($(PREFIX_USE_UPSTREAM_RUST_COMPILER),1)
 	cp -r "$(LLVM_TARGET)/stage/usr/". "$@.partial"
 endif
 	cp -r "$(LLVM_TARGET)/stage.runtime/usr/". "$@.partial"
+	cp -r "$(LLVM_TARGET)/stage.dev/usr/". "$@.partial"
 	cp -r "$(CLANG_TARGET)/stage/usr/". "$@.partial"
 	cp -r "$(LLD_TARGET)/stage/usr/". "$@.partial"
+	rm -rf "$@.partial/lib/"*.a
 	mv "$@.partial" "$@"
 # no longer needed, delete build files to save disk space
 	rm -rf $(LLVM_TARGET) $(CLANG_TARGET) $(LLD_TARGET)
