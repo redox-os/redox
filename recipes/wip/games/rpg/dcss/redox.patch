@@ -1,0 +1,15 @@
+diff -ruwN source/source/crash.cc source-new/source/crash.cc
+--- source/source/crash.cc	2026-03-15 10:41:36.000000000 +0700
++++ source-new/source/crash.cc	2026-04-14 00:52:32.396751278 +0700
+@@ -11,9 +11,11 @@
+ #include <unistd.h>
+ #include <sys/param.h>
+ #ifndef __HAIKU__
++#ifndef __redox__
+         #define BACKTRACE_SUPPORTED
+ #endif
+ #endif
++#endif
+ 
+ #ifdef USE_UNIX_SIGNALS
+ #include <sys/time.h>
