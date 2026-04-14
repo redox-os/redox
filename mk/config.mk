@@ -7,6 +7,8 @@ HOST_ARCH?=$(shell uname -m)
 # Configuration
 ## Architecture to build Redox for (aarch64, i586, or x86_64). Defaults to a host one
 ARCH?=$(HOST_ARCH)
+## Operating system mode (redox or linux). Linux is experimental
+OPERATING_SYSTEM?=redox
 ## Sub-device type for aarch64 if needed
 BOARD?=
 ## Enable to use binary prefix (much faster)
@@ -158,7 +160,11 @@ endif
 endif
 
 ## Userspace variables
-ifeq ($(ARCH),riscv64gc)
+ifeq ($(OPERATING_SYSTEM),linux)
+	export TARGET=$(ARCH)-unknown-linux-musl
+	export GNU_TARGET=$(ARCH)-unknown-linux-musl
+	export USE_RUST_LIBM=1
+else ifeq ($(ARCH),riscv64gc)
 	export TARGET=riscv64gc-unknown-redox
 	export GNU_TARGET=riscv64-unknown-redox
 else
