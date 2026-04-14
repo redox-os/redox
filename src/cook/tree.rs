@@ -1,4 +1,3 @@
-use anyhow::Context;
 use pkg::{Package, PackageName};
 use std::fmt::Write as _;
 use std::{
@@ -8,6 +7,7 @@ use std::{
 };
 
 use crate::recipe::CookRecipe;
+use crate::{Result, wrap_other_err};
 
 pub enum WalkTreeEntry<'a> {
     Built(&'a PathBuf, u64),
@@ -25,7 +25,7 @@ pub fn display_tree_entry(
     visited: &mut HashSet<PackageName>,
     total_size: &mut u64,
     total_count: &mut u64,
-) -> anyhow::Result<()> {
+) -> Result<()> {
     walk_tree_entry(
         package_name,
         recipe_map,
@@ -48,8 +48,8 @@ pub fn walk_tree_entry(
     visited: &mut HashSet<PackageName>,
     total_size: &mut u64,
     total_count: &mut u64,
-    op: fn(&PackageName, &str, bool, &WalkTreeEntry) -> anyhow::Result<bool>,
-) -> anyhow::Result<()> {
+    op: fn(&PackageName, &str, bool, &WalkTreeEntry) -> Result<bool>,
+) -> Result<()> {
     let cook_recipe = match recipe_map.get(package_name) {
         Some(r) => r,
         None => {
@@ -97,7 +97,7 @@ pub fn walk_tree_entry(
         if let Ok(pkg_toml_str) = read_to_string(&pkg_toml) {
             // more accurate with auto deps
             pkg_meta = toml::from_str(&pkg_toml_str)
-                .context(format!("Unable to parse {}", pkg_toml.display()))?;
+                .map_err(|_| wrap_other_err!("Unable to parse {}", pkg_toml.display())())?;
             all_deps_set.extend(pkg_meta.depends.iter());
         }
     }
@@ -131,7 +131,7 @@ pub fn display_pkg_fn(
     prefix: &str,
     is_last: bool,
     entry: &WalkTreeEntry,
-) -> anyhow::Result<bool> {
+) -> Result<bool> {
     let size_str = match entry {
         WalkTreeEntry::Built(_path_buf, size) => format!("[{}]", format_size(*size)),
         WalkTreeEntry::NotBuilt => "(not built)".to_string(),
