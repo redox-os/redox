@@ -162,7 +162,7 @@ endif
 ## Userspace variables
 ifeq ($(OPERATING_SYSTEM),linux)
 	export TARGET=$(ARCH)-unknown-linux-musl
-	export GNU_TARGET=$(ARCH)-unknown-linux-musl
+	export GNU_TARGET=$(ARCH)-linux-relibc
 	export USE_RUST_LIBM=1
 else ifeq ($(ARCH),riscv64gc)
 	export TARGET=riscv64gc-unknown-redox
