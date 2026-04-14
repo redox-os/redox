@@ -30,7 +30,6 @@ default = ["tui"]
 tui = ["ratatui", "ansi-to-tui", "strip-ansi-escapes"]
 
 [dependencies]
-anyhow = "1"
 blake3 = "1"
 globset = "0.4"
 libc = "0.2"

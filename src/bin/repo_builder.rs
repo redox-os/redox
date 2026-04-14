@@ -1,29 +1,15 @@
 use cookbook::cook::ident::{get_ident, init_ident};
-use cookbook::cook::{fetch, package as cook_package};
+use cookbook::cook::{fetch, fs, package as cook_package};
 use cookbook::recipe::CookRecipe;
 use cookbook::web::{CliWebConfig, generate_web};
-use cookbook::{WALK_DEPTH, staged_pkg};
+use cookbook::{Error, Result, WALK_DEPTH, staged_pkg};
 use pkg::PackageName;
 use pkg::{Repository, SourceIdentifier};
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::env;
-use std::fs::{self, File};
-use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use toml::Value;
-
-fn is_newer(src: &Path, dst: &Path) -> bool {
-    match (fs::metadata(src), fs::metadata(dst)) {
-        (Ok(src_meta), Ok(dst_meta)) => match (src_meta.modified(), dst_meta.modified()) {
-            (Ok(src_time), Ok(dst_time)) => src_time > dst_time,
-            (Ok(_), Err(_)) => true,
-            _ => false,
-        },
-        (Ok(_), Err(_)) => true,
-        _ => false,
-    }
-}
 
 #[derive(Clone)]
 struct CliConfig {
@@ -34,7 +20,7 @@ struct CliConfig {
 }
 
 impl CliConfig {
-    fn parse_args() -> Result<Self, std::io::Error> {
+    fn parse_args() -> Result<Self> {
         let mut args = env::args().skip(1);
         let repo_dir = PathBuf::from(
             args.next()
@@ -50,26 +36,29 @@ impl CliConfig {
     }
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<()> {
     init_ident();
     let conf = CliConfig::parse_args()?;
     Ok(publish_packages(&conf)?)
 }
 
 // TODO: Make this callable from repo bin
-fn publish_packages(config: &CliConfig) -> anyhow::Result<()> {
+fn publish_packages(config: &CliConfig) -> Result<()> {
     let repo_path = &config.repo_dir.join(redoxer::target());
     if !repo_path.is_dir() {
-        fs::create_dir_all(repo_path)?;
+        fs::create_dir(repo_path)?;
     }
 
     // Don't publish host packages
     let target_packages = &config
         .recipe_list
         .iter()
-        .map(PackageName::new)
-        .filter(|pkg| pkg.as_ref().is_ok_and(|p| !p.is_host()))
-        .collect::<Result<Vec<_>, _>>()?;
+        .filter_map(|n| match PackageName::new(n) {
+            Ok(p) if p.is_host() => None,
+            Ok(p) => Some(p),
+            Err(_) => None,
+        })
+        .collect::<Vec<_>>();
 
     if target_packages.len() == 0 {
         return Ok(());
@@ -89,7 +78,7 @@ fn publish_packages(config: &CliConfig) -> anyhow::Result<()> {
 
     if recipe_list.len() == 0 {
         // Fail-Safe
-        anyhow::bail!("Zero packages are passing the build");
+        return Err(Error::Other(format!("Zero packages are passing the build")));
     }
 
     let mut appstream_sources: HashMap<String, PathBuf> = HashMap::new();
@@ -116,17 +105,19 @@ fn publish_packages(config: &CliConfig) -> anyhow::Result<()> {
             let pkgar_dst = repo_path.join(format!("{}.pkgar", recipe_name));
             let toml_dst = repo_path.join(format!("{}.toml", recipe_name));
 
-            if !fs::exists(&toml_src)? {
+            if !toml_src.is_file() {
                 eprintln!("recipe {} is missing stage.toml", recipe_name);
                 continue;
             }
 
-            if is_newer(&toml_src, &toml_dst) {
+            if fs::modified_is_newer(&toml_src, &toml_dst) {
                 eprintln!("\x1b[01;38;5;155mrepo - publishing {}\x1b[0m", recipe_name);
-                if fs::exists(&pkgar_src)? {
-                    fs::copy(&pkgar_src, &pkgar_dst)?;
+                if pkgar_src.is_file() {
+                    std::fs::copy(&pkgar_src, &pkgar_dst)
+                        .map_err(|e| Error::from_io_error(e, "Copying file"))?;
                 }
-                fs::copy(&toml_src, &toml_dst)?;
+                std::fs::copy(&toml_src, &toml_dst)
+                    .map_err(|e| Error::from_io_error(e, "Copying file"))?;
             }
 
             // TODO: Extract from pkgar instead to handle config.cook.clean_target == true
@@ -147,8 +138,7 @@ fn publish_packages(config: &CliConfig) -> anyhow::Result<()> {
             .join(&target)
             .join("appstream");
 
-        fs::remove_dir_all(&appstream_root).ok();
-        fs::create_dir_all(&appstream_root)?;
+        fs::create_dir_clean(&appstream_root)?;
 
         if !appstream_sources.is_empty() {
             let mut compose_cmd = Command::new("appstreamcli");
@@ -162,10 +152,12 @@ fn publish_packages(config: &CliConfig) -> anyhow::Result<()> {
                 compose_cmd.arg(source_path);
             }
 
-            let exit_status = compose_cmd.status()?;
+            let exit_status = compose_cmd
+                .status()
+                .map_err(|e| Error::from_io_error(e, "Reading exit status"))?;
             if exit_status.success() {
                 let appstream_pkg = repo_path.join("repo-appstream.pkgar");
-                fs::remove_file(&appstream_pkg).ok();
+                let _ = fs::remove_all(&appstream_pkg);
                 pkgar::create(
                     format!("{}/build/id_ed25519.toml", root),
                     &appstream_pkg,
@@ -227,11 +219,10 @@ fn publish_packages(config: &CliConfig) -> anyhow::Result<()> {
     // === 4. Read and update repo.toml ===
     let repo_toml_path = repo_path.join("repo.toml");
     if repo_toml_path.exists() {
-        let mut file = File::open(&repo_toml_path)?;
-        let mut contents = String::new();
-        file.read_to_string(&mut contents)?;
+        let contents = fs::read_to_string(&repo_toml_path)?;
 
-        let parsed: Repository = toml::from_str(&contents)?;
+        let parsed: Repository = toml::from_str(&contents)
+            .map_err(|_| Error::Other(format!("Unable to deserialize repo.toml")))?;
         for (k, v) in parsed.packages {
             packages.insert(k, v);
         }
@@ -248,8 +239,10 @@ fn publish_packages(config: &CliConfig) -> anyhow::Result<()> {
         }
     }
 
-    for entry in fs::read_dir(&repo_path)? {
-        let entry = entry?;
+    for entry in
+        std::fs::read_dir(&repo_path).map_err(|e| Error::from_io_error(e, "Listing repo"))?
+    {
+        let entry = entry.map_err(|e| Error::from_io_error(e, "Reading repo entry"))?;
         let path = entry.path();
 
         if path.extension().and_then(|s| s.to_str()) != Some("toml") {
@@ -261,7 +254,8 @@ fn publish_packages(config: &CliConfig) -> anyhow::Result<()> {
         }
 
         let content = fs::read_to_string(&path)?;
-        let parsed: Value = toml::from_str(&content)?;
+        let parsed: Value = toml::from_str(&content)
+            .map_err(|_| Error::Other(format!("Unable to deserialize repo.toml")))?;
 
         let empty_ver = Value::String("".to_string());
         let version_str = parsed
@@ -278,9 +272,7 @@ fn publish_packages(config: &CliConfig) -> anyhow::Result<()> {
         outdated_packages,
     };
 
-    let output = toml::to_string(&repository)?;
-    let mut output_file = File::create(&repo_toml_path)?;
-    output_file.write_all(output.as_bytes())?;
+    fs::serialize_and_write(&repo_toml_path, &repository)?;
 
     if let Some(conf) = &config.web {
         eprintln!("\x1b[01;38;5;155mrepo - generating web content\x1b[0m");

@@ -19,7 +19,7 @@ use std::{
     time::SystemTime,
 };
 
-use crate::{is_redox, log_to_pty};
+use crate::{Result, is_redox, log_to_pty};
 
 fn auto_deps_from_dynamic_linking(
     stage_dirs: &[PathBuf],
@@ -155,7 +155,7 @@ fn auto_deps_from_dynamic_linking(
 fn auto_deps_from_static_package_deps(
     build_dep_pkgars: &BTreeSet<(PackageName, PathBuf)>,
     dynamic_dep_pkgars: &BTreeSet<PackageName>,
-) -> Result<BTreeSet<PackageName>, PackageError> {
+) -> std::result::Result<BTreeSet<PackageName>, PackageError> {
     let static_dep_pkgars: Vec<PackageName> = build_dep_pkgars
         .iter()
         .map(|x| x.0.clone())
@@ -197,7 +197,7 @@ pub fn build(
     cook_recipe: &CookRecipe,
     cook_config: &CookConfig,
     logger: &PtyOut,
-) -> Result<BuildResult, String> {
+) -> Result<BuildResult> {
     let recipe = &cook_recipe.recipe;
     let name = &cook_recipe.name;
     let check_source = !cook_recipe.is_deps;
@@ -565,7 +565,7 @@ fn build_deps_dir(
     dep_pkgars: &BTreeSet<(PackageName, PathBuf)>,
     source_modified: SystemTime,
     deps_modified: SystemTime,
-) -> Result<bool, String> {
+) -> Result<bool> {
     let deps_dir_tmp = deps_dir.with_added_extension("tmp");
     if deps_dir.is_dir() {
         let tags_dir = deps_dir.join(".tags");
@@ -635,7 +635,7 @@ fn build_auto_deps(
     cook_config: &CookConfig,
     mut dep_pkgars: BTreeSet<(PackageName, PathBuf)>,
     logger: &PtyOut,
-) -> Result<BTreeSet<PackageName>, String> {
+) -> Result<BTreeSet<PackageName>> {
     if auto_deps_path.is_file() && !cached {
         if cook_config.verbose {
             log_to_pty!(logger, "DEBUG: updating {}", auto_deps_path.display());
@@ -670,7 +670,7 @@ pub fn build_remote(
     recipe: &Recipe,
     target_dir: &Path,
     cook_config: &CookConfig,
-) -> Result<BuildResult, String> {
+) -> Result<BuildResult> {
     let source_toml = target_dir.join("source.toml");
     let source_pubkey = "build/remotes/pub_key_static.redox-os.org.toml";
 

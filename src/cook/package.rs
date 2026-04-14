@@ -8,7 +8,7 @@ use pkgar::ext::PackageSrcExt;
 use pkgar_core::HeaderFlags;
 
 use crate::{
-    Error,
+    Error, Result,
     config::CookConfig,
     cook::{cook_build::BuildResult, fetch, fs::*, pty::PtyOut},
     log_to_pty,
@@ -20,7 +20,7 @@ pub fn package(
     build_result: &BuildResult,
     cook_config: &CookConfig,
     logger: &PtyOut,
-) -> Result<(), String> {
+) -> Result<()> {
     let name = &recipe.name;
     let target_dir = &recipe.target_dir();
     let auto_deps = &build_result.auto_deps;
@@ -128,7 +128,7 @@ pub fn package_toml(
     package_suffix: Option<&OptionalPackageRecipe>,
     mut package_deps: Vec<PackageName>,
     auto_deps: &BTreeSet<PackageName>,
-) -> Result<(), String> {
+) -> Result<()> {
     for dep in auto_deps.iter() {
         if !package_deps.contains(dep) {
             package_deps.push(dep.clone());
