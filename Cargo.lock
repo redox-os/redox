@@ -918,7 +918,7 @@ dependencies = [
 [[package]]
 name = "redoxer"
 version = "0.2.63"
-source = "git+https://gitlab.redox-os.org/willnode/redoxer.git?branch=linux#c566c012cf073a990bdb2a89bdfe181af808aea6"
+source = "git+https://gitlab.redox-os.org/willnode/redoxer.git?branch=linux#908336f2bf893d026e391b8972f271a78e4e27c2"
 dependencies = [
  "anyhow",
  "dirs",
