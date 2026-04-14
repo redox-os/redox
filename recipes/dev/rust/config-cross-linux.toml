@@ -5,7 +5,7 @@ link-shared = true
 
 [build]
 host = ["TARGET"]
-target = ["TARGET", "x86_64-unknown-linux-relibc", "aarch64-unknown-linux-relibc"]
+target = ["TARGET", "COOKBOOK_TARGET"]
 cargo-native-static = true
 submodules = false
 docs = false
@@ -20,6 +20,14 @@ sysconfdir = "etc"
 [rust]
 backtrace = false
 codegen-tests = false
+
+[target.COOKBOOK_TARGET]
+cc = "COOKBOOK_GNU_TARGET-gcc"
+cxx = "COOKBOOK_GNU_TARGET-g++"
+ar = "COOKBOOK_GNU_TARGET-ar"
+linker = "COOKBOOK_GNU_TARGET-gcc"
+crt-static = false
+llvm-config = "COOKBOOK_SYSROOT/bin/llvm-config"
 
 [target.aarch64-unknown-linux-gnu]
 llvm-config = "COOKBOOK_TOOLCHAIN/bin/llvm-config"
