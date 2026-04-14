@@ -1,16 +1,15 @@
 use ansi_to_tui::IntoText;
-use anyhow::{Context, anyhow, bail};
 use cookbook::config::{CookConfig, get_config, init_config};
 use cookbook::cook::cook_build::{build, get_stage_dirs, remove_stage_dir};
 use cookbook::cook::fetch::{FetchResult, fetch, fetch_offline};
-use cookbook::cook::fs::{create_target_dir, run_command};
+use cookbook::cook::fs::{create_dir, create_target_dir, remove_all, run_command};
 use cookbook::cook::ident;
 use cookbook::cook::package::{package, package_handle_push};
 use cookbook::cook::pty::{PtyOut, UnixSlavePty, flush_pty, setup_pty, write_to_pty};
 use cookbook::cook::script::KILL_ALL_PID;
 use cookbook::cook::tree::{self, WalkTreeEntry};
 use cookbook::recipe::{CookRecipe, recipes_flatten_package_names, recipes_mark_as_deps};
-use cookbook::{Error, staged_pkg};
+use cookbook::{Error, Result, staged_pkg};
 use pkg::{PackageName, PackageState};
 use ratatui::Terminal;
 use ratatui::layout::{Constraint, Direction, Layout, Rect};
@@ -122,9 +121,9 @@ impl CliCommand {
 }
 
 impl FromStr for CliCommand {
-    type Err = anyhow::Error;
+    type Err = Error;
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
         match s {
             "fetch" => Ok(CliCommand::Fetch),
             "cook" => Ok(CliCommand::Cook),
@@ -135,7 +134,10 @@ impl FromStr for CliCommand {
             "push-tree" => Ok(CliCommand::PushTree),
             "cook-tree" => Ok(CliCommand::CookTree),
             "find" => Ok(CliCommand::Find),
-            _ => Err(anyhow!("Unknown command '{}'\n{}\n", s, REPO_HELP_STR)),
+            _ => Err(Error::Other(format!(
+                "Unknown command '{}'\n{}\n",
+                s, REPO_HELP_STR
+            ))),
         }
     }
 }
@@ -157,8 +159,8 @@ impl ToString for CliCommand {
 }
 
 impl CliConfig {
-    fn new() -> Result<Self, std::io::Error> {
-        let current_dir = env::current_dir()?;
+    fn new() -> Result<Self> {
+        let current_dir = env::current_dir().map_err(|e| Error::from_io_error(e, "Getting cwd"))?;
         Ok(CliConfig {
             //FIXME: This config is unused as redox-pkg harcoded this to $PWD/recipes
             cookbook_dir: current_dir.join("recipes"),
@@ -191,7 +193,7 @@ fn main() {
     };
 }
 
-fn main_inner() -> anyhow::Result<()> {
+fn main_inner() -> Result<()> {
     let args: Vec<String> = env::args().skip(1).collect();
 
     if args.is_empty() || args.contains(&"--help".to_string()) || args.contains(&"-h".to_string()) {
@@ -212,7 +214,7 @@ fn main_inner() -> anyhow::Result<()> {
                 let _ = stderr().write(err.as_bytes());
                 let _ = stderr().write(b"\n\n");
                 print_failed(&command, &name);
-                return Err(anyhow!("Execution has failed"));
+                return Err(Error::from(format!("Execution has failed")));
             }
             Ok(app) => {
                 for (recipe, status) in app.recipes {
@@ -228,7 +230,7 @@ fn main_inner() -> anyhow::Result<()> {
                     }
                 }
             }
-            Err(e) => return Err(anyhow!(e)),
+            Err(e) => return Err(e),
         }
         return publish_packages(&recipes, &config.repo_dir);
     }
@@ -321,14 +323,10 @@ fn print_cached(command: &CliCommand, recipe: &PackageName) {
     );
 }
 
-fn repo_inner(
-    config: &CliConfig,
-    command: &CliCommand,
-    recipe: &CookRecipe,
-) -> Result<bool, anyhow::Error> {
+fn repo_inner(config: &CliConfig, command: &CliCommand, recipe: &CookRecipe) -> Result<bool> {
     Ok(match *command {
         CliCommand::Fetch | CliCommand::Cook => {
-            let repo_inner_fn = move |logger: &PtyOut| -> Result<bool, anyhow::Error> {
+            let repo_inner_fn = move |logger: &PtyOut| -> Result<bool> {
                 let is_cook = *command == CliCommand::Cook;
                 let fetch_result = handle_fetch(recipe, config, is_cook, logger)?;
                 let cached = if is_cook {
@@ -399,8 +397,12 @@ fn repo_inner(
     })
 }
 
-fn publish_packages(recipe_names: &Vec<CookRecipe>, repo_path: &PathBuf) -> anyhow::Result<()> {
-    let repo_bin = env::current_exe()?.parent().unwrap().join("repo_builder");
+fn publish_packages(recipe_names: &Vec<CookRecipe>, repo_path: &PathBuf) -> Result<()> {
+    let repo_bin = env::current_exe()
+        .map_err(|e| Error::from_io_error(e, "Getting exe path"))?
+        .parent()
+        .unwrap()
+        .join("repo_builder");
     let mut command = Command::new(repo_bin);
     command
         .arg(repo_path)
@@ -412,10 +414,10 @@ fn publish_packages(recipe_names: &Vec<CookRecipe>, repo_path: &PathBuf) -> anyh
             }
         }));
 
-    run_command(command, &None).map_err(|e| anyhow!(e))
+    run_command(command, &None)
 }
 
-fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<CookRecipe>)> {
+fn parse_args(args: Vec<String>) -> Result<(CliConfig, CliCommand, Vec<CookRecipe>)> {
     let mut config = CliConfig::new()?;
     let mut command: Option<String> = None;
     let mut recipe_names: Vec<PackageName> = Vec::new();
@@ -431,7 +433,7 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
                     "--filesystem" => {
                         config.filesystem = Some({
                             let r = redox_installer::Config::from_file(&PathBuf::from(value));
-                            r.context("Unable to read filesystem installer config")?
+                            r.map_err(|e| Error::Other(e.to_string()))?
                         })
                     }
                     _ => {
@@ -465,7 +467,7 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
             command = Some(arg);
         } else {
             // Subsequent non-flag arguments are recipe names
-            recipe_names.push(arg.try_into().context("Invalid package name")?);
+            recipe_names.push(arg.try_into().map_err(Error::from)?);
         }
     }
 
@@ -474,11 +476,13 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
         config.category = Some(PathBuf::from("recipes").join(c));
     }
     if let Some(c) = config.logs_dir.as_mut() {
-        fs::create_dir_all(c.join(redoxer::target())).map_err(|e| anyhow!(e))?;
-        fs::create_dir_all(c.join(redoxer::host_target())).map_err(|e| anyhow!(e))?;
+        create_dir(&c.join(redoxer::target()))?;
+        create_dir(&c.join(redoxer::host_target()))?;
     }
 
-    let command = command.ok_or(anyhow!("Error: No command specified."))?;
+    let Some(command) = command else {
+        return Err(Error::Other(format!("Error: No command specified.")));
+    };
     let command: CliCommand = str::parse(&command)?;
     if command.is_informational() {
         // avoid extra data that clobber stdout
@@ -490,18 +494,22 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
     if recipe_names.is_empty() {
         if config.all || config.category.is_some() {
             if !recipe_names.is_empty() {
-                bail!("Do not specify recipe names when using the --all or --category flag.");
+                return Err(Error::Other(format!(
+                    "Do not specify recipe names when using the --all or --category flag."
+                )));
             }
             if config.all && config.category.is_some() {
-                bail!("Do not specify both --all and --category flag.");
+                return Err(Error::Other(format!(
+                    "Do not specify both --all and --category flag."
+                )));
             }
             if config.all && !command.is_cleaning() {
                 // because read_recipe is false by logic below
                 // some recipes on wip folders are invalid anyway
-                bail!(
+                return Err(Error::Other(format!(
                     "Refusing to run an unrealistic command to {} all recipes",
                     command.to_string()
-                );
+                )));
             }
             let all_recipes_path = match &config.category {
                 None => staged_pkg::list(""),
@@ -526,9 +534,9 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
                     .filter_map(|k| PackageName::new(k.to_string()).ok())
                     .collect();
             } else {
-                bail!(
+                return Err(Error::Other(format!(
                     "Error: No recipe names or filesystem config provided and --all flag was not used."
-                );
+                )));
             }
         }
     }
@@ -696,14 +704,11 @@ fn handle_fetch(
     config: &CliConfig,
     allow_offline: bool,
     logger: &PtyOut,
-) -> anyhow::Result<FetchResult> {
-    let source_dir = match config.cook.offline && allow_offline {
+) -> Result<FetchResult> {
+    match config.cook.offline && allow_offline {
         true => fetch_offline(&recipe, logger),
         false => fetch(&recipe, !recipe.is_deps, logger),
     }
-    .map_err(|e| anyhow!("failed to fetch: {}", e))?;
-
-    Ok(source_dir)
 }
 
 fn handle_cook(
@@ -711,9 +716,9 @@ fn handle_cook(
     config: &CliConfig,
     source_dir: PathBuf,
     logger: &PtyOut,
-) -> anyhow::Result<bool> {
+) -> Result<bool> {
     let recipe_dir = &recipe.dir;
-    let target_dir = create_target_dir(recipe_dir, recipe.target).map_err(|e| anyhow!(e))?;
+    let target_dir = create_target_dir(recipe_dir, recipe.target)?;
     let build_result = build(
         recipe_dir,
         &source_dir,
@@ -721,11 +726,9 @@ fn handle_cook(
         &recipe,
         &config.cook,
         logger,
-    )
-    .map_err(|err| anyhow!("failed to build: {}", err))?;
+    )?;
 
-    package(&recipe, &build_result, &config.cook, logger)
-        .map_err(|err| anyhow!("failed to package: {}", err))?;
+    package(&recipe, &build_result, &config.cook, logger)?;
 
     if config.cook.clean_target || config.cook.write_filetree {
         for stage_dir in &build_result.stage_dirs {
@@ -733,12 +736,12 @@ fn handle_cook(
                 if config.cook.write_filetree {
                     let mut stage_files_buf = String::new();
                     tree::walk_file_tree(&stage_dir, "", &mut stage_files_buf)
-                        .context("failed to walk stage files tree")?;
+                        .map_err(|e| Error::from_io_error(e, "Walking files tree"))?;
                     fs::write(stage_dir.with_added_extension("files"), stage_files_buf)
-                        .context("unable to write stage files")?;
+                        .map_err(|e| Error::from_io_error(e, "Writing files tree"))?;
                 }
                 if config.cook.clean_target {
-                    fs::remove_dir_all(&stage_dir).context("failed to remove stage dir")?;
+                    remove_all(&stage_dir)?;
                 }
             }
         }
@@ -756,30 +759,26 @@ fn handle_nonstop_fail(recipe: &CookRecipe) -> cookbook::Result<()> {
     Ok(())
 }
 
-fn handle_clean(
-    recipe: &CookRecipe,
-    _config: &CliConfig,
-    command: &CliCommand,
-) -> anyhow::Result<bool> {
+fn handle_clean(recipe: &CookRecipe, _config: &CliConfig, command: &CliCommand) -> Result<bool> {
     let mut dir = recipe.dir.join("target");
     let mut cached = true;
     if matches!(*command, CliCommand::CleanTarget) {
         dir = dir.join(redoxer::target())
     }
     if dir.exists() {
-        fs::remove_dir_all(&dir).context(format!("failed to delete {}", dir.display()))?;
+        remove_all(&dir)?;
         cached = false;
     }
     let dir = recipe.dir.join("source");
     if dir.exists() && matches!(*command, CliCommand::Unfetch) {
-        fs::remove_dir_all(&dir).context(format!("failed to delete {}", dir.display()))?;
+        remove_all(&dir)?;
         cached = false;
     }
     Ok(cached)
 }
 
 static PUSH_SYSROOT_DIR: OnceLock<PathBuf> = OnceLock::new();
-fn handle_push(recipes: &Vec<CookRecipe>, config: &CliConfig) -> anyhow::Result<()> {
+fn handle_push(recipes: &Vec<CookRecipe>, config: &CliConfig) -> Result<()> {
     let recipe_map: HashMap<&PackageName, &CookRecipe> =
         recipes.iter().map(|r| (&r.name, r)).collect();
     let mut total_size: u64 = 0;
@@ -791,23 +790,23 @@ fn handle_push(recipes: &Vec<CookRecipe>, config: &CliConfig) -> anyhow::Result<
                                   _prefix: &str,
                                   _is_last: bool,
                                   entry: &WalkTreeEntry|
-          -> anyhow::Result<bool> {
+          -> Result<bool> {
         let r = match entry {
             WalkTreeEntry::Built(archive_path, _) => {
                 let install_path = PUSH_SYSROOT_DIR.get().unwrap();
-                let mut state =
-                    PackageState::from_sysroot(install_path).map_err(|e| anyhow!("{e:?}"))?;
-                let r = package_handle_push(&mut state, archive_path, &install_path, false)
-                    .map_err(|e| anyhow!("{e:?}"));
+                let mut state = PackageState::from_sysroot(install_path).map_err(Error::from)?;
+                let r = package_handle_push(&mut state, archive_path, &install_path, false);
                 if matches!(r, Ok(false)) {
-                    state.to_sysroot(install_path)?;
+                    state
+                        .to_sysroot(install_path)
+                        .map_err(|e| Error::from_io_error(e, "Extracting package"))?;
                 }
                 r
             }
-            WalkTreeEntry::NotBuilt => Err(anyhow!(
+            WalkTreeEntry::NotBuilt => Err(Error::Other(format!(
                 "Package {} has not been built",
                 package_name.name()
-            )),
+            ))),
             WalkTreeEntry::Deduped | WalkTreeEntry::Missing => {
                 // does not matter
                 return Ok(false);
@@ -863,11 +862,7 @@ fn handle_push(recipes: &Vec<CookRecipe>, config: &CliConfig) -> anyhow::Result<
     Ok(())
 }
 
-fn handle_tree(
-    recipes: &Vec<CookRecipe>,
-    is_build_tree: bool,
-    _config: &CliConfig,
-) -> anyhow::Result<()> {
+fn handle_tree(recipes: &Vec<CookRecipe>, is_build_tree: bool, _config: &CliConfig) -> Result<()> {
     let recipe_map: HashMap<&PackageName, &CookRecipe> =
         recipes.iter().map(|r| (&r.name, r)).collect();
     let mut total_size: u64 = 0;
@@ -1051,13 +1046,13 @@ impl TuiApp {
         (log_text, log_line)
     }
 
-    pub fn write_log(&self, recipe_name: &PackageName, log_path: &PathBuf) -> anyhow::Result<()> {
+    pub fn write_log(&self, recipe_name: &PackageName, log_path: &PathBuf) -> Result<()> {
         let (Some(logs), line) = self.get_recipe_log(recipe_name) else {
             return Ok(());
         };
         let str = strip_ansi_escapes::strip_str(join_logs(logs, line));
         if !str.trim_end().is_empty() {
-            fs::write(log_path, str)?;
+            fs::write(log_path, str).map_err(|e| Error::from_io_error(e, "Writing log"))?;
         }
         return Ok(());
     }
@@ -1162,7 +1157,7 @@ impl TuiApp {
     }
 }
 
-fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> Result<TuiApp, cookbook::Error> {
+fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> Result<TuiApp> {
     let (work_tx, work_rx) = mpsc::channel::<(CookRecipe, FetchResult)>();
     let (status_tx, status_rx) = mpsc::channel::<StatusUpdate>();
 

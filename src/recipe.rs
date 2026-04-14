@@ -9,7 +9,7 @@ use pkg::{PackageError, PackageName};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 
-use crate::{WALK_DEPTH, cook::package as cook_package, staged_pkg};
+use crate::{WALK_DEPTH, bail_other_err, cook::package as cook_package, staged_pkg};
 
 /// Specifies how to download the source for a recipe
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
@@ -444,7 +444,7 @@ impl CookRecipe {
         self.dir.join("target").join(self.target)
     }
 
-    pub fn apply_filesystem_config(&mut self, rule: &str) -> Result<(), anyhow::Error> {
+    pub fn apply_filesystem_config(&mut self, rule: &str) -> crate::Result<()> {
         match rule {
             // build from source as usual
             "source" => {}
@@ -463,8 +463,7 @@ impl CookRecipe {
                 self.recipe.build.set_as_none();
             }
             rule => {
-                anyhow::bail!(
-                    // Fail fast because we could risk losing local changes if "local" was typo'ed
+                bail_other_err!(
                     "Invalid pkg config {} = \"{}\"\nExpecting either 'source', 'local', 'binary' or 'ignore'",
                     self.name.as_str(),
                     rule
