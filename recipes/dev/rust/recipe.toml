@@ -20,7 +20,8 @@ dev-dependencies = [
 script = """
 if [ "${COOKBOOK_HOST_SYSROOT}" = "/usr" ]; then
 
-cat ${COOKBOOK_RECIPE}/config-bootstrap.toml > config.toml
+OS=$(echo "${TARGET}" | cut -d - -f3)
+cat ${COOKBOOK_RECIPE}/config-cross-$OS.toml > config.toml
 sed -i "s|TARGET|${TARGET}|g" config.toml
 sed -i "s|COOKBOOK_TOOLCHAIN|${COOKBOOK_TOOLCHAIN}|g" config.toml
 
