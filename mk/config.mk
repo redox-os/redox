@@ -122,6 +122,7 @@ else ifeq ($(UNAME),FreeBSD)
 	VBM=VBoxManage
 else ifeq ($(UNAME),Redox)
 	PODMAN_BUILD=0
+	export CARGO_NET_GIT_FETCH_WITH_CLI=true
 # TODO: allow overriding to cross compiler toolchain when build server have one prebuilt
 	HOSTED_REDOX=1
 ifneq ($(shell which repo),)
