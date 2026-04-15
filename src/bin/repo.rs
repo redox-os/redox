@@ -955,9 +955,6 @@ const PROMPT_WAIT: Duration = Duration::from_millis(101);
 
 struct TuiApp {
     recipes: Vec<(CookRecipe, RecipeStatus)>,
-    fetch_queue: VecDeque<CookRecipe>,
-    cook_queue: VecDeque<CookRecipe>,
-    done: Vec<PackageName>,
     active_fetch: Option<PackageName>,
     active_cook: Option<PackageName>,
     logs: HashMap<PackageName, Vec<String>>,
@@ -982,9 +979,6 @@ impl TuiApp {
                 .cloned()
                 .map(|r| (r, RecipeStatus::Pending))
                 .collect(),
-            fetch_queue: recipes.iter().cloned().map(|r| r.clone()).collect(),
-            cook_queue: VecDeque::new(),
-            done: Vec::new(),
             active_fetch: None,
             active_cook: None,
             logs: HashMap::new(),
@@ -1128,26 +1122,6 @@ impl TuiApp {
         if let Some((_, status)) = self.recipes.iter_mut().find(|(r, _)| r.name == name) {
             *status = new_status;
         }
-
-        // Re-compute the queues for display
-        self.fetch_queue = self
-            .recipes
-            .iter()
-            .filter(|(_, s)| *s == RecipeStatus::Pending)
-            .map(|(r, _)| r.clone())
-            .collect();
-        self.cook_queue = self
-            .recipes
-            .iter()
-            .filter(|(_, s)| *s == RecipeStatus::Fetched)
-            .map(|(r, _)| r.clone())
-            .collect();
-        self.done = self
-            .recipes
-            .iter()
-            .filter(|(_, s)| *s == RecipeStatus::Done || *s == RecipeStatus::Cached)
-            .map(|(r, _)| r.name.clone())
-            .collect();
     }
 }
 
