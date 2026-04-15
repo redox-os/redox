@@ -19,7 +19,7 @@ use ratatui::text::{Line, Span, Text};
 use ratatui::widgets::{Block, Borders, Clear, List, ListItem, ListState, Paragraph, Wrap};
 use redox_installer::PackageConfig;
 use std::borrow::Cow;
-use std::collections::{BTreeMap, HashMap, HashSet, VecDeque};
+use std::collections::{BTreeMap, HashMap, HashSet};
 use std::io::{Read, Write, stderr, stdin, stdout};
 use std::path::PathBuf;
 use std::process::Command;
@@ -414,12 +414,6 @@ fn publish_packages(recipe_names: &Vec<CookRecipe>, repo_path: &PathBuf) -> Resu
         }));
 
     run_command(command, &None)
-}
-
-macro_rules! bail_options_err {
-    ($($arg:tt)*) => {
-        return Err(cookbook::Error::Options(format!($($arg)*)))
-    };
 }
 
 fn parse_args(args: Vec<String>) -> Result<(CliConfig, CliCommand, Vec<CookRecipe>)> {
@@ -921,6 +915,55 @@ enum RecipeStatus {
     Failed(String),
 }
 
+impl RecipeStatus {
+    pub fn fetch_is_part_of(&self) -> bool {
+        matches!(*self, RecipeStatus::Pending | RecipeStatus::Fetching)
+    }
+    pub fn fetch_style(&self) -> Style {
+        match *self {
+            RecipeStatus::Fetching => Style::default().fg(Color::Yellow),
+            _ => Style::default(),
+        }
+    }
+    pub fn fetch_icon(&self, spin: char) -> char {
+        match *self {
+            RecipeStatus::Pending => ' ',
+            RecipeStatus::Fetching => spin,
+            _ => '?',
+        }
+    }
+    pub fn cook_is_part_of(&self) -> bool {
+        matches!(
+            *self,
+            RecipeStatus::Fetched
+                | RecipeStatus::Cooking
+                | RecipeStatus::Done
+                | RecipeStatus::Cached
+                | RecipeStatus::Failed(_)
+        )
+    }
+    pub fn cook_style(&self) -> Style {
+        match *self {
+            RecipeStatus::Fetched => Style::default(),
+            RecipeStatus::Cooking => Style::default().fg(Color::Yellow),
+            RecipeStatus::Done => Style::default().fg(Color::Green),
+            RecipeStatus::Cached => Style::default().fg(Color::Cyan),
+            RecipeStatus::Failed(_) => Style::default().fg(Color::Red),
+            _ => Style::default(),
+        }
+    }
+    pub fn cook_icon(&self, spin: char) -> char {
+        match *self {
+            RecipeStatus::Fetched => ' ',
+            RecipeStatus::Cooking => spin,
+            RecipeStatus::Done => '+',
+            RecipeStatus::Cached => ' ',
+            RecipeStatus::Failed(_) => 'X',
+            _ => '?',
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 enum StatusUpdate {
     StartFetch(PackageName),
@@ -1363,20 +1406,10 @@ fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> Result<TuiApp> {
             let fetch_items: Vec<ListItem> = app
                 .recipes
                 .iter()
-                .filter(|(_, s)| *s == RecipeStatus::Pending || *s == RecipeStatus::Fetching)
+                .filter(|(_, s)| s.fetch_is_part_of())
                 .map(|(r, s)| {
-                    let style = if *s == RecipeStatus::Fetching {
-                        Style::default().fg(Color::Yellow)
-                    } else {
-                        Style::default()
-                    };
-                    let icon = match s {
-                        RecipeStatus::Pending => ' ',
-                        RecipeStatus::Fetching => spin,
-                        _ => '?',
-                    };
-
-                    ListItem::new(format!("{icon} {}", r.name)).style(style)
+                    let icon = s.fetch_icon(spin);
+                    ListItem::new(format!("{icon} {}", r.name)).style(s.fetch_style())
                 })
                 .collect();
             let fetch_list = List::new(fetch_items).block(
@@ -1390,43 +1423,17 @@ fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> Result<TuiApp> {
             let cook_items: Vec<ListItem> = app
                 .recipes
                 .iter()
-                .filter(|(_, s)| {
-                    *s == RecipeStatus::Fetched
-                        || *s == RecipeStatus::Cooking
-                        || *s == RecipeStatus::Done
-                        || *s == RecipeStatus::Cached
-                        || matches!(s, RecipeStatus::Failed(_))
-                })
+                .filter(|(_, s)| s.cook_is_part_of())
                 .map(|(r, s)| {
-                    let style = match s {
-                        RecipeStatus::Fetched => Style::default(),
-                        RecipeStatus::Cooking => Style::default().fg(Color::Yellow),
-                        RecipeStatus::Done => Style::default().fg(Color::Green),
-                        RecipeStatus::Cached => Style::default().fg(Color::Cyan),
-                        RecipeStatus::Failed(_) => Style::default().fg(Color::Red),
-                        _ => Style::default(),
-                    };
-                    let icon = match s {
-                        RecipeStatus::Fetched => ' ',
-                        RecipeStatus::Cooking => spin,
-                        RecipeStatus::Done => '+',
-                        RecipeStatus::Cached => ' ',
-                        RecipeStatus::Failed(_) => 'X',
-                        _ => '?',
-                    };
-                    ListItem::new(format!("{icon} {}", r.name)).style(style)
+                    let icon = s.cook_icon(spin);
+                    ListItem::new(format!("{icon} {}", r.name)).style(s.cook_style())
                 })
                 .collect();
             {
                 let cooking_index = app
                     .recipes
                     .iter()
-                    .filter(|(_, s)| {
-                        *s == RecipeStatus::Fetched
-                            || *s == RecipeStatus::Cooking
-                            || *s == RecipeStatus::Done
-                            || matches!(s, RecipeStatus::Failed(_))
-                    })
+                    .filter(|(_, s)| s.cook_is_part_of())
                     .position(|(_r, s)| *s == RecipeStatus::Cooking);
 
                 if let Some(index) = cooking_index {
@@ -1852,3 +1859,11 @@ impl FailurePrompt {
         }
     }
 }
+
+macro_rules! bail_options_err {
+    ($($arg:tt)*) => {
+        return Err(cookbook::Error::Options(format!($($arg)*)))
+    };
+}
+
+use bail_options_err;
