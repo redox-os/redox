@@ -19,7 +19,7 @@ use ratatui::text::{Line, Span, Text};
 use ratatui::widgets::{Block, Borders, Clear, List, ListItem, ListState, Paragraph, Wrap};
 use redox_installer::PackageConfig;
 use std::borrow::Cow;
-use std::collections::{BTreeMap, HashMap, HashSet, VecDeque};
+use std::collections::{BTreeMap, HashMap, HashSet};
 use std::io::{Read, Write, stderr, stdin, stdout};
 use std::path::PathBuf;
 use std::process::Command;
@@ -134,10 +134,7 @@ impl FromStr for CliCommand {
             "push-tree" => Ok(CliCommand::PushTree),
             "cook-tree" => Ok(CliCommand::CookTree),
             "find" => Ok(CliCommand::Find),
-            _ => Err(Error::Other(format!(
-                "Unknown command '{}'\n{}\n",
-                s, REPO_HELP_STR
-            ))),
+            _ => bail_options_err!("Unknown command {:?}", s),
         }
     }
 }
@@ -188,7 +185,10 @@ impl CliConfig {
 fn main() {
     init_config();
     if let Err(e) = main_inner() {
-        eprintln!("{:?}", e);
+        match e {
+            Error::Options(e) => eprintln!("{}\n{}", e, REPO_HELP_STR),
+            e => eprintln!("{}", e),
+        }
         process::exit(1);
     };
 }
@@ -197,8 +197,7 @@ fn main_inner() -> Result<()> {
     let args: Vec<String> = env::args().skip(1).collect();
 
     if args.is_empty() || args.contains(&"--help".to_string()) || args.contains(&"-h".to_string()) {
-        println!("{}", REPO_HELP_STR);
-        process::exit(1);
+        bail_options_err!("");
     }
 
     let (config, command, recipes) = parse_args(args)?;
@@ -259,10 +258,10 @@ fn main_inner() -> Result<()> {
             Err(e) => {
                 if config.cook.nonstop {
                     if verbose {
-                        eprintln!("{:?}", e);
+                        eprintln!("{}", e);
                     }
                     if let Err(e) = handle_nonstop_fail(recipe) {
-                        eprintln!("{:?}", e)
+                        eprintln!("{}", e)
                     };
                 }
                 print_failed(&command, &recipe.name);
@@ -433,13 +432,10 @@ fn parse_args(args: Vec<String>) -> Result<(CliConfig, CliCommand, Vec<CookRecip
                     "--filesystem" => {
                         config.filesystem = Some({
                             let r = redox_installer::Config::from_file(&PathBuf::from(value));
-                            r.map_err(|e| Error::Other(e.to_string()))?
+                            r.map_err(|e| Error::Other(format!("{:?}", e)))?
                         })
                     }
-                    _ => {
-                        eprintln!("Error: Unknown flag with value: {}", arg);
-                        process::exit(1);
-                    }
+                    _ => bail_options_err!("Error: Unknown flag with value: {}", arg),
                 }
             } else if arg.starts_with("--category-") {
                 // to workaround make command limit we provide this option
@@ -449,18 +445,12 @@ fn parse_args(args: Vec<String>) -> Result<(CliConfig, CliCommand, Vec<CookRecip
                     "--repo-binary" => override_filesystem_repo_binary = true,
                     "--with-package-deps" => config.with_package_deps = true,
                     "--all" => config.all = true,
-                    _ => {
-                        eprintln!("Error: Unknown flag: {}", arg);
-                        process::exit(1);
-                    }
+                    _ => bail_options_err!("Error: Unknown flag: {}", arg),
                 }
             }
         } else if arg.starts_with('-') {
             match arg.as_str() {
-                _ => {
-                    eprintln!("Error: Unknown flag: {}", arg);
-                    process::exit(1);
-                }
+                _ => bail_options_err!("Error: Unknown flag: {}", arg),
             }
         } else if command.is_none() {
             // The first non-flag argument is the command
@@ -481,7 +471,7 @@ fn parse_args(args: Vec<String>) -> Result<(CliConfig, CliCommand, Vec<CookRecip
     }
 
     let Some(command) = command else {
-        return Err(Error::Other(format!("Error: No command specified.")));
+        bail_options_err!("Error: No command specified");
     };
     let command: CliCommand = str::parse(&command)?;
     if command.is_informational() {
@@ -494,22 +484,20 @@ fn parse_args(args: Vec<String>) -> Result<(CliConfig, CliCommand, Vec<CookRecip
     if recipe_names.is_empty() {
         if config.all || config.category.is_some() {
             if !recipe_names.is_empty() {
-                return Err(Error::Other(format!(
-                    "Do not specify recipe names when using the --all or --category flag."
-                )));
+                bail_options_err!(
+                    "Do not specify recipe names when using the --all or --category flag"
+                );
             }
             if config.all && config.category.is_some() {
-                return Err(Error::Other(format!(
-                    "Do not specify both --all and --category flag."
-                )));
+                bail_options_err!("Do not specify both --all and --category flag.");
             }
             if config.all && !command.is_cleaning() {
                 // because read_recipe is false by logic below
                 // some recipes on wip folders are invalid anyway
-                return Err(Error::Other(format!(
+                bail_options_err!(
                     "Refusing to run an unrealistic command to {} all recipes",
                     command.to_string()
-                )));
+                );
             }
             let all_recipes_path = match &config.category {
                 None => staged_pkg::list(""),
@@ -534,9 +522,9 @@ fn parse_args(args: Vec<String>) -> Result<(CliConfig, CliCommand, Vec<CookRecip
                     .filter_map(|k| PackageName::new(k.to_string()).ok())
                     .collect();
             } else {
-                return Err(Error::Other(format!(
+                bail_options_err!(
                     "Error: No recipe names or filesystem config provided and --all flag was not used."
-                )));
+                );
             }
         }
     }
@@ -927,6 +915,55 @@ enum RecipeStatus {
     Failed(String),
 }
 
+impl RecipeStatus {
+    pub fn fetch_is_part_of(&self) -> bool {
+        matches!(*self, RecipeStatus::Pending | RecipeStatus::Fetching)
+    }
+    pub fn fetch_style(&self) -> Style {
+        match *self {
+            RecipeStatus::Fetching => Style::default().fg(Color::Yellow),
+            _ => Style::default(),
+        }
+    }
+    pub fn fetch_icon(&self, spin: char) -> char {
+        match *self {
+            RecipeStatus::Pending => ' ',
+            RecipeStatus::Fetching => spin,
+            _ => '?',
+        }
+    }
+    pub fn cook_is_part_of(&self) -> bool {
+        matches!(
+            *self,
+            RecipeStatus::Fetched
+                | RecipeStatus::Cooking
+                | RecipeStatus::Done
+                | RecipeStatus::Cached
+                | RecipeStatus::Failed(_)
+        )
+    }
+    pub fn cook_style(&self) -> Style {
+        match *self {
+            RecipeStatus::Fetched => Style::default(),
+            RecipeStatus::Cooking => Style::default().fg(Color::Yellow),
+            RecipeStatus::Done => Style::default().fg(Color::Green),
+            RecipeStatus::Cached => Style::default().fg(Color::Cyan),
+            RecipeStatus::Failed(_) => Style::default().fg(Color::Red),
+            _ => Style::default(),
+        }
+    }
+    pub fn cook_icon(&self, spin: char) -> char {
+        match *self {
+            RecipeStatus::Fetched => ' ',
+            RecipeStatus::Cooking => spin,
+            RecipeStatus::Done => '+',
+            RecipeStatus::Cached => ' ',
+            RecipeStatus::Failed(_) => 'X',
+            _ => '?',
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 enum StatusUpdate {
     StartFetch(PackageName),
@@ -961,9 +998,6 @@ const PROMPT_WAIT: Duration = Duration::from_millis(101);
 
 struct TuiApp {
     recipes: Vec<(CookRecipe, RecipeStatus)>,
-    fetch_queue: VecDeque<CookRecipe>,
-    cook_queue: VecDeque<CookRecipe>,
-    done: Vec<PackageName>,
     active_fetch: Option<PackageName>,
     active_cook: Option<PackageName>,
     logs: HashMap<PackageName, Vec<String>>,
@@ -988,9 +1022,6 @@ impl TuiApp {
                 .cloned()
                 .map(|r| (r, RecipeStatus::Pending))
                 .collect(),
-            fetch_queue: recipes.iter().cloned().map(|r| r.clone()).collect(),
-            cook_queue: VecDeque::new(),
-            done: Vec::new(),
             active_fetch: None,
             active_cook: None,
             logs: HashMap::new(),
@@ -1134,26 +1165,6 @@ impl TuiApp {
         if let Some((_, status)) = self.recipes.iter_mut().find(|(r, _)| r.name == name) {
             *status = new_status;
         }
-
-        // Re-compute the queues for display
-        self.fetch_queue = self
-            .recipes
-            .iter()
-            .filter(|(_, s)| *s == RecipeStatus::Pending)
-            .map(|(r, _)| r.clone())
-            .collect();
-        self.cook_queue = self
-            .recipes
-            .iter()
-            .filter(|(_, s)| *s == RecipeStatus::Fetched)
-            .map(|(r, _)| r.clone())
-            .collect();
-        self.done = self
-            .recipes
-            .iter()
-            .filter(|(_, s)| *s == RecipeStatus::Done || *s == RecipeStatus::Cached)
-            .map(|(r, _)| r.name.clone())
-            .collect();
     }
 }
 
@@ -1395,20 +1406,10 @@ fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> Result<TuiApp> {
             let fetch_items: Vec<ListItem> = app
                 .recipes
                 .iter()
-                .filter(|(_, s)| *s == RecipeStatus::Pending || *s == RecipeStatus::Fetching)
+                .filter(|(_, s)| s.fetch_is_part_of())
                 .map(|(r, s)| {
-                    let style = if *s == RecipeStatus::Fetching {
-                        Style::default().fg(Color::Yellow)
-                    } else {
-                        Style::default()
-                    };
-                    let icon = match s {
-                        RecipeStatus::Pending => ' ',
-                        RecipeStatus::Fetching => spin,
-                        _ => '?',
-                    };
-
-                    ListItem::new(format!("{icon} {}", r.name)).style(style)
+                    let icon = s.fetch_icon(spin);
+                    ListItem::new(format!("{icon} {}", r.name)).style(s.fetch_style())
                 })
                 .collect();
             let fetch_list = List::new(fetch_items).block(
@@ -1422,43 +1423,17 @@ fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> Result<TuiApp> {
             let cook_items: Vec<ListItem> = app
                 .recipes
                 .iter()
-                .filter(|(_, s)| {
-                    *s == RecipeStatus::Fetched
-                        || *s == RecipeStatus::Cooking
-                        || *s == RecipeStatus::Done
-                        || *s == RecipeStatus::Cached
-                        || matches!(s, RecipeStatus::Failed(_))
-                })
+                .filter(|(_, s)| s.cook_is_part_of())
                 .map(|(r, s)| {
-                    let style = match s {
-                        RecipeStatus::Fetched => Style::default(),
-                        RecipeStatus::Cooking => Style::default().fg(Color::Yellow),
-                        RecipeStatus::Done => Style::default().fg(Color::Green),
-                        RecipeStatus::Cached => Style::default().fg(Color::Cyan),
-                        RecipeStatus::Failed(_) => Style::default().fg(Color::Red),
-                        _ => Style::default(),
-                    };
-                    let icon = match s {
-                        RecipeStatus::Fetched => ' ',
-                        RecipeStatus::Cooking => spin,
-                        RecipeStatus::Done => '+',
-                        RecipeStatus::Cached => ' ',
-                        RecipeStatus::Failed(_) => 'X',
-                        _ => '?',
-                    };
-                    ListItem::new(format!("{icon} {}", r.name)).style(style)
+                    let icon = s.cook_icon(spin);
+                    ListItem::new(format!("{icon} {}", r.name)).style(s.cook_style())
                 })
                 .collect();
             {
                 let cooking_index = app
                     .recipes
                     .iter()
-                    .filter(|(_, s)| {
-                        *s == RecipeStatus::Fetched
-                            || *s == RecipeStatus::Cooking
-                            || *s == RecipeStatus::Done
-                            || matches!(s, RecipeStatus::Failed(_))
-                    })
+                    .filter(|(_, s)| s.cook_is_part_of())
                     .position(|(_r, s)| *s == RecipeStatus::Cooking);
 
                 if let Some(index) = cooking_index {
@@ -1884,3 +1859,11 @@ impl FailurePrompt {
         }
     }
 }
+
+macro_rules! bail_options_err {
+    ($($arg:tt)*) => {
+        return Err(cookbook::Error::Options(format!($($arg)*)))
+    };
+}
+
+use bail_options_err;
