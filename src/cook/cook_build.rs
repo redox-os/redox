@@ -99,7 +99,12 @@ fn auto_deps_from_dynamic_linking(
                 }
                 needed.insert(name.to_string());
             } else {
-                log_to_pty!(logger, "DEBUG: autopath failed {} is outside {}", path.display(), rel_path.display());
+                log_to_pty!(
+                    logger,
+                    "DEBUG: autopath failed {} is outside {}",
+                    path.display(),
+                    rel_path.display()
+                );
             }
         }
     }
