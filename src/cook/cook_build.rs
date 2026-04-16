@@ -41,9 +41,6 @@ fn auto_deps_from_dynamic_linking(
 
     // Recursively (DFS) walk each directory to ensure nested libs and bins are checked.
     while let Some((rel_path, dir)) = walk.pop_front() {
-        let Ok(dir) = dir.canonicalize() else {
-            continue;
-        };
         if visited.contains(&dir) {
             #[cfg(debug_assertions)]
             log_to_pty!(
@@ -101,6 +98,8 @@ fn auto_deps_from_dynamic_linking(
                     }
                 }
                 needed.insert(name.to_string());
+            } else {
+                log_to_pty!(logger, "DEBUG: autopath failed {} is outside {}", path.display(), rel_path.display());
             }
         }
     }
