@@ -81,19 +81,9 @@ cp "${COOKBOOK_SYSROOT}/usr/bin/redoxfs" "${COOKBOOK_BUILD}/initfs/bin"
 
 # Build bootstrap
 ARCH="$(echo "${GNU_TARGET}" | cut -d - -f1)"
-RUSTFLAGS="$RUSTFLAGS -Ctarget-feature=+crt-static" cargo \
-    -Zbuild-std=core,alloc,compiler_builtins \
-    -Zbuild-std-features=compiler-builtins-mem build \
-    --target "${TARGET}" \
-    --manifest-path "${COOKBOOK_SOURCE}/bootstrap/Cargo.toml" \
-    --release \
-    --target-dir "${COOKBOOK_BUILD}"
-"${GNU_TARGET}-ld" \
-    -o "${COOKBOOK_BUILD}/bootstrap" \
-    --gc-sections \
-    -T "${COOKBOOK_SOURCE}/bootstrap/src/${ARCH}.ld" \
-    -z max-page-size=4096 \
-    "${COOKBOOK_BUILD}/${TARGET}/release/libbootstrap.a"
+(cd "${COOKBOOK_SOURCE}/bootstrap" && "${COOKBOOK_CARGO}" rustc \
+    --release -- -Ctarget-feature=+crt-static -Clinker="${GNU_TARGET}-ld")
+cp "${COOKBOOK_BUILD}/target/${TARGET}/release/bootstrap" "${COOKBOOK_BUILD}/bootstrap"
 
 # Assemble initfs
 env -u CARGO -u RUSTFLAGS cargo run --manifest-path "${COOKBOOK_SOURCE}/initfs/tools/Cargo.toml" --bin redox-initfs-ar -- "${COOKBOOK_BUILD}/initfs" "${COOKBOOK_BUILD}/bootstrap" -o "${COOKBOOK_BUILD}/initfs.img"
