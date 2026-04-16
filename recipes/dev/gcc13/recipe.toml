@@ -86,6 +86,8 @@ if [ "${COOKBOOK_HOST_SYSROOT}" != "/usr" ]; then
 ln -s "gcc" "${COOKBOOK_STAGE}/usr/bin/cc"
 # Avoid conflict with libgcc & libstdcxx
 rm -f "${COOKBOOK_STAGE}"/usr/lib/libgcc_s.so* "${COOKBOOK_STAGE}"/usr/lib/libstdc++.so*
+# Avoid rebuilding problem
+rm -f ./gcc/libgcc_s.so*
 
 fi
 """
