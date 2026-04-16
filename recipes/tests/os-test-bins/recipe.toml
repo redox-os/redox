@@ -34,14 +34,7 @@ skips=(
     # These tests hang
     basic/poll/poll
     basic/pthread/pthread_barrierattr_setpshared
-    basic/pthread/pthread_cancel
-    basic/pthread/pthread_cleanup_pop
-    basic/pthread/pthread_cleanup_push
     basic/pthread/pthread_condattr_setpshared
-    basic/pthread/pthread_mutex_consistent
-    basic/pthread/pthread_rwlock_timedrdlock
-    basic/pthread/pthread_rwlock_timedwrlock
-    basic/pthread/pthread_setcanceltype
     basic/pthread/pthread_testcancel
     basic/sys_select/select
     basic/sys_time/select
