@@ -1,6 +1,6 @@
 # Desktop configuration using the Contain sandbox
 
-include = ["../desktop.toml"]
+include = ["desktop.toml"]
 
 # Override the default settings here
 
