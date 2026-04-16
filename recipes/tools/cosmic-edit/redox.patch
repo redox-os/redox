@@ -1,0 +1,36 @@
+diff --git a/Cargo.lock b/Cargo.lock
+index 968b42d..c4c2154 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -2004,7 +2004,7 @@ checksum = "75b325c5dbd37f80359721ad39aca5a29fb04c89279657cffdda8736d0c0b9d2"
+ [[package]]
+ name = "dpi"
+ version = "0.1.1"
+-source = "git+https://github.com/pop-os/winit.git?tag=iced-xdg-surface-0.13-rc#dd46a1499bcc38f2134ab869e8860a32e091c55b"
++source = "git+https://gitlab.redox-os.org/redox-os/winit?branch=redox-0.30.5#a0d14b4f2466afec886bcfb7e5d5d7eb9d703a60"
+ 
+ [[package]]
+ name = "drm"
+@@ -8933,7 +8933,7 @@ checksum = "d6bbff5f0aada427a1e5a6da5f1f98158182f26556f345ac9e04d36d0ebed650"
+ [[package]]
+ name = "winit"
+ version = "0.30.5"
+-source = "git+https://github.com/pop-os/winit.git?tag=iced-xdg-surface-0.13-rc#dd46a1499bcc38f2134ab869e8860a32e091c55b"
++source = "git+https://gitlab.redox-os.org/redox-os/winit?branch=redox-0.30.5#a0d14b4f2466afec886bcfb7e5d5d7eb9d703a60"
+ dependencies = [
+  "ahash",
+  "android-activity",
+diff --git a/Cargo.toml b/Cargo.toml
+index 9ae4b0f..aeda6e3 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -70,6 +70,9 @@ debug = true
+ onig = { git = "https://github.com/rust-onig/rust-onig.git", branch = "main" }
+ onig_sys = { git = "https://github.com/rust-onig/rust-onig.git", branch = "main" }
+ 
++[patch.'https://github.com/pop-os/winit']
++winit = { git = "https://gitlab.redox-os.org/redox-os/winit", branch = "redox-0.30.5" }
++
+ # [patch.'https://github.com/pop-os/libcosmic']
+ # libcosmic = { path = "../libcosmic" }
+ # cosmic-config = { path = "../libcosmic/cosmic-config" }

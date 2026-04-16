@@ -1,0 +1,153 @@
+diff --git a/Cargo.lock b/Cargo.lock
+index 8db9972..d676b67 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -254,7 +254,7 @@ version = "1.1.5"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "40c48f72fd53cd289104fc64099abca73db4166ad86ea0b4341abe65af83dadc"
+ dependencies = [
+- "windows-sys 0.61.2",
++ "windows-sys 0.60.2",
+ ]
+ 
+ [[package]]
+@@ -265,7 +265,7 @@ checksum = "291e6a250ff86cd4a820112fb8898808a366d8f9f58ce16d1f538353ad55747d"
+ dependencies = [
+  "anstyle",
+  "once_cell_polyfill",
+- "windows-sys 0.61.2",
++ "windows-sys 0.60.2",
+ ]
+ 
+ [[package]]
+@@ -1893,7 +1893,7 @@ dependencies = [
+  "libc",
+  "option-ext",
+  "redox_users 0.5.2",
+- "windows-sys 0.61.2",
++ "windows-sys 0.60.2",
+ ]
+ 
+ [[package]]
+@@ -1975,7 +1975,7 @@ checksum = "75b325c5dbd37f80359721ad39aca5a29fb04c89279657cffdda8736d0c0b9d2"
+ [[package]]
+ name = "dpi"
+ version = "0.1.1"
+-source = "git+https://github.com/pop-os/winit.git?tag=iced-xdg-surface-0.13-rc#dd46a1499bcc38f2134ab869e8860a32e091c55b"
++source = "git+https://gitlab.redox-os.org/redox-os/winit?branch=redox-0.30.5#a0d14b4f2466afec886bcfb7e5d5d7eb9d703a60"
+ 
+ [[package]]
+ name = "drm"
+@@ -2111,7 +2111,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb"
+ dependencies = [
+  "libc",
+- "windows-sys 0.61.2",
++ "windows-sys 0.60.2",
+ ]
+ 
+ [[package]]
+@@ -2752,7 +2752,7 @@ dependencies = [
+  "gobject-sys",
+  "libc",
+  "system-deps",
+- "windows-sys 0.61.2",
++ "windows-sys 0.60.2",
+ ]
+ 
+ [[package]]
+@@ -4042,7 +4042,7 @@ dependencies = [
+  "portable-atomic",
+  "portable-atomic-util",
+  "serde_core",
+- "windows-sys 0.61.2",
++ "windows-sys 0.60.2",
+ ]
+ 
+ [[package]]
+@@ -4331,7 +4331,7 @@ version = "1.4.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "770919970f7d2f74fea948900d35e2ef64f44129e8ae4015f59de1f0aca7c2a5"
+ dependencies = [
+- "windows-sys 0.61.2",
++ "windows-sys 0.60.2",
+ ]
+ 
+ [[package]]
+@@ -4992,7 +4992,7 @@ version = "0.50.3"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "7957b9740744892f114936ab4a57b3f487491bbeafaf8083688b16841a4240e5"
+ dependencies = [
+- "windows-sys 0.61.2",
++ "windows-sys 0.60.2",
+ ]
+ 
+ [[package]]
+@@ -5078,7 +5078,7 @@ version = "0.7.5"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "ff32365de1b6743cb203b710788263c44a03de03802daf96092f2da4fe6ba4d7"
+ dependencies = [
+- "proc-macro-crate 3.4.0",
++ "proc-macro-crate 1.3.1",
+  "proc-macro2",
+  "quote",
+  "syn 2.0.117",
+@@ -5428,7 +5428,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "7d8fae84b431384b68627d0f9b3b1245fcf9f46f6c0e3dc902e9dce64edd1967"
+ dependencies = [
+  "libc",
+- "windows-sys 0.61.2",
++ "windows-sys 0.48.0",
+ ]
+ 
+ [[package]]
+@@ -6486,7 +6486,7 @@ dependencies = [
+  "errno",
+  "libc",
+  "linux-raw-sys 0.12.1",
+- "windows-sys 0.61.2",
++ "windows-sys 0.60.2",
+ ]
+ 
+ [[package]]
+@@ -7124,7 +7124,7 @@ dependencies = [
+  "getrandom 0.4.1",
+  "once_cell",
+  "rustix 1.1.4",
+- "windows-sys 0.61.2",
++ "windows-sys 0.60.2",
+ ]
+ 
+ [[package]]
+@@ -8263,7 +8263,7 @@ version = "0.1.11"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
+ dependencies = [
+- "windows-sys 0.61.2",
++ "windows-sys 0.48.0",
+ ]
+ 
+ [[package]]
+@@ -8860,7 +8860,7 @@ checksum = "d6bbff5f0aada427a1e5a6da5f1f98158182f26556f345ac9e04d36d0ebed650"
+ [[package]]
+ name = "winit"
+ version = "0.30.5"
+-source = "git+https://github.com/pop-os/winit.git?tag=iced-xdg-surface-0.13-rc#dd46a1499bcc38f2134ab869e8860a32e091c55b"
++source = "git+https://gitlab.redox-os.org/redox-os/winit?branch=redox-0.30.5#a0d14b4f2466afec886bcfb7e5d5d7eb9d703a60"
+ dependencies = [
+  "ahash",
+  "android-activity",
+diff --git a/Cargo.toml b/Cargo.toml
+index 3786a9c..92a7197 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -138,6 +138,9 @@ fastrand = "2"
+ test-log = "0.2"
+ tokio = { version = "1", features = ["rt", "macros"] }
+ 
++[patch.'https://github.com/pop-os/winit']
++winit = { git = "https://gitlab.redox-os.org/redox-os/winit", branch = "redox-0.30.5" }
++
+ # [patch.'https://github.com/pop-os/cosmic-text']
+ # cosmic-text = { path = "../cosmic-text" }
+ 
