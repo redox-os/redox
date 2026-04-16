@@ -1,4 +1,3 @@
-#TODO: promote
 [source]
 tar = "https://github.com/openssl/openssl/releases/download/openssl-3.5.3/openssl-3.5.3.tar.gz"
 blake3 = "e1622a4587c71c278355bf38ff5a619918bd51e3cd37214d53dd5345b187fc10"
