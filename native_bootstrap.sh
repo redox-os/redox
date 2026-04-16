@@ -897,7 +897,8 @@ redox()
     rust \
     sdl1 \
     sdl2-ttf \
-    vim"
+    vim \
+    wget"
 
     
     # Try to install packages, but don't fail if some are unavailable
