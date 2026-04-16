@@ -1,0 +1,15 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/mufeedali/Wordbook"
+rev = "1.0.0"
+shallow_clone = true
+[build]
+template = "meson"
+dependencies = [
+    "libadwaita",
+    "gtk4",
+]
+[package]
+dependencies = [
+    "python312"
+]

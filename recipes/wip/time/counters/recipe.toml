@@ -1,0 +1,16 @@
+#TODO not compiled or tested
+[source]
+git = "https://gitlab.com/guillermop/Counters"
+rev = "v1.4.0"
+shallow_clone = true
+[build]
+template = "meson"
+dependencies = [
+    "gjs",
+    "gtk4",
+    "libadwaita",
+    "sqlite3",
+]
+dev-dependencies = [
+    "host:blueprint"
+]

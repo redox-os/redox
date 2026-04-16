@@ -1,0 +1,13 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/danirod/cartero"
+shallow_clone = true
+[build]
+template = "meson"
+dependencies = [
+    "libadwaita",
+    "glib",
+    "gtk4",
+    "gtksourceview",
+    "openssl3",
+]

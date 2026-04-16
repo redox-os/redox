@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+# build instructions: https://jonas.github.io/tig/INSTALL.html
+[source]
+tar = "https://github.com/jonas/tig/releases/download/tig-2.6.0/tig-2.6.0.tar.gz"
+[build]
+template = "configure"
+dependencies = [
+    "ncursesw",
+    "libiconv",
+]

@@ -1,0 +1,30 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/Warzone2100/warzone2100?tab=readme-ov-file#how-to-build
+[source]
+tar = "https://github.com/Warzone2100/warzone2100/releases/download/4.7.0/warzone2100_src.tar.xz"
+shallow_clone = true
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DWZ_DEBUG_GFX_API_LEAKS=OFF",
+    "-DWZ_ENABLE_BACKEND_VULKAN=OFF",
+    "-DENABLE_DOCS=OFF",
+]
+dependencies = [
+    "sdl3",
+    "physicsfs",
+    "libpng",
+    "libjpeg-turbo",
+    "libtheora",
+    "libvorbis",
+    "libogg",
+    "libopus",
+    "freetype2",
+    "harfbuzz",
+    "fribidi",
+    "openal",
+    "curl",
+    "libsodium",
+    "sqlite3",
+    "libzip",
+]

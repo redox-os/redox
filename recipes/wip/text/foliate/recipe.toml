@@ -1,0 +1,14 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/johnfactotum/foliate"
+rev = "3.3.0"
+shallow_clone = true
+[build]
+template = "meson"
+mesonflags = ["-Dcheck_runtime_deps=false"]
+dependencies = [
+    "gjs",
+    "gtk4",
+    "libadwaita",
+    "webkitgtk4",
+]

@@ -1,0 +1,12 @@
+#TODO not compiled or tested
+#TODO discover minimum dependencies from meson log
+[source]
+git = "https://github.com/wbernard/Memorado"
+rev = "0.7"
+shallow_clone = true
+[build]
+template = "meson"
+[package]
+dependencies = [
+    "python312",
+]

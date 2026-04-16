@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/Feromond/budget_tracker_tui"
+shallow_clone = true
+[build]
+template = "cargo"

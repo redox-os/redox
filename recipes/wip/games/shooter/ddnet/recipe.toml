@@ -1,0 +1,20 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/ddnet/ddnet/blob/master/docs/BUILDING.md
+[source]
+tar = "https://ddnet.org/downloads/DDNet-19.8.tar.xz"
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DINFORM_UPDATE=OFF",
+    "-DVIDEORECORDER=OFF",
+    "-DVULKAN=OFF",
+    "-GNinja",
+]
+dependencies = [
+    "sdl2",
+    "curl",
+    "freetype2",
+    "libogg",
+    "libopus",
+    "opusfile",
+]
