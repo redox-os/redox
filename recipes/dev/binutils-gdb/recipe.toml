@@ -22,6 +22,7 @@ fi
 COOKBOOK_CONFIGURE_FLAGS+=(
     --target="${COOKBOOK_CROSS_GNU_TARGET:-$GNU_TARGET}"
     --enable-default-hash-style=gnu
+    --enable-deterministic-archives
     --disable-werror
 #   --with-system-zlib
 )
