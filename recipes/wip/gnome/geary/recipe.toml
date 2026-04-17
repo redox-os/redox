@@ -15,4 +15,4 @@ dependencies = [
     "webkitgtk3",
     "sqlite3",
 ]
-dev-dependencies = ["vala"]
+dev-dependencies = ["host:vala"]

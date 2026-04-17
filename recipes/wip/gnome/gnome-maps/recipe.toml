@@ -9,4 +9,4 @@ dependencies = [
     "libadwaita",
     "gjs",
 ]
-dev-dependencies = ["blueprint"]
+dev-dependencies = ["host:blueprint"]

@@ -29,7 +29,6 @@ mesonflags = [
 #     "libpanel",
 #     "libpeas",
 #     "libsoup",
-#     "vala",
 #     "libvte",
 #     "libxml2",
 #     "json-glib",

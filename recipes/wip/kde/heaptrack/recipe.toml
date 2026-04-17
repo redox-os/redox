@@ -7,10 +7,12 @@ shallow_clone = true
 [build]
 template = "cmake"
 cmakeflags = [
-    "-DHEAPTRACK_BUILD_ANALYZE_DEFAULT=OFF"
+    "-DHEAPTRACK_BUILD_ANALYZE_DEFAULT=OFF",
+    "-DHEAPTRACK_BUILD_GUI=OFF",
 ]
 dependencies = [
     "zlib",
     "boost",
     "libunwind",
+    "elfutils",
 ]
