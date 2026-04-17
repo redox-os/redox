@@ -180,6 +180,12 @@ impl From<pkgar::Error> for Error {
     }
 }
 
+impl From<pkgar_keys::Error> for Error {
+    fn from(value: pkgar_keys::Error) -> Self {
+        Error::Pkgar(pkgar::Error::Keys(value))
+    }
+}
+
 impl From<walkdir::Error> for Error {
     fn from(value: walkdir::Error) -> Self {
         if value.io_error().is_some() {
