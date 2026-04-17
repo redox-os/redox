@@ -574,7 +574,17 @@ fn build_deps_dir(
     dep_pkgars: &BTreeSet<(PackageName, PathBuf)>,
 ) -> Result<bool> {
     let pkey_path = "build/id_ed25519.pub.toml";
-    let pkey_file = PublicKeyFile::open(&pkey_path).map_err(Error::from)?.pkey;
+    let pkey_file = match PublicKeyFile::open(&pkey_path) {
+        Ok(k) => k.pkey,
+        Err(e) => {
+            if dep_pkgars.len() > 0 {
+                return Err(Error::from(e));
+            } else {
+                // should never be accessed
+                Default::default()
+            }
+        }
+    };
     let tags_dir = deps_dir.join(".tags");
     if tags_dir.is_dir() {
         // check all files present and exact
@@ -714,6 +724,7 @@ pub fn build_remote(
             continue;
         }
 
+        // TODO: Compare blake3 hashes
         if !stage_dir.is_dir() {
             let (_, source_pkgar, _) = package_source_paths(package, &target_dir);
             let stage_dir_tmp = target_dir.join("stage.tmp");
