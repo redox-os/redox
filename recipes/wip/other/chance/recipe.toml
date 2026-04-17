@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/zelikos/rannum"
+shallow_clone = true
+[build]
+template = "meson"
+dependencies = [
+    "gtk4",
+    "libadwaita",
+]

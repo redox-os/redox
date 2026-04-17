@@ -1,0 +1,14 @@
+#TODO not compiled or tested
+# maybe x11 is needed: https://codeberg.org/GramEditor/gram/src/branch/main/script/linux#L23
+[source]
+git = "https://codeberg.org/GramEditor/gram"
+shallow_clone = true
+[build]
+template = "cargo"
+cargopackages = ["gram"]
+dependencies = [
+    "fontconfig",
+    "openssl3",
+    "zstd",
+    "sqlite3",
+]

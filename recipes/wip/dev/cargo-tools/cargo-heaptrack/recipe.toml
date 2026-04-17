@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/little-dude/cargo-heaptrack"
+shallow_clone = true
+[build]
+template = "cargo"
+[package]
+dependencies = [
+    "heaptrack",
+]

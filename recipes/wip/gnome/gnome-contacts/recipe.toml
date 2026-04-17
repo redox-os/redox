@@ -1,0 +1,18 @@
+#TODO not compiled or tested
+[source]
+tar = "https://download.gnome.org/sources/gnome-contacts/49/gnome-contacts-49.0.tar.xz"
+[build]
+template = "meson"
+mesonflags = [
+    "-Dcamera=false",
+    "-Dmanpage=false",
+    "-Dgoa=false",
+]
+dependencies = [
+    "glib",
+    "gtk4",
+    "libadwaita",
+]
+dev-dependencies = [
+    "host:blueprint"
+]

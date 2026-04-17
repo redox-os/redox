@@ -1,0 +1,13 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/SeaDve/Delineate"
+shallow_clone = true
+[build]
+template = "meson"
+dependencies = [
+    "gtk4",
+    "libadwaita",
+    "glib",
+    "gtksourceview",
+    "webkitgtk4",
+]
