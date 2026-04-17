@@ -1,25 +1,26 @@
 use pkg::PackageError;
 use pkg::{Package, PackageName};
+use pkgar::{PackageFile, Transaction};
+use pkgar_core::PackageSrc;
+use pkgar_keys::PublicKeyFile;
 
 use crate::config::CookConfig;
+use crate::cook::fetch;
 use crate::cook::package::{package_source_paths, package_target};
 use crate::cook::pty::PtyOut;
-use crate::cook::script::*;
-use crate::cook::{fetch, fs::*};
+use crate::cook::{fs, script::*};
 use crate::recipe::Recipe;
 use crate::recipe::{AutoDeps, CookRecipe};
 use crate::recipe::{BuildKind, OptionalPackageRecipe};
 use std::collections::VecDeque;
 use std::{
     collections::BTreeSet,
-    fs,
     path::{Path, PathBuf},
     process::Command,
     str,
-    time::SystemTime,
 };
 
-use crate::{Result, is_redox, log_to_pty};
+use crate::{Error, Result, is_redox, log_to_pty, wrap_io_err};
 
 fn auto_deps_from_dynamic_linking(
     stage_dirs: &[PathBuf],
@@ -56,7 +57,7 @@ fn auto_deps_from_dynamic_linking(
             visited
         );
 
-        let Ok(read_dir) = fs::read_dir(&dir) else {
+        let Ok(read_dir) = std::fs::read_dir(&dir) else {
             continue;
         };
         for entry_res in read_dir {
@@ -74,7 +75,7 @@ fn auto_deps_from_dynamic_linking(
 
     let mut needed = BTreeSet::new();
     for (rel_path, path) in paths {
-        let Ok(file) = fs::File::open(&path) else {
+        let Ok(file) = std::fs::File::open(&path) else {
             continue;
         };
         let read_cache = object::ReadCache::new(file);
@@ -213,7 +214,6 @@ pub fn build(
         .iter()
         .map(|p| p.with_added_extension("pkgar"))
         .collect();
-    let cli_verbose = cook_config.verbose;
     let cli_jobs = cook_config.jobs;
     if recipe.build.kind == BuildKind::None {
         // metapackages don't need to do anything here
@@ -222,13 +222,14 @@ pub fn build(
 
     let mut dep_pkgars = BTreeSet::new();
     let mut dep_host_pkgars = BTreeSet::new();
-    let build_deps = [
-        &recipe.build.dependencies[..],
-        &recipe.build.dev_dependencies[..],
-    ]
-    .concat();
-    let build_deps =
-        CookRecipe::get_build_deps_recursive(&build_deps, false).map_err(|e| format!("{:?}", e))?;
+    let build_deps = CookRecipe::get_build_deps_recursive(
+        &[
+            &recipe.build.dependencies[..],
+            &recipe.build.dev_dependencies[..],
+        ]
+        .concat(),
+        false,
+    )?;
     for dependency in build_deps.iter() {
         let (_, pkgar, _) = dependency.stage_paths();
         if dependency.name.is_host() {
@@ -256,56 +257,18 @@ pub fn build(
         // TODO: when stage_dirs does not exist due to clean_target was true, extract from stage.pkgar?
         let stage_present = stage_pkgars.iter().all(|file| file.is_file());
         if stage_present && auto_deps_file.is_file() {
-            if cli_verbose {
-                log_to_pty!(logger, "DEBUG: using cached build, not checking source");
-            }
+            log_to_pty!(logger, "DEBUG: using cached build, not checking source");
             let auto_deps = make_auto_deps!(true)?;
             return Ok(BuildResult::cached(stage_dirs, auto_deps));
         }
     }
 
-    let mut source_modified = modified_dir_ignore_git(source_dir).unwrap_or(SystemTime::UNIX_EPOCH);
-    if let Ok(recipe_modified) = modified(&recipe_dir.join("recipe.toml")) {
-        if recipe_modified > source_modified {
-            source_modified = recipe_modified
-        }
+    if recipe.build.kind == BuildKind::Remote {
+        return build_remote(stage_dirs, recipe, target_dir, cook_config);
     }
 
-    let deps_modified = modified_all_btree(
-        dep_pkgars.iter().map(|(_dep, pkgar)| pkgar.as_path()),
-        modified,
-    )?;
-    let deps_host_modified = modified_all_btree(
-        dep_host_pkgars.iter().map(|(_dep, pkgar)| pkgar.as_path()),
-        modified,
-    )?;
-
-    // check stage dir modified against pkgar files, any files missing will result in UNIX_EPOCH
-    let stage_modified = modified_all(&stage_pkgars, modified).unwrap_or(SystemTime::UNIX_EPOCH);
-    // Rebuild stage if source is newer
-    if stage_modified < source_modified
-        || stage_modified < deps_modified
-        || stage_modified < deps_host_modified
-        || !auto_deps_file.is_file()
-    {
-        for stage_dir in &stage_dirs {
-            if stage_dir.is_dir() {
-                log_to_pty!(logger, "DEBUG: updating '{}'", stage_dir.display());
-                remove_stage_dir(stage_dir)?;
-            }
-        }
-    } else {
-        if cli_verbose {
-            log_to_pty!(logger, "DEBUG: using cached build");
-        }
-        // stop early otherwise we'll end up rebuilding
-        let auto_deps = make_auto_deps!(true)?;
-        return Ok(BuildResult::cached(stage_dirs, auto_deps));
-    }
-
-    // Rebuild sysroot if source is newer
-    if recipe.build.kind != BuildKind::Remote {
-        let updated = build_deps_dir(
+    let (sysroot_cached, toolchain_cached) = (
+        build_deps_dir(
             logger,
             &sysroot_dir,
             if name.is_host() {
@@ -313,38 +276,50 @@ pub fn build(
             } else {
                 &dep_pkgars
             },
-            source_modified,
-            deps_modified,
-        )?;
-        if cli_verbose && !updated {
-            log_to_pty!(logger, "DEBUG: using cached sysroot");
-        }
-    }
-    if recipe.build.kind != BuildKind::Remote && !name.is_host() && dep_host_pkgars.len() > 0 {
-        let updated = build_deps_dir(
+        )?,
+        if !name.is_host() && dep_host_pkgars.len() > 0 {
+            build_deps_dir(logger, &toolchain_dir, &dep_host_pkgars)?
+        } else {
+            true
+        },
+    );
+
+    // Rebuild stage if deps or source is newer
+    if !sysroot_cached || !toolchain_cached || {
+        build_is_source_newer(
             logger,
-            &toolchain_dir,
-            &dep_host_pkgars,
-            source_modified,
-            deps_host_modified,
-        )?;
-        if cli_verbose && !updated {
-            log_to_pty!(logger, "DEBUG: using cached toolchain");
+            recipe_dir,
+            source_dir,
+            &auto_deps_file,
+            stage_pkgars,
+        )
+    } {
+        if auto_deps_file.is_file() {
+            fs::remove_all(&auto_deps_file)?;
         }
+        for stage_dir in &stage_dirs {
+            remove_stage_dir(stage_dir)?;
+        }
+    } else {
+        log_to_pty!(logger, "DEBUG: using cached build");
+        // stop early otherwise we'll end up rebuilding
+        let auto_deps = make_auto_deps!(true)?;
+        return Ok(BuildResult::cached(stage_dirs, auto_deps));
     }
 
     let stage_dir = stage_dirs
         .last()
         .expect("Should have atleast one stage dir");
+
     let build_dir = get_sub_target_dir(target_dir, "build");
     if !stage_dir.is_dir() {
         // Create stage.tmp
         let stage_dir_tmp = target_dir.join("stage.tmp");
-        create_dir_clean(&stage_dir_tmp)?;
+        fs::create_dir_clean(&stage_dir_tmp)?;
 
         // Create build dir, if it does not exist
         if cook_config.clean_build || !build_dir.is_dir() {
-            create_dir_clean(&build_dir)?;
+            fs::create_dir_clean(&build_dir)?;
         }
 
         let flags_fn = |name, flags: &Vec<String>| {
@@ -357,10 +332,6 @@ pub fn build(
                     .join("\n")
             )
         };
-
-        if recipe.build.kind == BuildKind::Remote {
-            return build_remote(stage_dirs, recipe, target_dir, cook_config);
-        }
 
         let mut allow_cargo_offline = false;
         //TODO: better integration with redoxer (library instead of binary)
@@ -428,7 +399,7 @@ pub fn build(
             let cookbook_source = source_dir.canonicalize().unwrap();
             let cookbook_sysroot = sysroot_dir.canonicalize().unwrap();
             let cookbook_toolchain = toolchain_dir.canonicalize().ok();
-            let bash_args = if cli_verbose { "-ex" } else { "-e" };
+            let bash_args = if cook_config.verbose_cmd { "-ex" } else { "-e" };
             let local_redoxer = Path::new("target/release/cookbook_redoxer");
             let mut command = if is_redox() && !local_redoxer.is_file() {
                 let mut command = Command::new("cookbook_redoxer");
@@ -459,7 +430,7 @@ pub fn build(
                 command.env("COOKBOOK_TOOLCHAIN", &cookbook_sysroot);
             }
             command.env("COOKBOOK_MAKE_JOBS", cli_jobs.to_string());
-            if cli_verbose {
+            if cook_config.verbose_cmd {
                 command.env("COOKBOOK_VERBOSE", "1");
             }
             if cook_config.offline && allow_cargo_offline {
@@ -478,19 +449,19 @@ pub fn build(
             "{}\n{}\n{}\n{}",
             BUILD_PRESCRIPT, SHARED_PRESCRIPT, script, BUILD_POSTSCRIPT
         );
-        run_command_stdin(command, full_script.as_bytes(), logger)?;
+        fs::run_command_stdin(command, full_script.as_bytes(), logger)?;
 
         // Move to each features dir
         let mut globs = Vec::new();
         for (i, feat) in recipe.optional_packages.iter().enumerate() {
             let stage_dir = &stage_dirs[i];
-            create_dir_clean(&stage_dir)?;
+            fs::create_dir_clean(&stage_dir)?;
             for path in &feat.files {
                 let glob = globset::Glob::new(&path).map_err(|e| format!("{}", e))?;
                 globs.push((glob.compile_matcher(), stage_dir.clone()));
             }
         }
-        move_dir_all_fn(
+        fs::move_dir_all_fn(
             &stage_dir_tmp,
             &Box::new(|path: PathBuf| {
                 for (glob, dst) in &globs {
@@ -501,17 +472,17 @@ pub fn build(
                 None
             }),
         )
-        .map_err(|e| format!("Unable to move {e:?}"))?;
+        .map_err(wrap_io_err!("Moving to stages dir"))?;
 
         // Move stage.tmp to stage atomically
-        rename(&stage_dir_tmp, &stage_dir)?;
+        fs::rename(&stage_dir_tmp, &stage_dir)?;
     }
 
     if cook_config.clean_target {
-        remove_all(&build_dir)?;
-        remove_all(&sysroot_dir)?;
+        fs::remove_all(&build_dir)?;
+        clean_deps_dir(&sysroot_dir)?;
         if toolchain_dir.is_dir() {
-            remove_all(&toolchain_dir)?;
+            clean_deps_dir(&toolchain_dir)?;
         }
         // don't remove stage dir yet
     }
@@ -520,21 +491,55 @@ pub fn build(
     Ok(BuildResult::new(stage_dirs, auto_deps))
 }
 
+fn build_is_source_newer(
+    logger: &PtyOut,
+    recipe_dir: &Path,
+    source_dir: &Path,
+    auto_deps_file: &Path,
+    stage_pkgars: Vec<PathBuf>,
+) -> bool {
+    if !auto_deps_file.is_file() {
+        return true;
+    }
+    let Ok(stage_modified) = fs::modified_all(&stage_pkgars, fs::modified) else {
+        return true;
+    };
+    let Ok(mut source_modified) = fs::modified_dir_ignore_git(source_dir) else {
+        return false;
+    };
+    let mut recipe_is_newest = false;
+    if let Ok(recipe_modified) = fs::modified(&recipe_dir.join("recipe.toml")) {
+        if recipe_modified > source_modified {
+            source_modified = recipe_modified;
+            recipe_is_newest = true;
+        }
+    }
+    let newer = source_modified > stage_modified;
+    if newer {
+        log_to_pty!(
+            logger,
+            "DEBUG: updating build: {} is newer",
+            if recipe_is_newest { "recipe" } else { "source" }
+        );
+    }
+    newer
+}
+
 pub fn remove_stage_dir(stage_dir: &PathBuf) -> crate::Result<()> {
     if stage_dir.is_dir() {
-        remove_all(&stage_dir)?;
+        fs::remove_all(&stage_dir)?;
     }
     let stage_file = stage_dir.with_added_extension("pkgar");
     if stage_file.is_file() {
-        remove_all(&stage_file)?;
+        fs::remove_all(&stage_file)?;
     }
     let stage_meta = stage_dir.with_added_extension("toml");
     if stage_meta.is_file() {
-        remove_all(&stage_meta)?;
+        fs::remove_all(&stage_meta)?;
     }
     let stage_files = stage_dir.with_added_extension("files");
     if stage_files.is_file() {
-        remove_all(&stage_files)?;
+        fs::remove_all(&stage_files)?;
     }
     Ok(())
 }
@@ -567,66 +572,88 @@ fn build_deps_dir(
     logger: &PtyOut,
     deps_dir: &PathBuf,
     dep_pkgars: &BTreeSet<(PackageName, PathBuf)>,
-    source_modified: SystemTime,
-    deps_modified: SystemTime,
 ) -> Result<bool> {
+    let pkey_path = "build/id_ed25519.pub.toml";
+    let pkey_file = PublicKeyFile::open(&pkey_path).map_err(Error::from)?.pkey;
+    let tags_dir = deps_dir.join(".tags");
+    if tags_dir.is_dir() {
+        // check all files present and exact
+        let mut cached = fs::check_files_present(
+            &tags_dir,
+            &dep_pkgars
+                .iter()
+                .map(|(name, _)| name.without_prefix())
+                .collect(),
+        )?;
+        if cached {
+            for (name, pkgar_path) in dep_pkgars {
+                let tag_file = tags_dir.join(name.without_prefix());
+                let Ok(tag_hash) = blake3::Hash::from_hex(fs::read_to_string(&tag_file)?) else {
+                    log_to_pty!(
+                        logger,
+                        "DEBUG: updating {:?}: {:?} is absent",
+                        deps_dir.file_name().unwrap().display(),
+                        name.as_str(),
+                    );
+                    cached = false;
+                    continue;
+                };
+                let pkgar_hash = PackageFile::new(pkgar_path, &pkey_file)?.header().blake3;
+                if *tag_hash.as_bytes() != pkgar_hash {
+                    log_to_pty!(
+                        logger,
+                        "DEBUG: updating {:?}: {:?} is updated",
+                        deps_dir.file_name().unwrap().display(),
+                        name.as_str(),
+                    );
+                    cached = false;
+                }
+            }
+        }
+        if cached {
+            return Ok(true);
+        }
+        fs::remove_all(deps_dir)?;
+    }
+
+    // Create sysroot.tmp
     let deps_dir_tmp = deps_dir.with_added_extension("tmp");
-    if deps_dir.is_dir() {
-        let tags_dir = deps_dir.join(".tags");
-        let sysroot_modified = modified_dir(&tags_dir).unwrap_or(SystemTime::UNIX_EPOCH);
-        if sysroot_modified < source_modified
-            || sysroot_modified < deps_modified
-            || !check_files_present(
-                &tags_dir,
-                &dep_pkgars
-                    .iter()
-                    .map(|(name, _)| name.without_prefix())
-                    .collect(),
-            )?
-        {
-            log_to_pty!(logger, "DEBUG: updating '{}'", deps_dir.display());
-            remove_all(deps_dir)?;
-        }
-    }
-    if !deps_dir.is_dir() {
-        // Create sysroot.tmp
-        create_dir_clean(&deps_dir_tmp)?;
-        let tags_dir = deps_dir_tmp.join(".tags");
-        let usr_dir = deps_dir_tmp.join("usr");
-        create_dir(&tags_dir)?;
-        create_dir(&usr_dir)?;
+    fs::create_dir_clean(&deps_dir_tmp)?;
+    let tags_dir = deps_dir_tmp.join(".tags");
+    let usr_dir = deps_dir_tmp.join("usr");
+    fs::create_dir(&tags_dir)?;
+    fs::create_dir(&usr_dir)?;
 
-        for folder in &["bin", "include", "lib", "share"] {
-            // Make sure sysroot/usr/$folder exists
-            create_dir(&usr_dir.join(folder))?;
+    for folder in &["bin", "include", "lib", "share"] {
+        // Make sure sysroot/usr/$folder exists
+        fs::create_dir(&usr_dir.join(folder))?;
 
-            // Link sysroot/$folder sysroot/usr/$folder
-            symlink(Path::new("usr").join(folder), &deps_dir_tmp.join(folder))?;
-        }
-
-        let pkey_path = "build/id_ed25519.pub.toml";
-        for (name, archive_path) in dep_pkgars {
-            let tag_file = tags_dir.join(name.without_prefix());
-            fs::write(&tag_file, "")
-                .map_err(|e| format!("failed to write tag file {}: {:?}", tag_file.display(), e))?;
-            pkgar::extract(pkey_path, &archive_path, deps_dir_tmp.to_str().unwrap()).map_err(
-                |err| {
-                    format!(
-                        "failed to install '{}' in '{}': {:?}",
-                        archive_path.display(),
-                        deps_dir_tmp.display(),
-                        err
-                    )
-                },
-            )?;
-        }
-
-        // Move sysroot.tmp to sysroot atomically
-        rename(&deps_dir_tmp, deps_dir)?;
-
-        return Ok(true);
+        // Link sysroot/$folder sysroot/usr/$folder
+        fs::symlink(Path::new("usr").join(folder), &deps_dir_tmp.join(folder))?;
     }
 
+    for (name, archive_path) in dep_pkgars {
+        let tag_file = tags_dir.join(name.without_prefix());
+        let mut package = PackageFile::new(archive_path, &pkey_file)?;
+        Transaction::install(&mut package, &deps_dir_tmp)?.commit()?;
+        let hash = blake3::Hash::from_bytes(package.header().blake3).to_hex();
+        std::fs::write(&tag_file, &hash.as_bytes()).map_err(wrap_io_err!("Writing tag"))?;
+    }
+
+    // Move sysroot.tmp to sysroot atomically
+    fs::rename(&deps_dir_tmp, deps_dir)?;
+
+    Ok(false)
+}
+
+fn clean_deps_dir(deps_dir: &PathBuf) -> Result<bool> {
+    // this retain tags for future check
+    let tags_dir = deps_dir.join(".tags");
+    let tags_dir_tmp = deps_dir.with_added_extension("tags");
+    fs::rename(&tags_dir, &tags_dir_tmp)?;
+    fs::remove_all(&deps_dir)?;
+    fs::create_dir(&deps_dir)?;
+    fs::rename(&tags_dir_tmp, &tags_dir)?;
     Ok(false)
 }
 
@@ -644,7 +671,7 @@ fn build_auto_deps(
         if cook_config.verbose {
             log_to_pty!(logger, "DEBUG: updating {}", auto_deps_path.display());
         }
-        remove_all(&auto_deps_path)?;
+        fs::remove_all(&auto_deps_path)?;
     }
 
     let auto_deps = if auto_deps_path.exists() {
@@ -663,7 +690,7 @@ fn build_auto_deps(
         let wrapper = AutoDeps {
             packages: dynamic_deps,
         };
-        serialize_and_write(&auto_deps_path, &wrapper)?;
+        fs::serialize_and_write(&auto_deps_path, &wrapper)?;
         wrapper.packages
     };
     Ok(auto_deps)
@@ -690,23 +717,16 @@ pub fn build_remote(
         if !stage_dir.is_dir() {
             let (_, source_pkgar, _) = package_source_paths(package, &target_dir);
             let stage_dir_tmp = target_dir.join("stage.tmp");
-            pkgar::extract(&source_pubkey, &source_pkgar, &stage_dir_tmp).map_err(|err| {
-                format!(
-                    "failed to install '{}' in '{}': {:?}",
-                    source_pkgar.display(),
-                    stage_dir_tmp.display(),
-                    err
-                )
-            })?;
+            pkgar::extract(&source_pubkey, &source_pkgar, &stage_dir_tmp)?;
             // Move stage.tmp to stage atomically
-            rename(&stage_dir_tmp, &stage_dir)?;
+            fs::rename(&stage_dir_tmp, &stage_dir)?;
         }
     }
 
     let auto_deps_path = target_dir.join("auto_deps.toml");
     if auto_deps_path.is_file() && !cook_config.clean_target {
-        if modified(&auto_deps_path)? < modified_all(&stage_dirs, modified)? {
-            remove_all(&auto_deps_path)?
+        if fs::modified(&auto_deps_path)? < fs::modified_all(&stage_dirs, fs::modified)? {
+            fs::remove_all(&auto_deps_path)?
         }
     }
 
@@ -724,7 +744,7 @@ pub fn build_remote(
         let wrapper = AutoDeps {
             packages: pkg_toml.depends.into_iter().collect(),
         };
-        serialize_and_write(&auto_deps_path, &wrapper)?;
+        fs::serialize_and_write(&auto_deps_path, &wrapper)?;
         wrapper.packages
     };
     Ok(BuildResult::new(stage_dirs, auto_deps))

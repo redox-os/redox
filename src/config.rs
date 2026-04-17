@@ -18,9 +18,13 @@ pub struct CookConfigOpt {
     pub nonstop: Option<bool>,
     /// whether to archive packages with compressed format
     pub compressed: Option<bool>,
-    /// whether to print verbose logs to certain commands
-    /// build failure still be printed anyway
+    /// whether to print everything in progress,
+    /// will always hide cached build logs,
+    /// build failure will be printed anyway
     pub verbose: Option<bool>,
+    /// whether to enable verbosity on build commands,
+    /// Recipes may respect this flag or maybe not
+    pub verbose_cmd: Option<bool>,
     /// whether to always clean the build directory before building
     pub clean_build: Option<bool>,
     /// whether to always clean the target directory after building
@@ -39,6 +43,7 @@ pub struct CookConfig {
     pub nonstop: bool,
     pub compressed: bool,
     pub verbose: bool,
+    pub verbose_cmd: bool,
     pub clean_build: bool,
     pub clean_target: bool,
     pub write_filetree: bool,
@@ -54,6 +59,7 @@ impl From<CookConfigOpt> for CookConfig {
             nonstop: value.nonstop.unwrap(),
             compressed: value.compressed.unwrap(),
             verbose: value.verbose.unwrap(),
+            verbose_cmd: value.verbose_cmd.unwrap(),
             clean_build: value.clean_build.unwrap(),
             clean_target: value.clean_target.unwrap(),
             write_filetree: value.write_filetree.unwrap(),
@@ -97,7 +103,8 @@ pub fn init_config() {
         ));
     }
     if config.cook_opt.logs.is_none() {
-        config.cook_opt.logs = Some(extract_env("COOKBOOK_LOGS", config.cook_opt.tui.unwrap()));
+        let default = config.cook_opt.tui.unwrap();
+        config.cook_opt.logs = Some(extract_env("COOKBOOK_LOGS", default));
     }
     if config.cook_opt.offline.is_none() {
         config.cook_opt.offline = Some(extract_env("COOKBOOK_OFFLINE", false));
@@ -106,7 +113,11 @@ pub fn init_config() {
         config.cook_opt.compressed = Some(extract_env("COOKBOOK_COMPRESSED", false));
     }
     if config.cook_opt.verbose.is_none() {
-        config.cook_opt.verbose = Some(extract_env("COOKBOOK_VERBOSE", true));
+        let default = config.cook_opt.logs.unwrap();
+        config.cook_opt.verbose = Some(extract_env("COOKBOOK_VERBOSE", default));
+    }
+    if config.cook_opt.verbose_cmd.is_none() {
+        config.cook_opt.verbose_cmd = Some(extract_env("COOKBOOK_VERBOSE_CMD", true));
     }
     if config.cook_opt.nonstop.is_none() {
         config.cook_opt.nonstop = Some(extract_env("COOKBOOK_NONSTOP", false));
