@@ -4,7 +4,7 @@
 
 This document will outline the basics of where to start if you wish to contribute to the project. There are many ways to help us out and and we appreciate all of them. We look forward to **your contribution!**
 
-**Please read this document until the end**
+**Please read this document until the end to not waste your and our time with unnecessary questions**
 
 ## Code Of Conduct
 
@@ -73,6 +73,14 @@ By sending a message in the room, your MR will not be forgotten or accumulate co
 ## Best Practices and Guidelines
 
 You can read the best practices and guidelines on the [Best practices and guidelines](https://doc.redox-os.org/book/best-practices.html) chapter.
+
+## Notes
+
+This section has important details to not waste your and our time with unnecessary questions.
+
+- We don't accept Git pushs using SSH to protect against AI scrappers and bots, you need to use [HTTPS with your PAT](https://doc.redox-os.org/book/signing-in-to-gitlab.html#setting-up-pat) in our GitLab server
+- For complete or advanced development you need the [Redox build system](https://doc.redox-os.org/book/podman-build.html) instead of Redoxer
+- If you want to work on individual repositories without the Redox build system you need to use [Redoxer](https://gitlab.redox-os.org/redox-os/redoxer) because our toolchain is not fully upstreamed yet
 
 ## Development Recommendations and Tips
 
