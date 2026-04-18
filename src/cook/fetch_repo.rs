@@ -6,9 +6,10 @@ use std::{
     time::Duration,
 };
 
+use crate::cook::fs;
 use pkg::{
     PackageName, RemotePackage, RepoManager, Repository,
-    callback::{Callback, SilentCallback},
+    callback::{Callback, PlainCallback, SilentCallback},
     net_backend::{CurlBackend, DownloadBackend},
 };
 
@@ -22,8 +23,8 @@ fn load_cached_repo(path: &Path) -> Option<Repository> {
     let metadata = std::fs::metadata(path).ok()?;
 
     if !crate::config::get_config().cook.offline {
-        let yesterday = std::time::SystemTime::now().checked_sub(Duration::from_secs(24 * 3600))?;
-        if metadata.modified().ok()? < yesterday {
+        let stale_time = std::time::SystemTime::now().checked_sub(Duration::from_secs(8 * 3600))?;
+        if metadata.modified().ok()? < stale_time {
             // stale cache
             let _ = std::fs::remove_file(path);
             return None;
@@ -50,9 +51,12 @@ fn init_binary_repo() -> (RepoManager, Repository) {
         let (toml_str, _) = repo
             .get_package_toml(&PackageName::new("repo").unwrap())
             .expect("Failed to fetch repo.toml");
-        Repository::from_toml(&toml_str).expect("Fetched repo.toml is invalid")
+        let repo = Repository::from_toml(&toml_str).expect("Fetched repo.toml is invalid");
+        fs::serialize_and_write(&repo_path.join("repo.toml"), &repo).expect("Unable to save repo");
+        repo
     });
-
+    // reset here to not clobber pty
+    repo.callback = Rc::new(RefCell::new(PlainCallback::new()));
     (repo, repo_toml)
 }
 
