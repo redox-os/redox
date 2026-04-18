@@ -1,11 +1,11 @@
 [source]
-git = "https://gitlab.redox-os.org/redox-os/installer-gui.git"
+same_as = "../../core/installer"
 
 [build]
 template = "custom"
 script = """
 DYNAMIC_INIT
-cookbook_cargo
+COOKBOOK_CARGO_PATH="gui" cookbook_cargo
 
 mkdir -pv "${COOKBOOK_STAGE}/usr/share/ui/apps"
 cp -v "${COOKBOOK_RECIPE}/manifest" "${COOKBOOK_STAGE}/usr/share/ui/apps/redox-installer-gui"
