@@ -130,7 +130,6 @@ osx_macports()
     install_macports_pkg "meson"
     install_macports_pkg "nasm"
     install_macports_pkg "ninja"
-    install_macports_pkg "openssl11"
     install_macports_pkg "openssl3"
     install_macports_pkg "osxfuse"
     install_macports_pkg "p5-html-parser"
@@ -173,7 +172,6 @@ osx_homebrew()
         exit 1
     fi
 
-    install_brew_pkg "ant"
     install_brew_pkg "autoconf"
     install_brew_pkg "automake"
     install_brew_pkg "bison"
@@ -191,14 +189,12 @@ osx_homebrew()
     install_brew_pkg "jpeg"
     install_brew_pkg "libpng"
     install_brew_pkg "libtool"
-    install_brew_pkg "llvm"
     install_brew_pkg "m4"
     install_brew_pkg "macfuse"
     install_brew_pkg "make"
     install_brew_pkg "meson"
     install_brew_pkg "nasm"
     install_brew_pkg "ninja"
-    install_brew_pkg "openssl@1.1"
     install_brew_pkg "openssl@3.0"
     install_brew_pkg "patchelf"
     install_brew_pkg "perl"
@@ -300,8 +296,7 @@ archLinux()
     fi
 
     echo "Detected Arch Linux"
-    packages="ant \
-    autoconf \
+    packages="autoconf \
     automake \
     bison \
     cmake \
@@ -533,7 +528,6 @@ fedora()
 
     # Use rpm -q <package> to check if it's already installed
     PKGS=$(for pkg in @development-tools \
-    ant \
     autoconf \
     automake \
     bison \
@@ -563,7 +557,6 @@ fedora()
     meson \
     nasm \
     ninja-build \
-    openssl \
     patch \
     patchelf \
     perl \
@@ -601,7 +594,6 @@ suse()
     echo "Detected SUSE Linux"
 
     packages=(
-    "ant"
     "autoconf"
     "automake"
     "bison"
@@ -626,7 +618,6 @@ suse()
     "meson"
     "nasm"
     "ninja"
-    "openssl"
     "patch"
     "patchelf"
     "perl"
