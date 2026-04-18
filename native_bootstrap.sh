@@ -387,7 +387,6 @@ ubuntu()
 
     echo "Installing required packages..."
     pkgs="\
-    ant \
     appstream \
     appstream-compose \
     autoconf \
@@ -397,7 +396,6 @@ ubuntu()
     bison \
     bsdextrautils \
     build-essential \
-    clang \
     cmake \
     curl \
     dos2unix \
@@ -412,21 +410,17 @@ ubuntu()
     git \
     git-lfs \
     gtk-doc-tools \
+    gtk-update-icon-cache \
     help2man \
     intltool \
-    libc6-dev-i386 \
     libfuse3-dev \
     libgdk-pixbuf2.0-bin \
     libglib2.0-dev-bin \
-    libgmp-dev \
     libhtml-parser-perl \
-    libjpeg-dev \
-    libmpfr-dev \
     libparse-yapp-perl \
+    librsvg2-common \
     libsdl1.2-dev \
     libsdl2-ttf-dev \
-    llvm \
-    lua5.4 \
     lzip \
     m4 \
     make \
@@ -443,18 +437,18 @@ ubuntu()
     python3-dev \
     python3-mako \
     python3-venv \
+    python3-yaml \
     rsync \
     ruby \
     scons \
     ssh \
-    syslinux-utils \
     texinfo \
     unifdef \
     unzip \
     wget \
     xdg-utils \
     xfonts-utils \
-    xorg-dev \
+    xserver-xorg-dev \
     xutils-dev \
     xxd \
     zip \
@@ -463,13 +457,13 @@ ubuntu()
     case "$host_arch" in
         x86*|i?86) pkgs="$pkgs libc6-dev-i386 syslinux-utils";;
     esac
-    sudo $install_command $pkgs
+    sudo $install_command $pkgs --no-install-recommends
     if [ "$1" == "qemu" ]; then
         if [ -z "$(which qemu-system-x86_64)" ]; then
             echo "Installing QEMU..."
-            sudo $install_command qemu-system-x86 qemu-kvm
-            sudo $install_command qemu-system-arm qemu-efi-aarch64
-            sudo $install_command qemu-system-riscv
+            sudo $install_command qemu-system-x86 qemu-kvm \
+                qemu-system-arm qemu-efi-aarch64 \
+                qemu-system-riscv
         else
             echo "QEMU already installed!"
         fi
