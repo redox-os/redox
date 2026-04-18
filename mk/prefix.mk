@@ -86,7 +86,7 @@ ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
 	rm -rf "$@"
-	cp -r "$(PREFIX)/relibc-install/" "$@"
+	ln -s "relibc-install" "$@"
 # adapt path for libtoolize
 	sed 's|/usr/share|$(ROOT)/$@/share|g' "$@/bin/libtoolize.orig" > "$@/bin/libtoolize"
 	chmod 0755 "$@/bin/libtoolize"
