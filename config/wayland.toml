@@ -80,7 +80,7 @@ set -ex
 
 #env G_MAIN_POLL_DEBUG=1 G_MESSAGES_DEBUG=all LD_DEBUG=all WEBKIT_DEBUG=all MiniBrowser&
 printenv
-#wayland-rs_simple_window
+#wayland-rs_simple-window
 #winit-wayland_window
 #softbuffer-wayland_animation
 #iced-wayland_sctk_lazy

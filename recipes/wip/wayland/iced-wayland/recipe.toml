@@ -10,5 +10,5 @@ dependencies = [
 template = "custom"
 script = """
 DYNAMIC_INIT
-cookbook_cargo_packages sctk_lazy
+COOKBOOK_CARGO_PATH="examples/sctk_lazy" cookbook_cargo_build
 """
