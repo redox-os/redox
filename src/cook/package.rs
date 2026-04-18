@@ -13,6 +13,7 @@ use crate::{
     cook::{cook_build::BuildResult, fetch, fs::*, pty::PtyOut},
     log_to_pty,
     recipe::{BuildKind, CookRecipe, OptionalPackageRecipe},
+    wrap_io_err,
 };
 
 pub fn package(
@@ -44,12 +45,8 @@ pub fn package(
             create_dir(Path::new("build"))?;
         }
         let (public_key, secret_key) = pkgar_keys::SecretKeyFile::new();
-        public_key
-            .save(public_path)
-            .map_err(|err| format!("failed to save pkgar public key: {:?}", err))?;
-        secret_key
-            .save(secret_path)
-            .map_err(|err| format!("failed to save pkgar secret key: {:?}", err))?;
+        public_key.save(public_path)?;
+        secret_key.save(secret_path)?;
     }
 
     let packages = recipe.recipe.get_packages_list();
@@ -77,8 +74,7 @@ pub fn package(
                         false => pkgar_core::Packaging::Uncompressed,
                     },
                 ),
-            )
-            .map_err(|err| format!("failed to create pkgar archive: {:?}", err))?;
+            )?;
         }
 
         let deps = if package.is_some() {
@@ -89,8 +85,7 @@ pub fn package(
 
         if !package_meta.is_file() {
             let name = match package {
-                Some(p) => PackageName::new(format!("{}.{}", name.name(), p.name))
-                    .map_err(|e| format!("{}", e))?,
+                Some(p) => PackageName::new(format!("{}.{}", name.name(), p.name))?,
                 None => name.clone(),
             };
             let package_deps = match package {
@@ -137,21 +132,10 @@ pub fn package_toml(
 
     let (hash, network_size, storage_size) = if let Some((pkey_path, archive_path)) = package_file {
         use pkgar_core::PackageSrc;
-        let pkey = pkgar_keys::PublicKeyFile::open(pkey_path)
-            .map_err(|e| format!("Unable to read public key: {e:?}"))?
-            .pkey;
-        let mut package = pkgar::PackageFile::new(archive_path, &pkey).map_err(|e| {
-            format!(
-                "Unable to read packaged pkgar file {}: {e:?}",
-                archive_path.display(),
-            )
-        })?;
-        let mt = std::fs::metadata(archive_path).map_err(|e| {
-            format!(
-                "Unable to read packaged pkgar file {}: {e:?}",
-                archive_path.display(),
-            )
-        })?;
+        let pkey = pkgar_keys::PublicKeyFile::open(pkey_path)?.pkey;
+        let mut package = pkgar::PackageFile::new(archive_path, &pkey)?;
+        let mt = std::fs::metadata(archive_path)
+            .map_err(wrap_io_err!(archive_path, "Reading metadata"))?;
         let package_size = mt.len();
         let header = package.header();
         let storage_size = match header.flags.packaging() {
@@ -160,17 +144,11 @@ pub fn package_toml(
                     .total_size()
                     .map_err(|e| Error::Pkgar(pkgar::Error::Core(e)))?
                     as u64;
-                let entries = package
-                    .read_entries()
-                    .map_err(|e| format!("Unable to get lzma entry: {e}"))?;
+                let entries = package.read_entries()?;
                 for entry in entries {
-                    let data_reader = package
-                        .data_reader(&entry)
-                        .map_err(|e| format!("Unable to read lzma entry: {e}"))?;
+                    let data_reader = package.data_reader(&entry)?;
                     size += data_reader.unpacked_size;
-                    package
-                        .restore_reader(data_reader.into_inner())
-                        .map_err(|e| format!("Unable to put lzma entry: {e}"))?;
+                    package.restore_reader(data_reader.into_inner())?;
                 }
                 size
             }
