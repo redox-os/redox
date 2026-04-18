@@ -412,6 +412,6 @@ while [ -n "$CHILDREN" ]; do
 done;
 
 if [ -n "$ALL_DESCENDANTS" ]; then
-    kill -9 $ALL_DESCENDANTS;
+    kill $ALL_DESCENDANTS;
 fi
 "#;
