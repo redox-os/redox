@@ -130,7 +130,6 @@ osx_macports()
     install_macports_pkg "meson"
     install_macports_pkg "nasm"
     install_macports_pkg "ninja"
-    install_macports_pkg "openssl11"
     install_macports_pkg "openssl3"
     install_macports_pkg "osxfuse"
     install_macports_pkg "p5-html-parser"
@@ -173,7 +172,6 @@ osx_homebrew()
         exit 1
     fi
 
-    install_brew_pkg "ant"
     install_brew_pkg "autoconf"
     install_brew_pkg "automake"
     install_brew_pkg "bison"
@@ -191,14 +189,12 @@ osx_homebrew()
     install_brew_pkg "jpeg"
     install_brew_pkg "libpng"
     install_brew_pkg "libtool"
-    install_brew_pkg "llvm"
     install_brew_pkg "m4"
     install_brew_pkg "macfuse"
     install_brew_pkg "make"
     install_brew_pkg "meson"
     install_brew_pkg "nasm"
     install_brew_pkg "ninja"
-    install_brew_pkg "openssl@1.1"
     install_brew_pkg "openssl@3.0"
     install_brew_pkg "patchelf"
     install_brew_pkg "perl"
@@ -300,8 +296,7 @@ archLinux()
     fi
 
     echo "Detected Arch Linux"
-    packages="ant \
-    autoconf \
+    packages="autoconf \
     automake \
     bison \
     cmake \
@@ -387,7 +382,6 @@ ubuntu()
 
     echo "Installing required packages..."
     pkgs="\
-    ant \
     appstream \
     appstream-compose \
     autoconf \
@@ -397,7 +391,6 @@ ubuntu()
     bison \
     bsdextrautils \
     build-essential \
-    clang \
     cmake \
     curl \
     dos2unix \
@@ -412,21 +405,17 @@ ubuntu()
     git \
     git-lfs \
     gtk-doc-tools \
+    gtk-update-icon-cache \
     help2man \
     intltool \
-    libc6-dev-i386 \
     libfuse3-dev \
     libgdk-pixbuf2.0-bin \
     libglib2.0-dev-bin \
-    libgmp-dev \
     libhtml-parser-perl \
-    libjpeg-dev \
-    libmpfr-dev \
     libparse-yapp-perl \
+    librsvg2-common \
     libsdl1.2-dev \
     libsdl2-ttf-dev \
-    llvm \
-    lua5.4 \
     lzip \
     m4 \
     make \
@@ -443,18 +432,18 @@ ubuntu()
     python3-dev \
     python3-mako \
     python3-venv \
+    python3-yaml \
     rsync \
     ruby \
     scons \
     ssh \
-    syslinux-utils \
     texinfo \
     unifdef \
     unzip \
     wget \
     xdg-utils \
     xfonts-utils \
-    xorg-dev \
+    xserver-xorg-dev \
     xutils-dev \
     xxd \
     zip \
@@ -463,13 +452,13 @@ ubuntu()
     case "$host_arch" in
         x86*|i?86) pkgs="$pkgs libc6-dev-i386 syslinux-utils";;
     esac
-    sudo $install_command $pkgs
+    sudo $install_command $pkgs --no-install-recommends
     if [ "$1" == "qemu" ]; then
         if [ -z "$(which qemu-system-x86_64)" ]; then
             echo "Installing QEMU..."
-            sudo $install_command qemu-system-x86 qemu-kvm
-            sudo $install_command qemu-system-arm qemu-efi-aarch64
-            sudo $install_command qemu-system-riscv
+            sudo $install_command qemu-system-x86 qemu-kvm \
+                qemu-system-arm qemu-efi-aarch64 \
+                qemu-system-riscv
         else
             echo "QEMU already installed!"
         fi
@@ -539,7 +528,6 @@ fedora()
 
     # Use rpm -q <package> to check if it's already installed
     PKGS=$(for pkg in @development-tools \
-    ant \
     autoconf \
     automake \
     bison \
@@ -569,7 +557,6 @@ fedora()
     meson \
     nasm \
     ninja-build \
-    openssl \
     patch \
     patchelf \
     perl \
@@ -607,7 +594,6 @@ suse()
     echo "Detected SUSE Linux"
 
     packages=(
-    "ant"
     "autoconf"
     "automake"
     "bison"
@@ -632,7 +618,6 @@ suse()
     "meson"
     "nasm"
     "ninja"
-    "openssl"
     "patch"
     "patchelf"
     "perl"
