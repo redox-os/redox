@@ -14,8 +14,6 @@ DYNAMIC_INIT
 export GETTEXT_DIR="${COOKBOOK_SYSROOT}/usr"
 cookbook_cargo --no-default-features
 
-mkdir -pv "${COOKBOOK_STAGE}/usr/bin/"
-cp -v "target/${TARGET}/release/cosmic-files" "${COOKBOOK_STAGE}/usr/bin/"
 mkdir -pv "${COOKBOOK_STAGE}/usr/share/ui/apps/"
 cp -v "${COOKBOOK_RECIPE}/manifest" "${COOKBOOK_STAGE}/usr/share/ui/apps/20_cosmic-files"
 #TODO: install with just?
