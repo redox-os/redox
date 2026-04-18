@@ -264,7 +264,7 @@ pub fn build(
     }
 
     if recipe.build.kind == BuildKind::Remote {
-        return build_remote(stage_dirs, recipe, target_dir, cook_config);
+        return build_remote(stage_dirs, stage_pkgars, recipe, target_dir, logger);
     }
 
     let (sysroot_cached, toolchain_cached) = (
@@ -708,48 +708,53 @@ fn build_auto_deps(
 
 pub fn build_remote(
     stage_dirs: Vec<PathBuf>,
+    stage_pkgars: Vec<PathBuf>,
     recipe: &Recipe,
     target_dir: &Path,
-    cook_config: &CookConfig,
+    logger: &PtyOut,
 ) -> Result<BuildResult> {
     let source_toml = target_dir.join("source.toml");
     let source_pubkey = "build/remotes/pub_key_static.redox-os.org.toml";
+    let auto_deps_path = target_dir.join("auto_deps.toml");
 
     let packages = recipe.get_packages_list();
-    for (i, package) in packages.into_iter().enumerate() {
-        // declare pkg dependencies as autodeps dependency
-        let stage_dir = &stage_dirs[i];
+    let mut cached = auto_deps_path.is_file();
+    for (i, package) in packages.iter().enumerate() {
+        let stage_pkgar = &stage_pkgars[i];
 
-        if cook_config.clean_target && stage_dir.with_added_extension("pkgar").is_file() {
-            continue;
+        if !stage_pkgar.is_file() {
+            cached = false;
+            break;
         }
 
-        // TODO: Compare blake3 hashes
-        if !stage_dir.is_dir() {
-            let (_, source_pkgar, _) = package_source_paths(package, &target_dir);
-            let stage_dir_tmp = target_dir.join("stage.tmp");
-            pkgar::extract(&source_pubkey, &source_pkgar, &stage_dir_tmp)?;
-            // Move stage.tmp to stage atomically
-            fs::rename(&stage_dir_tmp, &stage_dir)?;
+        let (_, source_pkgar, _) = package_source_paths(*package, &target_dir);
+        if fs::modified(&source_pkgar)? > fs::modified(&stage_pkgar)? {
+            cached = false;
+            break;
         }
     }
 
-    let auto_deps_path = target_dir.join("auto_deps.toml");
-    if auto_deps_path.is_file() && !cook_config.clean_target {
-        if fs::modified(&auto_deps_path)? < fs::modified_all(&stage_dirs, fs::modified)? {
-            fs::remove_all(&auto_deps_path)?
-        }
-    }
-
-    let auto_deps = if auto_deps_path.exists() {
-        let toml_content =
-            fs::read_to_string(&auto_deps_path).map_err(|_| "failed to read cached auto_deps")?;
+    if cached {
+        log_to_pty!(logger, "DEBUG: using cached build");
+        let toml_content = fs::read_to_string(&auto_deps_path)?;
         let wrapper: AutoDeps =
             toml::from_str(&toml_content).map_err(|_| "failed to deserialize cached auto_deps")?;
-        wrapper.packages
-    } else {
-        let toml_content =
-            fs::read_to_string(&source_toml).map_err(|_| "failed to read source.toml")?;
+        return Ok(BuildResult::cached(stage_dirs, wrapper.packages));
+    }
+
+    for (i, package) in packages.into_iter().enumerate() {
+        let stage_dir = &stage_dirs[i];
+        let (_, source_pkgar, _) = package_source_paths(package, &target_dir);
+        fs::create_dir_clean(stage_dir)?;
+        pkgar::extract(&source_pubkey, &source_pkgar, &stage_dir)?;
+    }
+
+    if auto_deps_path.is_file() {
+        fs::remove_all(&auto_deps_path)?
+    }
+
+    let auto_deps = {
+        let toml_content = fs::read_to_string(&source_toml)?;
         let pkg_toml: Package =
             toml::from_str(&toml_content).map_err(|_| "failed to deserialize source.toml")?;
         let wrapper = AutoDeps {
