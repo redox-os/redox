@@ -360,12 +360,16 @@ do
     fi
 done
 
-# Remove libtool files
+# Remove libtool files and strip debugging information
 for dir in "${COOKBOOK_STAGE}/lib" "${COOKBOOK_STAGE}/usr/lib"
 do
     if [ -d "${dir}" ]
     then
         find "${dir}" -type f -name '*.la' -exec rm -fv {} ';'
+        if [ -z "${COOKBOOK_NOSTRIP}" ]
+        then
+            find "${dir}" -type f -exec "${GNU_TARGET}-strip" --strip-debug -v {} ';'
+        fi
     fi
 done
 
