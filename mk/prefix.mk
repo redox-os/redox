@@ -37,11 +37,11 @@ static_clean: | $(FSTOOLS_TAG)
 	$(MAKE) c.expat,freetype2,libffi,libiconv,libjpeg,liborbital,libpng,libxml2,ncurses,ncursesw
 	rm -rf $(REPO_TAG)
 
-$(PREFIX)/relibc-install: $(PREFIX)/clang-install $(PREFIX)/rust-install $(PREFIX)/gcc-install | $(FSTOOLS_TAG) $(CONTAINER_TAG)
+$(PREFIX)/sysroot: $(PREFIX)/clang-install $(PREFIX)/rust-install $(PREFIX)/gcc-install | $(FSTOOLS_TAG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
-	@echo "\033[1;36;49mBuilding relibc-install\033[0m"
+	@echo "\033[1;36;49mBuilding sysroot\033[0m"
 	rm -rf "$@.partial" "$@"
 	mkdir "$@.partial"
 	cp -r "$(PREFIX)/gcc-install/". "$@.partial"
@@ -68,11 +68,14 @@ else
 	ln -s "../include" "$@.partial/usr/include"
 	ln -s "../lib" "$@.partial/usr/lib"
 endif
-	touch "$@.partial"
 	mv "$@.partial" "$@"
+# adapt path for libtoolize
+	sed 's|/usr/share|$(ROOT)/$@/share|g' "$@/bin/libtoolize.orig" > "$@/bin/libtoolize"
+	chmod 0755 "$@/bin/libtoolize"
+	touch "$@"
 endif
 
-$(PREFIX)/relibc-install.tar.gz: $(PREFIX)/relibc-install
+$(PREFIX)/relibc-install.tar.gz: $(PREFIX)/sysroot
 	tar \
 		--create \
 		--gzip \
@@ -80,18 +83,6 @@ $(PREFIX)/relibc-install.tar.gz: $(PREFIX)/relibc-install
 		--directory="$<" \
 		.
 
-
-$(PREFIX)/sysroot: $(PREFIX)/relibc-install $(CONTAINER_TAG)
-ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) make $@
-else
-	rm -rf "$@"
-	ln -s "relibc-install" "$@"
-# adapt path for libtoolize
-	sed 's|/usr/share|$(ROOT)/$@/share|g' "$@/bin/libtoolize.orig" > "$@/bin/libtoolize"
-	chmod 0755 "$@/bin/libtoolize"
-	touch "$@"
-endif
 
 # PREFIX_BINARY ---------------------------------------------------
 ifeq ($(PREFIX_BINARY),1)
