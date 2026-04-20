@@ -71,9 +71,7 @@ pub fn from_path(dir: &Path, feature: Option<&str>) -> Result<Package, PackageEr
         return Err(PackageError::FileMissing(file));
     }
 
-    let toml = std::fs::read_to_string(&file)
-        .map_err(|err| PackageError::FileError(err.raw_os_error(), file.clone()))?;
-    toml::from_str(&toml).map_err(|err| PackageError::Parse(err, Some(file)))
+    Package::from_file(file)
 }
 
 pub fn new_recursive(

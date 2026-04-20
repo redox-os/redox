@@ -2,12 +2,12 @@ use pkg::{Package, PackageName};
 use std::fmt::Write as _;
 use std::{
     collections::{HashMap, HashSet},
-    fs::read_to_string,
     path::PathBuf,
 };
 
+use crate::Result;
+use crate::cook::fs;
 use crate::recipe::CookRecipe;
-use crate::{Result, wrap_other_err};
 
 pub enum WalkTreeEntry<'a> {
     Built(&'a PathBuf, u64),
@@ -94,10 +94,9 @@ pub fn walk_tree_entry(
         all_deps_set.extend(cook_recipe.recipe.build.dependencies.iter());
         all_deps_set.extend(cook_recipe.recipe.package.dependencies.iter());
     } else {
-        if let Ok(pkg_toml_str) = read_to_string(&pkg_toml) {
+        if let Ok(pkg_toml_str) = fs::read_to_string(&pkg_toml) {
             // more accurate with auto deps
-            pkg_meta = toml::from_str(&pkg_toml_str)
-                .map_err(|_| wrap_other_err!("Unable to parse {}", pkg_toml.display())())?;
+            pkg_meta = Package::from_toml(&pkg_toml_str)?;
             all_deps_set.extend(pkg_meta.depends.iter());
         }
     }

@@ -219,10 +219,7 @@ fn publish_packages(config: &CliConfig) -> Result<()> {
     // === 4. Read and update repo.toml ===
     let repo_toml_path = repo_path.join("repo.toml");
     if repo_toml_path.exists() {
-        let contents = fs::read_to_string(&repo_toml_path)?;
-
-        let parsed: Repository = toml::from_str(&contents)
-            .map_err(|_| Error::Other(format!("Unable to deserialize repo.toml")))?;
+        let parsed: Repository = fs::read_toml(&repo_toml_path)?;
         for (k, v) in parsed.packages {
             packages.insert(k, v);
         }
@@ -253,9 +250,7 @@ fn publish_packages(config: &CliConfig) -> Result<()> {
             continue;
         }
 
-        let content = fs::read_to_string(&path)?;
-        let parsed: Value = toml::from_str(&content)
-            .map_err(|_| Error::Other(format!("Unable to deserialize repo.toml")))?;
+        let parsed: Value = fs::read_toml(&path)?;
 
         let empty_ver = Value::String("".to_string());
         let version_str = parsed
