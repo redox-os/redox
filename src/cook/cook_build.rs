@@ -685,10 +685,7 @@ fn build_auto_deps(
     }
 
     let auto_deps = if auto_deps_path.exists() {
-        let toml_content =
-            fs::read_to_string(&auto_deps_path).map_err(|_| "failed to read cached auto_deps")?;
-        let wrapper: AutoDeps =
-            toml::from_str(&toml_content).map_err(|_| "failed to deserialize cached auto_deps")?;
+        let wrapper: AutoDeps = fs::read_toml(&auto_deps_path)?;
         wrapper.packages
     } else {
         let mut dynamic_deps = auto_deps_from_dynamic_linking(stage_dirs, &dep_pkgars, logger);
@@ -736,9 +733,7 @@ pub fn build_remote(
 
     if cached {
         log_to_pty!(logger, "DEBUG: using cached build");
-        let toml_content = fs::read_to_string(&auto_deps_path)?;
-        let wrapper: AutoDeps =
-            toml::from_str(&toml_content).map_err(|_| "failed to deserialize cached auto_deps")?;
+        let wrapper: AutoDeps = fs::read_toml(&auto_deps_path)?;
         return Ok(BuildResult::cached(stage_dirs, wrapper.packages));
     }
 
@@ -755,8 +750,7 @@ pub fn build_remote(
 
     let auto_deps = {
         let toml_content = fs::read_to_string(&source_toml)?;
-        let pkg_toml: Package =
-            toml::from_str(&toml_content).map_err(|_| "failed to deserialize source.toml")?;
+        let pkg_toml = Package::from_toml(&toml_content)?;
         let wrapper = AutoDeps {
             packages: pkg_toml.depends.into_iter().collect(),
         };

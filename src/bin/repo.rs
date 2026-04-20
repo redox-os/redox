@@ -361,7 +361,7 @@ fn repo_inner(config: &CliConfig, command: &CliCommand, recipe: &CookRecipe) -> 
             let mut logger = Some((&mut stdout_writer, &mut stderr_writer));
             let result = repo_inner_fn(&logger);
             if let Err(err_ctx) = &result {
-                write_to_pty(&logger, &format!("\n{:?}", err_ctx));
+                write_to_pty(&logger, &format!("\n{err_ctx}"));
             }
             // successful cached build is not that useful to log
             if !matches!(result, Ok(true)) {
@@ -1201,7 +1201,7 @@ fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> Result<TuiApp> {
                     && !matches!(handler, Ok(true))
                 {
                     if let Err(err_ctx) = &handler {
-                        write_to_pty(&logger, &format!("\n{:?}", err_ctx));
+                        write_to_pty(&logger, &format!("\n{err_ctx}"));
                     }
                     flush_pty(&mut logger);
                     let log_path = log_path.join(format!("{}/{}.log", recipe.target, name.name()));
@@ -1306,7 +1306,7 @@ fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> Result<TuiApp> {
                     && !matches!(handler, Ok(FetchResult { cached: true, .. }))
                 {
                     if let Err(err_ctx) = &handler {
-                        write_to_pty(&logger, &format!("\n{:?}", err_ctx));
+                        write_to_pty(&logger, &format!("\n{err_ctx}"));
                     }
                     flush_pty(&mut logger);
                     let log_path = log_path.join(format!("{}/{}.log", recipe.target, name.name()));

@@ -1,4 +1,4 @@
-use serde::Serialize;
+use serde::{Serialize, de::DeserializeOwned};
 use std::{
     collections::BTreeSet,
     fs,
@@ -259,6 +259,12 @@ pub fn serialize_and_write<T: Serialize>(file_path: &Path, content: &T) -> Resul
 
     fs::write(file_path, toml_content).map_err(wrap_io_err!(file_path, "Writing to file"))?;
     Ok(())
+}
+
+pub fn read_toml<T: DeserializeOwned>(file_path: &Path) -> Result<T> {
+    // TODO: General error rather than from PackageError?
+    toml::from_str(&read_to_string(file_path)?)
+        .map_err(|e| Error::Package(pkg::PackageError::Parse(e, Some(file_path.to_path_buf()))))
 }
 
 pub fn offline_check_exists(path: &PathBuf) -> Result<()> {
