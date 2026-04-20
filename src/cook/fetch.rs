@@ -690,23 +690,19 @@ pub fn fetch_remote(
             if !source_toml.is_file() {
                 {
                     let toml_file = File::create(&source_toml)
-                        .map_err(|e| format!("Unable to create source.toml: {e:?}"))?;
+                        .map_err(wrap_io_err!(source_toml, "Creating file"))?;
                     let mut writer = DownloadBackendWriter::ToFile(toml_file);
-                    manager
-                        .download(&format!("{}.toml", &source_name), None, &mut writer)
-                        .map_err(|e| format!("Unable to download source.toml: {e:?}"))?;
+                    manager.download(&format!("{}.toml", &source_name), None, &mut writer)?;
                 }
                 let pkg_toml = read_source_toml(&source_toml)?;
                 let pkgar_file = File::create(&source_pkgar)
-                    .map_err(|e| format!("Unable to create source.pkgar: {e:?}"))?;
+                    .map_err(wrap_io_err!(source_pkgar, "Creating file"))?;
                 let mut writer = DownloadBackendWriter::ToFile(pkgar_file);
-                manager
-                    .download(
-                        &format!("{}.pkgar", &source_name),
-                        Some(pkg_toml.network_size),
-                        &mut writer,
-                    )
-                    .map_err(|e| format!("Unable to download source.pkgar: {e:?}"))?;
+                manager.download(
+                    &format!("{}.pkgar", &source_name),
+                    Some(pkg_toml.network_size),
+                    &mut writer,
+                )?;
 
                 cached = false;
             }
@@ -743,13 +739,11 @@ pub fn fetch_remote(
 }
 
 fn read_source_toml(source_toml: &Path) -> Result<pkg::Package> {
-    let mut file =
-        File::open(source_toml).map_err(|e| format!("Unable to open source.toml: {e:?}"))?;
+    let mut file = File::open(source_toml).map_err(wrap_io_err!(source_toml, "Opening file"))?;
     let mut contents = String::new();
     file.read_to_string(&mut contents)
-        .map_err(|e| format!("Unable to read source.toml: {e:?}"))?;
-    let pkg_toml = pkg::Package::from_toml(&contents)
-        .map_err(|e| format!("Unable to parse source.toml: {e:?}"))?;
+        .map_err(wrap_io_err!(source_toml, "Reading file"))?;
+    let pkg_toml = pkg::Package::from_toml(&contents)?;
     Ok(pkg_toml)
 }
 
@@ -842,9 +836,5 @@ pub(crate) fn fetch_apply_source_info_from_remote(
 pub fn fetch_get_source_info(recipe: &CookRecipe) -> Result<SourceIdentifier> {
     let target_dir = recipe.target_dir();
     let source_toml_path = target_dir.join("source_info.toml");
-    let toml_content = fs::read_to_string(source_toml_path)
-        .map_err(|e| format!("Unable to read source_info.toml: {:?}", e))?;
-    let parsed = toml::from_str(&toml_content)
-        .map_err(|e| format!("Unable to parse source_info.toml: {:?}", e))?;
-    Ok(parsed)
+    read_toml(&source_toml_path)
 }

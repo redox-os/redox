@@ -45,6 +45,7 @@ pub enum Error {
     },
     Command(Command, ExitStatus),
     Package(pkg::PackageError),
+    PackageBackend(pkg::backend::Error),
     Pkgar(pkgar::Error),
     Options(String),
     Other(String),
@@ -94,8 +95,11 @@ impl Display for Error {
                     command, exit_status
                 )
             }
-            Error::Package(package_error) => write!(f, "{}", package_error),
-            Error::Pkgar(error) => write!(f, "{}", error),
+            Error::Package(package_error) => write!(f, "Package error: {}", package_error),
+            Error::PackageBackend(package_error) => {
+                write!(f, "Package backend error: {}", package_error)
+            }
+            Error::Pkgar(error) => write!(f, "Package archive error: {}", error),
             Error::Other(context) | Error::Options(context) => {
                 write!(f, "{context}")
             }
@@ -160,6 +164,22 @@ impl From<Error> for String {
 impl From<pkg::PackageError> for Error {
     fn from(value: pkg::PackageError) -> Self {
         Error::Package(value)
+    }
+}
+
+impl From<pkg::backend::Error> for Error {
+    fn from(value: pkg::backend::Error) -> Self {
+        match value {
+            pkg::backend::Error::IO(error)
+            | pkg::backend::Error::Download(pkg::net_backend::DownloadError::IO(error)) => {
+                Error::Io {
+                    source: error,
+                    path: None,
+                    context: "Package backend I/O",
+                }
+            }
+            error => Error::PackageBackend(error),
+        }
     }
 }
 
