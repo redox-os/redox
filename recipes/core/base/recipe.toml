@@ -3,6 +3,9 @@ git = "https://gitlab.redox-os.org/redox-os/base.git"
 
 [build]
 template = "custom"
+dependencies = [
+  "redoxfs",
+]
 script = """
 cd "${COOKBOOK_SOURCE}" && make install-base \
     SRC_DIR="${COOKBOOK_SOURCE}" SYSROOT="${COOKBOOK_SYSROOT}" \
