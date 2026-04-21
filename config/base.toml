@@ -10,7 +10,6 @@ prompt = false
 
 [packages]
 base = {}
-base-initfs = {}
 bootloader = {}
 kernel = {}
 libgcc = {}
