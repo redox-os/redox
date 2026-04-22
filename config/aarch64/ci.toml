@@ -25,7 +25,6 @@ prompt = false
 acid = {}
 acid-bins = {}
 base = {}
-base-initfs = {}
 bash = {}
 bash-completion = {}
 bootloader = {}

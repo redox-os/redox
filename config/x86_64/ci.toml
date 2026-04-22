@@ -29,7 +29,6 @@ adwaita-icon-theme = {}
 autoconf = {}
 automake = {}
 base = {}
-base-initfs = {}
 bash = {}
 bash-completion = {}
 binutils = {}
