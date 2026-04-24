@@ -1,0 +1,22 @@
+[source]
+git = "https://github.com/pop-os/cosmic-sync.git"
+branch = "master"
+
+[build]
+template = "custom"
+dependencies = [
+    #"gettext",
+    #"libxkbcommon",
+    "openssl3",
+]
+script = """
+DYNAMIC_INIT
+#export GETTEXT_DIR="${COOKBOOK_SYSROOT}/usr"
+#export ZSTD_SYS_USE_PKG_CONFIG=1
+cookbook_cargo_packages cosmic-sync-daemon cosmic-sync-gui --no-default-features
+
+#TODO: install with just?
+APPID="com.system76.CosmicSync"
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/applications/"
+cp -v "${COOKBOOK_SOURCE}/res/${APPID}.desktop" "${COOKBOOK_STAGE}/usr/share/applications/"
+"""

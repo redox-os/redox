@@ -1,9 +1,8 @@
 [package]
 dependencies = [
+    "base",
     "bootloader",
+    "coreutils",
     "kernel",
     "relibc",
-    "base",
-    "coreutils",
-    "base-initfs",
 ]
