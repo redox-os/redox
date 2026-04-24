@@ -228,6 +228,38 @@ ucrp.%: $(FSTOOLS_TAG) FORCE
 	$(MAKE) ucr.$*,--with-package-deps
 	$(MAKE) p.$*
 
+ifeq ($(HOSTED_REDOX),1)
+DESTDIR?=/
+
+# Install all recipes specified by the filesystem config
+install:
+	$(REPO_BIN) push $(COOKBOOK_OPTS) --with-package-deps "--sysroot=$(DESTDIR)"
+
+# Rebuild and install all recipes specified by the filesystem config
+rebuild-install: $(FSTOOLS_TAG) FORCE
+	rm -f $(REPO_TAG)
+	$(MAKE) repo
+	$(MAKE) install
+
+i.%: $(FSTOOLS_TAG) FORCE
+	$(REPO_BIN) push $(COOKBOOK_OPTS) --with-package-deps "--sysroot=$(DESTDIR)"
+
+# Invoke repo.sh and install for one of more targets separated by comma
+ri.%: $(FSTOOLS_TAG) FORCE
+	$(MAKE) r.$*,--with-package-deps
+	$(MAKE) i.$*
+
+# Invoke clean, repo.sh and install for one of more targets separated by comma
+cri.%: $(FSTOOLS_TAG) FORCE
+	$(MAKE) cr.$*,--with-package-deps
+	$(MAKE) i.$*
+
+# Invoke unfetch. clean, repo.sh and install for one of more targets separated by comma
+ucri.%: $(FSTOOLS_TAG) FORCE
+	$(MAKE) ucr.$*,--with-package-deps
+	$(MAKE) i.$*
+endif
+
 export DEBUG_BIN?=
 
 # Debug a statically linked program with gdbgui, for example: debug.drivers-initfs DEBUG_BIN=pcid
