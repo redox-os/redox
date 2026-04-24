@@ -176,7 +176,7 @@ else
 	$(REPO_BIN) unfetch $(foreach f,$(subst $(comma), ,$*),$(f))
 endif
 
-# Invoke clean, and repo.sh for one of more targets separated by comma
+# Invoke clean, and rebuild for one of more targets separated by comma
 cr.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
@@ -185,7 +185,7 @@ else
 	$(MAKE) r.$*
 endif
 
-# Invoke unfetch, clean, and repo.sh for one or more targets separated by comma
+# Invoke unfetch, clean, and rebuild for one or more targets separated by comma
 ucr.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
@@ -212,18 +212,18 @@ else
 	$(MAKE) f.$*
 endif
 
-# Invoke repo.sh and push for one of more targets separated by comma
+# Invoke rebuild and push for one of more targets separated by comma
 # Don't use podman here, as the p target cannot mount inside podman
 rp.%: $(FSTOOLS_TAG) FORCE
 	$(MAKE) r.$*,--with-package-deps
 	$(MAKE) p.$*
 
-# Invoke clean, repo.sh and push for one of more targets separated by comma
+# Invoke clean, rebuild and push for one of more targets separated by comma
 crp.%: $(FSTOOLS_TAG) FORCE
 	$(MAKE) cr.$*,--with-package-deps
 	$(MAKE) p.$*
 
-# Invoke unfetch. clean, repo.sh and push for one of more targets separated by comma
+# Invoke unfetch. clean, rebuild and push for one of more targets separated by comma
 ucrp.%: $(FSTOOLS_TAG) FORCE
 	$(MAKE) ucr.$*,--with-package-deps
 	$(MAKE) p.$*
@@ -244,17 +244,17 @@ rebuild-install: $(FSTOOLS_TAG) FORCE
 i.%: $(FSTOOLS_TAG) FORCE
 	$(REPO_BIN) push $(COOKBOOK_OPTS) --with-package-deps "--sysroot=$(DESTDIR)"
 
-# Invoke repo.sh and install for one of more targets separated by comma
+# Invoke rebuild and install for one of more targets separated by comma
 ri.%: $(FSTOOLS_TAG) FORCE
 	$(MAKE) r.$*,--with-package-deps
 	$(MAKE) i.$*
 
-# Invoke clean, repo.sh and install for one of more targets separated by comma
+# Invoke clean, rebuild and install for one of more targets separated by comma
 cri.%: $(FSTOOLS_TAG) FORCE
 	$(MAKE) cr.$*,--with-package-deps
 	$(MAKE) i.$*
 
-# Invoke unfetch. clean, repo.sh and install for one of more targets separated by comma
+# Invoke unfetch. clean, rebuild and install for one of more targets separated by comma
 ucri.%: $(FSTOOLS_TAG) FORCE
 	$(MAKE) ucr.$*,--with-package-deps
 	$(MAKE) i.$*
