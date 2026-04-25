@@ -15,6 +15,12 @@ COOKBOOK_CONFIGURE_FLAGS+=(
 if [ "${TARGET}" = "riscv64gc-unknown-redox" ]; then
 COOKBOOK_CONFIGURE_FLAGS+=( --without-libstdcxx-zoneinfo )
 fi
+if [ "${TARGET}" = "x86_64-unknown-linux-relibc" ]; then
+COOKBOOK_CONFIGURE_FLAGS+=( --without-libstdcxx-zoneinfo )
+fi
+if [ "${TARGET}" = "aarch64-unknown-linux-relibc" ]; then
+COOKBOOK_CONFIGURE_FLAGS+=( --without-libstdcxx-zoneinfo )
+fi
 
 CPPINCLUDE="${COOKBOOK_HOST_SYSROOT}/$TARGET/include/c++/13.2.0"
 export CPPFLAGS+=" -I${CPPINCLUDE} -I${CPPINCLUDE}/$TARGET/bits"

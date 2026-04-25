@@ -1,6 +1,6 @@
 [source]
-git = "https://gitlab.redox-os.org/redox-os/rust.git"
-branch = "redox-2025-10-03"
+git = "https://gitlab.redox-os.org/willnode/rust.git"
+branch = "linux"
 shallow_clone = true
 
 [build]
@@ -20,9 +20,12 @@ dev-dependencies = [
 script = """
 if [ "${COOKBOOK_HOST_SYSROOT}" = "/usr" ]; then
 
-cat ${COOKBOOK_RECIPE}/config-bootstrap.toml > config.toml
-sed -i "s|TARGET|${TARGET}|g" config.toml
+OS=$(echo "${TARGET}" | cut -d - -f3)
+cat ${COOKBOOK_RECIPE}/config-cross-$OS.toml > config.toml
 sed -i "s|COOKBOOK_TOOLCHAIN|${COOKBOOK_TOOLCHAIN}|g" config.toml
+sed -i "s|COOKBOOK_TARGET|${COOKBOOK_CROSS_TARGET}|g" config.toml
+sed -i "s|COOKBOOK_GNU_TARGET|${COOKBOOK_CROSS_GNU_TARGET}|g" config.toml
+sed -i "s|TARGET|${TARGET}|g" config.toml
 
 else
 

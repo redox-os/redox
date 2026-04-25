@@ -1,6 +1,6 @@
 [source]
-git = "https://gitlab.redox-os.org/redox-os/gcc"
-branch = "redox-13.2.0"
+git = "https://gitlab.redox-os.org/willnode/gcc"
+branch = "linux"
 shallow_clone = true
 script = """
 DYNAMIC_INIT

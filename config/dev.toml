@@ -5,11 +5,11 @@ include = ["desktop.toml"]
 # General settings
 [general]
 # Filesystem size in MiB
-filesystem_size = 20000
+filesystem_size = 3000
 # Do not prompt if settings are not defined
 prompt = false
 
 # Package settings
 [packages]
-dev-redox = {}
+gcc13 = {}
 hello-redox = {}
