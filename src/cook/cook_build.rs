@@ -1,20 +1,14 @@
-use pkg::PackageError;
-use pkg::{Package, PackageName};
+use pkg::{Package, PackageError, PackageName};
 use pkgar::{PackageFile, Transaction};
 use pkgar_core::PackageSrc;
 use pkgar_keys::PublicKeyFile;
 
 use crate::config::CookConfig;
-use crate::cook::fetch;
 use crate::cook::package::{package_source_paths, package_target};
-use crate::cook::pty::PtyOut;
-use crate::cook::{fs, script::*};
-use crate::recipe::Recipe;
-use crate::recipe::{AutoDeps, CookRecipe};
-use crate::recipe::{BuildKind, OptionalPackageRecipe};
-use std::collections::VecDeque;
+use crate::cook::{fetch, fs, pty::PtyOut, script::*};
+use crate::recipe::{AutoDeps, BuildKind, CookRecipe, OptionalPackageRecipe, Recipe};
 use std::{
-    collections::BTreeSet,
+    collections::{BTreeSet, VecDeque},
     path::{Path, PathBuf},
     process::Command,
     str,
