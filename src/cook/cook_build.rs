@@ -267,17 +267,15 @@ pub fn build(
         return build_remote(stage_dirs, stage_pkgars, recipe, target_dir, logger);
     }
 
+    let deps_sysroot = if name.is_host() {
+        &dep_host_pkgars
+    } else {
+        &dep_pkgars
+    };
+    let have_toolchain = !name.is_host() && dep_host_pkgars.len() > 0;
     let (sysroot_cached, toolchain_cached) = (
-        build_deps_dir(
-            logger,
-            &sysroot_dir,
-            if name.is_host() {
-                &dep_host_pkgars
-            } else {
-                &dep_pkgars
-            },
-        )?,
-        if !name.is_host() && dep_host_pkgars.len() > 0 {
+        build_deps_dir(logger, &sysroot_dir, deps_sysroot)?,
+        if have_toolchain {
             build_deps_dir(logger, &toolchain_dir, &dep_host_pkgars)?
         } else {
             true
@@ -299,6 +297,17 @@ pub fn build(
         }
         for stage_dir in &stage_dirs {
             remove_stage_dir(stage_dir)?;
+        }
+        if cook_config.clean_target {
+            // no matter what, these two caches are invalid
+            if sysroot_cached {
+                fs::remove_all(&sysroot_dir)?;
+                build_deps_dir(logger, &sysroot_dir, deps_sysroot)?;
+            }
+            if toolchain_cached && have_toolchain {
+                fs::remove_all(&toolchain_dir)?;
+                build_deps_dir(logger, &toolchain_dir, &dep_host_pkgars)?;
+            }
         }
     } else {
         log_to_pty!(logger, "DEBUG: using cached build");
