@@ -1,20 +1,14 @@
-use pkg::PackageError;
-use pkg::{Package, PackageName};
+use pkg::{Package, PackageError, PackageName};
 use pkgar::{PackageFile, Transaction};
 use pkgar_core::PackageSrc;
 use pkgar_keys::PublicKeyFile;
 
 use crate::config::CookConfig;
-use crate::cook::fetch;
 use crate::cook::package::{package_source_paths, package_target};
-use crate::cook::pty::PtyOut;
-use crate::cook::{fs, script::*};
-use crate::recipe::Recipe;
-use crate::recipe::{AutoDeps, CookRecipe};
-use crate::recipe::{BuildKind, OptionalPackageRecipe};
-use std::collections::VecDeque;
+use crate::cook::{fetch, fs, pty::PtyOut, script::*};
+use crate::recipe::{AutoDeps, BuildKind, CookRecipe, OptionalPackageRecipe, Recipe};
 use std::{
-    collections::BTreeSet,
+    collections::{BTreeSet, VecDeque},
     path::{Path, PathBuf},
     process::Command,
     str,
@@ -267,17 +261,15 @@ pub fn build(
         return build_remote(stage_dirs, stage_pkgars, recipe, target_dir, logger);
     }
 
+    let deps_sysroot = if name.is_host() {
+        &dep_host_pkgars
+    } else {
+        &dep_pkgars
+    };
+    let have_toolchain = !name.is_host() && dep_host_pkgars.len() > 0;
     let (sysroot_cached, toolchain_cached) = (
-        build_deps_dir(
-            logger,
-            &sysroot_dir,
-            if name.is_host() {
-                &dep_host_pkgars
-            } else {
-                &dep_pkgars
-            },
-        )?,
-        if !name.is_host() && dep_host_pkgars.len() > 0 {
+        build_deps_dir(logger, &sysroot_dir, deps_sysroot)?,
+        if have_toolchain {
             build_deps_dir(logger, &toolchain_dir, &dep_host_pkgars)?
         } else {
             true
@@ -299,6 +291,17 @@ pub fn build(
         }
         for stage_dir in &stage_dirs {
             remove_stage_dir(stage_dir)?;
+        }
+        if cook_config.clean_target {
+            // no matter what, these two caches are invalid
+            if sysroot_cached {
+                fs::remove_all(&sysroot_dir)?;
+                build_deps_dir(logger, &sysroot_dir, deps_sysroot)?;
+            }
+            if toolchain_cached && have_toolchain {
+                fs::remove_all(&toolchain_dir)?;
+                build_deps_dir(logger, &toolchain_dir, &dep_host_pkgars)?;
+            }
         }
     } else {
         log_to_pty!(logger, "DEBUG: using cached build");

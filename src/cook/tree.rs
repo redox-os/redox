@@ -1,7 +1,7 @@
 use pkg::{Package, PackageName};
-use std::fmt::Write as _;
 use std::{
     collections::{HashMap, HashSet},
+    fmt::Write as _,
     path::PathBuf,
 };
 

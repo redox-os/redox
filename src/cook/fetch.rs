@@ -1,32 +1,28 @@
-use crate::Error;
-use crate::Result;
-use crate::bail_other_err;
-use crate::config::translate_mirror;
-use crate::cook::cook_build;
-use crate::cook::fetch_repo;
-use crate::cook::fetch_repo::PlainPtyCallback;
-use crate::cook::fs::*;
-use crate::cook::package::get_package_name;
-use crate::cook::package::package_source_paths;
-use crate::cook::pty::PtyOut;
-use crate::cook::script::*;
-use crate::is_redox;
-use crate::log_to_pty;
-use crate::recipe::BuildKind;
-use crate::recipe::CookRecipe;
-use crate::recipe::SourceRecipe;
-use crate::wrap_io_err;
-use crate::wrap_other_err;
-use pkg::SourceIdentifier;
-use pkg::net_backend::DownloadBackendWriter;
-use std::cell::RefCell;
-use std::collections::BTreeMap;
-use std::fs;
-use std::fs::File;
-use std::io::Read;
-use std::path::{Path, PathBuf};
-use std::process::Command;
-use std::rc::Rc;
+use crate::cook::{
+    cook_build,
+    fetch_repo::{self, PlainPtyCallback},
+    fs::*,
+    package::{get_package_name, package_source_paths},
+    pty::PtyOut,
+    script::*,
+};
+use crate::{
+    Error, Result, bail_other_err,
+    config::translate_mirror,
+    is_redox, log_to_pty,
+    recipe::{BuildKind, CookRecipe, SourceRecipe},
+    wrap_io_err, wrap_other_err,
+};
+use pkg::{SourceIdentifier, net_backend::DownloadBackendWriter};
+use std::{
+    cell::RefCell,
+    collections::BTreeMap,
+    fs::{self, File},
+    io::Read,
+    path::{Path, PathBuf},
+    process::Command,
+    rc::Rc,
+};
 
 pub struct FetchResult {
     pub source_dir: PathBuf,
