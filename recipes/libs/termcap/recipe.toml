@@ -8,5 +8,7 @@ DYNAMIC_STATIC_INIT
 COOKBOOK_CONFIGURE_FLAGS+=(
     --prefix="${COOKBOOK_STAGE}/usr"
 )
+# termcap only emit static object
+export CC+=" -fPIC"
 cookbook_configure
 """
