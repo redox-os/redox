@@ -1,18 +1,9 @@
 use libc::{self, winsize};
-use std::fs::File;
-use std::io::{Read, Write};
+use std::io::{self, PipeReader, PipeWriter, Read, Write};
 use std::os::fd::FromRawFd;
-use std::os::unix::io::AsRawFd;
-use std::os::unix::process::CommandExt;
-use std::process::Child;
-use std::time::Duration;
-use std::{io, mem, ptr};
-use std::{
-    io::{PipeReader, PipeWriter},
-    process::Command,
-};
-
-pub use std::os::unix::io::RawFd;
+use std::os::unix::{io::AsRawFd, io::RawFd, process::CommandExt};
+use std::process::{Child, Command};
+use std::{fs::File, mem, ptr, time::Duration};
 
 use crate::{Error, Result, wrap_io_err};
 
