@@ -1,5 +1,29 @@
+diff --git a/Cargo.lock b/Cargo.lock
+index ba385a0d2..7e328b24a 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -1769,8 +1769,7 @@ checksum = "bbd2bcb4c963f2ddae06a2efc7e9f3591312473c50c6685e1f298068316e66fe"
+ [[package]]
+ name = "libc"
+ version = "0.2.182"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "6800badb6cb2082ffd7b6a67e6125bb39f18782f793520caee8cb8846be06112"
++source = "git+https://github.com/willnode/libc?branch=linux-0.2.182#c949740d1a91bc489f81722345217118e099d306"
+ 
+ [[package]]
+ name = "libloading"
+@@ -1916,8 +1915,7 @@ dependencies = [
+ [[package]]
+ name = "nix"
+ version = "0.30.1"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "74523f3a35e05aba87a1d978330aef40f67b0304ac79c1c00b294c9830543db6"
++source = "git+https://github.com/willnode/nix?branch=linux-0.30.1#4770c9b25ffb2b7a385e775eb3416dedad4c1f3e"
+ dependencies = [
+  "bitflags 2.10.0",
+  "cfg-if",
 diff --git a/Cargo.toml b/Cargo.toml
-index 5f417bd42..b7b895a9c 100644
+index 5f417bd42..a815d579d 100644
 --- a/Cargo.toml
 +++ b/Cargo.toml
 @@ -326,6 +326,7 @@ feat_os_unix_redox = [
@@ -10,6 +34,15 @@ index 5f417bd42..b7b895a9c 100644
    "stat",
    "uname",
  ]
+@@ -741,3 +742,8 @@ large_types_passed_by_value = "allow"
+ 
+ [workspace.metadata.cargo-shear]
+ ignored = ["clap", "fluent", "libstdbuf"]
++
++[patch.crates-io]
++# for linux-relibc support. These has nothing to do with redox.
++libc = { git = "https://github.com/willnode/libc", branch = "linux-0.2.182" }
++nix = { git = "https://github.com/willnode/nix", branch = "linux-0.30.1" }
 diff --git a/src/uucore/src/lib/features/fs.rs b/src/uucore/src/lib/features/fs.rs
 index fd1f30303..c508f6b9b 100644
 --- a/src/uucore/src/lib/features/fs.rs
@@ -48,6 +81,58 @@ index fd1f30303..c508f6b9b 100644
  #[cfg(test)]
  mod tests {
      // Note this useful idiom: importing names from outer (for mod tests) scope.
+diff --git a/src/uucore/src/lib/features/fsext.rs b/src/uucore/src/lib/features/fsext.rs
+index 02dcbeb24..5825fa533 100644
+--- a/src/uucore/src/lib/features/fsext.rs
++++ b/src/uucore/src/lib/features/fsext.rs
+@@ -686,6 +686,7 @@ impl FsMeta for StatFs {
+     fn block_size(&self) -> i64 {
+         #[cfg(all(
+             not(target_env = "musl"),
++            not(target_env = "relibc"),
+             not(target_vendor = "apple"),
+             not(target_os = "aix"),
+             not(target_os = "android"),
+@@ -702,6 +703,7 @@ impl FsMeta for StatFs {
+         return self.f_bsize;
+         #[cfg(all(
+             not(target_env = "musl"),
++            not(target_env = "relibc"),
+             not(target_os = "freebsd"),
+             not(target_os = "netbsd"),
+             not(target_os = "redox"),
+@@ -717,6 +719,7 @@ impl FsMeta for StatFs {
+         return self.f_bsize.into();
+         #[cfg(any(
+             target_env = "musl",
++            target_env = "relibc",
+             target_os = "aix",
+             target_os = "freebsd",
+             target_os = "netbsd",
+@@ -779,6 +782,7 @@ impl FsMeta for StatFs {
+     fn fs_type(&self) -> i64 {
+         #[cfg(all(
+             not(target_env = "musl"),
++            not(target_env = "relibc"),
+             not(target_vendor = "apple"),
+             not(target_os = "android"),
+             not(target_os = "freebsd"),
+@@ -788,6 +792,7 @@ impl FsMeta for StatFs {
+         return self.f_type;
+         #[cfg(all(
+             not(target_env = "musl"),
++            not(target_env = "relibc"),
+             any(
+                 target_vendor = "apple",
+                 all(target_os = "android", target_pointer_width = "32"),
+@@ -799,6 +804,7 @@ impl FsMeta for StatFs {
+         return self.f_type.into();
+         #[cfg(any(
+             target_env = "musl",
++            target_env = "relibc",
+             all(target_os = "android", target_pointer_width = "64"),
+         ))]
+         return self.f_type.try_into().unwrap();
 diff --git a/src/uucore/src/lib/mods/locale.rs b/src/uucore/src/lib/mods/locale.rs
 index b670f8976..a4ff9f983 100644
 --- a/src/uucore/src/lib/mods/locale.rs
