@@ -149,6 +149,12 @@ ifeq ($(QEMU_ON_WINDOWS),1)
 	QEMUFLAGS+=-device usb-tablet
 endif
 
+ifeq ($(OPERATING_SYSTEM),linux)
+	QEMU_KERNEL=$(BUILD)/linux/bzImage
+	QEMUFLAGS+=-initrd $(BUILD)/linux/init.cpio
+	disk=no
+endif
+
 ifneq ($(FIRMWARE),)
 	QEMUFLAGS+=-bios $(FIRMWARE)
 endif
@@ -157,9 +163,11 @@ ifneq ($(QEMU_KERNEL),)
 	QEMUFLAGS+=-kernel $(QEMU_KERNEL)
 endif
 
-ifeq ($(live),yes)
+ifeq ($(disk),no)
+	DISK=
+else ifeq ($(live),yes)
 	DISK=$(BUILD)/redox-live.iso
-else
+else 
 	DISK=$(BUILD)/harddrive.img
 endif
 
@@ -376,3 +384,11 @@ $(BUILD)/qemu_uboot.rom:
 
 qemu: qemu-deps
 	$(QEMU) $(QEMUFLAGS)
+
+$(BUILD)/linux/bzImage: $(BUILD)/linux/init.cpio
+	rm -f $@
+	$(MAKE) ri.host:linux-kernel DESTDIR=$(@D)
+
+$(BUILD)/linux/init.cpio:
+	rm -f $@
+	$(MAKE) ri.linux-base DESTDIR=$(@D)

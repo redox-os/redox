@@ -228,12 +228,15 @@ ucrp.%: $(FSTOOLS_TAG) FORCE
 	$(MAKE) ucr.$*,--with-package-deps
 	$(MAKE) p.$*
 
-ifeq ($(HOSTED_REDOX),1)
 DESTDIR?=/
 
 # Install all recipes specified by the filesystem config
 install:
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
 	$(REPO_BIN) push $(COOKBOOK_OPTS) --with-package-deps "--sysroot=$(DESTDIR)"
+endif
 
 # Rebuild and install all recipes specified by the filesystem config
 rebuild-install: $(FSTOOLS_TAG) FORCE
@@ -242,7 +245,11 @@ rebuild-install: $(FSTOOLS_TAG) FORCE
 	$(MAKE) install
 
 i.%: $(FSTOOLS_TAG) FORCE
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
 	$(REPO_BIN) push $(COOKBOOK_OPTS) --with-package-deps "--sysroot=$(DESTDIR)"
+endif
 
 # Invoke rebuild and install for one of more targets separated by comma
 ri.%: $(FSTOOLS_TAG) FORCE
@@ -258,7 +265,6 @@ cri.%: $(FSTOOLS_TAG) FORCE
 ucri.%: $(FSTOOLS_TAG) FORCE
 	$(MAKE) ucr.$*,--with-package-deps
 	$(MAKE) i.$*
-endif
 
 # Set recipe rule to "binary" then invoke clean
 bc.%: $(FSTOOLS_TAG) FORCE
