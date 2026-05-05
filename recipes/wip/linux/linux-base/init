@@ -1,0 +1,26 @@
+#!/bin/sh
+mount -t proc proc /proc
+mount -t sysfs sys /sys
+mount -t devtmpfs dev /dev
+mdev -s
+sleep 1
+
+ROOT_DISK=""
+for dev in /dev/vda1 /dev/sda1; do
+    if [ -b "$dev" ]; then
+        ROOT_DISK="$dev"
+        break
+    fi
+done
+
+if [ -n "$ROOT_DISK" ]; then
+    mount "$ROOT_DISK" /mnt
+    umount /dev
+    umount /sys
+    umount /proc
+    exec switch_root /mnt /sbin/init
+fi
+
+echo "No root disk found, launching initfs sh"
+exec /bin/sh
+EOF

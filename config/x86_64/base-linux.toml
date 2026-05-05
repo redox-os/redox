@@ -11,3 +11,4 @@ linux-base = {}
 linux-kernel = {} # TODO: host because of relibc limitation
 # add your packages here
 curl = {}
+busybox = {}
