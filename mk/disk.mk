@@ -20,7 +20,7 @@ else # $(OPERATING_SYSTEM),linux
 	mkdir -p $(MOUNT_DIR)
 	umask 002 && $(INSTALLER) $(INSTALLER_OPTS) -c $(FILESYSTEM_CONFIG) $(MOUNT_DIR)
 	mke2fs -t ext4 -d $(MOUNT_DIR) -F $@.partial
-	rm -f $(MOUNT_DIR)
+	rm -rf $(MOUNT_DIR)
 endif
 	mv $@.partial $@
 endif

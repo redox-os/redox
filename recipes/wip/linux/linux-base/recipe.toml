@@ -15,6 +15,7 @@ cp busybox su && chmod +s su
 popd
 
 cp -r "${COOKBOOK_RECIPE}/etc" initfiles/
+rm -f initfiles/sbin/init
 cp -v "${COOKBOOK_RECIPE}/init" initfiles/sbin/init
 chmod +x initfiles/sbin/init
 pushd initfiles

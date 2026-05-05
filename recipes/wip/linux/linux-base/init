@@ -2,11 +2,12 @@
 mount -t proc proc /proc
 mount -t sysfs sys /sys
 mount -t devtmpfs dev /dev
+
 mdev -s
 sleep 1
 
 ROOT_DISK=""
-for dev in /dev/vda1 /dev/sda1; do
+for dev in /dev/vda1 /dev/vda /dev/sda1 /dev/sda; do
     if [ -b "$dev" ]; then
         ROOT_DISK="$dev"
         break
@@ -14,6 +15,7 @@ for dev in /dev/vda1 /dev/sda1; do
 done
 
 if [ -n "$ROOT_DISK" ]; then
+    echo "Mounting $ROOT_DISK"
     mount "$ROOT_DISK" /mnt
     umount /dev
     umount /sys
