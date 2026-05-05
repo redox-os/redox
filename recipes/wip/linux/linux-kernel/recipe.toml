@@ -36,6 +36,7 @@ ${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_TTY
 ${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_UNIX98_PTYS
 ${COOKBOOK_SOURCE}/scripts/config --disable CONFIG_LEGACY_PTYS
 ${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_BINFMT_ELF
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_BINFMT_SCRIPT
 # display
 ${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_VT
 ${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_VT_CONSOLE
@@ -62,7 +63,10 @@ ${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_HW_RANDOM_VIRTIO
 ${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_NET_9P
 ${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_NET_9P_VIRTIO
 ${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_9P_FS
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_ACPI
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_POWER_RESET
 
 make "HOSTCFLAGS=-I${COOKBOOK_TOOLCHAIN}/include" HOSTLDFLAGS="-L${COOKBOOK_TOOLCHAIN}/lib" -j$COOKBOOK_MAKE_JOBS < /dev/null
-cp -v arch/x86/boot/bzImage $COOKBOOK_STAGE/
+mkdir -p $COOKBOOK_STAGE/boot
+cp -v arch/x86/boot/bzImage $COOKBOOK_STAGE/boot
 """

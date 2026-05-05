@@ -6,7 +6,7 @@ dev-dependencies = [
     "host:cpio",
 ]
 script = """
-mkdir -p initfiles
+mkdir -p initfiles "$COOKBOOK_STAGE/boot"
 rsync -a --delete "${COOKBOOK_SYSROOT}/" ./initfiles/
 mkdir -p initfiles/{dev,proc,sys,tmp,run,mnt}
 pushd initfiles/bin
@@ -15,10 +15,11 @@ cp busybox su && chmod +s su
 popd
 
 cp -r "${COOKBOOK_RECIPE}/etc" initfiles/
+cp -v "${COOKBOOK_RECIPE}/init" initfiles/sbin/init
+chmod +x initfiles/sbin/init
 pushd initfiles
 find . | cpio -o -H newc --owner=+0:+0 > ../init.cpio
 popd
 
-cp init.cpio "$COOKBOOK_STAGE/"
+cp init.cpio "$COOKBOOK_STAGE/boot"
 """
-

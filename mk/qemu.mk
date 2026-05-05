@@ -150,8 +150,8 @@ ifeq ($(QEMU_ON_WINDOWS),1)
 endif
 
 ifeq ($(OPERATING_SYSTEM),linux)
-	QEMU_KERNEL=$(BUILD)/bzImage
-	QEMUFLAGS+=-initrd $(BUILD)/init.cpio
+	QEMU_KERNEL=$(BUILD)/boot/bzImage
+	QEMUFLAGS+=-initrd $(BUILD)/boot/init.cpio
 	disk=no
 endif
 
@@ -385,8 +385,8 @@ $(BUILD)/qemu_uboot.rom:
 qemu: qemu-deps
 	$(QEMU) $(QEMUFLAGS)
 
-$(BUILD)/bzImage: $(BUILD)/init.cpio repo FORCE
+$(BUILD)/boot/bzImage: $(BUILD)/boot/init.cpio repo FORCE
 	$(MAKE) i.linux-kernel DESTDIR=$(@D)
 
-$(BUILD)/init.cpio: repo FORCE
+$(BUILD)/boot/init.cpio: repo FORCE
 	$(MAKE) i.linux-base DESTDIR=$(@D)
