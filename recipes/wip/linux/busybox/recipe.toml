@@ -7,9 +7,14 @@ shallow_clone = true
 template = "custom"
 script = """
 pushd $COOKBOOK_SOURCE
-make "O=$COOKBOOK_BUILD" allyesconfig
+make "O=$COOKBOOK_BUILD" defconfig
 popd
 
+sed -i \
+    -e 's/^CONFIG_SHA1_HWACCEL=y/# CONFIG_SHA1_HWACCEL is not set/' \
+    -e 's/^CONFIG_SHA256_HWACCEL=y/# CONFIG_SHA256_HWACCEL is not set/' \
+    -e 's/^CONFIG_TC=y/# CONFIG_TC is not set/' \
+    .config
 make
 make "CONFIG_PREFIX=$COOKBOOK_STAGE" install
 """
