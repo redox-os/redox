@@ -6,7 +6,7 @@ blake3 = "d9b0776504d3b1f03bdd4ce638110a4070a4dabed57fcc83e4940e9bbf7cbc0b"
 [build]
 template = "custom"
 dev-dependencies = [
-    "elfutils",
+    "host:elfutils",
     "host:bc",
 ]
 script = """
@@ -33,6 +33,6 @@ ${COOKBOOK_SOURCE}/scripts/config --disable CONFIG_UNIX98_PTYS
 ${COOKBOOK_SOURCE}/scripts/config --disable CONFIG_LEGACY_PTYS
 ${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_BINFMT_ELF
 
-make "HOSTCFLAGS=-I${COOKBOOK_SYSROOT}/include" HOSTLDFLAGS="-L${COOKBOOK_SYSROOT}/lib" -j$COOKBOOK_MAKE_JOBS < /dev/null
+make "HOSTCFLAGS=-I${COOKBOOK_TOOLCHAIN}/include" HOSTLDFLAGS="-L${COOKBOOK_TOOLCHAIN}/lib" -j$COOKBOOK_MAKE_JOBS < /dev/null
 cp -v arch/x86/boot/bzImage $COOKBOOK_STAGE/
 """

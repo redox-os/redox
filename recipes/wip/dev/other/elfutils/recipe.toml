@@ -9,7 +9,7 @@ dependencies = [
     "argp-standalone",
     "musl-fts",
     "musl-obstack",
-    "gettext",
+    "target:gettext",
 ]
 configureflags = [
     "--disable-libdebuginfod",

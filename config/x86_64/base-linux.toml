@@ -1,0 +1,13 @@
+# Base configuration for linux
+
+# General settings
+[general]
+# Do not prompt if settings are not defined
+prompt = false
+
+[packages]
+# these don't need to be included in image, but needed in the build loop
+linux-base = {}
+linux-kernel = {} # TODO: host because of relibc limitation
+# add your packages here
+curl = {}
