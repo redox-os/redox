@@ -8,8 +8,9 @@ dev-dependencies = [
 script = """
 mkdir -p initfiles
 rsync -a --delete "${COOKBOOK_SYSROOT}/" ./initfiles/
+mkdir -p initfiles/{dev,proc,sys,tmp,run,mnt}
 pushd initfiles/bin
-rm su
+rm -f su
 cp busybox su && chmod +s su
 popd
 
