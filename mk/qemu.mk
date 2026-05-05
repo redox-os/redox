@@ -386,7 +386,7 @@ qemu: qemu-deps
 	$(QEMU) $(QEMUFLAGS)
 
 $(BUILD)/bzImage: $(BUILD)/init.cpio repo FORCE
-	$(MAKE) i.host:linux-kernel DESTDIR=$(@D)
+	$(MAKE) i.linux-kernel DESTDIR=$(@D)
 
 $(BUILD)/init.cpio: repo FORCE
 	$(MAKE) i.linux-base DESTDIR=$(@D)
