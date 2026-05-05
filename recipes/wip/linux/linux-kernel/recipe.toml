@@ -15,8 +15,12 @@ make "O=$COOKBOOK_BUILD" tinyconfig
 popd
 
 export KBUILD_OUTPUT=$COOKBOOK_BUILD
+# https://blog.nelhage.com/2013/12/lightweight-linux-kernel-development-with-kvm
 ${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_64BIT
 ${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_BLK_DEV_INITRD
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_BLK_DEV
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_BLK_DEV_RAM
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_SMP
 ${COOKBOOK_SOURCE}/scripts/config --disable CONFIG_RD_GZIP
 ${COOKBOOK_SOURCE}/scripts/config --disable CONFIG_RD_BZIP2
 ${COOKBOOK_SOURCE}/scripts/config --disable CONFIG_RD_LZMA
@@ -48,10 +52,15 @@ ${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_EARLY_PRINTK
 ${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_NET
 ${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_UNIX
 ${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_INET
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_NETDEVICES
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_PACKET
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_FILE_LOCKING
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_INOTIFY_USER
 # kvm
 ${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_PARAVIRT
 ${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_KVM_GUEST
 ${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_KVM_CLOCK
+# virtio
 ${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_VIRTIO
 ${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_VIRTIO_MENU
 ${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_VIRTIO_PCI
@@ -60,15 +69,20 @@ ${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_VIRTIO_BLK
 ${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_VIRTIO_NET
 ${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_VIRTIO_CONSOLE
 ${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_HW_RANDOM_VIRTIO
+# acpi
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_ACPI
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_POWER_RESET
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_PCI
+# disk
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_EXT4_FS
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_EXT4_USE_FOR_EXT23
 ${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_NET_9P
 ${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_NET_9P_VIRTIO
 ${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_9P_FS
-${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_ACPI
-${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_POWER_RESET
-# disk
-${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_EXT4_FS
 
-make "HOSTCFLAGS=-I${COOKBOOK_TOOLCHAIN}/include" HOSTLDFLAGS="-L${COOKBOOK_TOOLCHAIN}/lib" -j$COOKBOOK_MAKE_JOBS < /dev/null
+make HOSTCC="${CC_WRAPPER} gcc" CC="${CC}" \
+    "HOSTCFLAGS=-I${COOKBOOK_TOOLCHAIN}/include" HOSTLDFLAGS="-L${COOKBOOK_TOOLCHAIN}/lib" \
+    -j$COOKBOOK_MAKE_JOBS < /dev/null
 mkdir -p $COOKBOOK_STAGE/boot
 cp -v arch/x86/boot/bzImage $COOKBOOK_STAGE/boot
 """

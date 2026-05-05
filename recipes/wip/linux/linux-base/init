@@ -1,7 +1,8 @@
 #!/bin/sh
+set -xe
+
 mount -t proc proc /proc
 mount -t sysfs sys /sys
-mount -t devtmpfs dev /dev
 
 mdev -s
 sleep 1
