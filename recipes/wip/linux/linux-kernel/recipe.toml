@@ -6,8 +6,9 @@ template = "custom"
 script = """
 export KBUILD_OUTPUT=$(pwd)
 pushd "$COOKBOOK_SOURCE"
-
+make mrproper
 make tinyconfig
+
 ./scripts/config --enable CONFIG_64BIT
 ./scripts/config --enable CONFIG_BLK_DEV_INITRD
 ./scripts/config --disable CONFIG_RD_GZIP
