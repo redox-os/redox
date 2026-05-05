@@ -65,6 +65,8 @@ ${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_NET_9P_VIRTIO
 ${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_9P_FS
 ${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_ACPI
 ${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_POWER_RESET
+# disk
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_EXT4_FS
 
 make "HOSTCFLAGS=-I${COOKBOOK_TOOLCHAIN}/include" HOSTLDFLAGS="-L${COOKBOOK_TOOLCHAIN}/lib" -j$COOKBOOK_MAKE_JOBS < /dev/null
 mkdir -p $COOKBOOK_STAGE/boot

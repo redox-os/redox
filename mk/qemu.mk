@@ -152,7 +152,8 @@ endif
 ifeq ($(OPERATING_SYSTEM),linux)
 	QEMU_KERNEL=$(BUILD)/boot/bzImage
 	QEMUFLAGS+=-initrd $(BUILD)/boot/init.cpio
-	disk=no
+# kernel only support virtio
+	disk=virtio
 endif
 
 ifneq ($(FIRMWARE),)
@@ -386,7 +387,7 @@ qemu: qemu-deps
 	$(QEMU) $(QEMUFLAGS)
 
 $(BUILD)/boot/bzImage: $(BUILD)/boot/init.cpio repo FORCE
-	$(MAKE) i.linux-kernel DESTDIR=$(@D)
+	$(MAKE) i.linux-kernel DESTDIR=$(BUILD)
 
 $(BUILD)/boot/init.cpio: repo FORCE
-	$(MAKE) i.linux-base DESTDIR=$(@D)
+	$(MAKE) i.linux-base DESTDIR=$(BUILD)
