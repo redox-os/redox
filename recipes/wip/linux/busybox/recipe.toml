@@ -1,0 +1,15 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/mirror/busybox"
+branch = "master"
+shallow_clone = true
+[build]
+template = "custom"
+script = """
+pushd $COOKBOOK_SOURCE
+make "O=$COOKBOOK_BUILD" allyesconfig
+popd
+
+make
+make "CONFIG_PREFIX=$COOKBOOK_STAGE" install
+"""

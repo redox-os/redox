@@ -1,0 +1,34 @@
+#TODO not compiled or tested
+[source]
+tar = "https://github.com/torvalds/linux/archive/refs/tags/v7.1-rc2.tar.gz"
+[build]
+template = "custom"
+script = """
+export KBUILD_OUTPUT=$(pwd)
+pushd "$COOKBOOK_SOURCE"
+
+make tinyconfig
+./scripts/config --enable CONFIG_64BIT
+./scripts/config --enable CONFIG_BLK_DEV_INITRD
+./scripts/config --disable CONFIG_RD_GZIP
+./scripts/config --disable CONFIG_RD_BZIP2
+./scripts/config --disable CONFIG_RD_LZMA
+./scripts/config --disable CONFIG_RD_XZ
+./scripts/config --disable CONFIG_RD_LZO
+./scripts/config --disable CONFIG_RD_LZ4
+./scripts/config --disable CONFIG_RD_ZSTD
+./scripts/config --enable CONFIG_EXPERT
+./scripts/config --enable CONFIG_MULTIUSER
+./scripts/config --enable CONFIG_PRINTK
+./scripts/config --enable CONFIG_DEVTMPFS
+./scripts/config --enable CONFIG_TTY
+./scripts/config --disable CONFIG_UNIX98_PTYS
+./scripts/config --disable CONFIG_LEGACY_PTYS
+./scripts/config --enable CONFIG_BINFMT_ELF
+
+make olddefconfig
+make -j$(nproc)
+
+popd
+cp arch/x86/boot/bzImage $COOKBOOK_STAGE/
+"""
