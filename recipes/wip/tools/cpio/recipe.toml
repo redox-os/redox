@@ -1,6 +1,6 @@
 #TODO not compiled or tested
 [source]
-tar = "https://ftp.gnu.org/gnu/bc/bc-1.08.2.tar.gz"
+tar = "https://ftp.gnu.org/gnu/cpio/cpio-2.15.tar.gz"
 script = """
 autotools_recursive_regenerate
 """
