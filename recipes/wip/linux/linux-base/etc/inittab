@@ -1,0 +1,3 @@
+tty1::respawn:/bin/login -f root
+::sysinit:/bin/hostname HOSTNAME
+::sysinit:/bin/mount -a

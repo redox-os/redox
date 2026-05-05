@@ -1,0 +1,21 @@
+#TODO not compiled or tested
+#TODO instructions https://github.com/bluedragon1221/minlinux2
+[build]
+template = "custom"
+dev-dependencies = [
+    "busybox"
+]
+script = """
+mkdir -p initfiles/bin
+cp "${COOKBOOK_SYSROOT}/busybox" initfiles/bin
+pushd initfiles/bin
+./busybox --list | xargs -n1 -P8 ln -s busybox
+cp busybox su && chmod +s su
+popd
+cp -r "${COOKBOOK_RECIPE}/etc" initfiles/
+pushd initfiles
+find . | cpio -o -H newc --owner=+0:+0 > ../init.cpio
+popd
+
+cp init.cpio "$COOKBOOK_STAGE/"
+"""
