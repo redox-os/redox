@@ -392,9 +392,7 @@ else
 endif
 
 $(BUILD)/bzImage: $(BUILD)/init.cpio repo FORCE
-	rm -f $@
 	$(MAKE) i.host:linux-kernel DESTDIR=$(@D)
 
 $(BUILD)/init.cpio: repo FORCE
-	rm -f $@
 	$(MAKE) i.linux-base DESTDIR=$(@D)
