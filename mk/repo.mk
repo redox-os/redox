@@ -248,7 +248,7 @@ i.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
-	$(REPO_BIN) push $(COOKBOOK_OPTS) --with-package-deps "--sysroot=$(DESTDIR)"
+	$(REPO_BIN) push $(foreach f,$(subst $(comma), ,$*),$(f)) $(COOKBOOK_OPTS) --with-package-deps "--sysroot=$(DESTDIR)"
 endif
 
 # Invoke rebuild and install for one of more targets separated by comma
