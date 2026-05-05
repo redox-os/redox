@@ -28,10 +28,40 @@ ${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_EXPERT
 ${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_MULTIUSER
 ${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_PRINTK
 ${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_DEVTMPFS
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_PROC_FS
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_SYSFS
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_DEVTMPFS_MOUNT
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_TMPFS
 ${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_TTY
-${COOKBOOK_SOURCE}/scripts/config --disable CONFIG_UNIX98_PTYS
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_UNIX98_PTYS
 ${COOKBOOK_SOURCE}/scripts/config --disable CONFIG_LEGACY_PTYS
 ${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_BINFMT_ELF
+# display
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_VT
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_VT_CONSOLE
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_VGA_CONSOLE
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_SERIAL_8250
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_SERIAL_8250_CONSOLE
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_EARLY_PRINTK
+# network
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_NET
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_UNIX
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_INET
+# kvm
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_PARAVIRT
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_KVM_GUEST
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_KVM_CLOCK
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_VIRTIO
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_VIRTIO_MENU
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_VIRTIO_PCI
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_VIRTIO_MMIO
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_VIRTIO_BLK
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_VIRTIO_NET
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_VIRTIO_CONSOLE
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_HW_RANDOM_VIRTIO
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_NET_9P
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_NET_9P_VIRTIO
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_9P_FS
 
 make "HOSTCFLAGS=-I${COOKBOOK_TOOLCHAIN}/include" HOSTLDFLAGS="-L${COOKBOOK_TOOLCHAIN}/lib" -j$COOKBOOK_MAKE_JOBS < /dev/null
 cp -v arch/x86/boot/bzImage $COOKBOOK_STAGE/
