@@ -61,6 +61,7 @@ exampled = {}
 expat = {}
 extrautils = {}
 ffmpeg6 = {}
+file = {}
 findutils = {}
 fish-shell = {}
 fontconfig = {}
@@ -247,7 +248,6 @@ zstd = {}
 #dynamic-example = {}
 #fal
 #fd = {} # ctrlc-3.1.1
-#file = {}
 #flycast = {}
 #freeciv = {}
 #freeglut = {}

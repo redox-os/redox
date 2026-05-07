@@ -1,4 +1,3 @@
-#TODO compilation error
 [source]
 tar = "https://astron.com/pub/file/file-5.46.tar.gz"
 [build]
