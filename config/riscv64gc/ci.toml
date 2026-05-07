@@ -43,6 +43,7 @@ dejavu = {}
 diffutils = {}
 expat = {}
 extrautils = {}
+file = {}
 findutils = {}
 freefont = {}
 freetype2 = {}
@@ -123,7 +124,6 @@ zlib = {}
 # #dynamic-example = {}
 # #fal
 # #fd = {} # ctrlc-3.1.1
-# #file = {}
 # #flycast = {}
 # #freeciv = {}
 # #freeglut = {}
