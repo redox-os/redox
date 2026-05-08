@@ -1,0 +1,9 @@
+#TODO not compiled or tested
+[source]
+tar = "https://ftp.gnu.org/gnu/bc/bc-1.08.2.tar.gz"
+script = """
+autotools_recursive_regenerate
+"""
+
+[build]
+template = "configure"

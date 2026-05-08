@@ -6,6 +6,17 @@ netboot?=no
 redoxer?=no
 VGA_SUPPORTED=no
 
+ifeq ($(OPERATING_SYSTEM),linux)
+	QEMU_KERNEL=$(BUILD)/boot/bzImage
+#	QEMUFLAGS+=-initrd $(BUILD)/boot/init.cpio
+	QEMUFLAGS+=-append "console=ttyS0 loglevel=3 root=/dev/vda rw rootwait"
+#	gpu=no
+# kernel only support virtio
+	disk=virtio
+# why?
+	uefi=no
+endif
+
 ifeq ($(ARCH),i586)
 	audio?=ac97
 	disk?=ata
@@ -157,9 +168,11 @@ ifneq ($(QEMU_KERNEL),)
 	QEMUFLAGS+=-kernel $(QEMU_KERNEL)
 endif
 
-ifeq ($(live),yes)
+ifeq ($(disk),no)
+	DISK=
+else ifeq ($(live),yes)
 	DISK=$(BUILD)/redox-live.iso
-else
+else 
 	DISK=$(BUILD)/harddrive.img
 endif
 
@@ -376,3 +389,9 @@ $(BUILD)/qemu_uboot.rom:
 
 qemu: qemu-deps
 	$(QEMU) $(QEMUFLAGS)
+
+$(BUILD)/boot/bzImage: repo FORCE
+	$(MAKE) i.linux-kernel DESTDIR=$(BUILD)
+
+$(BUILD)/boot/init.cpio: repo FORCE
+	$(MAKE) i.linux-base DESTDIR=$(BUILD)

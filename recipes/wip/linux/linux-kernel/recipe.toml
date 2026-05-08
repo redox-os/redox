@@ -1,0 +1,126 @@
+#TODO not compiled or tested
+[source]
+tar = "https://cdn.kernel.org/pub/linux/kernel/v7.x/linux-7.0.3.tar.xz"
+blake3 = "07b25cb028364ee2ef94a9309aa45dcb1365cbb99b8865c67c99d78b0848e000"
+
+[build]
+template = "custom"
+dev-dependencies = [
+    "host:elfutils",
+    "host:bc",
+]
+script = """
+pushd "$COOKBOOK_SOURCE"
+make "O=$COOKBOOK_BUILD" tinyconfig
+popd
+
+export KBUILD_OUTPUT=$COOKBOOK_BUILD
+# Configurations from https://github.com/torvalds/linux/blob/master/Kconfig
+# arch/x86/Kconfig
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_64BIT
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_SMP
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_PARAVIRT
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_KVM_GUEST
+# arch/x86/Kconfig.debug
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_EARLY_PRINTK
+# init/Kconfig
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_EXPERT
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_MULTIUSER
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_PRINTK
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_SYSVIPC
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_POSIX_TIMERS
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_TIMERFD
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_EVENTFD
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_SIGNALFD
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_FUTEX
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_EPOLL
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_SHMEM
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_BLK_DEV_INITRD
+# usr/Kconfig
+${COOKBOOK_SOURCE}/scripts/config --disable CONFIG_RD_GZIP
+${COOKBOOK_SOURCE}/scripts/config --disable CONFIG_RD_BZIP2
+${COOKBOOK_SOURCE}/scripts/config --disable CONFIG_RD_LZMA
+${COOKBOOK_SOURCE}/scripts/config --disable CONFIG_RD_XZ
+${COOKBOOK_SOURCE}/scripts/config --disable CONFIG_RD_LZO
+${COOKBOOK_SOURCE}/scripts/config --disable CONFIG_RD_LZ4
+${COOKBOOK_SOURCE}/scripts/config --disable CONFIG_RD_ZSTD
+# block/Kconfig
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_BLOCK
+# crypto/Kconfig
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_CRYPTO
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_CRYPTO_USER
+# drivers/acpi/Kconfig
+# TODO: disable unneeded acpi features?
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_ACPI
+# drivers/base/Kconfig
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_DEVTMPFS
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_DEVTMPFS_MOUNT
+# drivers/block/Kconfig
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_BLK_DEV
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_BLK_DEV_RAM
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_VIRTIO_BLK
+# drivers/char/Kconfig
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_VIRTIO_CONSOLE
+# drivers/char/hwrandom/Kconfig
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_HW_RANDOM_VIRTIO
+# drivers/net/Kconfig
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_NETDEVICES
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_VIRTIO_NET
+# drivers/pci/Kconfig
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_PCI
+# drivers/power/reset/Kconfig
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_POWER_RESET
+# drivers/tty/Kconfig 
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_TTY
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_VT
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_VT_CONSOLE
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_UNIX98_PTYS
+${COOKBOOK_SOURCE}/scripts/config --disable CONFIG_LEGACY_PTYS
+# drivers/tty/serial/8250/Kconfig
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_SERIAL_8250
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_SERIAL_8250_CONSOLE
+# drivers/video/console/Kconfig
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_VGA_CONSOLE
+# drivers/virtio/Kconfig
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_VIRTIO
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_VIRTIO_MENU
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_VIRTIO_PCI
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_VIRTIO_MMIO
+# fs/Kconfig
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_FILE_LOCKING
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_TMPFS
+# fs/notify/inotify/Kconfig
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_INOTIFY_USER
+# fs/Kconfig.binfmt
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_BINFMT_ELF
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_BINFMT_SCRIPT
+# fs/ext4/Kconfig
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_EXT4_FS
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_EXT4_USE_FOR_EXT2
+# fs/proc/Kconfig
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_PROC_FS
+# fs/sysfs/Kconfig
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_SYSFS
+# fs/9p/Kconfig
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_9P_FS
+# lib/Kconfig.debug
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_MAGIC_SYSRQ
+# net/Kconfig
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_NET
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_INET
+# net/unix/Kconfig
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_UNIX
+# net/packet/Kconfig
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_PACKET
+# net/ipv6/Kconfig
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_IPV6
+# net/9p/Kconfig
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_NET_9P
+${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_NET_9P_VIRTIO
+
+make \
+    "HOSTCFLAGS=-I${COOKBOOK_TOOLCHAIN}/include" HOSTLDFLAGS="-L${COOKBOOK_TOOLCHAIN}/lib" \
+    -j$COOKBOOK_MAKE_JOBS < /dev/null
+mkdir -p $COOKBOOK_STAGE/boot
+cp -v arch/x86/boot/bzImage $COOKBOOK_STAGE/boot
+"""

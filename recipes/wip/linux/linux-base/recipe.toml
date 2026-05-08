@@ -1,0 +1,18 @@
+#TODO instructions https://github.com/bluedragon1221/minlinux2
+[build]
+template = "custom"
+dev-dependencies = [
+    "busybox",
+]
+script = """
+mkdir -p initfiles
+rsync -a --delete "${COOKBOOK_SYSROOT}/" ./initfiles/
+pushd initfiles/bin
+rm -f su
+cp busybox su && chmod +s su
+popd
+
+cp -r "${COOKBOOK_RECIPE}/etc" initfiles/
+
+rsync -a --delete ./initfiles/ "${COOKBOOK_STAGE}/"
+"""

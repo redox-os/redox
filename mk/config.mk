@@ -7,6 +7,8 @@ HOST_ARCH?=$(shell uname -m)
 # Configuration
 ## Architecture to build Redox for (aarch64, i586, or x86_64). Defaults to a host one
 ARCH?=$(HOST_ARCH)
+## Operating system mode (redox or linux). Linux is experimental
+OPERATING_SYSTEM?=redox
 ## Sub-device type for aarch64 if needed
 BOARD?=
 ## Enable to use binary prefix (much faster)
@@ -32,10 +34,12 @@ ifeq ($(ARCH),i686)
 endif
 ## Select filesystem config
 ifeq ($(BOARD),)
-ifeq ($(wildcard config/$(ARCH)/$(CONFIG_NAME).toml),)
-FILESYSTEM_CONFIG?=config/$(CONFIG_NAME).toml
-else
+ifneq ($(wildcard config/$(ARCH)/$(OPERATING_SYSTEM)-$(CONFIG_NAME).toml),)
+FILESYSTEM_CONFIG?=config/$(ARCH)/$(OPERATING_SYSTEM)-$(CONFIG_NAME).toml
+else ifneq ($(wildcard config/$(ARCH)/$(CONFIG_NAME).toml),)
 FILESYSTEM_CONFIG?=config/$(ARCH)/$(CONFIG_NAME).toml
+else
+FILESYSTEM_CONFIG?=config/$(CONFIG_NAME).toml
 endif
 else
 FILESYSTEM_CONFIG?=config/$(ARCH)/$(BOARD)/$(CONFIG_NAME).toml
@@ -159,7 +163,11 @@ endif
 endif
 
 ## Userspace variables
-ifeq ($(ARCH),riscv64gc)
+ifeq ($(OPERATING_SYSTEM),linux)
+	export TARGET=$(ARCH)-unknown-linux-relibc
+	export GNU_TARGET=$(ARCH)-linux-relibc
+	export USE_RUST_LIBM=1
+else ifeq ($(ARCH),riscv64gc)
 	export TARGET=riscv64gc-unknown-redox
 	export GNU_TARGET=riscv64-unknown-redox
 else

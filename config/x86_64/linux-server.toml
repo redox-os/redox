@@ -1,0 +1,14 @@
+# Server configuration for linux
+
+include = ["linux-base.toml"]
+
+# General settings
+[general]
+# Do not prompt if settings are not defined
+prompt = false
+# Filesystem size in MiB
+filesystem_size = 512
+
+[packages]
+# add your packages here
+curl = {}
