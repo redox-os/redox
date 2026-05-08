@@ -13,6 +13,7 @@ use crate::{
 };
 
 pub mod html;
+pub mod search;
 
 #[derive(Clone)]
 pub struct CliWebConfig {
@@ -58,6 +59,7 @@ pub fn generate_web(all_packages: &Vec<String>, config: &CliWebConfig) {
 
     let mut valid_packages = Vec::new();
     let mut dependents_map: HashMap<String, BTreeSet<String>> = HashMap::new();
+    let mut files_map: BTreeMap<String, String> = BTreeMap::new();
 
     for package_name in all_packages {
         let Ok(package_name) = PackageName::new(package_name) else {
@@ -108,6 +110,10 @@ pub fn generate_web(all_packages: &Vec<String>, config: &CliWebConfig) {
             &html_path,
             &config,
         );
+
+        if let Some(file_map) = stage_files {
+            files_map.insert(package.name.to_string(), file_map);
+        }
     }
 
     let mut grouped_packages: BTreeMap<String, Vec<&(Package, CookRecipe)>> = BTreeMap::new();
@@ -120,7 +126,16 @@ pub fn generate_web(all_packages: &Vec<String>, config: &CliWebConfig) {
     let index_path = repo_path.join("index.html");
     let style_path = repo_path.join("style.css");
     generate_html_index(grouped_packages, &index_path, &config);
-    fs::write(style_path, CSS).expect("Failed to write CSS file");
+    fs::write(style_path, CSS).expect("Failed to write style.css");
+
+    let mut index_files = search::FileIndexBuilder::new();
+    for (package, files) in &files_map {
+        index_files.parse(package, files);
+    }
+    let files_path = repo_path.join("files.json");
+    index_files
+        .write(&files_path)
+        .expect("Failed to write files.json");
 }
 
 pub(crate) fn get_category(dir: &Path) -> String {
