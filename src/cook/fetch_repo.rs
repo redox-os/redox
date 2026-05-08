@@ -39,25 +39,36 @@ fn init_binary_repo() -> (RepoManager, Repository) {
     let callback = Rc::new(RefCell::new(SilentCallback::new()));
     let download_backend = CurlBackend::new().expect("Curl not found");
     let mut repo = RepoManager::new(callback, Box::new(download_backend));
-
-    repo.add_remote(crate::REMOTE_PKG_SOURCE, redoxer::target())
+    let target = redoxer::target();
+    repo.add_remote(crate::REMOTE_PKG_SOURCE, target)
         .expect("Unable to add remote");
 
     let repo_path = PathBuf::from("build/remotes");
     repo.set_download_path(repo_path.clone());
     repo.sync_keys().expect("Unable to sync keys");
 
-    let repo_toml = load_cached_repo(&repo_path.join("repo.toml")).unwrap_or_else(|| {
-        let (toml_str, _) = repo
-            .get_package_toml(&PackageName::new("repo").unwrap())
-            .expect("Failed to fetch repo.toml");
-        let repo = Repository::from_toml(&toml_str).expect("Fetched repo.toml is invalid");
-        fs::serialize_and_write(&repo_path.join("repo.toml"), &repo).expect("Unable to save repo");
-        repo
-    });
+    let repo_toml = load_cached_repo(&repo_path.join(format!("{target}_repo.toml")))
+        .unwrap_or_else(|| {
+            let repo = download_repo(&repo, repo_path)
+                .map_err(|e| {
+                    eprintln!(
+                        "Unable to load server repo.toml, all recipes will build from source: {e}"
+                    );
+                    e
+                })
+                .unwrap_or_default();
+            repo
+        });
     // reset here to not clobber pty
     repo.callback = Rc::new(RefCell::new(PlainCallback::new()));
     (repo, repo_toml)
+}
+
+fn download_repo(repo: &RepoManager, repo_path: PathBuf) -> crate::Result<Repository> {
+    let (toml_str, _) = repo.get_package_toml(&PackageName::new("repo").unwrap())?;
+    let repo = Repository::from_toml(&toml_str)?;
+    fs::serialize_and_write(&repo_path.join("repo.toml"), &repo)?;
+    Ok(repo)
 }
 
 pub fn get_binary_repo() -> (RepoManager, Repository) {
