@@ -12,4 +12,3 @@ filesystem_size = 512
 [packages]
 # add your packages here
 curl = {}
-busybox = {}

@@ -6,6 +6,17 @@ netboot?=no
 redoxer?=no
 VGA_SUPPORTED=no
 
+ifeq ($(OPERATING_SYSTEM),linux)
+	QEMU_KERNEL=$(BUILD)/boot/bzImage
+#	QEMUFLAGS+=-initrd $(BUILD)/boot/init.cpio
+	QEMUFLAGS+=-append "console=ttyS0 loglevel=3 root=/dev/vda rw rootwait"
+#	gpu=no
+# kernel only support virtio
+	disk=virtio
+# why?
+	uefi=no
+endif
+
 ifeq ($(ARCH),i586)
 	audio?=ac97
 	disk?=ata
@@ -147,13 +158,6 @@ ifeq ($(QEMU_ON_WINDOWS),1)
 	FIRMWARE=
 	QEMU_KERNEL=
 	QEMUFLAGS+=-device usb-tablet
-endif
-
-ifeq ($(OPERATING_SYSTEM),linux)
-	QEMU_KERNEL=$(BUILD)/boot/bzImage
-	QEMUFLAGS+=-initrd $(BUILD)/boot/init.cpio
-# kernel only support virtio
-	disk=virtio
 endif
 
 ifneq ($(FIRMWARE),)
@@ -386,7 +390,7 @@ $(BUILD)/qemu_uboot.rom:
 qemu: qemu-deps
 	$(QEMU) $(QEMUFLAGS)
 
-$(BUILD)/boot/bzImage: $(BUILD)/boot/init.cpio repo FORCE
+$(BUILD)/boot/bzImage: repo FORCE
 	$(MAKE) i.linux-kernel DESTDIR=$(BUILD)
 
 $(BUILD)/boot/init.cpio: repo FORCE
