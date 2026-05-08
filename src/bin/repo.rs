@@ -567,7 +567,7 @@ fn parse_args(args: Vec<String>) -> Result<(CliConfig, CliCommand, Vec<CookRecip
 
     let lock = &get_config().recipe_lock;
 
-    let mut recipes = if let Some(conf) = config.filesystem.as_ref() {
+    let mut recipes = {
         let repo_binary = override_filesystem_repo_binary;
 
         // Expand deps for "source" + "local" and "binary"
@@ -585,24 +585,26 @@ fn parse_args(args: Vec<String>) -> Result<(CliConfig, CliCommand, Vec<CookRecip
             special_rules.insert(recipe_name.clone(), rule.to_string());
             // lock rules does not recurse as it's done already in the file
         }
-        for (recipe_name_str, recipe_config) in conf.packages.iter() {
-            let Ok(recipe_name) = PackageName::new(recipe_name_str) else {
-                continue;
-            };
+        if let Some(conf) = config.filesystem.as_ref() {
+            for (recipe_name_str, recipe_config) in conf.packages.iter() {
+                let Ok(recipe_name) = PackageName::new(recipe_name_str) else {
+                    continue;
+                };
 
-            let rule = if let Some(rule) = special_rules.get(&recipe_name) {
-                rule.as_str()
-            } else if let PackageConfig::Build(rule) = recipe_config {
-                special_rules.insert(recipe_name.clone(), rule.to_string());
-                rule
-            } else {
-                default_rule
-            };
+                let rule = if let Some(rule) = special_rules.get(&recipe_name) {
+                    rule.as_str()
+                } else if let PackageConfig::Build(rule) = recipe_config {
+                    special_rules.insert(recipe_name.clone(), rule.to_string());
+                    rule
+                } else {
+                    default_rule
+                };
 
-            if rule == "source" || rule == "local" {
-                source_names.push(recipe_name);
-            } else if rule == "binary" {
-                binary_names.push(recipe_name);
+                if rule == "source" || rule == "local" {
+                    source_names.push(recipe_name);
+                } else if rule == "binary" {
+                    binary_names.push(recipe_name);
+                }
             }
         }
         source_names = CookRecipe::get_all_deps_names_recursive(&source_names, true)?;
@@ -706,16 +708,6 @@ fn parse_args(args: Vec<String>) -> Result<(CliConfig, CliCommand, Vec<CookRecip
         }
 
         recipes
-    } else {
-        if config.with_package_deps || command.is_pushing() {
-            recipe_names = CookRecipe::get_package_deps_recursive(&recipe_names, true)?;
-        }
-        if command.is_building() || command.is_pushing() {
-            let include_dev = command.is_building();
-            CookRecipe::get_build_deps_recursive(&recipe_names, include_dev)?
-        } else {
-            CookRecipe::from_list(recipe_names.clone())?
-        }
     };
 
     if !get_config().recipe_lock.is_empty() {

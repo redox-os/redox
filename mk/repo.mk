@@ -124,7 +124,7 @@ endif
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@ ALLOW_FSTOOLS=$(FSTOOLS_IN_PODMAN)
 else
-	$(REPO_BIN) push $(foreach f,$(subst $(comma), ,$*),$(f)) "--sysroot=$(MOUNT_DIR)"
+	$(REPO_BIN) push $(foreach f,$(subst $(comma), ,$*),$(f)) "--sysroot=$(MOUNT_DIR)" $(COOKBOOK_OPTS)
 endif
 ifeq ($(ALLOW_FSTOOLS),1)
 	@if [ -f $(MOUNTED_TAG) ]; then \
