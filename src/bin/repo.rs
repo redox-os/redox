@@ -583,20 +583,16 @@ fn parse_args(args: Vec<String>) -> Result<(CliConfig, CliCommand, Vec<CookRecip
             };
             let rule = recipe_lock.fsrule.as_ref().unwrap();
             special_rules.insert(recipe_name.clone(), rule.to_string());
-            if rule == "source" || rule == "local" {
-                source_names.push(recipe_name);
-            } else if rule == "binary" {
-                binary_names.push(recipe_name);
-            }
+            // lock rules does not recurse as it's done already in the file
         }
         for (recipe_name_str, recipe_config) in conf.packages.iter() {
             let Ok(recipe_name) = PackageName::new(recipe_name_str) else {
                 continue;
             };
-            if special_rules.contains_key(&recipe_name) {
-                continue;
-            }
-            let rule = if let PackageConfig::Build(rule) = recipe_config {
+
+            let rule = if let Some(rule) = special_rules.get(&recipe_name) {
+                rule.as_str()
+            } else if let PackageConfig::Build(rule) = recipe_config {
                 special_rules.insert(recipe_name.clone(), rule.to_string());
                 rule
             } else {
