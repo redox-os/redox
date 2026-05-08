@@ -54,6 +54,11 @@ directory = true
 mode = 0o755
 
 [[files]]
+path = "/lib64"
+data = "/usr/lib64"
+symlink = true
+
+[[files]]
 path = "/etc/os-release"
 data = "../usr/lib/os-release"
 symlink = true
