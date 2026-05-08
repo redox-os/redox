@@ -4,8 +4,9 @@ use std::{
 };
 
 use pkg::{InstallState, Package, PackageName, PackagePrefix, PackageState};
-use pkgar::ext::PackageSrcExt;
+use pkgar::{PackageFile, Transaction, ext::PackageSrcExt};
 use pkgar_core::HeaderFlags;
+use pkgar_keys::PublicKeyFile;
 
 use crate::{
     Error, Result,
@@ -264,7 +265,14 @@ pub fn package_handle_push(
 
     if let Some((manual, dependents)) = pstate {
         if archive_path.is_file() {
-            pkgar::extract(pkey_path, &archive_path, sysroot_dir)?;
+            let pkey = PublicKeyFile::open(pkey_path)?.pkey;
+            let mut package = PackageFile::new(archive_path, &pkey)?;
+            Transaction::install(&mut package, sysroot_dir)?.commit()?;
+            let head_path = sysroot_dir.join(format!(
+                "var/lib/packages/{}.pkgar_head",
+                pkg_toml.name.as_str()
+            ));
+            package.split(&head_path, None::<&Path>)?;
         }
 
         // TODO: Check if we need to inject remote key
