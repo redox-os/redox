@@ -42,12 +42,13 @@ redox-pkg = { git = "https://gitlab.redox-os.org/redox-os/pkgutils.git", default
 redox_installer = { git = "https://gitlab.redox-os.org/redox-os/installer.git", default-features = false }
 redoxer = { git = "https://gitlab.redox-os.org/redox-os/redoxer.git", default-features = false }
 regex = "1.11"
-serde = { version = "=1.0.197", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
 termion = "4"
 toml = "0.8"
 walkdir = "2.3.1"
 ansi-to-tui = { version = "8", optional = true }
 strip-ansi-escapes = { version = "0.2.1", optional = true }
+serde_json = "1"
 
 [dependencies.ratatui]
 version = "0.30"
