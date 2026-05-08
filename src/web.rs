@@ -50,6 +50,7 @@ impl CliWebConfig {
 }
 
 const CSS: &str = include_str!("./web/style.css");
+const FILES: &str = include_str!("./web/files.html");
 
 pub fn generate_web(all_packages: &Vec<String>, config: &CliWebConfig) {
     let repo_path = &config.out_dir.join(redoxer::target());
@@ -132,10 +133,12 @@ pub fn generate_web(all_packages: &Vec<String>, config: &CliWebConfig) {
     for (package, files) in &files_map {
         index_files.parse(package, files);
     }
-    let files_path = repo_path.join("files.json");
+    let files_json = repo_path.join("files.json");
     index_files
-        .write(&files_path)
+        .write(&files_json)
         .expect("Failed to write files.json");
+    let files_path = repo_path.join("files.html");
+    fs::write(files_path, FILES).expect("Failed to write files.html");
 }
 
 pub(crate) fn get_category(dir: &Path) -> String {

@@ -43,11 +43,9 @@ body {
     border-radius: 6px;
     padding: 15px;
     margin: 10px;
-    
     display: inline-block;
     width: 30%;
     vertical-align: top;
-    
     display: flex;
     flex: 0 1 280px;
     flex-direction: column;
@@ -162,7 +160,7 @@ code {
 }
 
 .install-action {
-    display: inline-block; 
+    display: inline-block;
     background-color: #fff;
     border: 1px solid #ddd;
     border-radius: 6px;
@@ -191,7 +189,7 @@ code {
 }
 
 .pkg-main, .pkg-meta {
-    width: 100%; 
+    width: 100%;
 }
 
 @media (min-width: 768px) {
@@ -245,13 +243,90 @@ th {
     width: 50%;
 }
 
+.search-box {
+    width: 100%;
+    padding: 12px 15px;
+    font-size: 1.1rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+
+.browser-panels {
+    display: flex;
+    gap: 20px;
+    height: 80vh;
+    min-height: 400px;
+}
+
+.panel {
+    flex: 1;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    background-color: #fff;
+    overflow: hidden;
+}
+
+.panel-header {
+    font-weight: 600;
+    padding: 10px 15px;
+    border-bottom: 1px solid #eee;
+    background-color: #f9f9f9;
+    font-family: ui-monospace, SFMono-Regular, monospace;
+    font-size: 0.9rem;
+}
+
+.panel-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px 0;
+}
+
+.list-item {
+    padding: 8px 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    user-select: none;
+}
+
+.list-item:hover {
+    background-color: #f1f8ff;
+}
+
+.list-item.selected {
+    background-color: #0366d6;
+    color: #fff;
+}
+
+.list-item.selected .pkg-badge {
+    color: #fff;
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.pkg-badge {
+    font-size: 0.75rem;
+    color: #6a737d;
+    background-color: #eee;
+    padding: 2px 6px;
+    border-radius: 12px;
+}
+.up-icon::before {
+    content: "↵ ";
+    margin-right: 0.2em;
+}
+
 @media (prefers-color-scheme: dark) {
     body {
         background-color: #000;
         color: #ccc;
     }
 
-    .package-card, .card, .pkg-header, .index-header {
+    .package-card, .card, .panel, .pkg-header, .index-header {
         background-color: #111;
         border-color: #333;
     }
@@ -288,5 +363,31 @@ th {
 
     th, td, .pkg-deps li, .pkg-dependents li {
         border-bottom-color: #333;
+    }
+
+    .search-box {
+        background-color: #000;
+        color: #ccc;
+        border-color: #333;
+    }
+
+    .panel-header {
+        background-color: #1a1a1a;
+        border-bottom-color: #333;
+        color: #8b949e;
+    }
+
+    .list-item:hover {
+        background-color: #222;
+    }
+
+    .list-item.selected {
+        background-color: #1f6feb;
+        color: #fff;
+    }
+
+    .pkg-badge {
+        background-color: #333;
+        color: #8b949e;
     }
 }

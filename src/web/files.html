@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Package File Browser</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <div class="container">
+    <h1 class="category-title">Package File Browser</h1>
+
+    <div class="card">
+      <input type="text" id="searchInput" class="search-box" placeholder="Type file name" autocomplete="off">
+
+      <div class="browser-panels">
+        <div class="panel">
+          <div class="panel-header" id="dirHeader">/</div>
+          <div class="panel-body" id="dirPanel">
+            <div style="padding: 15px; color: #777;">Loading files...</div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header" id="fileHeader">Files</div>
+          <div class="panel-body" id="filePanel"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header" id="contentHeader">File Content</div>
+          <div class="panel-body" id="contentPanel" style="padding: 15px;">
+            <div style="color: #777; text-align: center; margin-top: 50px;">
+              Select a file to reveal details.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // @ts-check
+
+    /** @type {DB} */
+    let db = {};
+    /** @type {DB} */
+    let activeDb = {};
+    /** @type {string[]} */
+    let pathStack = ["/"];
+    /** @type {string[][]} */
+    let historyStack = [];
+    let currentSearch = "";
+    /** @type {string[]|null} */
+    let lockedFileViewPath = null;
+
+
+    const searchInput = document.getElementById('searchInput') || (() => { throw new Error("missing html"); })();
+    const dirHeader = document.getElementById('dirHeader') || (() => { throw new Error("missing html"); })();
+    const dirPanel = document.getElementById('dirPanel') || (() => { throw new Error("missing html"); })();
+    const fileHeader = document.getElementById('fileHeader') || (() => { throw new Error("missing html"); })();
+    const filePanel = document.getElementById('filePanel') || (() => { throw new Error("missing html"); })();
+    const contentHeader = document.getElementById('contentHeader') || (() => { throw new Error("missing html"); })();
+    const contentPanel = document.getElementById('contentPanel') || (() => { throw new Error("missing html"); })();
+
+    /** 
+     * @typedef {Record<string, any>} DB
+     */
+
+    /**
+     *  @param {DB} node
+     *  @param {string} query
+     *  @param {boolean} parentMatched
+     *  @returns {DB|null}
+     */
+    function filterDb(node, query, parentMatched = false) {
+      /** @type {DB} */
+      let result = {};
+      let filesCount = 0;
+
+      for (const [key, value] of Object.entries(node)) {
+        if (typeof value === 'object') {
+          const isMatch = parentMatched || key.toLowerCase().includes(query);
+          const subTree = filterDb(value, query, isMatch);
+          if (subTree !== null) {
+            result[key] = subTree;
+            filesCount++;
+          }
+        } else {
+          if (parentMatched || key.toLowerCase().includes(query)) {
+            result[key] = value;
+            filesCount++;
+          }
+        }
+      }
+      return filesCount > 0 ? result : null;
+    }
+
+    /**
+     *  @param {DB} node
+     *  @returns {DB}
+     */
+    function cascadeTree(node) {
+      if (typeof node !== 'object' || node === null) return node;
+
+      /** @type {DB} */
+      let newNode = {};
+      /** @type {Record<string, string>} */
+      let files = {};
+      /** @type {Record<string, DB>} */
+      let dirs = {};
+
+      for (const [key, value] of Object.entries(node)) {
+        if (typeof value === 'object') {
+          dirs[key] = cascadeTree(value);
+        } else {
+          files[key] = value;
+        }
+      }
+
+      for (const [dirKey, dirNode] of Object.entries(dirs)) {
+        let childHasFiles = false;
+
+        for (const val of Object.values(dirNode)) {
+          if (typeof val !== 'object') {
+            childHasFiles = true;
+            break;
+          }
+        }
+
+        if (!childHasFiles && Object.keys(dirNode).length > 0) {
+          for (const [subKey, subValue] of Object.entries(dirNode)) {
+            newNode[`${dirKey}/${subKey}`] = subValue;
+          }
+        } else {
+          newNode[dirKey] = dirNode;
+        }
+      }
+
+      for (const [fileKey, fileVal] of Object.entries(files)) {
+        newNode[fileKey] = fileVal;
+      }
+
+      return newNode;
+    }
+
+    /**
+     *  @param {string[]} pathArray
+     */
+    function getNodeByPath(pathArray) {
+      let node = activeDb;
+      if (!node) return null;
+      for (let i = 1; i < pathArray.length; i++) {
+        if (node[pathArray[i]]) {
+          node = node[pathArray[i]];
+        } else {
+          return null;
+        }
+      }
+      return node;
+    }
+
+    function getCurrentNode() {
+      return getNodeByPath(pathStack);
+    }
+
+
+    /**
+     *  @param {DB|null} node
+     *  @param {string[]} basePathArray
+     */
+    function renderFiles(node, basePathArray, isPeeking = false) {
+      filePanel.innerHTML = '';
+
+      if (isPeeking) {
+        const peekName = basePathArray[basePathArray.length - 1];
+        fileHeader.innerHTML = `Files <span style="color:#777; font-weight:normal; font-size:0.9em;">(Peeking: ${peekName})</span>`;
+      } else if (lockedFileViewPath) {
+        const lockName = lockedFileViewPath[lockedFileViewPath.length - 1];
+        fileHeader.innerHTML = `Files <span style="color:#ddd; font-weight:normal; font-size:0.9em;">(Selected: ${lockName})</span>`;
+      } else {
+        fileHeader.innerHTML = `Files`;
+      }
+
+      if (!node) {
+        filePanel.innerHTML = `<div style="padding: 15px; color: #777;">No files available</div>`;
+        return;
+      }
+
+      let files = [];
+      for (const [key, value] of Object.entries(node)) {
+        if (typeof value === 'string') {
+          files.push({ name: key, pkgs: value });
+        }
+      }
+      files.sort((a, b) => a.name.localeCompare(b.name));
+
+      files.forEach(file => {
+        const fileDiv = document.createElement('div');
+        fileDiv.className = 'list-item';
+        const pkgSpans = file.pkgs.split(',').map(p => `<span class="pkg-badge">${p}</span>`).join(' ');
+        fileDiv.innerHTML = `<span style="margin-right: auto">${file.name}</span> <div>${pkgSpans}</div>`;
+
+        fileDiv.onclick = () => {
+          Array.from(filePanel.children).forEach(c => c.classList.remove('selected'));
+          fileDiv.classList.add('selected');
+          showFileContent(file.name, file.pkgs, basePathArray);
+        };
+        filePanel.appendChild(fileDiv);
+      });
+
+      if (files.length === 0) {
+        filePanel.innerHTML = `<div style="padding: 15px; color: #777;">No files in this directory</div>`;
+      }
+    }
+
+    /**
+     *  @param {HTMLElement} container
+     *  @param {DB} node
+     *  @param {number} currentDepth
+     *  @param {number} maxDepth
+     *  @param {string[]} currentPathArray
+     */
+    function renderDirTree(container, node, currentDepth, maxDepth, currentPathArray) {
+      if (currentDepth >= maxDepth || !node) return;
+
+      let dirs = [];
+      for (const [key, value] of Object.entries(node)) {
+        if (typeof value === 'object') dirs.push(key);
+      }
+      dirs.sort();
+
+      dirs.forEach(dir => {
+        const dirDiv = document.createElement('div');
+        dirDiv.className = 'list-item';
+
+        dirDiv.style.paddingLeft = `${15 + (currentDepth * 20)}px`;
+
+        if (currentDepth > 0) {
+          dirDiv.style.fontSize = '0.95em';
+          dirDiv.style.borderLeft = "1px solid #eee";
+        }
+
+        const nextPathArray = [...currentPathArray, dir];
+
+        let hasSubDirs = false;
+        for (const val of Object.values(node[dir])) {
+          if (typeof val === 'object') {
+            hasSubDirs = true;
+            break;
+          }
+        }
+
+        if (lockedFileViewPath && lockedFileViewPath.join('/') === nextPathArray.join('/')) {
+          dirDiv.classList.add('selected');
+        }
+
+        dirDiv.innerHTML = `<span>${dir}</span>`;
+
+        dirDiv.addEventListener('mouseenter', () => {
+          renderFiles(node[dir], nextPathArray, true);
+        });
+        dirDiv.addEventListener('mouseleave', () => {
+          const targetPath = lockedFileViewPath || pathStack;
+          renderFiles(getNodeByPath(targetPath), targetPath, false);
+        });
+        dirDiv.onclick = () => {
+          if (hasSubDirs) {
+            historyStack.push([...pathStack]);
+            pathStack = nextPathArray;
+            lockedFileViewPath = null;
+          } else {
+            if (lockedFileViewPath && lockedFileViewPath.join('/') === nextPathArray.join('/')) {
+              lockedFileViewPath = null;
+            } else {
+              lockedFileViewPath = nextPathArray;
+            }
+          }
+          clearContentPanel();
+          render();
+        };
+
+        container.appendChild(dirDiv);
+
+        renderDirTree(container, node[dir], currentDepth + 1, maxDepth, nextPathArray);
+      });
+    }
+
+    function render() {
+      let node = getCurrentNode();
+
+      if (!node) {
+        // reset to root
+        pathStack = ["/"];
+        historyStack = [];
+        node = getCurrentNode();
+        lockedFileViewPath = null;
+        if (!node) return;
+      }
+
+      dirHeader.innerText = pathStack.join('/').replace('//', '/');
+
+      dirPanel.innerHTML = '';
+
+      if (historyStack.length > 0) {
+        const backDiv = document.createElement('div');
+        backDiv.className = 'list-item up-icon';
+        backDiv.innerHTML = `<span>Back</span>`;
+        backDiv.onclick = () => {
+          pathStack = historyStack.pop() || ['/'];
+          lockedFileViewPath = null;
+          clearContentPanel();
+          render();
+        };
+        dirPanel.appendChild(backDiv);
+      }
+
+      renderDirTree(dirPanel, node, 0, 3, pathStack);
+
+      if (dirPanel.children.length === 0 || (dirPanel.children.length === 1 && pathStack.length > 1)) {
+        const emptyMsg = document.createElement('div');
+        emptyMsg.style.padding = '15px';
+        emptyMsg.style.color = '#777';
+        emptyMsg.innerText = 'No subdirectories';
+        dirPanel.appendChild(emptyMsg);
+      }
+
+      renderFiles(node, pathStack, false);
+    }
+
+
+    /**
+     *  @param {string} fileName
+     *  @param {string} packages
+     *  @param {string[]} basePathArray
+     */
+    function showFileContent(fileName, packages, basePathArray) {
+      const fullPath = (basePathArray.join('/') + '/' + fileName).replace('//', '/');
+      contentHeader.innerText = fileName;
+      contentPanel.innerHTML = `
+        <div style="margin-bottom: 15px;">
+            <strong>Path:</strong> <br>
+            <code>${fullPath}</code>
+        </div>
+        <div style="margin-bottom: 15px;">
+            <strong>Provided by:</strong> <br>
+            ${packages.split(',').map(p => `<code>${p}</code>`).join(', ')}
+        </div>
+        `;
+    }
+
+    function clearContentPanel() {
+      contentHeader.innerText = 'File Content';
+      contentPanel.innerHTML = `
+        <div style="color: #777; text-align: center; margin-top: 50px;">
+            Select a file to reveal details.
+        </div>
+        `;
+    }
+
+    searchInput.addEventListener('input', (e) => {
+      /** @type {HTMLInputElement|null} */
+      // @ts-ignore
+      let el = e.currentTarget;
+      if (!el) {
+        return;
+      }
+      currentSearch = el.value.trim().toLowerCase();
+
+      if (currentSearch === "") {
+        activeDb = cascadeTree(db);
+      } else {
+        activeDb = cascadeTree(filterDb(db, currentSearch) || {});
+      }
+
+      lockedFileViewPath = null;
+      clearContentPanel();
+      render();
+    });
+
+    fetch('files.json')
+      .then(response => {
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+        return response.json();
+      })
+      .then(data => {
+        db = data;
+        activeDb = cascadeTree(db);
+        render();
+      })
+      .catch(error => {
+        console.error("Failed to load files.json:", error);
+        dirPanel.innerHTML = `
+            <div style="padding: 15px; color: #f00;">
+                <strong>Error loading files.json</strong><br><br>
+            </div>
+            `;
+      });
+  </script>
+</body>
+
+</html>
