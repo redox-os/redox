@@ -94,8 +94,12 @@ ifeq ($(FSTOOLS_IN_PODMAN),1)
 	$(PODMAN_RUN) make $@
 else
 	@sync
-	-$(FUMOUNT) $(MOUNT_DIR)
+ifneq ($(wildcard $(MOUNT_DIR)),)
+	$(FUMOUNT) $(MOUNT_DIR)
 	@rm -rf $(MOUNT_DIR)
-	@-$(FUMOUNT) /tmp/redox_installer 2>/dev/null || true
 	@echo "\033[1;36;49mFilesystem unmounted\033[0m"
+else
+	@echo "\033[1;36;49mDisk is not mounted\033[0m"
+endif
+	@-$(FUMOUNT) /tmp/redox_installer 2>/dev/null || true
 endif

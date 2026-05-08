@@ -375,4 +375,10 @@ $(BUILD)/qemu_uboot.rom:
 	wget -O $@ https://gitlab.redox-os.org/Ivan/redox_firmware/-/raw/main/platform/qemu/qemu_arm64/u-boot-qemu-arm64.bin
 
 qemu: qemu-deps
+ifeq ($(wildcard $(MOUNT_DIR)),)
 	$(QEMU) $(QEMUFLAGS)
+else
+	@echo "\033[1;38;5;196mDisk is mounted. Unmounting the disk...\033[0m";
+	$(MAKE) unmount
+	$(QEMU) $(QEMUFLAGS)
+endif
