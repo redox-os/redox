@@ -13,13 +13,12 @@ dependencies = [
 ]
 template = "custom"
 script = """
-"${CXX}" \
-    $("${PKG_CONFIG}" --cflags cairo) \
+DYNAMIC_INIT
+${CXX} ${CPPFLAGS} ${LDFLAGS} \
     "${COOKBOOK_RECIPE}/cairo-demo.c" \
     -o cairo-demo \
-    -static \
-    $("${PKG_CONFIG}" --libs cairo) \
-    -lorbital
+    -lorbital $("${PKG_CONFIG}" --libs cairo)
+
 mkdir -pv "${COOKBOOK_STAGE}/bin"
 cp -v "cairo-demo" "${COOKBOOK_STAGE}/bin/cairo-demo"
 """

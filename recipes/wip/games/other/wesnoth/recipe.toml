@@ -1,13 +1,15 @@
 #TODO not compiled or tested
 [source]
 git = "https://github.com/wesnoth/wesnoth"
-branch = "1.14.6"
+rev = "1.19.23"
+shallow_clone = true
+
 [build]
 template = "cmake"
 cmakeflags = [
     "-DCMAKE_TRY_COMPILE_TARGET_TYPE=DYNAMIC_LIBRARY",
     "-DENABLE_SERVER=OFF",
-    "-DENABLE_TESTS=OFF"
+    "-DENABLE_TESTS=OFF",
     "-DCRYPTO_LIBRARY=openssl",
     "-DSDL2_LIBRARY=sdl2",
     "-DSDL2_IMAGE_LIBRARY=SDL2_image",
