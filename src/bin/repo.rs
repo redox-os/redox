@@ -717,7 +717,7 @@ fn parse_args(args: Vec<String>) -> Result<(CliConfig, CliCommand, Vec<CookRecip
                 .flatten()
             {
                 if let Some(SourceRecipe::Git { rev, branch, .. }) = &mut recipe.recipe.source {
-                    *rev = Some(gitrev);
+                    *rev = Some(gitrev.clone());
                     *branch = None;
                 } else {
                     println!(
@@ -725,6 +725,7 @@ fn parse_args(args: Vec<String>) -> Result<(CliConfig, CliCommand, Vec<CookRecip
                         recipe.name.as_str()
                     );
                 }
+                recipe.pinned = true;
             }
         }
     }
