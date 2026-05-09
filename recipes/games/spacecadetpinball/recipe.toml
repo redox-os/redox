@@ -1,7 +1,8 @@
+# XXX: Do not distribute https://github.com/k4zmu2a/SpaceCadetPinball/issues/1
 [source]
-git = "https://gitlab.redox-os.org/xTibor/SpaceCadetPinball.git"
-upstream = "https://github.com/k4zmu2a/SpaceCadetPinball.git"
-branch = "redox"
+git = "https://github.com/k4zmu2a/SpaceCadetPinball.git"
+rev = "f760f34e5eb49c69d584921c0f3e251a59c62078"
+patches = [ "redox.patch" ]
 
 [build]
 template = "custom"
@@ -16,11 +17,5 @@ dependencies = [
 ]
 script = """
 DYNAMIC_INIT
-COOKBOOK_CONFIGURE_FLAGS=(
-    -DSDL2_INCLUDE_DIR="${COOKBOOK_SYSROOT}/include/SDL2"
-    -DSDL2_LIBRARY="-lSDL2_mixer -lvorbisfile -lvorbis -logg -lSDL2 -lorbital $("${TARGET}-pkg-config" --libs osmesa)"
-    -DSDL2_MIXER_INCLUDE_DIR="${COOKBOOK_SYSROOT}/include/SDL2"
-    -DSDL2_MIXER_LIBRARY="SDL2_mixer"
-)
 cookbook_cmake
 """

@@ -1,0 +1,13 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 3578112..3fe166d 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -205,7 +205,7 @@ target_link_libraries(SpaceCadetPinball ${SDL2_LIBRARY})
+ # Workaround: CMake treats these SDL2_mixer link flags as build targets for some
+ #   reason I was not able to figure out why. I moved these mixer link flags to
+ #   the SDL2 linker flags as a workaround.
+-#target_link_libraries(SpaceCadetPinball ${SDL2_MIXER_LIBRARY})
++target_link_libraries(SpaceCadetPinball ${SDL2_MIXER_LIBRARY})
+ 
+ # On Windows, copy DLL to output
+ if(WIN32)

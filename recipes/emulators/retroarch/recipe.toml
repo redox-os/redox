@@ -1,5 +1,8 @@
 [source]
 git = "https://github.com/jackpot51/retroarch.git"
+script = """
+./fetch-submodules.sh
+"""
 
 [build]
 template = "custom"
@@ -12,10 +15,6 @@ dependencies = [
     "zlib",
 ]
 script = """
-pushd "${COOKBOOK_SOURCE}"
-./fetch-submodules.sh
-popd
-
 rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 
 # For now, we will statically link with the snes9x libretro

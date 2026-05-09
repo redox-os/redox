@@ -1,7 +1,7 @@
-#TODO not compiled or tested
+#TODO need named semaphore
 # build instructions: https://bitbucket.org/multicoreware/x265_git/src/master/build/README.txt#lines-68
 [source]
-tar = "https://bitbucket.org/multicoreware/x265_git/downloads/x265_4.1.tar.gz"
+tar = "https://bitbucket.org/multicoreware/x265_git/downloads/x265_4.2.tar.gz"
 [build]
 template = "custom"
 script = """
