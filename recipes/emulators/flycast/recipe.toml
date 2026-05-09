@@ -1,5 +1,8 @@
 [source]
-git = "https://github.com/jackpot51/flycast.git"
+git = "https://github.com/flyinghead/flycast.git"
+rev = "1dd006d"
+patches = ["redox.patch"]
+shallow_clone = true
 
 [build]
 template = "custom"

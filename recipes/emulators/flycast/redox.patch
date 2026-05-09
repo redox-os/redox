@@ -1,0 +1,287 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 87bc605..e878607 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -197,7 +197,7 @@ if(NINTENDO_SWITCH)
+ endif()
+ 
+ if(NOT LIBRETRO)
+-	if((WIN32 AND NOT MSVC) OR (UNIX AND NOT APPLE AND NOT CMAKE_SYSTEM_NAME MATCHES "(FreeBSD|OpenBSD|NetBSD)"))
++	if((WIN32 AND NOT MSVC) OR (UNIX AND NOT APPLE AND NOT CMAKE_SYSTEM_NAME MATCHES "(FreeBSD|OpenBSD|NetBSD)" AND NOT REDOX))
+ 		add_subdirectory(core/deps/breakpad)
+ 		if(WIN32)
+ 			target_link_options(${PROJECT_NAME} PRIVATE "-Wl,--build-id")
+@@ -355,7 +355,10 @@ if(NOT LIBRETRO)
+ 		if(NOT APPLE)
+ 			find_package(SDL2)
+ 		endif()
+-		if(NOT SDL2_FOUND)
++		if(REDOX)
++			target_link_libraries(${PROJECT_NAME} PRIVATE "$ENV{SDL_LIBS}")
++			set(SDL2_FOUND 1)
++		elseif(NOT SDL2_FOUND)
+ 			add_subdirectory(core/deps/SDL EXCLUDE_FROM_ALL)
+ 			set(SDL2_FOUND 1)
+ 		endif()
+@@ -482,8 +485,10 @@ if(UNIX AND NOT APPLE AND NOT ANDROID)
+ 		target_link_libraries(${PROJECT_NAME} PRIVATE ${GLES3_LIBRARIES})
+ 	elseif(USE_OPENGL)
+ 		set(OpenGL_GL_PREFERENCE LEGACY)
+-		find_package(OpenGL REQUIRED)
+-		target_link_libraries(${PROJECT_NAME} PRIVATE OpenGL::GL)
++		if(NOT REDOX)
++			find_package(OpenGL REQUIRED)
++			target_link_libraries(${PROJECT_NAME} PRIVATE OpenGL::GL)
++		endif()
+ 	endif()
+ 
+ 	find_package(Threads REQUIRED)
+@@ -533,7 +538,7 @@ target_sources(${PROJECT_NAME} PRIVATE
+ target_include_directories(${PROJECT_NAME} PRIVATE core/deps/nowide/include)
+ 
+ if(NOT MINIUPNP_FOUND)
+-	if(NINTENDO_SWITCH)
++    if(NINTENDO_SWITCH OR REDOX)
+ 		target_compile_definitions(${PROJECT_NAME} PRIVATE FEAT_NO_MINIUPNPC)
+ 	else()
+ 		option(UPNPC_BUILD_SHARED "Build shared library" OFF)
+diff --git a/core/build.h b/core/build.h
+index a8560f7..1d6a4dd 100755
+--- a/core/build.h
++++ b/core/build.h
+@@ -227,6 +227,9 @@
+ #endif
+ #endif
+ 
++#if defined(__redox__)
++#define TARGET_NO_EXCEPTIONS
++#endif
+ 
+ #if !defined(LIBRETRO) && !defined(TARGET_NO_EXCEPTIONS)
+ #define USE_GGPO
+diff --git a/core/deps/libzip/lib/zip_name_locate.c b/core/deps/libzip/lib/zip_name_locate.c
+index 308d843..f07fd20 100644
+--- a/core/deps/libzip/lib/zip_name_locate.c
++++ b/core/deps/libzip/lib/zip_name_locate.c
+@@ -32,6 +32,7 @@
+ */
+ 
+ 
++#include <config.h>
+ #include <string.h>
+ #ifdef HAVE_STRINGS_H
+ #include <strings.h>
+diff --git a/core/deps/nowide/include/nowide/convert.hpp b/core/deps/nowide/include/nowide/convert.hpp
+index 9c234f7..24d807e 100644
+--- a/core/deps/nowide/include/nowide/convert.hpp
++++ b/core/deps/nowide/include/nowide/convert.hpp
+@@ -118,6 +118,7 @@ namespace nowide {
+     {
+         return nowide::conv::utf_to_utf<char>(s);
+     }
++#if !defined(__redox__)
+     ///
+     /// Convert between UTF-8 and UTF-16 string, implemented only on Windows platform
+     ///
+@@ -145,7 +146,7 @@ namespace nowide {
+     {
+         return nowide::conv::utf_to_utf<wchar_t>(s);
+     }
+-
++#endif
+ } // nowide
+ 
+ 
+diff --git a/core/hw/sh4/modules/serial.cpp b/core/hw/sh4/modules/serial.cpp
+index 1a7689e..b23bf1b 100644
+--- a/core/hw/sh4/modules/serial.cpp
++++ b/core/hw/sh4/modules/serial.cpp
+@@ -164,7 +164,7 @@ struct PTYPipe : public SerialPipe
+ 
+ 	void init()
+ 	{
+-#if defined(__unix__) || defined(__APPLE__)
++#if (defined(__unix__) || defined(__APPLE__)) && !defined(__redox__)
+ 		if (config::SerialConsole && config::SerialPTY && tty == 1)
+ 		{
+ 			tty = open("/dev/ptmx", O_RDWR | O_NDELAY | O_NOCTTY | O_NONBLOCK);
+diff --git a/core/khronos/GL4/gl3w.c b/core/khronos/GL4/gl3w.c
+index 661dc1c..f8b6374 100644
+--- a/core/khronos/GL4/gl3w.c
++++ b/core/khronos/GL4/gl3w.c
+@@ -107,6 +107,26 @@ static GL3WglProc get_proc(const char *proc)
+ {
+ 	return (GL3WglProc)eglGetProcAddress(proc);
+ }
++#elif defined(__redox__)
++#include <SDL.h>
++
++static int open_libgl(void)
++{
++	if (SDL_GL_LoadLibrary(NULL) < 0)
++		return GL3W_ERROR_LIBRARY_OPEN;
++
++	return GL3W_OK;
++}
++
++static void close_libgl(void)
++{
++	SDL_GL_UnloadLibrary();
++}
++
++static GL3WglProc get_proc(const char *proc)
++{
++	return (GL3WglProc)SDL_GL_GetProcAddress(proc);
++}
+ #else
+ #include <dlfcn.h>
+ 
+diff --git a/core/linux-dist/main.cpp b/core/linux-dist/main.cpp
+index 365482a..2e16071 100644
+--- a/core/linux-dist/main.cpp
++++ b/core/linux-dist/main.cpp
+@@ -3,7 +3,7 @@
+ #endif
+ #include "types.h"
+ 
+-#if defined(__unix__) || defined(__SWITCH__)
++#if defined(__unix__) || defined(__SWITCH__) || defined(__redox__)
+ #include "hw/sh4/dyna/blockmanager.h"
+ #include "log/LogManager.h"
+ #include "emulator.h"
+diff --git a/core/linux/posix_vmem.cpp b/core/linux/posix_vmem.cpp
+index a2ab3c7..d503eb7 100644
+--- a/core/linux/posix_vmem.cpp
++++ b/core/linux/posix_vmem.cpp
+@@ -120,7 +120,7 @@ static int allocate_shared_filemem(unsigned size) {
+ 	// Use Android's specific shmem stuff.
+ 	fd = ashmem_create_region("RAM", size);
+ #else
+-	#if !defined(__APPLE__)
++	#if !defined(__APPLE__) && !defined(__redox__)
+ 		fd = shm_open("/dcnzorz_mem", O_CREAT | O_EXCL | O_RDWR, S_IREAD | S_IWRITE);
+ 		shm_unlink("/dcnzorz_mem");
+ 	#endif
+@@ -216,6 +216,7 @@ void vmem_platform_destroy()
+ void vmem_platform_reset_mem(void *ptr, unsigned size_bytes) {
+ 	// Mark them as non accessible.
+ 	mprotect(ptr, size_bytes, PROT_NONE);
++	#if !defined(__redox__)
+ 	// Tell the kernel to flush'em all (FIXME: perhaps unmap+mmap 'd be better?)
+ 	madvise(ptr, size_bytes, MADV_DONTNEED);
+ 	#if defined(MADV_REMOVE)
+@@ -223,6 +224,7 @@ void vmem_platform_reset_mem(void *ptr, unsigned size_bytes) {
+ 	#elif defined(MADV_FREE)
+ 	madvise(ptr, size_bytes, MADV_FREE);
+ 	#endif
++	#endif
+ }
+ 
+ // Allocates a bunch of memory (page aligned and page-sized)
+diff --git a/core/log/StringUtil.h b/core/log/StringUtil.h
+index b14a9a6..cd942e7 100644
+--- a/core/log/StringUtil.h
++++ b/core/log/StringUtil.h
+@@ -24,7 +24,7 @@ int vasprintf(char **s, const char *fmt, va_list ap)
+ }
+ #endif
+ 
+-#if !defined(_WIN32) && !defined(__ANDROID__) && !defined(__HAIKU__) && !defined(__OpenBSD__) && !defined(__SWITCH__)
++#if !defined(_WIN32) && !defined(__ANDROID__) && !defined(__HAIKU__) && !defined(__OpenBSD__) && !defined(__SWITCH__) && !defined(__redox__)
+ static locale_t GetCLocale()
+ {
+   static locale_t c_locale = newlocale(LC_ALL_MASK, "C", nullptr);
+@@ -69,11 +69,11 @@ bool CharArrayFromFormatV(char* out, int outsize, const char* format, va_list ar
+   writtenCount = vsnprintf(out, outsize, format, args);
+ #endif
+ #else
+-#if !defined(__ANDROID__) && !defined(__HAIKU__) && !defined(__OpenBSD__) && !defined(__SWITCH__)
++#if !defined(__ANDROID__) && !defined(__HAIKU__) && !defined(__OpenBSD__) && !defined(__SWITCH__) && !defined(__redox__)
+   locale_t previousLocale = uselocale(GetCLocale());
+ #endif
+   writtenCount = vsnprintf(out, outsize, format, args);
+-#if !defined(__ANDROID__) && !defined(__HAIKU__) && !defined(__OpenBSD__) && !defined(__SWITCH__)
++#if !defined(__ANDROID__) && !defined(__HAIKU__) && !defined(__OpenBSD__) && !defined(__SWITCH__) && !defined(__redox__)
+   uselocale(previousLocale);
+ #endif
+ #endif
+@@ -101,7 +101,7 @@ std::string StringFromFormatV(const char* format, va_list args)
+   std::string temp = buf;
+   delete[] buf;
+ #else
+-#if !defined(__ANDROID__) && !defined(__HAIKU__) && !defined(__OpenBSD__) && !defined(__SWITCH__)
++#if !defined(__ANDROID__) && !defined(__HAIKU__) && !defined(__OpenBSD__) && !defined(__SWITCH__) && !defined(__redox__)
+   locale_t previousLocale = uselocale(GetCLocale());
+ #endif
+   if (vasprintf(&buf, format, args) < 0)
+@@ -110,7 +110,7 @@ std::string StringFromFormatV(const char* format, va_list args)
+     buf = nullptr;
+   }
+ 
+-#if !defined(__ANDROID__) && !defined(__HAIKU__) && !defined(__OpenBSD__) && !defined(__SWITCH__)
++#if !defined(__ANDROID__) && !defined(__HAIKU__) && !defined(__OpenBSD__) && !defined(__SWITCH__) && !defined(__redox__)
+   uselocale(previousLocale);
+ #endif
+ 
+diff --git a/core/network/dns.cpp b/core/network/dns.cpp
+index af98bfc..423773c 100644
+--- a/core/network/dns.cpp
++++ b/core/network/dns.cpp
+@@ -148,7 +148,7 @@ char *read_name(char *reader, char *buffer, int *count)
+ 	return name;
+ }
+ 
+-#if !defined(_WIN32) && !defined(__SWITCH__)
++#if !defined(_WIN32) && !defined(__SWITCH__) && !defined(__redox__)
+ #include <ifaddrs.h>
+ #include <net/if.h>
+ #endif
+@@ -195,7 +195,7 @@ bool is_local_address(u32 addr)
+ 		}
+ 		closesocket(sd);
+ 
+-#elif defined(__SWITCH__)
++#elif defined(__SWITCH__) || defined(__redox__)
+ 		// TODO
+ #else // !_WIN32 && !__SWITCH__
+ 
+diff --git a/core/network/net_platform.h b/core/network/net_platform.h
+index 9c6af69..fc6bd45 100644
+--- a/core/network/net_platform.h
++++ b/core/network/net_platform.h
+@@ -89,7 +89,7 @@ static inline void set_tcp_nodelay(sock_t fd)
+ #if defined(_WIN32)
+ 	struct protoent *tcp_proto = getprotobyname("TCP");
+ 	setsockopt(fd, tcp_proto->p_proto, TCP_NODELAY, (const char *)&optval, optlen);
+-#elif !defined(__APPLE__) && !defined(__FreeBSD__) && !defined(__NetBSD__)
++#elif !defined(__APPLE__) && !defined(__FreeBSD__) && !defined(__NetBSD__) && !defined(__redox__)
+ 	setsockopt(fd, SOL_TCP, TCP_NODELAY, (const void *)&optval, optlen);
+ #else
+ 	struct protoent *tcp_proto = getprotobyname("TCP");
+diff --git a/core/rend/TexCache.cpp b/core/rend/TexCache.cpp
+index 6654a39..dbc1577 100644
+--- a/core/rend/TexCache.cpp
++++ b/core/rend/TexCache.cpp
+@@ -783,7 +783,10 @@ void BaseTextureCacheData::Update()
+ 	height = original_h;
+ 
+ 	//lock the texture to detect changes in it
++// TODO: No SIGSEGV handler on redox
++#if !defined(__redox__)
+ 	protectVRam();
++#endif
+ 
+ 	UploadToGPU(upscaled_w, upscaled_h, (const u8 *)temp_tex_buffer, IsMipmapped(), mipmapped);
+ 	if (config::DumpTextures)
+diff --git a/core/types.h b/core/types.h
+index d2ea162..3fa816e 100644
+--- a/core/types.h
++++ b/core/types.h
+@@ -169,6 +169,7 @@ inline static void JITWriteProtect(bool enabled) {
+ //includes from c++rt
+ #include <vector>
+ #include <string>
++#include <strings.h>
+ #include <map>
+ #include <stdexcept>
+ 
