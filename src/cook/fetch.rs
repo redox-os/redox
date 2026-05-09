@@ -186,6 +186,7 @@ pub fn fetch(recipe: &CookRecipe, check_source: bool, logger: &PtyOut) -> Result
         }) => {
             //TODO: use libgit?
             let shallow_clone = *shallow_clone == Some(true);
+            let mut fetch_is_ran = false;
             let cached = if !source_dir.is_dir() {
                 // Create source.tmp
                 let source_dir_tmp = recipe_dir.join("source.tmp");
@@ -234,18 +235,6 @@ pub fn fetch(recipe: &CookRecipe, check_source: bool, logger: &PtyOut) -> Result
                     );
                 }
 
-                // Reset origin
-                let mut command = Command::new("git");
-                command.arg("-C").arg(&source_dir);
-                command.arg("remote").arg("set-url").arg("origin").arg(git);
-                run_command(command, logger)?;
-
-                // Fetch origin
-                let mut command = Command::new("git");
-                command.arg("-C").arg(&source_dir);
-                command.arg("fetch").arg("origin");
-                run_command(command, logger)?;
-
                 let (head_rev, detached_rev) = get_git_head_rev(&source_dir)?;
                 match (rev, detached_rev) {
                     (Some(rev), true) => {
@@ -274,6 +263,8 @@ pub fn fetch(recipe: &CookRecipe, check_source: bool, logger: &PtyOut) -> Result
                         } else if remote_name != "origin" || &remote_url != chop_dot_git(git) {
                             false
                         } else {
+                            git_run_fetch(logger, &source_dir, git)?;
+                            fetch_is_ran = true;
                             match get_git_fetch_rev(&source_dir, &remote_url, &remote_branch) {
                                 Ok(fetch_rev) => fetch_rev == head_rev,
                                 Err(e) => {
@@ -288,6 +279,9 @@ pub fn fetch(recipe: &CookRecipe, check_source: bool, logger: &PtyOut) -> Result
             };
 
             if !cached {
+                if !fetch_is_ran {
+                    git_run_fetch(logger, &source_dir, git)?;
+                }
                 if let Some(_upstream) = upstream {
                     //TODO: set upstream URL (is this needed?)
                     // git remote set-url upstream "$GIT_UPSTREAM" &> /dev/null ||
@@ -457,6 +451,18 @@ pub fn fetch(recipe: &CookRecipe, check_source: bool, logger: &PtyOut) -> Result
     fetch_apply_source_info(recipe, result.source_ident.to_string())?;
 
     Ok(result)
+}
+
+fn git_run_fetch(logger: &PtyOut, source_dir: &PathBuf, git: &String) -> Result<()> {
+    let mut command = Command::new("git");
+    command.arg("-C").arg(source_dir);
+    command.arg("remote").arg("set-url").arg("origin").arg(git);
+    run_command(command, logger)?;
+    let mut command = Command::new("git");
+    command.arg("-C").arg(source_dir);
+    command.arg("fetch").arg("origin");
+    run_command(command, logger)?;
+    Ok(())
 }
 
 fn manual_git_recursive_submodule(
