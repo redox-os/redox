@@ -1,16 +1,20 @@
 [package]
 dependencies = [
     "autotools",
+    #"bison", #TODO: fix compilation error
     "cmake",
+    #"debugedit", #TODO: compile and test
     "gcc13",
     "gcc13.cxx",
-    "gnu-binutils",
-    "gnu-make",
     "gnu-grep",
+    "groff",
+    "gawk",
+    "file",
     "perl5",
     "python312",
     "ripgrep",
     "lua54",
+    "m4",
     "nasm",
     "patch",
     "pkg-config",
