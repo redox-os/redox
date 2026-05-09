@@ -3,7 +3,8 @@ use cookbook::config::{CookConfig, CookLockOpt, get_config, init_config};
 use cookbook::cook::cook_build::{build, get_stage_dirs, remove_stage_dir};
 use cookbook::cook::fetch::{FetchResult, fetch, fetch_offline};
 use cookbook::cook::fs::{
-    create_dir, create_target_dir, get_git_commit_date, get_git_head_rev, remove_all, run_command,
+    create_dir, create_target_dir, get_git_commit_date, get_git_head_rev, get_git_rev_before_date,
+    remove_all, run_command,
 };
 use cookbook::cook::package::{package, package_handle_push};
 use cookbook::cook::pty::{PtyOut, UnixSlavePty, flush_pty, setup_pty, write_to_pty};
@@ -972,7 +973,7 @@ fn handle_change_rule(
     command: &CliCommand,
 ) -> Result<()> {
     let mut lock = get_config().recipe_lock.clone();
-    let _cookbook_date = get_git_commit_date(&PathBuf::from("."))?;
+    let cookbook_date = get_git_commit_date(&PathBuf::from("."))?;
     let is_change_rule = matches!(command, CliCommand::ChangeRule);
     let is_capture_rev = matches!(command, CliCommand::CaptureRev);
     for recipe in recipes {
@@ -1002,12 +1003,22 @@ fn handle_change_rule(
             if config.unset {
                 recipe_lock.gitrev.take().is_none()
             } else {
-                if config.with_rollback {
-                    todo!();
+                let source_dir = recipe.dir.join("source");
+                let rev = if config.with_rollback {
+                    get_git_rev_before_date(&source_dir, &cookbook_date)
+                } else {
+                    get_git_head_rev(&source_dir).map(|r| r.0)
+                };
+                match rev {
+                    Ok(rev) => {
+                        let old_rev = recipe_lock.gitrev.replace(rev.clone());
+                        old_rev == Some(rev)
+                    }
+                    Err(e) => {
+                        eprintln!("Skipped: {e}");
+                        continue;
+                    }
                 }
-                let (rev, _) = get_git_head_rev(&recipe.dir.join("source"))?;
-                let old_rev = recipe_lock.gitrev.replace(rev.clone());
-                old_rev == Some(rev)
             }
         } else {
             unreachable!()
