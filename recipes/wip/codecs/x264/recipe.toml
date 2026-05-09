@@ -1,7 +1,17 @@
-#TODO the redox target is not supported on the configure script
+#TODO: Not used anywhere
 [source]
 git = "https://code.videolan.org/videolan/x264"
 branch = "stable"
 shallow_clone = true
+patches = [
+    "redox.patch"
+]
+script = """
+GNU_CONFIG_GET config.sub
+"""
+
 [build]
 template = "configure"
+configureflags = [
+    "--disable-asm"
+]

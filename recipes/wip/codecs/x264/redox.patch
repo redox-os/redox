@@ -1,0 +1,15 @@
+diff -ruwN source/configure source-new/configure
+--- source/configure	2026-05-09 05:38:56.776310501 +0200
++++ source-new/configure	2026-05-09 05:27:53.969854003 +0200
+@@ -721,6 +721,11 @@
+             [ $compiler = GNU ] && RC="${RC-${cross_prefix}windres}" || RC="${RC-rc.exe}"
+         fi
+         ;;
++    redox*)
++        SYS="REDOX"
++        define HAVE_MALLOC_H
++        libm=""
++        ;;
+     sunos*|solaris*)
+         SYS="SunOS"
+         define HAVE_MALLOC_H
