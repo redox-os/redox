@@ -1,4 +1,4 @@
-#TODO: Not used anywhere
+#TODO compiled but not tested
 [source]
 git = "https://code.videolan.org/videolan/x264"
 branch = "stable"
