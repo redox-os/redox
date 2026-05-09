@@ -476,3 +476,15 @@ fn get_git_branch_name(local_branch_path: &str) -> Result<String> {
         ))?
         .to_string())
 }
+
+pub fn get_git_commit_date(dir: &PathBuf) -> Result<String> {
+    let mut git = process::Command::new("git");
+    git.args(["log", "-1", "--date=iso-strict-local", "--format=%ad"]);
+    git.env("TZ", "UTC");
+    git.current_dir(dir);
+    git.stdout(Stdio::piped());
+
+    git.output()
+        .map_err(wrap_io_err!("Executing git"))
+        .map(|s| String::from_utf8_lossy(&s.stdout).to_string())
+}

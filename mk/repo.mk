@@ -281,7 +281,7 @@ cc.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
-	$(REPO_BIN) change-rule --set-rule= $(foreach f,$(subst $(comma), ,$*),$(f)) --with-package-deps
+	$(REPO_BIN) change-rule --unset $(foreach f,$(subst $(comma), ,$*),$(f)) --with-package-deps
 endif
 
 # Set recipe rule to "binary" then invoke clean and rebuild
@@ -293,6 +293,13 @@ bcr.%: $(FSTOOLS_TAG) FORCE
 scr.%: $(FSTOOLS_TAG) FORCE
 	$(MAKE) sc.$*
 	$(MAKE) r.$*,--with-package-deps
+
+repo-lock:
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
+	$(REPO_BIN) capture-rev $(COOKBOOK_OPTS) --with-package-deps
+endif
 
 export DEBUG_BIN?=
 
