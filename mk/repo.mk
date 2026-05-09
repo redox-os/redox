@@ -294,12 +294,36 @@ scr.%: $(FSTOOLS_TAG) FORCE
 	$(MAKE) sc.$*
 	$(MAKE) r.$*,--with-package-deps
 
-repo-lock:
+# Save current git rev for next recipe fetch, locking git recipes frozen in time
+repo-lock: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
 	$(REPO_BIN) capture-rev $(COOKBOOK_OPTS) --with-package-deps
 endif
+
+# Undo repo-lock, allowing git recipes to get updated by next recipe fetch
+repo-unlock: $(FSTOOLS_TAG) FORCE
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
+	$(REPO_BIN) capture-rev $(COOKBOOK_OPTS) --unset --with-package-deps
+endif
+
+# Like repo-lock, but also checking out the specified git rev.
+# Revert this operation by "git checkout master" "make pull" then "make repo-unlock".
+# Will not work if rolling back to a commit before 2026.
+repo-rollback.%: $(FSTOOLS_TAG) FORCE
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+# have to be done otherwise podman will rebuild
+	touch $(CONTAINER_TAG)
+else
+	git checkout $*
+	$(REPO_BIN) capture-rev $(COOKBOOK_OPTS) --rollback --with-package-deps
+endif
+# have to be done otherwise cookbook will rebuild
+	touch $(FSTOOLS_TAG)
 
 export DEBUG_BIN?=
 
