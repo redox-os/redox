@@ -1005,7 +1005,11 @@ fn handle_change_rule(
             } else {
                 let source_dir = recipe.dir.join("source");
                 let rev = if config.with_rollback {
-                    get_git_rev_before_date(&source_dir, &cookbook_date)
+                    // invoke fetch as the git tracking can be different
+                    match handle_fetch(recipe, config, false, &None) {
+                        Ok(_) => get_git_rev_before_date(&source_dir, &cookbook_date),
+                        Err(e) => Err(e),
+                    }
                 } else {
                     get_git_head_rev(&source_dir).map(|r| r.0)
                 };
@@ -1015,7 +1019,7 @@ fn handle_change_rule(
                         old_rev == Some(rev)
                     }
                     Err(e) => {
-                        eprintln!("Skipped: {e}");
+                        eprintln!("Skipping {}: {e}", recipe.name.as_str());
                         continue;
                     }
                 }
