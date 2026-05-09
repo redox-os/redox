@@ -1,5 +1,6 @@
 [source]
 git = "https://github.com/Byron/gitoxide.git"
+shallow_clone = true
 
 [build]
 dependencies = [
@@ -11,4 +12,3 @@ export OPENSSL_DIR="${COOKBOOK_SYSROOT}"
 export OPENSSL_STATIC="true"
 cookbook_cargo
 """
-

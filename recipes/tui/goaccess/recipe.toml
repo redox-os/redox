@@ -30,15 +30,10 @@ chmod +x "$COOKBOOK_BUILD/bin2c"
 export COOKBOOK_NOSTRIP=1
 DYNAMIC_INIT
 COOKBOOK_CONFIGURE_FLAGS+=(
-    --host=$ARCH-unknown-redox
     --enable-utf8
     --disable-geoip
-    --prefix=/usr
     --disable-dependency-tracking
     --with-bin2c-path="$COOKBOOK_BUILD/src/bin2c"
 )
 cookbook_configure
 """
-
-
-
