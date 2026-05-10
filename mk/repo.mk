@@ -47,6 +47,14 @@ else
 	$(REPO_BIN) fetch $(COOKBOOK_OPTS) --with-package-deps
 endif
 
+# Unfetch and clean all recipes source or binary from filesystem config
+unfetch: prefix $(FSTOOLS_TAG) FORCE
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
+	$(REPO_BIN) unfetch $(COOKBOOK_OPTS) --with-package-deps
+endif
+
 # Fetch Cargo dependencies for the cookbook tool (needed for REPO_OFFLINE=1 builds)
 cargo-fetch: FORCE
 ifeq ($(PODMAN_BUILD),1)
@@ -281,7 +289,7 @@ cc.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
-	$(REPO_BIN) change-rule --set-rule= $(foreach f,$(subst $(comma), ,$*),$(f)) --with-package-deps
+	$(REPO_BIN) change-rule --unset $(foreach f,$(subst $(comma), ,$*),$(f)) --with-package-deps
 endif
 
 # Set recipe rule to "binary" then invoke clean and rebuild
@@ -293,6 +301,37 @@ bcr.%: $(FSTOOLS_TAG) FORCE
 scr.%: $(FSTOOLS_TAG) FORCE
 	$(MAKE) sc.$*
 	$(MAKE) r.$*,--with-package-deps
+
+# Save current git rev for next recipe fetch, locking git recipes frozen in time
+repo-lock: $(FSTOOLS_TAG) FORCE
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
+	$(REPO_BIN) capture-rev $(COOKBOOK_OPTS) --with-package-deps
+endif
+
+# Undo repo-lock, allowing git recipes to get updated by next recipe fetch
+repo-unlock: $(FSTOOLS_TAG) FORCE
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
+	$(REPO_BIN) capture-rev $(COOKBOOK_OPTS) --unset --with-package-deps
+endif
+
+# Like repo-lock, but also checking out the specified git rev.
+# Revert this operation by "git checkout master" "make pull" then "make repo-unlock".
+# Will not work if rolling back to a commit before 2026.
+repo-rollback.%: $(FSTOOLS_TAG) FORCE
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+# have to be done otherwise podman will rebuild
+	touch $(CONTAINER_TAG)
+else
+	git checkout $*
+	$(REPO_BIN) capture-rev $(COOKBOOK_OPTS) --rollback --with-package-deps
+endif
+# have to be done otherwise cookbook will rebuild
+	touch $(FSTOOLS_TAG)
 
 export DEBUG_BIN?=
 

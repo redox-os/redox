@@ -187,6 +187,8 @@ pub struct CookRecipe {
     /// If false, it's listed on install config
     pub is_deps: bool,
     pub rule: String,
+    /// whether if this recipe is pinned from cookbook.lock
+    pub pinned: bool,
 }
 
 impl Recipe {
@@ -244,6 +246,7 @@ impl CookRecipe {
             target,
             is_deps: false,
             rule: "".into(),
+            pinned: false,
         })
     }
 
@@ -426,6 +429,10 @@ impl CookRecipe {
     }
 
     pub fn reload_recipe(&mut self) -> Result<(), PackageError> {
+        if self.pinned {
+            // TODO: print?
+            return Ok(());
+        }
         self.recipe = Self::from_path(&self.dir, true, self.name.is_host())?.recipe;
         let _ = self.apply_filesystem_config(&self.rule.clone());
         Ok(())

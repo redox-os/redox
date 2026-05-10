@@ -476,3 +476,35 @@ fn get_git_branch_name(local_branch_path: &str) -> Result<String> {
         ))?
         .to_string())
 }
+
+pub fn get_git_commit_date(dir: &PathBuf) -> Result<String> {
+    let mut git = process::Command::new("git");
+    git.args(["log", "-1", "--date=iso-strict-local", "--format=%ad"]);
+    git.env("TZ", "UTC");
+    git.current_dir(dir);
+    git.stdout(Stdio::piped());
+
+    git.output()
+        .map_err(wrap_io_err!("Executing git log"))
+        .map(|s| String::from_utf8_lossy(&s.stdout).trim().to_string())
+}
+
+pub fn get_git_rev_before_date(dir: &PathBuf, date: &str) -> Result<String> {
+    let mut git = process::Command::new("git");
+    git.args(["rev-list", "-n", "1", &format!("--before={}", date), "HEAD"]);
+    git.current_dir(dir);
+    git.stdout(Stdio::piped());
+
+    let output = git
+        .output()
+        .map_err(wrap_io_err!("Executing git rev-list"))?;
+    let rev = String::from_utf8_lossy(&output.stdout).trim().to_string();
+
+    if rev.is_empty() {
+        return Err(Error::from(format!(
+            "No commit found before {} in {:?}",
+            date, dir
+        )));
+    }
+    Ok(rev)
+}
