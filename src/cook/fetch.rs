@@ -75,7 +75,7 @@ pub fn fetch_offline(recipe: &CookRecipe, logger: &PtyOut) -> Result<FetchResult
     let result = match &recipe.recipe.source {
         Some(SourceRecipe::Path { path: _ }) | None => fetch(recipe, true, logger)?,
         Some(SourceRecipe::SameAs { same_as }) => {
-            let recipe = fetch_resolve_canon(recipe_dir, &same_as, recipe.name.is_host())?;
+            let recipe = fetch_resolve_canon(&same_as, &recipe)?;
             // recursively fetch
             let r = fetch_offline(&recipe, logger)?;
             fetch_make_symlink(&source_dir, &same_as)?;
@@ -151,7 +151,7 @@ pub fn fetch(recipe: &CookRecipe, check_source: bool, logger: &PtyOut) -> Result
 
     let result = match &recipe.recipe.source {
         Some(SourceRecipe::SameAs { same_as }) => {
-            let recipe = fetch_resolve_canon(recipe_dir, &same_as, recipe.name.is_host())?;
+            let recipe = fetch_resolve_canon(&same_as, &recipe)?;
             // recursively fetch
             let r = fetch(&recipe, check_source, logger)?;
             fetch_make_symlink(&source_dir, &same_as)?;
@@ -575,11 +575,10 @@ pub(crate) fn fetch_make_symlink(source_dir: &PathBuf, same_as: &String) -> Resu
 }
 
 pub(crate) fn fetch_resolve_canon(
-    recipe_dir: &Path,
     same_as: &String,
-    is_host: bool,
+    source_recipe: &CookRecipe,
 ) -> Result<CookRecipe> {
-    let canon_dir = Path::new(recipe_dir).join(same_as);
+    let canon_dir = &source_recipe.dir.join(same_as);
     if canon_dir
         .to_str()
         .unwrap()
@@ -593,7 +592,24 @@ pub(crate) fn fetch_resolve_canon(
     if !canon_dir.exists() {
         bail_other_err!("{dir:?} is not exists", dir = canon_dir.display());
     }
-    CookRecipe::from_path(canon_dir.as_path(), true, is_host).map_err(Error::from)
+    let mut recipe = CookRecipe::from_path(canon_dir.as_path(), true, source_recipe.name.is_host())
+        .map_err(Error::from)?;
+    if !source_recipe.rule.is_empty() {
+        recipe.apply_filesystem_config(&source_recipe.rule)?;
+    }
+    // Copying from repo.rs, not ideal, but works
+    if let Some(gitrev) = crate::config::get_config()
+        .recipe_lock
+        .get(recipe.name.without_prefix())
+        .map(|r| r.gitrev.clone())
+        .flatten()
+    {
+        if let Some(SourceRecipe::Git { rev, branch, .. }) = &mut recipe.recipe.source {
+            *rev = Some(gitrev.clone());
+            *branch = None;
+        }
+    }
+    Ok(recipe)
 }
 
 pub(crate) fn fetch_extract_tar(
