@@ -1,0 +1,11 @@
+#TODO: not compiled or tested
+#TODO: discover minimum dependencies from cmake log
+# build instructions: https://www.wireshark.org/docs/wsdg_html_chunked/ChSetupUNIX.html
+# build options: https://gitlab.com/wireshark/wireshark/-/blob/master/CMakeOptions.txt
+[source]
+tar = "https://2.na.dl.wireshark.org/src/wireshark-4.6.5.tar.xz"
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DBUILD_wireshark=OFF",
+]

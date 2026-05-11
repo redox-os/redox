@@ -1,0 +1,9 @@
+#TODO not compiled or tested
+[source]
+tar = "https://download.gnome.org/sources/xdg-desktop-portal-gnome/49/xdg-desktop-portal-gnome-49.0.tar.xz"
+[build]
+template = "meson"
+mesonflags = ["-Dsystemd=disabled"]
+dependencies = [
+    "xdg-desktop-portal",
+]

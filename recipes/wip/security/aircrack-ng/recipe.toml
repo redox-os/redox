@@ -1,0 +1,9 @@
+#TODO not compiled or tested
+[source]
+tar = "https://download.aircrack-ng.org/aircrack-ng-1.7.tar.gz"
+[build]
+template = "configure"
+dependencies = [
+    "openssl3",
+    #"hwloc" # enable for much better performance
+]

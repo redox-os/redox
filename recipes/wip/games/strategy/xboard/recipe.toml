@@ -1,0 +1,12 @@
+#TODO not compiled or tested
+[source]
+tar = "https://ftp.gnu.org/gnu/xboard/xboard-4.9.1.tar.gz"
+[build]
+template = "configure"
+dependencies = [
+    "cairo",
+    "librsvg",
+    "libxaw",
+]
+[package]
+dependencies = ["gnu-chess"]

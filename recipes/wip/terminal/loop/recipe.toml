@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/Miserlou/Loop"
+shallow_clone = true
+[build]
+template = "cargo"

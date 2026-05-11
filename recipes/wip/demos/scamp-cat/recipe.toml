@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/LordAizen1/scamp-cat"
+shallow_clone = true
+[build]
+template = "cargo"
