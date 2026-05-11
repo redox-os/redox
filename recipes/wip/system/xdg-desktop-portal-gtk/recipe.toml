@@ -1,0 +1,9 @@
+#TODO not compiled or tested
+[source]
+tar = "https://github.com/flatpak/xdg-desktop-portal-gtk/releases/download/1.15.3/xdg-desktop-portal-gtk-1.15.3.tar.xz"
+[build]
+template = "meson"
+dependencies = [
+    "xdg-desktop-portal",
+    "gtk3",
+]

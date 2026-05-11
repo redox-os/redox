@@ -1,0 +1,14 @@
+#TODO not compiled or tested
+[source]
+git = "https://invent.kde.org/plasma/xdg-desktop-portal-kde"
+branch = "Plasma/6.6"
+shallow_clone = true
+[build]
+template = "cmake"
+dependencies = [
+    "xdg-desktop-portal",
+    "qt6-base",
+    "kcoreaddons6",
+    "knotifications6",
+    "kl18n6",
+]

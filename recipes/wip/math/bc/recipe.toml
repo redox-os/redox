@@ -1,0 +1,5 @@
+#TODO not compiled or tested
+[source]
+tar = "https://ftp.gnu.org/gnu/bc/bc-1.08.2.tar.gz"
+[build]
+template = "configure"

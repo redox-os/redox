@@ -1,0 +1,5 @@
+#TODO not compiled or tested
+[source]
+tar = "https://ftp.gnu.org/gnu/inetutils/inetutils-2.8.tar.gz"
+[build]
+template = "configure"

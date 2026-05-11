@@ -1,0 +1,9 @@
+#TODO not compiled or tested
+[source]
+tar = "https://ftp.gnu.org/gnu/parallel/parallel-20260422.tar.bz2"
+[build]
+template = "configure"
+[package]
+dependencies = [
+    "perl5",
+]

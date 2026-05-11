@@ -1,0 +1,18 @@
+#TODO not compiled or tested
+[source]
+tar = "https://github.com/flatpak/xdg-desktop-portal/releases/download/1.20.4/xdg-desktop-portal-1.20.4.tar.xz"
+[build]
+template = "meson"
+mesonflags = [
+    "-Dflatpak-interfaces=disabled",
+    "-Dsystemd=disabled",
+    "-Dgeoclue=disabled",
+    "-Dgudev=disabled",
+    "-Dsandboxed-image-validation=disabled",
+    "-Dsandboxed-sound-validation=disabled",
+    "-Dtests=false",
+    "-Ddocumentation=disabled",
+]
+dependencies = [
+    "glib",
+]

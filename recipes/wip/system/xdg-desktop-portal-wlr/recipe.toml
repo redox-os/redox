@@ -1,0 +1,12 @@
+#TODO not compiled or tested
+[source]
+tar = "https://github.com/emersion/xdg-desktop-portal-wlr/releases/download/v0.8.2/xdg-desktop-portal-wlr-0.8.2.tar.gz"
+[build]
+template = "meson"
+mesonflags = [
+    "-Dsystemd=disabled",
+    "-Dman-pages=disabled",
+]
+dependencies = [
+    "xdg-desktop-portal",
+]

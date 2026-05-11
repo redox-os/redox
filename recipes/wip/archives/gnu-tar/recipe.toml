@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+[source]
+tar = "https://ftp.gnu.org/gnu/tar/tar-1.35.tar.bz2"
+[build]
+template = "configure"
+[package]
+dependencies = [
+    "gzip",
+    "bzip2",
+]
