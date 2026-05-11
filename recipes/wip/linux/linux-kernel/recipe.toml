@@ -121,6 +121,15 @@ ${COOKBOOK_SOURCE}/scripts/config --enable CONFIG_NET_9P_VIRTIO
 make \
     "HOSTCFLAGS=-I${COOKBOOK_TOOLCHAIN}/include" HOSTLDFLAGS="-L${COOKBOOK_TOOLCHAIN}/lib" \
     -j$COOKBOOK_MAKE_JOBS < /dev/null
-mkdir -p $COOKBOOK_STAGE/boot
+
+mkdir -p $COOKBOOK_STAGE/boot $COOKBOOK_STAGE/usr
+make ARCH=x86_64 INSTALL_HDR_PATH=${COOKBOOK_STAGE}/usr headers_install
 cp -v arch/x86/boot/bzImage $COOKBOOK_STAGE/boot
 """
+
+[[optional-packages]]
+name = "dev"
+dependencies = []
+files = [
+    "usr/**",
+]

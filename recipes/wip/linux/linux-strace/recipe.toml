@@ -1,0 +1,16 @@
+# Compiled, not tested
+[source]
+tar = "https://github.com/strace/strace/releases/download/v7.0/strace-7.0.tar.xz"
+
+[build]
+template = "custom"
+dev-dependencies = [
+    "linux-kernel.dev"
+]
+script = """
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --disable-mpers
+    --enable-gcc-Werror=no
+)
+cookbook_configure
+"""
