@@ -7,6 +7,7 @@ dependencies = [
     "cosmic-icons",
     "cosmic-term",
     "dejavu",
+    "file",
     "freefont",
     "hicolor-icon-theme",
     "installer-gui",
