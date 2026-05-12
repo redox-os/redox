@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+#TODO discover minimum dependencies from configure log
+[source]
+tar = "https://download.gnome.org/sources/gnumeric/1.12/gnumeric-1.12.61.tar.xz"
+[build]
+template = "configure"

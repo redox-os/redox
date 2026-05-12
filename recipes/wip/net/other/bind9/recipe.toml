@@ -1,0 +1,18 @@
+#TODO not compiled or tested
+# build instructions: https://bind9.readthedocs.io/en/latest/chapter10.html#build-bind
+# requirements: https://bind9.readthedocs.io/en/latest/chapter2.html#resource-requirements
+[source]
+tar = "https://downloads.isc.org/isc/bind9/9.20.22/bind-9.20.22.tar.xz"
+[build]
+template = "meson"
+mesonflags = [
+    "-Ddoc=disabled",
+    "-Dcmocka=disabled",
+]
+dependencies = [
+    "openssl3",
+    "liburcu",
+    "libuv",
+    "nghttp2", # DoH support
+    #"jemalloc", # enable to improve performance
+]

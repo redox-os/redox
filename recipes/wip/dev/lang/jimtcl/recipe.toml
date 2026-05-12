@@ -1,0 +1,7 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/msteveb/jimtcl"
+rev = "0.83"
+shallow_clone = true
+[build]
+template = "configure"

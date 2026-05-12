@@ -1,0 +1,11 @@
+#TODO not compiled or tested
+#TODO discover minimum dependencies from configure log
+[source]
+tar = "https://gitlab.com/scilab/scilab/-/archive/2026.0.1/scilab-2026.0.1.tar.bz2"
+[build]
+template = "custom"
+script = """
+COOKBOOK_SOURCE="${COOKBOOK_SOURCE}/scilab"
+DYNAMIC_INIT
+cookbook_configure
+"""

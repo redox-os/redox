@@ -1,0 +1,15 @@
+#TODO not compiled or tested
+#TODO discover minimum dependencies from cmake log
+# dependencies reference: https://github.com/avrdudes/avrdude/wiki/General-Build-Instructions-Using-CMake
+# freebsd build instructions: https://github.com/avrdudes/avrdude/wiki/Building-AVRDUDE-for-FreeBSD
+# linux build instructions: https://github.com/avrdudes/avrdude/wiki/Building-AVRDUDE-for-Linux
+[source]
+tar = "https://github.com/avrdudes/avrdude/releases/download/v8.1/avrdude-8.1.tar.gz"
+[build]
+template = "cmake"
+#dependencies = [
+#    "libusb",
+#    "libhidapi",
+#    "libftdi",
+#    "elfutils",
+#]

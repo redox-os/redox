@@ -1,0 +1,16 @@
+#TODO not compiled or tested
+# build instructions: https://openbabel.org/docs/Installation/install.html#compiling-open-babel
+[source]
+tar = "https://github.com/openbabel/openbabel/releases/download/openbabel-3-1-1/openbabel-3.1.1-source.tar.bz2"
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DBUILD_GUI=OFF",
+    "-DENABLE_TESTS=OFF",
+]
+#dependencies = [ # optional dependencies, enable once the minimal feature set is working
+#    "libxml2",
+#    "zlib",
+#    "boost",
+#    "wxwidgets-gtk3", # gui
+#]

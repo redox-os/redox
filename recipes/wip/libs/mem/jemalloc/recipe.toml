@@ -1,0 +1,7 @@
+#TODO not compiled or tested
+#TODO discover minimum dependencies from configure log
+# build instructions: https://github.com/jemalloc/jemalloc/blob/dev/INSTALL.md
+[source]
+tar = "https://github.com/jemalloc/jemalloc/releases/download/5.3.1/jemalloc-5.3.1.tar.bz2"
+[build]
+template = "configure"

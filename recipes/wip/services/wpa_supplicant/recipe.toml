@@ -1,0 +1,8 @@
+#TODO missing script for gnu make: https://git.w1.fi/cgit/hostap/plain/wpa_supplicant/README
+[source]
+tar = "https://w1.fi/releases/wpa_supplicant-2.11.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "openssl3",
+]

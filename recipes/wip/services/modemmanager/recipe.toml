@@ -1,0 +1,20 @@
+#TODO not compiled or tested
+#TODO discover minimum dependencies from meson log
+[source]
+tar = "https://www.freedesktop.org/software/ModemManager/ModemManager-1.18.12.tar.xz"
+[build]
+template = "meson"
+mesonflags = [
+    "-Dudev=false",
+    "-Dtests=false",
+    "-Dsystemd_suspend_resume=false",
+    "-Dsystemd_journal=false",
+    "-Dpolkit=no",
+    "-Dintrospection=false",
+    "-Dman=false",
+]
+dependencies = [
+    "glib",
+    "libmbim",
+    "libqmi",
+]

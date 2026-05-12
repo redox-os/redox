@@ -1,0 +1,26 @@
+#TODO not compiled or tested
+#TODO discover minimum dependencies from meson log
+# build instructions: https://gitlab.freedesktop.org/NetworkManager/NetworkManager/-/blob/main/CONTRIBUTING.md#building-from-source
+[source]
+tar = "https://gitlab.freedesktop.org/NetworkManager/NetworkManager/-/releases/1.56.0/downloads/NetworkManager-1.56.0.tar.xz"
+[build]
+template = "meson"
+mesonflags = [
+    "-Dsession_tracking=no",
+    "-Dsuspend_resume=elogind",
+    "-Dpolkit=false",
+    "-Dselinux=false",
+    "-Dsystemd_journal=false",
+    "-Dwifi=false",
+    "-Dintrospection=false",
+    "-Dman=false",
+    "-Dtests=no",
+    "-Dfirewalld_zone=false",
+    "-Dcrypto=gnutls",
+    "-Dqt=false",
+]
+dependencies = [
+    "libpsl",
+    "readline",
+    "gnutls3",
+]
