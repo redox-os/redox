@@ -1,0 +1,5 @@
+#TODO missing script for cross-compilation: https://sourceforge.net/p/sbcl/sbcl/ci/master/tree/INSTALL
+[source]
+tar = "http://downloads.sourceforge.net/project/sbcl/sbcl/2.6.4/sbcl-2.6.4-source.tar.bz2"
+[build]
+template = "custom"

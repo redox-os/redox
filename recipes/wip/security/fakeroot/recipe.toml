@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+[source]
+git = "https://salsa.debian.org/clint/fakeroot"
+rev = "upstream/1.37.2"
+shallow_clone = true
+script = """
+autotools_recursive_regenerate
+"""
+[build]
+template = "configure"

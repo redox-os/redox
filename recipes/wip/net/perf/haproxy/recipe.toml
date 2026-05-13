@@ -1,0 +1,5 @@
+#TODO missing script for gnu make: https://github.com/haproxy/haproxy/blob/master/INSTALL
+[source]
+tar = "https://www.haproxy.org/download/3.2/src/haproxy-3.2.18.tar.gz"
+[build]
+template = "custom"

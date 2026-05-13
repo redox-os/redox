@@ -1,0 +1,5 @@
+#TODO missing script for gnu make: https://thekelleys.org.uk/gitweb/?p=dnsmasq.git;a=blob;f=setup.html;h=7468a9a50bc426bfb5715d0b29fb7633e92fb17b;hb=HEAD
+[source]
+tar = "https://thekelleys.org.uk/dnsmasq/dnsmasq-2.92rel2.tar.xz"
+[build]
+template = "custom"

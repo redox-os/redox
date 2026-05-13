@@ -1,0 +1,5 @@
+#TODO not compiled or tested
+[source]
+tar = "https://media.luffy.cx/files/lldpd/lldpd-1.0.21.tar.gz"
+[build]
+template = "configure"

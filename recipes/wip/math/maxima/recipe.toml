@@ -1,0 +1,7 @@
+#TODO not compiled or tested
+#TODO verify if a common lisp dependency is needed, sbcl and gcl are packaged
+# build instructions: https://sourceforge.net/p/maxima/code/ci/master/tree/INSTALL
+[source]
+tar = "https://sourceforge.net/projects/maxima/files/Maxima-source/5.49.0-source/maxima-5.49.0.tar.gz/download"
+[build]
+template = "configure"

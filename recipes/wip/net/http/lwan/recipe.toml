@@ -1,0 +1,17 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/lpereira/lwan"
+rev = "v0.7"
+shallow_clone = true
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DENABLE_BROTLI=OFF",
+    "-DENABLE_ZSTD=OFF",
+    "-DMTUNE_NATIVE=OFF",
+]
+dependencies = [
+    "zlib",
+    #"brotli",
+    #"zstd",
+]

@@ -1,0 +1,5 @@
+#TODO not compiled or tested
+[source]
+tar = "https://github.com/yasm/yasm/releases/download/v1.3.0/yasm-1.3.0.tar.gz"
+[build]
+template = "configure"
