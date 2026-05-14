@@ -66,6 +66,45 @@ diff -ruwN source-old/xf86drm.c source/xf86drm.c
  
      switch (tile_version) {
      case AMD_FMT_MOD_TILE_VER_GFX9:
+@@ -3657,7 +3657,7 @@ static int drmParseSubsystemType(int maj, int min)
+             return DRM_BUS_VIRTIO;
+      }
+     return subsystem_type;
+-#elif defined(__OpenBSD__) || defined(__DragonFly__) || defined(__FreeBSD__)
++#elif defined(__OpenBSD__) || defined(__DragonFly__) || defined(__FreeBSD__) || defined(__redox__)
+     return DRM_BUS_PCI;
+ #else
+ #warning "Missing implementation of drmParseSubsystemType"
+@@ -3791,6 +3791,8 @@ static int drmParsePciBusInfo(int maj, int min, drmPciBusInfoPtr info)
+     return 0;
+ #elif defined(__FreeBSD__)
+     return get_sysctl_pci_bus_info(maj, min, info);
++#elif defined(__redox__)
++    return 0; // FIXME maybe parse DRM_IOCTL_GET_UNIQUE?
+ #else
+ #warning "Missing implementation of drmParsePciBusInfo"
+     return -EINVAL;
+@@ -4000,6 +4002,8 @@ static int drmParsePciDeviceInfo(int maj, int min,
+     device->revision_id = results[0].pc_revid;
+ 
+     return 0;
++#elif defined(__redox__)
++    return 0; // FIXME get this info somehow?
+ #else
+ #warning "Missing implementation of drmParsePciDeviceInfo"
+     return -EINVAL;
+@@ -4511,8 +4515,11 @@ process_device(drmDevicePtr *device, const char *d_name,
+     maj = major(sbuf.st_rdev);
+     min = minor(sbuf.st_rdev);
+ 
++    // Doesn't work on Redox as /dev/dri/cardN is a symlink
++#ifndef __redox__
+     if (!drmNodeIsDRM(maj, min) || !S_ISCHR(sbuf.st_mode))
+         return -1;
++#endif
+ 
+     subsystem_type = drmParseSubsystemType(maj, min);
+     if (req_subsystem_type != -1 && req_subsystem_type != subsystem_type)
 diff -ruwN source-old/xf86drm.h source/xf86drm.h
 --- source-old/xf86drm.h	2025-06-08 06:27:53.000000000 -0600
 +++ source/xf86drm.h	2025-10-30 17:17:33.655115281 -0600
