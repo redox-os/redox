@@ -11,4 +11,11 @@ mesonflags = [
     "-Dnouveau=disabled",
     "-Dradeon=disabled",
     "-Dvmwgfx=disabled",
+    "-Dinstall-test-programs=true",
+]
+
+[[optional-packages]]
+name = "tests"
+files = [
+    "usr/bin/*",
 ]
