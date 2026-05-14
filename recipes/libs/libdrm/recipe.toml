@@ -16,7 +16,6 @@ mesonflags = [
 
 [[optional-packages]]
 name = "tests"
-dependencies = []
 files = [
     "usr/bin/*",
 ]
