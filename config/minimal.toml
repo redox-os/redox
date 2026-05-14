@@ -15,6 +15,7 @@ extrautils = {}
 ion = {}
 pkgutils = {}
 kibi = {}
+uutils-procps = {}
 
 [[files]]
 path = "/usr/lib/init.d/30_console"

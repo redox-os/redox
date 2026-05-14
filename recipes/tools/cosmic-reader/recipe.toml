@@ -1,6 +1,7 @@
 [source]
 git = "https://github.com/pop-os/cosmic-reader.git"
-
+rev = "ebea761ab6853a9ac15b1bfc90b040d620d1d00f"
+shallow_clone = true
 [build]
 template = "custom"
 dependencies = [
