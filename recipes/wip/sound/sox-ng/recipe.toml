@@ -1,0 +1,9 @@
+#TODO not compiled or tested
+[source]
+tar = "https://codeberg.org/sox_ng/sox_ng/releases/download/sox_ng-14.7.1.2/sox_ng-14.7.1.2.tar.gz"
+[build]
+template = "configure"
+[package]
+dependencies = [
+    "ffmpeg6",
+]

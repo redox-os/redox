@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+# build instructions: https://www.la-samhna.de/samhain/s_download.html
+[source]
+tar = "https://www.la-samhna.de/samhain/samhain-current.tar.gz"
+[build]
+template = "configure"

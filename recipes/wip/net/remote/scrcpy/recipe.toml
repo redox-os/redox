@@ -1,0 +1,17 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/Genymobile/scrcpy/blob/master/doc/build.md
+[source]
+git = "https://github.com/Genymobile/scrcpy"
+rev = "v4.0"
+shallow_clone = true
+[build]
+template = "meson"
+mesonflags = [
+    "-Dcompile_server=false",
+    "-Dv4l2=false",
+]
+dependencies = [
+    "sdl3",
+    "ffmpeg6",
+    "libusb",
+]

@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+#TODO discover minimum dependencies from meson log
+[source]
+tar = "https://gitlab.freedesktop.org/mobile-broadband/libmbim/-/archive/1.34.0/libmbim-1.34.0.tar.bz2"
+[build]
+template = "meson"
+mesonflags = [
+    "-Dintrospection=false",
+    "-Dman=false",
+]

@@ -1,0 +1,11 @@
+#TODO not compiled or tested
+#TODO discover minimum dependencies from meson log
+[source]
+tar = "https://gitlab.freedesktop.org/mobile-broadband/libqmi/-/archive/1.38.0/libqmi-1.38.0.tar.bz2"
+[build]
+template = "meson"
+mesonflags = [
+    "-Dudev=false",
+    "-Dintrospection=false",
+    "-Dman=false",
+]

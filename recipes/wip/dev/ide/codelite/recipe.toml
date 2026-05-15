@@ -1,0 +1,14 @@
+#TODO not compiled or tested
+#TODO discover minimum dependencies from cmake log
+# build instructions: https://docs.codelite.org/build/build_from_sources/#linux
+[source]
+git = "https://github.com/eranif/codelite"
+rev = "18.3.0"
+shallow_clone = true
+[build]
+template = "cmake"
+#dependencies = [
+    #"libssh",
+    #"sqlite3",
+    #"wxwidgets-gtk3",
+#]

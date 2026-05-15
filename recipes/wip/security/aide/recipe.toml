@@ -1,0 +1,9 @@
+#TODO not compiled or tested
+[source]
+tar = "https://github.com/aide/aide/releases/download/v0.19.3/aide-0.19.3.tar.gz"
+[build]
+template = "configure"
+dependencies = [
+    "pcre2",
+    "libnettle",
+]

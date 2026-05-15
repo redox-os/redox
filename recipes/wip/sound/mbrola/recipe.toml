@@ -1,0 +1,7 @@
+#TODO missing script for gnu make: https://github.com/numediart/MBROLA#compilation
+[source]
+git = "https://github.com/numediart/MBROLA"
+rev = "274dead162f2826dc38c208fba92efeddb724c33"
+shallow_clone = true
+[build]
+template = "custom"

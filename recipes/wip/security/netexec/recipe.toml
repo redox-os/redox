@@ -1,0 +1,9 @@
+#TODO installation instructions:
+# https://github.com/Pennyw0rth/NetExec-Wiki/blob/main/getting-started/installation/installation-on-unix.md
+# https://github.com/Pennyw0rth/NetExec-Wiki/blob/main/getting-started/installation/manually-building-the-binary.md
+[source]
+git = "https://github.com/Pennyw0rth/NetExec"
+rev = "v1.5.1"
+shallow_clone = true
+[build]
+template = "custom"

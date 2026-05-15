@@ -1,0 +1,9 @@
+#TODO not compiled or tested
+[source]
+tar = "https://sourceforge.net/projects/fsa/files/fsa-1.15.9.tar.gz/download"
+[build]
+template = "configure"
+#[package]
+#dependencies = [
+#    "mummer",
+#]

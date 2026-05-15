@@ -1,0 +1,14 @@
+#TODO not compiled or tested
+#TODO discover minimum dependencies from configure log
+# build instructions:
+# freebsd: https://docs.frrouting.org/projects/dev-guide/en/latest/building-frr-for-freebsd14.html
+# debian: https://docs.frrouting.org/projects/dev-guide/en/latest/building-frr-for-debian13.html
+[source]
+git = "https://github.com/FRRouting/frr"
+rev = "frr-10.6.1"
+shallow_clone = true
+script = """
+autotools_recursive_regenerate
+"""
+[build]
+template = "configure"

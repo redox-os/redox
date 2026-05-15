@@ -1,0 +1,5 @@
+#TODO not compiled or tested
+[source]
+tar = "https://invisible-island.net/archives/mawk/mawk-1.3.4-20260302.tgz"
+[build]
+template = "configure"

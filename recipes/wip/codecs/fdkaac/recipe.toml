@@ -1,0 +1,14 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/nu774/fdkaac/blob/master/INSTALL
+[source]
+git = "https://github.com/nu774/fdkaac"
+rev = "v1.0.7"
+shallow_clone = true
+script = """
+autotools_recursive_regenerate
+"""
+[build]
+template = "configure"
+dependencies = [
+    "libfdk-aac",
+]

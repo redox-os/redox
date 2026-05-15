@@ -1,0 +1,19 @@
+#TODO test
+# run "pip3 install -r requirements.txt" before execution
+# installation instructions: https://github.com/lgandx/Responder#installation
+[source]
+git = "https://github.com/lgandx/Responder"
+rev = "v3.2.2.0"
+shallow_clone = true
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}"/usr/bin/responder-dir
+cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}"/usr/bin/responder-dir
+echo "/usr/bin/responder-dir/Responder.py" > "${COOKBOOK_STAGE}"/usr/bin/responder
+chmod a+x "${COOKBOOK_STAGE}"/usr/bin/responder
+"""
+[package]
+dependencies = [
+    "python312",
+]
