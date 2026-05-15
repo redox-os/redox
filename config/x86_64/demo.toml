@@ -10,6 +10,7 @@ filesystem_size = 1536
 # Package settings
 [packages]
 # GUI Apps
+cosmic-reader = {}
 periodictable = {}
 
 # GUI Data
