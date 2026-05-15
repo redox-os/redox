@@ -13,5 +13,5 @@ rsync -av --delete "${COOKBOOK_SOURCE}/" ./
     RANLIB="${RANLIB}" \
     SYSLDFLAGS="$LDFLAGS"
 
-"${COOKBOOK_MAKE}" install INSTALL_TOP="${COOKBOOK_STAGE}"
+"${COOKBOOK_MAKE}" install INSTALL_TOP="${COOKBOOK_STAGE}/usr"
 """

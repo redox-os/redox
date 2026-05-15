@@ -16,7 +16,7 @@ case "${OS}" in
 esac
 
 ${COOKBOOK_MAKE} -j ${COOKBOOK_MAKE_JOBS} install \
-  PREFIX="${COOKBOOK_STAGE}" \
+  PREFIX="${COOKBOOK_STAGE}/usr" \
   TARGET_SYS="${SYS}" \
   CROSS="${GNU_TARGET}-"
 """

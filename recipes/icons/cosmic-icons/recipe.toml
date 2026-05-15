@@ -6,5 +6,5 @@ shallow_clone = true
 template = "custom"
 script = """
 cd "${COOKBOOK_SOURCE}"
-just rootdir="${COOKBOOK_STAGE}" prefix="" install
+just rootdir="${COOKBOOK_STAGE}" prefix="/usr" install
 """

@@ -7,15 +7,4 @@ GNU_CONFIG_GET config.sub
 """
 
 [build]
-template = "custom"
-script = """
-export LDFLAGS="-static"
-
-COOKBOOK_CONFIGURE_FLAGS=(
-    --build="$(gcc -dumpmachine)"
-    --host="${TARGET}"
-    --prefix=""
-)
-
-cookbook_configure
-"""
+template = "configure"

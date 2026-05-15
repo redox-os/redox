@@ -42,8 +42,8 @@ export CC="${CC} ${CPPFLAGS}"
 
 "$COOKBOOK_MAKE" PREFIX=/usr V=1 -j"$COOKBOOK_MAKE_JOBS"
 "$COOKBOOK_MAKE" DESTDIR="$COOKBOOK_STAGE" PREFIX=/usr install -j"$COOKBOOK_MAKE_JOBS"
-mkdir -pv "$COOKBOOK_STAGE/ui/apps"
-cp -v "${COOKBOOK_RECIPE}/manifest" "$COOKBOOK_STAGE/ui/apps/00_netsurf"
+mkdir -pv "$COOKBOOK_STAGE/usr/share/ui/apps"
+cp -v "${COOKBOOK_RECIPE}/manifest" "$COOKBOOK_STAGE/usr/share/ui/apps/00_netsurf"
 """
 
 [package]

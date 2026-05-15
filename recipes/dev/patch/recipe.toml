@@ -12,17 +12,4 @@ autoreconf
 """
 
 [build]
-template = "custom"
-script = """
-COOKBOOK_CONFIGURE="${COOKBOOK_SOURCE}/configure"
-COOKBOOK_CONFIGURE_FLAGS=(
-    --host="${TARGET}"
-    --prefix="/"
-    --build="$(gcc -dumpmachine)"
-)
-
-cookbook_configure
-
-${TARGET}-strip "${COOKBOOK_STAGE}/bin/"*
-rm -rf "${COOKBOOK_STAGE}/share" "${COOKBOOK_STAGE}/lib"
-"""
+template = "configure"

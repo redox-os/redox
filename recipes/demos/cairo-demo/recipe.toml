@@ -19,6 +19,6 @@ ${CXX} ${CPPFLAGS} ${LDFLAGS} \
     -o cairo-demo \
     -lorbital $("${PKG_CONFIG}" --libs cairo)
 
-mkdir -pv "${COOKBOOK_STAGE}/bin"
-cp -v "cairo-demo" "${COOKBOOK_STAGE}/bin/cairo-demo"
+mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
+cp -v "cairo-demo" "${COOKBOOK_STAGE}/usr/bin/cairo-demo"
 """
