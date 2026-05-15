@@ -3,22 +3,16 @@ git = "https://gitlab.redox-os.org/redox-os/timidity.git"
 branch = "redox"
 script = """
 autoreconf -f -i
-
 wget -O autoconf/config.sub "https://gitlab.redox-os.org/redox-os/gnu-config/-/raw/master/config.sub?inline=false"
 """
 
 [build]
 template = "custom"
 script = """
-export LDFLAGS="-static"
-
-COOKBOOK_CONFIGURE_FLAGS=(
-    --build="$(gcc -dumpmachine)"
-    --host="${TARGET}"
-    --prefix=""
+DYNAMIC_INIT
+COOKBOOK_CONFIGURE_FLAGS+=(
     --enable-vt100
 )
-
 cookbook_configure
 
 # Create configuration files

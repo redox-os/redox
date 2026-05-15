@@ -5,5 +5,7 @@ branch = "winit-0.29"
 [build]
 template = "custom"
 script = """
+DYNAMIC_INIT
+COOKBOOK_CARGO_FLAGS=() # remove --locked
 cookbook_cargo_examples cursor_grab drag_window window window_debug
 """

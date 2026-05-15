@@ -5,24 +5,12 @@ upstream = "https://github.com/rust-windowing/glutin.git"
 
 [build]
 template = "custom"
+cargopath = "glutin_examples"
 dependencies = [
     "mesa",
     "zlib"
 ]
 script = """
 DYNAMIC_INIT
-EXAMPLES=(
-    window
-)
-for example in "${EXAMPLES[@]}"
-do
-    cargo rustc \
-        --target "$TARGET" \
-        --release \
-        --manifest-path "${COOKBOOK_SOURCE}/glutin_examples/Cargo.toml" \
-        --example "${example}" \
-        -- -C link-args="$LDFLAGS $("${TARGET}-pkg-config" --libs osmesa) -lz -lstdc++ -lc -lgcc"
-    mkdir -pv "${COOKBOOK_STAGE}/bin"
-    cp -v "target/${TARGET}/release/examples/${example}" "${COOKBOOK_STAGE}/bin/glutin_${example}"
-done
+CARGOPATH="glutin_examples" cookbook_cargo_examples window
 """

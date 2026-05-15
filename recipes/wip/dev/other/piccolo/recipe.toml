@@ -2,7 +2,7 @@
 [source]
 git = "https://github.com/kyren/piccolo"
 [build]
-template = "custom"
-script = """
-cookbook_cargo_examples interpreter
-"""
+template = "cargo"
+cargoexamples = [
+    "interpreter"
+]

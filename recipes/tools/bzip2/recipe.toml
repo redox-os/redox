@@ -14,7 +14,7 @@ rsync -av --delete "${COOKBOOK_SOURCE}/" ./
     AR="${AR}" \
     CC="${CC}" \
     RANLIB="${RANLIB}" \
-    PREFIX="${COOKBOOK_STAGE}" \
+    PREFIX="${COOKBOOK_STAGE}/usr" \
     install
 
 # However, distros distribute libbz2 as well so we'll support it too
@@ -27,12 +27,12 @@ rsync -av --delete "${COOKBOOK_SOURCE}/" ./
     AR="${AR}" \
     CC="${CC}" \
     RANLIB="${RANLIB}" \
-    PREFIX="${COOKBOOK_STAGE}"
+    PREFIX="${COOKBOOK_STAGE}/usr"
 
-cp -av libbz2.so* "${COOKBOOK_STAGE}/lib"
-ln -sr "${COOKBOOK_STAGE}/lib/libbz2.so.1.0" "${COOKBOOK_STAGE}/lib/libbz2.so.1"
-ln -sr "${COOKBOOK_STAGE}/lib/libbz2.so.1.0" "${COOKBOOK_STAGE}/lib/libbz2.so"
+cp -av libbz2.so* "${COOKBOOK_STAGE}/usr/lib"
+ln -s "libbz2.so.1.0" "${COOKBOOK_STAGE}/usr/lib/libbz2.so.1"
+ln -s "libbz2.so.1.0" "${COOKBOOK_STAGE}/usr/lib/libbz2.so"
 
-mkdir -p "${COOKBOOK_STAGE}/lib/pkgconfig"
-cp "${COOKBOOK_RECIPE}/pkgconfig" "${COOKBOOK_STAGE}/lib/pkgconfig/bzip2.pc"
+mkdir -p "${COOKBOOK_STAGE}/usr/lib/pkgconfig"
+cp "${COOKBOOK_RECIPE}/pkgconfig" "${COOKBOOK_STAGE}/usr/lib/pkgconfig/bzip2.pc"
 """

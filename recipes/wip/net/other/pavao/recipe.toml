@@ -1,14 +1,15 @@
 #TODO: fails to link libcrypto.so
 [source]
-git = "https://github.com/jackpot51/pavao.git"
+git = "https://github.com/veeso/pavao.git"
 
 [build]
-template = "custom"
+template = "cargo"
 dependencies = [
     "openssl3"
 ]
-script = """
-DYNAMIC_INIT
-build_flags="${build_flags} --features vendored"
-cookbook_cargo_examples tree
-"""
+cargoflags = [
+    "--features vendored"
+]
+cargoexamples = [
+    "tree"
+]
