@@ -1,0 +1,14 @@
+#TODO not compiled or tested
+#TODO need the pthreads library for thread-safety, but what library?
+# build instructions: https://github.com/eclipse-mosquitto/mosquitto#building-from-source
+[source]
+tar = "https://mosquitto.org/files/source/mosquitto-2.1.2.tar.gz"
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DWITH_TESTS=OFF",
+    "-DWITH_DOCS=OFF",
+]
+dependencies = [
+    "libedit",
+]

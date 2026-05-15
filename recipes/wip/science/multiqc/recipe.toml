@@ -1,0 +1,13 @@
+#TODO configure for proper packaging
+# run "pip install ." or "uv pip install ."
+# installation instructions: https://docs.seqera.io/multiqc/getting_started/installation#cloning-the-repository
+[source]
+git = "https://github.com/MultiQC/MultiQC"
+rev = "v1.34"
+shallow_clone = true
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}/home/user/multiqc"
+cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}/home/user/multiqc"
+"""
