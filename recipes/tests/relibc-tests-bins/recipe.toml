@@ -18,10 +18,10 @@ cat > "${COOKBOOK_STAGE}/usr/bin/relibc-tests-runner" <<EOF
 #!/usr/bin/env bash
 set -e
 cd /home/user/relibc-tests
-make run
+make run IS_REDOX=1
 EOF
 
-chmod +x "${COOKBOOK_STAGE}/usr/bin/os-test-runner"
+chmod +x "${COOKBOOK_STAGE}/usr/bin/relibc-tests-runner"
 
 """
 
