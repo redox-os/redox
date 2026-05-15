@@ -57,6 +57,7 @@ const REPO_HELP_STR: &str = r#"
         push-tree    show tree of recipe packages
         capture-rev  write lock to git recipes
         change-rule  override rule to recipes
+        change-rule-local  override rule to specific recipes
 
     common flags:
         --cookbook=<cookbook_dir>  the "recipes" folder, default to $PWD/recipes
@@ -115,6 +116,7 @@ enum CliCommand {
     Find,
     CaptureRev,
     ChangeRule,
+    ChangeRuleLocal,
 }
 
 impl CliCommand {
@@ -154,6 +156,7 @@ impl FromStr for CliCommand {
             "find" => Ok(CliCommand::Find),
             "capture-rev" => Ok(CliCommand::CaptureRev),
             "change-rule" => Ok(CliCommand::ChangeRule),
+            "change-rule-local" => Ok(CliCommand::ChangeRuleLocal),
             _ => bail_options_err!("Unknown command {:?}", s),
         }
     }
@@ -173,6 +176,7 @@ impl ToString for CliCommand {
             CliCommand::Find => "find".to_string(),
             CliCommand::CaptureRev => "capture-rev".to_string(),
             CliCommand::ChangeRule => "change-rule".to_string(),
+            CliCommand::ChangeRuleLocal => "change-rule-local".to_string(),
         }
     }
 }
@@ -263,7 +267,10 @@ fn main_inner() -> Result<()> {
     if command == CliCommand::Push {
         return handle_push(&recipes, &config);
     }
-    if matches!(command, CliCommand::ChangeRule | CliCommand::CaptureRev) {
+    if matches!(
+        command,
+        CliCommand::ChangeRule | CliCommand::ChangeRuleLocal | CliCommand::CaptureRev
+    ) {
         return handle_change_rule(&recipes, &config, &command);
     }
 
@@ -975,7 +982,10 @@ fn handle_change_rule(
 ) -> Result<()> {
     let mut lock = get_config().recipe_lock.clone();
     let cookbook_date = get_git_commit_date(&PathBuf::from("."))?;
-    let is_change_rule = matches!(command, CliCommand::ChangeRule);
+    let is_change_rule = matches!(
+        command,
+        CliCommand::ChangeRule | CliCommand::ChangeRuleLocal
+    );
     let is_capture_rev = matches!(command, CliCommand::CaptureRev);
     for recipe in recipes {
         if is_change_rule && recipe.name.is_host() {

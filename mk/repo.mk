@@ -284,6 +284,22 @@ else
 	$(REPO_BIN) change-rule --set-rule=source $(foreach f,$(subst $(comma), ,$*),$(f)) --with-package-deps
 endif
 
+# Set specific recipe rule to "local" then invoke clean
+lc.%: $(FSTOOLS_TAG) FORCE
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
+	$(REPO_BIN) change-rule-local --set-rule=local $(foreach f,$(subst $(comma), ,$*),$(f))
+endif
+
+# Set specific recipe rule to "ignore" then invoke clean
+nc.%: $(FSTOOLS_TAG) FORCE
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
+	$(REPO_BIN) change-rule-local --set-rule=ignore $(foreach f,$(subst $(comma), ,$*),$(f))
+endif
+
 # Reset recipe rule then invoke clean
 cc.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
@@ -301,6 +317,26 @@ bcr.%: $(FSTOOLS_TAG) FORCE
 scr.%: $(FSTOOLS_TAG) FORCE
 	$(MAKE) sc.$*
 	$(MAKE) r.$*,--with-package-deps
+
+# Set specific recipe rule to "local" then invoke clean and rebuild
+lcr.%: $(FSTOOLS_TAG) FORCE
+	$(MAKE) lc.$*
+	$(MAKE) r.$*
+
+# Set specific recipe rule to "ignore" then invoke clean and rebuild
+ncr.%: $(FSTOOLS_TAG) FORCE
+	$(MAKE) nc.$*
+	$(MAKE) r.$*
+
+# Set recipe rule to "binary" then invoke clean, rebuild and push
+bcrp.%: $(FSTOOLS_TAG) FORCE
+	$(MAKE) bcr.$*
+	$(MAKE) p.$*
+
+# Set recipe rule to "source" then invoke clean, rebuild and push
+scrp.%: $(FSTOOLS_TAG) FORCE
+	$(MAKE) scr.$*
+	$(MAKE) p.$*
 
 # Save current git rev for next recipe fetch, locking git recipes frozen in time
 repo-lock: $(FSTOOLS_TAG) FORCE
