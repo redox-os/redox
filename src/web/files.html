@@ -11,7 +11,11 @@
 <body>
   <div class="container">
     <h1 class="category-title">Package File Browser</h1>
-
+    <noscript>
+      <div class="card">
+        This page requires Javascript to work. <a href="index.html">Back to index page</a>
+      </div>
+    </noscript>
     <div class="card">
       <input type="text" id="searchInput" class="search-box" placeholder="Type file or directory name" title="Uses string.startsWith() matching" autocomplete="off">
 
@@ -65,11 +69,11 @@
      */
 
     /**
-       *  @param {DB} node
-       *  @param {string} query
-       *  @param {boolean} parentMatched
-       *  @returns {DB|null}
-       */
+     *  @param {DB} node
+     *  @param {string} query
+     *  @param {boolean} parentMatched
+     *  @returns {DB|null}
+     */
     function filterDb(node, query, parentMatched = false) {
       /** @type {DB} */
       let result = {};
