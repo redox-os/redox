@@ -797,11 +797,15 @@ fn handle_cook(
         for stage_dir in &build_result.stage_dirs {
             if stage_dir.is_dir() {
                 if config.cook.write_filetree {
-                    let mut stage_files_buf = String::new();
+                    let mut stage_files_buf = Vec::new();
                     tree::walk_file_tree(&stage_dir, "", &mut stage_files_buf)
                         .map_err(|e| Error::from_io_error(e, "Walking files tree"))?;
-                    fs::write(stage_dir.with_added_extension("files"), stage_files_buf)
-                        .map_err(|e| Error::from_io_error(e, "Writing files tree"))?;
+                    stage_files_buf.push("".into()); // trailing eol
+                    fs::write(
+                        stage_dir.with_added_extension("files"),
+                        stage_files_buf.join("\n"),
+                    )
+                    .map_err(|e| Error::from_io_error(e, "Writing files tree"))?;
                 }
                 if config.cook.clean_target {
                     remove_all(&stage_dir)?;
