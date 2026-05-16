@@ -110,6 +110,7 @@ code {
     padding: 0.2em 0.4em;
     border-radius: 3px;
     font-size: 0.9em;
+    font-weight: normal;
 }
 
 .card {
@@ -319,6 +320,12 @@ th {
 .up-icon::before {
     content: "↵ ";
     margin-right: 0.2em;
+}
+
+.nowrap {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 @media (prefers-color-scheme: dark) {

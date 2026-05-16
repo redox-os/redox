@@ -13,11 +13,11 @@
     <h1 class="category-title">Package File Browser</h1>
 
     <div class="card">
-      <input type="text" id="searchInput" class="search-box" placeholder="Type file name" autocomplete="off">
+      <input type="text" id="searchInput" class="search-box" placeholder="Type file or directory name" title="Uses string.startsWith() matching" autocomplete="off">
 
       <div class="browser-panels">
         <div class="panel">
-          <div class="panel-header" id="dirHeader">/</div>
+          <div class="panel-header nowrap" id="dirHeader">/</div>
           <div class="panel-body" id="dirPanel">
             <div style="padding: 15px; color: #777;">Loading files...</div>
           </div>
@@ -65,28 +65,61 @@
      */
 
     /**
-     *  @param {DB} node
-     *  @param {string} query
-     *  @param {boolean} parentMatched
-     *  @returns {DB|null}
-     */
+       *  @param {DB} node
+       *  @param {string} query
+       *  @param {boolean} parentMatched
+       *  @returns {DB|null}
+       */
     function filterDb(node, query, parentMatched = false) {
       /** @type {DB} */
       let result = {};
       let filesCount = 0;
 
+      const q = query.replace(/^\/|\/$/g, '').toLowerCase();
+      const parts = q.split('/');
+      const targetSegment = parts[0];
+
       for (const [key, value] of Object.entries(node)) {
+        const lowerKey = key.toLowerCase();
         if (typeof value === 'object') {
-          const isMatch = parentMatched || key.toLowerCase().includes(query);
-          const subTree = filterDb(value, query, isMatch);
-          if (subTree !== null) {
-            result[key] = subTree;
-            filesCount++;
+          if (parentMatched) {
+            const subTree = filterDb(value, q, true);
+            if (subTree !== null) {
+              result[key] = subTree;
+              filesCount++;
+            }
+          } else {
+            let nextQuery = q;
+            let isMatch = false;
+
+            if (lowerKey.startsWith(targetSegment)) {
+              if (parts.length === 1) {
+                isMatch = true;
+              } else {
+                nextQuery = parts.slice(1).join('/');
+              }
+            }
+
+            let subTree = filterDb(value, nextQuery, isMatch);
+
+            if (subTree === null && nextQuery !== q) {
+              subTree = filterDb(value, q, false);
+            }
+
+            if (subTree !== null) {
+              result[key] = subTree;
+              filesCount++;
+            }
           }
         } else {
-          if (parentMatched || key.toLowerCase().includes(query)) {
+          if (parentMatched) {
             result[key] = value;
             filesCount++;
+          } else {
+            if (parts.length === 1 && lowerKey.startsWith(targetSegment)) {
+              result[key] = value;
+              filesCount++;
+            }
           }
         }
       }
@@ -172,12 +205,13 @@
 
       if (isPeeking) {
         const peekName = basePathArray.join('/');
-        fileHeader.innerHTML = `Files <span style="color:#777; font-weight:normal; font-size:0.9em;">(Peeking: ${peekName})</span>`;
+        fileHeader.innerHTML = `Files <code style="opacity:60%">(Peeking: ${peekName})</code>`;
       } else if (lockedFileViewPath) {
         const lockName = lockedFileViewPath.join('/');
-        fileHeader.innerHTML = `Files <span style="color:#ddd; font-weight:normal; font-size:0.9em;">(Selected: ${lockName})</span>`;
+        fileHeader.innerHTML = `Files <code>(Selected: ${lockName})</code>`;
       } else {
-        fileHeader.innerHTML = `Files`;
+        const pathName = basePathArray.join('/') || '/';
+        fileHeader.innerHTML = `Files <code>(${pathName})</code>`;
       }
 
       if (!node) {
@@ -304,7 +338,7 @@
         if (!node) return;
       }
 
-      dirHeader.innerText = pathStack.join('/');
+      dirHeader.innerText = pathStack.join('/') || '/';
 
       let lastScroll = dirPanel.scrollTop;
       dirPanel.innerHTML = '';
