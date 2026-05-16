@@ -290,6 +290,7 @@ th {
     padding: 8px 15px;
     cursor: pointer;
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     user-select: none;
 }
