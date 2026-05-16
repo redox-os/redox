@@ -1,8 +1,8 @@
-#TODO dependency conflict. Glew wants GLX but mesa uses orbital backend.
+#TODO build error
 # build instructions: https://github.com/yvt/openspades#on-unixes-from-source
 [source]
 git = "https://github.com/siecvi/zerospades"
-rev = "110e573b5bee4570d97507dd9a6989f855520f72"
+rev = "6e01801c5c1fb96457a43698c2f9f7f4f3c8a8a4"
 shallow_clone = true
 patches = [
     "redox.patch"
