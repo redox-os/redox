@@ -1161,6 +1161,10 @@ struct TuiApp {
     prompt: Option<FailurePrompt>,
     dump_logs_anyway: bool,
     dump_logs_on_exit: Option<(PackageName, String)>,
+    is_inspecting: bool,
+    search_query: String,
+    search_results: Option<Vec<usize>>,
+    search_idx: usize,
 }
 
 impl TuiApp {
@@ -1185,6 +1189,10 @@ impl TuiApp {
             prompt: None,
             dump_logs_anyway: false,
             dump_logs_on_exit: None,
+            is_inspecting: false,
+            search_query: String::new(),
+            search_results: None,
+            search_idx: 0,
         }
     }
 
@@ -1540,75 +1548,95 @@ fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> Result<TuiApp> {
             let spin = spinner[spinner_i];
 
             let mut constraints = Vec::new();
-            if !app.fetch_complete {
+            if app.is_inspecting {
+                constraints.push(Constraint::Percentage(100));
+            } else {
+                if !app.fetch_complete {
+                    constraints.push(Constraint::Length(22));
+                }
                 constraints.push(Constraint::Length(22));
+                constraints.push(Constraint::Min(20));
             }
-            constraints.push(Constraint::Length(22));
-            constraints.push(Constraint::Min(20));
+
             let chunks = Layout::default()
                 .direction(Direction::Horizontal)
                 .constraints(constraints)
                 .split(f.area());
             let panel_height = chunks[0].height.saturating_sub(2) as usize;
 
-            // Left Pane
-            let fetch_items: Vec<ListItem> = app
-                .recipes
-                .iter()
-                .filter(|(_, s)| s.fetch_is_part_of())
-                .map(|(r, s)| {
-                    let icon = s.fetch_icon(spin);
-                    ListItem::new(format!("{icon} {}", r.name)).style(s.fetch_style())
-                })
-                .collect();
-            let fetch_list = List::new(fetch_items).block(
-                Block::default()
-                    .title("Fetch Queue [1]")
-                    .borders(Borders::ALL),
-            );
-            f.render_widget(fetch_list, chunks[0]);
+            if !app.is_inspecting {
+                // Left Pane
+                let fetch_items: Vec<ListItem> = app
+                    .recipes
+                    .iter()
+                    .filter(|(_, s)| s.fetch_is_part_of())
+                    .map(|(r, s)| {
+                        let icon = s.fetch_icon(spin);
+                        ListItem::new(format!("{icon} {}", r.name)).style(s.fetch_style())
+                    })
+                    .collect();
+                let fetch_list = List::new(fetch_items).block(
+                    Block::default()
+                        .title("Fetch Queue [1]")
+                        .borders(Borders::ALL),
+                );
+                f.render_widget(fetch_list, chunks[0]);
 
-            // Right Pane
-            let cook_items: Vec<ListItem> = app
-                .recipes
-                .iter()
-                .filter(|(_, s)| s.cook_is_part_of())
-                .map(|(r, s)| {
-                    let icon = s.cook_icon(spin);
-                    ListItem::new(format!("{icon} {}", r.name)).style(s.cook_style())
-                })
-                .collect();
-            {
-                let cooking_index = app
+                // Right Pane
+                let cook_items: Vec<ListItem> = app
                     .recipes
                     .iter()
                     .filter(|(_, s)| s.cook_is_part_of())
-                    .position(|(_r, s)| *s == RecipeStatus::Cooking);
+                    .map(|(r, s)| {
+                        let icon = s.cook_icon(spin);
+                        ListItem::new(format!("{icon} {}", r.name)).style(s.cook_style())
+                    })
+                    .collect();
+                {
+                    let cooking_index = app
+                        .recipes
+                        .iter()
+                        .filter(|(_, s)| s.cook_is_part_of())
+                        .position(|(_r, s)| *s == RecipeStatus::Cooking);
 
-                if let Some(index) = cooking_index {
-                    app.cook_list_state.select(Some(index));
-                    let index_u16 = index;
-                    let center_offset = panel_height / 2;
-                    let new_offset = index_u16.saturating_sub(center_offset) as usize;
+                    if let Some(index) = cooking_index {
+                        app.cook_list_state.select(Some(index));
+                        let index_u16 = index;
+                        let center_offset = panel_height / 2;
+                        let new_offset = index_u16.saturating_sub(center_offset) as usize;
 
-                    *app.cook_list_state.offset_mut() = new_offset;
+                        *app.cook_list_state.offset_mut() = new_offset;
+                    }
                 }
+                let cook_items: Vec<ListItem> = cook_items[app.cook_scroll..].into();
+                let cook_chunk = chunks[if app.fetch_complete { 0 } else { 1 }];
+                let cook_list = List::new(cook_items).block(
+                    Block::default()
+                        .title("Cook Queue [2]")
+                        .borders(Borders::ALL),
+                );
+                f.render_stateful_widget(cook_list, cook_chunk, &mut app.cook_list_state);
             }
-            let cook_items: Vec<ListItem> = cook_items[app.cook_scroll..].into();
-            let cook_chunk = chunks[if app.fetch_complete { 0 } else { 1 }];
-            let cook_list = List::new(cook_items).block(
-                Block::default()
-                    .title("Cook Queue [2]")
-                    .borders(Borders::ALL),
-            );
-            f.render_stateful_widget(cook_list, cook_chunk, &mut app.cook_list_state);
+
+            let log_area = if app.is_inspecting {
+                chunks[0]
+            } else {
+                chunks[if app.fetch_complete { 1 } else { 2 }]
+            };
 
             let (active_name, log_text, log_line) = app.get_active_log();
             let log_title = if let Some(active_name) = active_name {
                 format!(
                     " {} Log: {} ",
                     app.log_view_job.to_string(),
-                    active_name.as_str()
+                    if app.is_inspecting {
+                        staged_pkg::find(active_name.as_str())
+                            .map(|s| s.to_str())
+                            .flatten()
+                            .unwrap_or(active_name.as_str())
+                    } else {
+                        active_name.as_str()
+                    }
                 )
             } else {
                 format!(" {} Log ", app.log_view_job.to_string())
@@ -1650,7 +1678,23 @@ fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> Result<TuiApp> {
 
                 log_text[start..end]
                     .iter()
-                    .map(|s| {
+                    .enumerate()
+                    .map(|(i, s)| {
+                        if app.is_inspecting {
+                            if let Some(search_results) = app.search_results.as_ref() {
+                                let absolute_i = start + i;
+                                if absolute_i == search_results[app.search_idx] {
+                                    let s = strip_ansi_escapes::strip_str(s);
+                                    return Line::from(s).style(
+                                        Style::default().bg(Color::Yellow).fg(Color::Black),
+                                    );
+                                } else if search_results.binary_search(&absolute_i).is_ok() {
+                                    let s = strip_ansi_escapes::strip_str(s);
+                                    return Line::from(s)
+                                        .style(Style::default().bg(Color::Black).fg(Color::White));
+                                }
+                            }
+                        }
                         let text_with_colors = s
                             .into_text()
                             .unwrap_or_else(|_| Text::raw("--unrenderable line--"));
@@ -1677,39 +1721,68 @@ fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> Result<TuiApp> {
                 }
             }
 
-            let instruct = format!(
-                " Keys: [c] Stop [PageUp/Down] Scroll{}{} ",
-                match app.auto_scroll {
-                    true => "",
-                    false => " [End] Follow log trails",
-                },
-                match (&app.log_view_job, app.fetch_complete) {
-                    (JobType::Fetch, _) => " [2] View Cook Log",
-                    (JobType::Cook, false) => " [1] View Fetch Log",
-                    (JobType::Cook, true) => "",
-                }
-            );
+            let instruct = if app.is_inspecting {
+                let line_info = if let Some(search_results) = app.search_results.as_ref() {
+                    format!(
+                        "[line {}; {} of {}]",
+                        search_results[app.search_idx],
+                        app.search_idx + 1,
+                        search_results.len()
+                    )
+                } else {
+                    format!("[line {}]", app.log_scroll + 1)
+                };
+
+                format!(
+                    " Search: {:?} {} {} ",
+                    app.search_query,
+                    line_info,
+                    if app.search_results.is_some() {
+                        "[Down/Up] Next/previous search [Shift+Down/Up] Scroll [Esc] Exit search"
+                    } else {
+                        "[Enter] Begin search [Esc] Exit inspect"
+                    }
+                )
+            } else {
+                format!(
+                    " Keys: [c] Stop [PageUp/Down] Scroll{}{} ",
+                    match app.auto_scroll {
+                        true => "",
+                        false => " [End] Follow log trails",
+                    },
+                    match (&app.log_view_job, app.fetch_complete) {
+                        (JobType::Fetch, _) => " [2] View Cook Log",
+                        (JobType::Cook, false) => " [1] View Fetch Log",
+                        (JobType::Cook, true) => "",
+                    }
+                )
+            };
+
+            let log_borders = if app.is_inspecting {
+                Borders::TOP | Borders::BOTTOM
+            } else {
+                Borders::ALL
+            };
 
             let mut log_paragraph = Paragraph::new(log_lines).block(
                 Block::default()
                     .title(log_title)
                     .title_bottom(instruct)
-                    .borders(Borders::ALL),
+                    .borders(log_borders),
             );
 
             if !app.auto_scroll {
                 log_paragraph = log_paragraph.wrap(Wrap { trim: false });
             }
 
-            f.render_widget(
-                log_paragraph,
-                chunks[if app.fetch_complete { 1 } else { 2 }],
-            );
+            f.render_widget(log_paragraph, log_area);
             if let Some(prompt) = &mut app.prompt {
                 if config.cook.nonstop && prompt.selected == PromptOption::Retry {
                     prompt.selected = PromptOption::Skip;
                 }
-                draw_prompt(f, prompt, config.cook.nonstop);
+                if !app.is_inspecting {
+                    draw_prompt(f, prompt, config.cook.nonstop);
+                }
             }
             if enable_auto_scroll {
                 app.auto_scroll = true;
@@ -1719,6 +1792,12 @@ fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> Result<TuiApp> {
             }
 
             while let Ok(event) = input_rx.try_recv() {
+                if app.is_inspecting {
+                    if handle_inspect_event(&event, &mut app) {
+                        app.is_inspecting = false;
+                    }
+                    continue;
+                }
                 if let Some((app, res)) = handle_prompt_input(&event, &mut app) {
                     prompting.swap(res as u32, Ordering::SeqCst);
                     if res == PromptOption::Exit {
@@ -1822,6 +1901,131 @@ fn handle_main_event(app: &mut TuiApp, event: &Event) {
     }
 }
 
+fn perform_search(app: &mut TuiApp) {
+    app.search_idx = 0;
+    if app.search_query.is_empty() {
+        return;
+    }
+
+    let (_, log_text, _) = app.get_active_log();
+    let mut search_results = Vec::new();
+    let mut first_index = None;
+    if let Some(logs) = log_text {
+        for (i, line) in logs.iter().enumerate() {
+            let stripped = strip_ansi_escapes::strip_str(line);
+            if stripped
+                .to_lowercase()
+                .contains(&app.search_query.to_lowercase())
+            {
+                search_results.push(i);
+                if first_index.is_none() && i >= app.log_scroll {
+                    first_index = Some((i, search_results.len() - 1));
+                }
+            }
+        }
+    }
+    first_index = match first_index {
+        Some(i) => Some(i),
+        None => search_results.first().cloned().map(|s| (s, 0)),
+    };
+    app.search_results = Some(search_results);
+    app.auto_scroll = false;
+    if let Some((first_index, search_i)) = first_index {
+        app.log_scroll = first_index.saturating_sub(10);
+        app.search_idx = search_i;
+    }
+}
+
+fn handle_inspect_event(event: &Event, app: &mut TuiApp) -> bool {
+    if let Event::Key(key) = event {
+        match key {
+            Key::Esc => {
+                if app.search_results.is_some() {
+                    app.search_results.take();
+                } else {
+                    app.search_query.clear();
+                    return true;
+                }
+            }
+            Key::Char('\n') => {
+                if let Some(search_results) = app.search_results.as_mut() {
+                    // same as keydown
+                    app.search_idx = if app.search_idx + 1 < search_results.len() {
+                        app.search_idx + 1
+                    } else {
+                        0
+                    };
+                    app.log_scroll = search_results[app.search_idx].saturating_sub(10);
+                } else {
+                    perform_search(app);
+                }
+            }
+            Key::Backspace if app.search_results.is_some() => {
+                app.search_query.pop();
+                if app.search_query.len() == 0 {
+                    app.search_results.take();
+                } else {
+                    perform_search(app);
+                }
+            }
+            Key::Char(c) if app.search_results.is_some() => {
+                app.search_query.push(*c);
+                perform_search(app);
+            }
+            Key::Backspace => {
+                app.search_query.pop();
+            }
+            Key::Char(c) => {
+                app.search_query.push(*c);
+            }
+            Key::Up => {
+                if let Some(search_results) = app.search_results.as_mut() {
+                    app.search_idx = if app.search_idx > 0 {
+                        app.search_idx - 1
+                    } else {
+                        search_results.len() - 1
+                    };
+                    app.log_scroll = search_results[app.search_idx].saturating_sub(10);
+                } else {
+                    app.auto_scroll = false;
+                    app.log_scroll = app.log_scroll.saturating_sub(1);
+                }
+            }
+            Key::ShiftUp => {
+                app.auto_scroll = false;
+                app.log_scroll = app.log_scroll.saturating_sub(1);
+            }
+            Key::Down => {
+                if let Some(search_results) = app.search_results.as_mut() {
+                    app.search_idx = if app.search_idx + 1 < search_results.len() {
+                        app.search_idx + 1
+                    } else {
+                        0
+                    };
+                    app.log_scroll = search_results[app.search_idx].saturating_sub(10);
+                } else {
+                    app.auto_scroll = false;
+                    app.log_scroll = app.log_scroll.saturating_add(1);
+                }
+            }
+            Key::ShiftDown => {
+                app.auto_scroll = false;
+                app.log_scroll = app.log_scroll.saturating_add(1);
+            }
+            Key::PageUp => {
+                app.auto_scroll = false;
+                app.log_scroll = app.log_scroll.saturating_sub(20);
+            }
+            Key::PageDown => {
+                app.auto_scroll = false;
+                app.log_scroll = app.log_scroll.saturating_add(20);
+            }
+            _ => {}
+        }
+    }
+    false
+}
+
 fn kill_everything() {
     let pid = std::process::id();
     Command::new("bash")
@@ -1846,6 +2050,9 @@ fn handle_prompt_input<'a>(
                 }
                 Key::Left | Key::BackTab => prompt.prev(),
                 Key::Right | Key::Char('\t') => prompt.next(),
+                Key::Char('\n') if prompt.selected == PromptOption::Inspect => {
+                    app.is_inspecting = true;
+                }
                 Key::Char('\n') => {
                     let prompt = app.prompt.take().unwrap();
                     return Some((app, prompt.selected));
@@ -1865,41 +2072,38 @@ fn draw_prompt(f: &mut ratatui::Frame, prompt: &FailurePrompt, is_nonstop: bool)
         if is_nonstop { "(skipped) " } else { "" }
     );
     let mut error_text = prompt.error.clone();
-    if error_text.len() > 200 {
-        error_text = error_text[0..100].to_string()
-            + ".."
-            + &error_text[(error_text.len() - 100)..(error_text.len() - 1)];
-    } else if error_text.len() > 100 {
-        error_text = error_text[0..100].to_string() + "..";
+    if error_text.len() > 300 {
+        error_text =
+            error_text[0..150].to_string() + ".." + &error_text[(error_text.len() - 150)..];
+    } else if error_text.len() > 150 {
+        error_text = error_text[0..150].to_string() + "..";
     }
 
-    // Style for options
-    let retry_style = if prompt.selected == PromptOption::Retry {
-        Style::default().bg(Color::White).fg(Color::Black)
-    } else {
-        Style::default()
-    };
-    let skip_style = if prompt.selected == PromptOption::Skip {
-        Style::default().bg(Color::White).fg(Color::Black)
-    } else {
-        Style::default()
-    };
-    let exit_style = if prompt.selected == PromptOption::Exit {
-        Style::default().bg(Color::White).fg(Color::Black)
-    } else {
-        Style::default()
+    let get_style = |opt: PromptOption| {
+        if prompt.selected == opt {
+            Style::default().bg(Color::White).fg(Color::Black)
+        } else {
+            Style::default()
+        }
     };
 
-    let mut buttons = vec![
-        Span::styled(" [Skip] ", skip_style),
-        Span::raw("   "),
-        Span::styled(" [Exit] ", exit_style),
-    ];
-
-    if !is_nonstop {
-        buttons.push(Span::raw("   "));
-        buttons.push(Span::styled(" [Retry] ", retry_style));
-    }
+    let buttons = if is_nonstop {
+        vec![
+            Span::styled(" [Skip] ", get_style(PromptOption::Skip)),
+            Span::raw("   "),
+            Span::styled(" [Exit] ", get_style(PromptOption::Exit)),
+        ]
+    } else {
+        vec![
+            Span::styled(" [Skip] ", get_style(PromptOption::Skip)),
+            Span::raw(" "),
+            Span::styled(" [Inspect] ", get_style(PromptOption::Inspect)),
+            Span::raw(" "),
+            Span::styled(" [Exit] ", get_style(PromptOption::Exit)),
+            Span::raw(" "),
+            Span::styled(" [Retry] ", get_style(PromptOption::Retry)),
+        ]
+    };
 
     let text = vec![
         Line::from(error_text).style(Style::default().fg(Color::Yellow)),
@@ -1922,13 +2126,13 @@ fn draw_prompt(f: &mut ratatui::Frame, prompt: &FailurePrompt, is_nonstop: bool)
 
     let area = f.area();
     let popup_area = Rect {
-        x: area.width / 4,
+        x: area.width.saturating_sub(100) / 2, // Centered better for wider prompts
         y: area.height / 3,
-        width: area.width / 2,
+        width: 100.min(area.width),
         height: 10,
     };
 
-    f.render_widget(Clear, popup_area); // Clear the background
+    f.render_widget(Clear, popup_area);
     f.render_widget(paragraph, popup_area);
 }
 
@@ -1975,6 +2179,7 @@ enum PromptOption {
     Retry = 2,
     Skip,
     Exit,
+    Inspect,
 }
 
 struct FailurePrompt {
@@ -1995,7 +2200,8 @@ impl FailurePrompt {
     fn next(&mut self) {
         self.selected = match self.selected {
             PromptOption::Retry => PromptOption::Skip,
-            PromptOption::Skip => PromptOption::Exit,
+            PromptOption::Skip => PromptOption::Inspect,
+            PromptOption::Inspect => PromptOption::Exit,
             PromptOption::Exit => PromptOption::Retry,
         }
     }
@@ -2004,7 +2210,8 @@ impl FailurePrompt {
         self.selected = match self.selected {
             PromptOption::Retry => PromptOption::Exit,
             PromptOption::Skip => PromptOption::Retry,
-            PromptOption::Exit => PromptOption::Skip,
+            PromptOption::Inspect => PromptOption::Skip,
+            PromptOption::Exit => PromptOption::Inspect,
         }
     }
 }
