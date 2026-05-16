@@ -1,0 +1,17 @@
+#TODO test
+[source]
+git = "https://github.com/sqlmapproject/sqlmap"
+rev = "1.10.5"
+shallow_clone = true
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}"/usr/bin/sqlmap-dir
+cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}"/usr/bin/sqlmap-dir
+echo "python3 /usr/bin/sqlmap-dir/sqlmap.py" > "${COOKBOOK_STAGE}"/usr/bin/sqlmap
+chmod a+x "${COOKBOOK_STAGE}"/usr/bin/sqlmap
+"""
+[package]
+dependencies = [
+    "python312",
+]

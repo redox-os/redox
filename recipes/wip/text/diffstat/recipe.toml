@@ -1,0 +1,5 @@
+#TODO compile and test
+[source]
+tar = "https://invisible-island.net/archives/diffstat/diffstat-1.69.tgz"
+[build]
+template = "configure"

@@ -1,0 +1,8 @@
+#TODO compile and test
+# self-hosted documentation: https://bencher.dev/docs/explanation/bencher-self-hosted/
+[source]
+git = "https://github.com/bencherdev/bencher"
+shallow_clone = true
+[build]
+template = "cargo"
+cargopackages = ["bencher_cli"]

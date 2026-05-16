@@ -1,0 +1,12 @@
+#TODO compile and test
+[source]
+tar = "https://github.com/simsong/tcpflow/releases/download/tcpflow-1.6.1/tcpflow-1.6.1.tar.gz"
+[build]
+template = "configure"
+dependencies = [
+    "libpcap",
+    "boost",
+    "openssl3",
+    "zlib",
+    "cairo",
+]

@@ -1,0 +1,10 @@
+#TODO compile and test
+[source]
+tar = "https://github.com/libcheck/check/releases/download/0.15.2/check-0.15.2.tar.gz"
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DCHECK_ENABLE_TESTS=OFF",
+    "-DENABLE_MEMORY_LEAKING_TESTS=OFF",
+    "-DCHECK_ENABLE_TIMEOUT_TESTS=OFF",
+]

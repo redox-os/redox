@@ -1,0 +1,7 @@
+#TODO missing script for gnu make
+[source]
+git = "https://salsa.debian.org/debian/netcat-openbsd"
+rev = "upstream/1.234"
+shallow_clone = true
+[build]
+template = "custom"

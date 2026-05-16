@@ -1,0 +1,6 @@
+#TODO missing script for the cmake wrapper script: https://github.com/snort3/snort3#build-snort
+#TODO determine minimum dependencies from cmake log
+[source]
+tar = "https://api.github.com/repos/snort3/snort3/tarball/3.12.2.0"
+[build]
+template = "custom"

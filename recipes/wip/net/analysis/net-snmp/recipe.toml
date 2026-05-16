@@ -1,0 +1,6 @@
+#TODO compile and test
+# build instructions: https://github.com/net-snmp/net-snmp/blob/master/INSTALL
+[source]
+tar = "https://sourceforge.net/projects/net-snmp/files/net-snmp/5.9.5.2/net-snmp-5.9.5.2.tar.gz/download"
+[build]
+template = "configure"

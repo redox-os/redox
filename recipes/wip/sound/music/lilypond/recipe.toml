@@ -1,0 +1,19 @@
+#TODO compile and test
+#TODO determine minimum dependencies from configure log
+# build instructions: https://lilypond.org/doc/v2.26/Documentation/contributor/compiling
+[source]
+tar = "https://lilypond.org/download/sources/v2.26/lilypond-2.26.0.tar.gz"
+[build]
+template = "configure"
+#dependencies = [
+#    "cairo",
+#    "pango",
+#    "fontconfig",
+#    "freetype2",
+#    "glib",
+#    "libpng",
+#]
+[package]
+dependencies = [
+    "python312",
+]

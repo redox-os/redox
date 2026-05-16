@@ -1,0 +1,10 @@
+#TODO missing script for gnu make
+#TODO determine minimum dependencies from cmake log
+# agent build instructions: https://documentation.wazuh.com/current/deployment-options/wazuh-from-sources/wazuh-agent/index.html
+# manager build instructions: https://documentation.wazuh.com/current/deployment-options/wazuh-from-sources/wazuh-server/index.html
+[source]
+git = "https://github.com/wazuh/wazuh"
+rev = "v4.14.5"
+shallow_clone = true
+[build]
+template = "custom"

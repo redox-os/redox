@@ -1,0 +1,22 @@
+#TODO compile and test
+#TODO discover minimum dependencies from cmake log
+# build instructions: https://github.com/musescore/MuseScore/tree/4.7#release-build
+[source]
+git = "https://github.com/musescore/MuseScore"
+rev = "v4.7.0"
+shallow_clone = true
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DMUSE_APP_BUILD_MODE=release",
+    "-DMUE_BUILD_PROJECT_TESTS=OFF",
+    "-DMUE_BUILD_BRAILLE_TESTS=OFF",
+    "-DMUE_BUILD_CONVERTER_TESTS=OFF",
+    "-DMUE_BUILD_ENGRAVING_TESTS=OFF",
+    "-DMUE_BUILD_IMPORTEXPORT_TESTS=OFF",
+    "-DMUE_BUILD_NOTATION_TESTS=OFF",
+    "-DMUE_BUILD_NOTATIONSCENE_TESTS=OFF",
+    "-DMUE_BUILD_PLAYBACK_TESTS=OFF",
+    "-DMUE_BUILD_MACOS_INTEGRATION=OFF",
+    "-DMUE_RUN_WINDEPLOYQT=OFF",
+]

@@ -1,0 +1,6 @@
+#TODO missing script for waf: https://github.com/brummer10/guitarix#building-guitarix-from-source-code
+#TODO discover minimum dependencies from waf log
+[source]
+tar = "https://github.com/brummer10/guitarix/releases/download/V0.47.0/guitarix2-0.47.0.tar.xz"
+[build]
+template = "custom"
