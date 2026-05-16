@@ -11,22 +11,24 @@
 <body>
   <div class="container">
     <h1 class="category-title">Package File Browser</h1>
-
+    <noscript>
+      <div class="card">
+        This page requires Javascript to work. <a href="index.html">Back to index page</a>
+      </div>
+    </noscript>
     <div class="card">
-      <input type="text" id="searchInput" class="search-box" placeholder="Type file name" autocomplete="off">
+      <input type="text" id="searchInput" class="search-box" placeholder="Type file or directory name" title="Uses string.startsWith() matching" autocomplete="off">
 
       <div class="browser-panels">
         <div class="panel">
-          <div class="panel-header" id="dirHeader">/</div>
+          <div class="panel-header nowrap" id="dirHeader">/</div>
           <div class="panel-body" id="dirPanel">
             <div style="padding: 15px; color: #777;">Loading files...</div>
           </div>
         </div>
-        <div class="panel">
+        <div class="panel" style="flex-grow: 2;">
           <div class="panel-header" id="fileHeader">Files</div>
-          <div class="panel-body" id="filePanel"></div>
-        </div>
-        <div class="panel">
+          <div class="panel-body" id="filePanel" style="flex-grow: 2;"></div>
           <div class="panel-header" id="contentHeader">File Content</div>
           <div class="panel-body" id="contentPanel" style="padding: 15px;">
             <div style="color: #777; text-align: center; margin-top: 50px;">
@@ -46,7 +48,7 @@
     /** @type {DB} */
     let activeDb = {};
     /** @type {string[]} */
-    let pathStack = ["/"];
+    let pathStack = [""];
     /** @type {string[][]} */
     let historyStack = [];
     let currentSearch = "";
@@ -77,18 +79,51 @@
       let result = {};
       let filesCount = 0;
 
+      const q = query.replace(/^\/|\/$/g, '').toLowerCase();
+      const parts = q.split('/');
+      const targetSegment = parts[0];
+
       for (const [key, value] of Object.entries(node)) {
+        const lowerKey = key.toLowerCase();
         if (typeof value === 'object') {
-          const isMatch = parentMatched || key.toLowerCase().includes(query);
-          const subTree = filterDb(value, query, isMatch);
-          if (subTree !== null) {
-            result[key] = subTree;
-            filesCount++;
+          if (parentMatched) {
+            const subTree = filterDb(value, q, true);
+            if (subTree !== null) {
+              result[key] = subTree;
+              filesCount++;
+            }
+          } else {
+            let nextQuery = q;
+            let isMatch = false;
+
+            if (lowerKey.startsWith(targetSegment)) {
+              if (parts.length === 1) {
+                isMatch = true;
+              } else {
+                nextQuery = parts.slice(1).join('/');
+              }
+            }
+
+            let subTree = filterDb(value, nextQuery, isMatch);
+
+            if (subTree === null && nextQuery !== q) {
+              subTree = filterDb(value, q, false);
+            }
+
+            if (subTree !== null) {
+              result[key] = subTree;
+              filesCount++;
+            }
           }
         } else {
-          if (parentMatched || key.toLowerCase().includes(query)) {
+          if (parentMatched) {
             result[key] = value;
             filesCount++;
+          } else {
+            if (parts.length === 1 && lowerKey.startsWith(targetSegment)) {
+              result[key] = value;
+              filesCount++;
+            }
           }
         }
       }
@@ -120,14 +155,15 @@
       for (const [dirKey, dirNode] of Object.entries(dirs)) {
         let childHasFiles = false;
 
-        for (const val of Object.values(dirNode)) {
+        let dirNodeValues = Object.values(dirNode);
+        for (const val of dirNodeValues) {
           if (typeof val !== 'object') {
             childHasFiles = true;
             break;
           }
         }
 
-        if (!childHasFiles && Object.keys(dirNode).length > 0) {
+        if (!childHasFiles && dirNodeValues.length > 0 && dirNodeValues.length < 5) {
           for (const [subKey, subValue] of Object.entries(dirNode)) {
             newNode[`${dirKey}/${subKey}`] = subValue;
           }
@@ -172,13 +208,14 @@
       filePanel.innerHTML = '';
 
       if (isPeeking) {
-        const peekName = basePathArray[basePathArray.length - 1];
-        fileHeader.innerHTML = `Files <span style="color:#777; font-weight:normal; font-size:0.9em;">(Peeking: ${peekName})</span>`;
+        const peekName = basePathArray.join('/');
+        fileHeader.innerHTML = `Files <code style="opacity:60%">(Peeking: ${peekName})</code>`;
       } else if (lockedFileViewPath) {
-        const lockName = lockedFileViewPath[lockedFileViewPath.length - 1];
-        fileHeader.innerHTML = `Files <span style="color:#ddd; font-weight:normal; font-size:0.9em;">(Selected: ${lockName})</span>`;
+        const lockName = lockedFileViewPath.join('/');
+        fileHeader.innerHTML = `Files <code>(Selected: ${lockName})</code>`;
       } else {
-        fileHeader.innerHTML = `Files`;
+        const pathName = basePathArray.join('/') || '/';
+        fileHeader.innerHTML = `Files <code>(${pathName})</code>`;
       }
 
       if (!node) {
@@ -217,18 +254,21 @@
      *  @param {HTMLElement} container
      *  @param {DB} node
      *  @param {number} currentDepth
-     *  @param {number} maxDepth
+     *  @param {(depth: number, files: number) => boolean} maxDepthFn
      *  @param {string[]} currentPathArray
+     *  @returns {boolean}
      */
-    function renderDirTree(container, node, currentDepth, maxDepth, currentPathArray) {
-      if (currentDepth >= maxDepth || !node) return;
+    function renderDirTree(container, node, currentDepth, maxDepthFn, currentPathArray) {
+      if (!node) return false;
 
       let dirs = [];
       for (const [key, value] of Object.entries(node)) {
         if (typeof value === 'object') dirs.push(key);
       }
+      if (!maxDepthFn(currentDepth, dirs.length)) {
+        return false;
+      }
       dirs.sort();
-
       dirs.forEach(dir => {
         const dirDiv = document.createElement('div');
         dirDiv.className = 'list-item';
@@ -255,6 +295,7 @@
         }
 
         dirDiv.innerHTML = `<span>${dir}</span>`;
+        dirDiv.setAttribute('data-path', nextPathArray.join('/'));
 
         dirDiv.addEventListener('mouseenter', () => {
           renderFiles(node[dir], nextPathArray, true);
@@ -281,8 +322,12 @@
 
         container.appendChild(dirDiv);
 
-        renderDirTree(container, node[dir], currentDepth + 1, maxDepth, nextPathArray);
+        let rendered = renderDirTree(container, node[dir], currentDepth + 1, maxDepthFn, nextPathArray);
+        if (hasSubDirs) {
+          dirDiv.innerText += rendered ? " .." : " ...";
+        }
       });
+      return true;
     }
 
     function render() {
@@ -290,15 +335,16 @@
 
       if (!node) {
         // reset to root
-        pathStack = ["/"];
+        pathStack = [];
         historyStack = [];
         node = getCurrentNode();
         lockedFileViewPath = null;
         if (!node) return;
       }
 
-      dirHeader.innerText = pathStack.join('/').replace('//', '/');
+      dirHeader.innerText = pathStack.join('/') || '/';
 
+      let lastScroll = dirPanel.scrollTop;
       dirPanel.innerHTML = '';
 
       if (historyStack.length > 0) {
@@ -306,7 +352,7 @@
         backDiv.className = 'list-item up-icon';
         backDiv.innerHTML = `<span>Back</span>`;
         backDiv.onclick = () => {
-          pathStack = historyStack.pop() || ['/'];
+          pathStack = historyStack.pop() || [''];
           lockedFileViewPath = null;
           clearContentPanel();
           render();
@@ -314,7 +360,14 @@
         dirPanel.appendChild(backDiv);
       }
 
-      renderDirTree(dirPanel, node, 0, 3, pathStack);
+      renderDirTree(dirPanel, node, 0, (depth, files) => {
+        switch (depth) {
+          case 0: return true;
+          case 1: return files < 10;
+          case 2: return files < 5;
+          default: return false;
+        }
+      }, pathStack);
 
       if (dirPanel.children.length === 0 || (dirPanel.children.length === 1 && pathStack.length > 1)) {
         const emptyMsg = document.createElement('div');
@@ -322,6 +375,8 @@
         emptyMsg.style.color = '#777';
         emptyMsg.innerText = 'No subdirectories';
         dirPanel.appendChild(emptyMsg);
+      } else {
+        dirPanel.scrollTop = lastScroll;
       }
 
       renderFiles(node, pathStack, false);
@@ -334,7 +389,7 @@
      *  @param {string[]} basePathArray
      */
     function showFileContent(fileName, packages, basePathArray) {
-      const fullPath = (basePathArray.join('/') + '/' + fileName).replace('//', '/');
+      const fullPath = (basePathArray.join('/') + '/' + fileName);
       contentHeader.innerText = fileName;
       contentPanel.innerHTML = `
         <div style="margin-bottom: 15px;">
@@ -343,7 +398,7 @@
         </div>
         <div style="margin-bottom: 15px;">
             <strong>Provided by:</strong> <br>
-            ${packages.split(',').map(p => `<code>${p}</code>`).join(', ')}
+            ${packages.split(',').map(p => `<code><a href="${p}.html">${p}</a></code>`).join(', ')}
         </div>
         `;
     }

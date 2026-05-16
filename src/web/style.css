@@ -11,6 +11,10 @@ body {
     line-height: 1.6;
 }
 
+p {
+    margin: 0.5em 0;
+}
+
 .container {
     max-width: 1280px;
     margin: 0 auto;
@@ -110,6 +114,7 @@ code {
     padding: 0.2em 0.4em;
     border-radius: 3px;
     font-size: 0.9em;
+    font-weight: normal;
 }
 
 .card {
@@ -290,6 +295,7 @@ th {
     padding: 8px 15px;
     cursor: pointer;
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     user-select: none;
 }
@@ -318,6 +324,12 @@ th {
 .up-icon::before {
     content: "↵ ";
     margin-right: 0.2em;
+}
+
+.nowrap {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 @media (prefers-color-scheme: dark) {

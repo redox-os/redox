@@ -260,6 +260,7 @@ pub fn generate_html_index(
     <header class="index-header">
         <h1>Redox OS Package Repository</h1>
         <p class="description">Repository for <code>{target}</code></p>
+        <p><a href="files.html">Search files in this Repository</a></p>
     </header>
 
     <main class="index-content container">
