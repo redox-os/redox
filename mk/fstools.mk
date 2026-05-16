@@ -32,7 +32,7 @@ fstools_fetch: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
-	$(REPO_BIN) fetch installer redoxfs
+	$(REPO_BIN) fetch host:installer host:redoxfs
 endif
 
 CARGO_OFFLINE_FLAG=
