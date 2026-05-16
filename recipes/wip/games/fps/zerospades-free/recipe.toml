@@ -2,6 +2,7 @@
 # build instructions: https://github.com/yvt/openspades#on-unixes-from-source
 [source]
 git = "https://github.com/siecvi/zerospades"
+rev = "110e573b5bee4570d97507dd9a6989f855520f72"
 shallow_clone = true
 patches = [
     "redox.patch"
@@ -21,15 +22,14 @@ dependencies = [
     "libjpeg",
     "openal",
     "curl",
-    # "libxinerama",
-    # "libxft",
+    "libxinerama",
+    "libxft",
 ]
 dev-dependencies = [
     "libstdcxx",
 ]
 script = """
 DYNAMIC_INIT
-export LDFLAGS+=" $("${PKG_CONFIG}" --libs osmesa)"
 COOKBOOK_CMAKE_FLAGS+=(
     -DOPENSPADES_NONFREE_RESOURCES=OFF
     -DUSE_INTERNAL_OPENAL=OFF
