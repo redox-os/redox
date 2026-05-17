@@ -418,4 +418,6 @@ done;
 if [ -n "$ALL_DESCENDANTS" ]; then
     kill $ALL_DESCENDANTS;
 fi
+
+killall sccache
 "#;

@@ -1,7 +1,6 @@
 use pkg::{Package, PackageName};
 use std::{
     collections::{HashMap, HashSet},
-    fmt::Write as _,
     path::PathBuf,
 };
 
@@ -147,11 +146,14 @@ pub fn display_pkg_fn(
     Ok(false)
 }
 
-pub fn walk_file_tree(dir: &PathBuf, prefix: &str, buffer: &mut String) -> std::io::Result<u64> {
+pub fn walk_file_tree(
+    dir: &PathBuf,
+    prefix: &str,
+    buffer: &mut Vec<String>,
+) -> std::io::Result<u64> {
     if !dir.is_dir() {
         return Ok(0);
     }
-    let fmt_err = std::io::Error::other;
     let mut entries: Vec<_> = std::fs::read_dir(dir)?.filter_map(|e| e.ok()).collect();
     entries.sort_by(|a, b| a.file_name().cmp(&b.file_name()));
     let mut total_size = 0;
@@ -166,22 +168,35 @@ pub fn walk_file_tree(dir: &PathBuf, prefix: &str, buffer: &mut String) -> std::
             .and_then(|n| n.to_str())
             .unwrap_or("Unknown");
 
-        if path.is_dir() {
-            writeln!(buffer, "{}{}{}/", prefix, line_prefix, file_name).map_err(fmt_err)?;
+        if metadata.is_dir() {
+            buffer.push(format!("{}{}{}/", prefix, line_prefix, file_name));
+            let last_len = buffer.len();
             let new_prefix = format!("{}{}", prefix, if is_last { "    " } else { "│   " });
-            walk_file_tree(&path, &new_prefix, buffer)?;
+            total_size += walk_file_tree(&path, &new_prefix, buffer)?;
+            if buffer.len() == last_len {
+                // pkgar doesn't capture empty directory
+                buffer.pop();
+            }
+        } else if metadata.is_symlink() {
+            let size = metadata.len();
+            total_size += size;
+            buffer.push(format!(
+                "{}{}{} -> {:?}",
+                prefix,
+                line_prefix,
+                file_name,
+                std::fs::read_link(&path)?.display()
+            ));
         } else {
             let size = metadata.len();
             total_size += size;
-            writeln!(
-                buffer,
+            buffer.push(format!(
                 "{}{}{} ({})",
                 prefix,
                 line_prefix,
                 file_name,
                 format_size(size)
-            )
-            .map_err(fmt_err)?;
+            ));
         }
     }
 

@@ -95,6 +95,9 @@ impl FileIndexBuilder {
                 let name = if let Some(paren_idx) = remainder.rfind('(') {
                     // Strip size
                     remainder[..paren_idx].trim()
+                } else if let Some(paren_idx) = remainder.rfind("->") {
+                    // Strip symlink
+                    remainder[..paren_idx].trim()
                 } else {
                     remainder
                 };
