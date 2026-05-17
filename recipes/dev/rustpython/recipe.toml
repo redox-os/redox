@@ -16,15 +16,15 @@ template = "custom"
 script = """
 DYNAMIC_INIT
 
-export BUILDTIME_RUSTPYTHONPATH=/lib/rustpython
+export BUILDTIME_RUSTPYTHONPATH=/usr/lib/rustpython
 export OPENSSL_DIR="${COOKBOOK_SYSROOT}"
 export ZLIB_STATIC=1
 cookbook_cargo --features ssl
-mkdir -p "${COOKBOOK_STAGE}/lib"
+mkdir -p "${COOKBOOK_STAGE}/usr/lib"
 rsync -aE \
   --exclude 'test/' \
   --exclude '__pycache__/' \
   --exclude '*.pyc' \
   --exclude '/README.md' \
-  "${COOKBOOK_SOURCE}"/Lib/ "${COOKBOOK_STAGE}/lib/rustpython"
+  "${COOKBOOK_SOURCE}"/Lib/ "${COOKBOOK_STAGE}/usr/lib/rustpython"
 """

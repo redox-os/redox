@@ -13,7 +13,7 @@ COOKBOOK_CONFIGURE_FLAGS=(
     threads
     no-dgram
     "${OS}-${ARCH}"
-    --prefix="/"
+    --prefix=/usr
 )
 
 if [ "${COOKBOOK_DYNAMIC}" = "1" ]; then
@@ -21,10 +21,10 @@ if [ "${COOKBOOK_DYNAMIC}" = "1" ]; then
 else
     COOKBOOK_CONFIGURE_FLAGS+=(no-shared)
 fi
-
-export CC="${CC_WRAPPER} ${GNU_TARGET}-gcc"
+# TODO: Sccache regression between 0.11-0.15 preventing us to use ${CC_WRAPPER}
+export CC="${GNU_TARGET}-gcc"
 "${COOKBOOK_CONFIGURE}" "${COOKBOOK_CONFIGURE_FLAGS[@]}"
 "${COOKBOOK_MAKE}" -j"${COOKBOOK_MAKE_JOBS}"
 "${COOKBOOK_MAKE}" install_sw install_ssldirs DESTDIR="${COOKBOOK_STAGE}"
-rm -rfv "${COOKBOOK_STAGE}/"{share,ssl}
+rm -rfv "${COOKBOOK_STAGE}"/usr/{share,ssl}
 """
