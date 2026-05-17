@@ -1,0 +1,9 @@
+#TODO compile and test
+# build instructions: https://oils.pub/release/latest/doc/INSTALL.html
+[source]
+tar = "https://oils.pub/download/oils-for-unix-0.37.0.tar.gz"
+[build]
+template = "configure"
+#dependencies = [
+#    "readline",
+#]

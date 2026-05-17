@@ -1,0 +1,13 @@
+#TODO compile and test
+# build instructions: https://github.com/tstack/lnav#building-from-source
+[source]
+tar = "https://github.com/tstack/lnav/releases/download/v0.14.0/lnav-0.14.0.tar.bz2"
+[build]
+template = "configure"
+dependencies = [
+    "pcre2",
+    "sqlite3",
+    "zlib",
+    "bzip2",
+    "libunistring",
+]

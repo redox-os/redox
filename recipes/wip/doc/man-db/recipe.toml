@@ -1,0 +1,9 @@
+#TODO compile and test
+# build instructions: https://gitlab.com/man-db/man-db#installation
+[source]
+tar = "https://download.savannah.nongnu.org/releases/man-db/man-db-2.13.1.tar.xz"
+[build]
+template = "configure"
+configureflags = [
+    "--disable-manual"
+]

@@ -1,0 +1,5 @@
+#TODO missing script for gnu make
+[source]
+tar = "https://www.slicot.org/objects/software/shared/slicot45.tar.gz"
+[build]
+template = "custom"

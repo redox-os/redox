@@ -1,0 +1,16 @@
+#TODO test
+# installation instructions: https://xon.sh/install.html
+[source]
+git = "https://github.com/xonsh/xonsh"
+rev = "0.23.6"
+shallow_clone = true
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}/home/user/xonsh"
+cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}/home/user/xonsh"
+"""
+[package]
+dependencies = [
+    "python312",
+]

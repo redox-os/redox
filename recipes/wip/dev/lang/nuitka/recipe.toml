@@ -1,0 +1,16 @@
+#TODO test
+# installation instructions: https://github.com/Nuitka/Nuitka#installation
+[source]
+git = "https://github.com/Nuitka/Nuitka"
+rev = "4.1"
+shallow_clone = true
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}/home/user/nuitka"
+cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}/home/user/nuitka"
+"""
+[package]
+dependencies = [
+    "python312",
+]

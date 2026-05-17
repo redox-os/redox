@@ -1,0 +1,14 @@
+#TODO write a script for proper packaging
+# run "pip install ." for execution
+[source]
+tar = "https://github.com/mpryor/nothing-less/releases/download/1.17.0/nothing_less-1.17.0.tar.gz"
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}/home/user/nless"
+cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}/home/user/nless"
+"""
+[package]
+dependencies = [
+    "python312",
+]

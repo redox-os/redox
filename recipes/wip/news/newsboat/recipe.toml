@@ -1,0 +1,14 @@
+#TODO missing script for gnu make: https://github.com/newsboat/newsboat#installation
+[source]
+git = "https://github.com/newsboat/newsboat"
+rev = "r2.43"
+shallow_clone = true
+[build]
+template = "custom"
+dependencies = [
+    "stfl",
+    "sqlite3",
+    "curl",
+    "libxml2",
+    "json-c",
+]
