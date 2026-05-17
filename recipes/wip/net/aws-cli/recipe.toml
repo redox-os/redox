@@ -1,0 +1,11 @@
+# TODO: workout pyproject.toml deps
+[source]
+git = "https://github.com/aws/aws-cli.git"
+rev = "2.15.31"
+shallow_clone = true
+
+[build]
+template = "python"
+dev-dependencies = [
+    "host:python312"
+]
