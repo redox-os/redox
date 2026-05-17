@@ -1,0 +1,13 @@
+#TODO compile and test
+# build instructions: https://github.com/geany/geany#installation-from-sources
+[source]
+tar = "https://download.geany.org/geany-2.1.tar.bz2"
+[build]
+template = "configure"
+dependencies = [
+    "gtk3",
+    "pango",
+    "glib",
+    "atk",
+    #"geany-plugins",
+]

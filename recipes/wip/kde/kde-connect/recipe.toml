@@ -1,0 +1,8 @@
+#TODO compile and test
+# determine minimum dependencies from cmake log
+[source]
+git = "https://invent.kde.org/network/kdeconnect-kde"
+branch = "release/26.04"
+shallow_clone = true
+[build]
+template = "cmake"

@@ -1,0 +1,16 @@
+#TODO compile and test
+[source]
+git = "https://github.com/syl20bnr/spacemacs"
+shallow_clone = true
+[build]
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}/home/user/.emacs.d"
+cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}/home/user/.emacs.d"
+"""
+dependencies = [
+    "emacs-nox",
+    #"emacs-pgtk",
+    "ripgrep",
+]

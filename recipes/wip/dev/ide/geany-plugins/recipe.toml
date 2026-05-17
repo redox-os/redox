@@ -1,0 +1,5 @@
+#TODO compile and test
+[source]
+tar = "https://plugins.geany.org/geany-plugins/geany-plugins-2.1.tar.bz2"
+[build]
+template = "configure"

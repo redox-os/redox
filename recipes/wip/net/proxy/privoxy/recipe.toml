@@ -1,0 +1,6 @@
+#TODO compile and test
+# build instructions: https://www.privoxy.org/user-manual/installation.html
+[source]
+tar = "https://www.privoxy.org/sf-download-mirror/Sources/4.1.0%20%28stable%29/privoxy-4.1.0-stable-src.tar.gz"
+[build]
+template = "configure"

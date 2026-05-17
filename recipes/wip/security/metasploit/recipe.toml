@@ -1,0 +1,18 @@
+#TODO compile and test
+# installation instructions: https://github.com/rapid7/metasploit-framework#installing-metasploit
+[source]
+git = "https://github.com/rapid7/metasploit-framework"
+rev = "6.4.133"
+shallow_clone = true
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}"/usr/bin/metasploit-dir
+cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}"/usr/bin/metasploit-dir
+echo "metasploit-dir/msfconsole" > "${COOKBOOK_STAGE}"/usr/bin/metasploit
+chmod a+x "${COOKBOOK_STAGE}"/usr/bin/metasploit
+"""
+[package]
+dependencies = [
+    "ruby"
+]

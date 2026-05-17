@@ -1,0 +1,17 @@
+#TODO test
+# dependencies: https://docs.bleachbit.org/dev/running-from-source-code.html
+[source]
+tar = "https://download.bleachbit.org/get/bleachbit-5.0.2.tar.bz2"
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}"/usr/bin/bleachbit-dir
+cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}"/usr/bin/bleachbit-dir
+echo "python3 bleachbit-dir/bleachbit.py" > "${COOKBOOK_STAGE}"/usr/bin/bleachbit
+chmod a+x "${COOKBOOK_STAGE}"/usr/bin/bleachbit
+"""
+[package]
+dependencies = [
+    "python312",
+    "gtk3",
+]

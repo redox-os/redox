@@ -1,0 +1,9 @@
+#TODO compile and test
+# build instructions: https://github.com/the-tcpdump-group/tcpdump/blob/master/INSTALL.md
+[source]
+tar = "https://www.tcpdump.org/release/tcpdump-4.99.6.tar.xz"
+[build]
+template = "configure"
+dependencies = [
+    "libpcap",
+]

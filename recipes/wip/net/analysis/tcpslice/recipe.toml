@@ -1,0 +1,10 @@
+#TODO compile and test
+[source]
+git = "https://github.com/the-tcpdump-group/tcpslice"
+rev = "tcpslice-1.8"
+shallow_clone = true
+[build]
+template = "configure"
+dependencies = [
+    "libpcap",
+]
