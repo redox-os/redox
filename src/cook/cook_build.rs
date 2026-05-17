@@ -388,6 +388,7 @@ pub fn build(
                 "DYNAMIC_INIT\n{}cookbook_meson",
                 flags_fn("COOKBOOK_MESON_FLAGS", mesonflags),
             ),
+            BuildKind::Python {} => format!("DYNAMIC_INIT\ncookbook_python"),
             BuildKind::Custom { script } => script.clone(),
             BuildKind::Remote => unreachable!(),
             BuildKind::None => "".to_owned(),

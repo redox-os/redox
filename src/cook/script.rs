@@ -348,6 +348,15 @@ function cookbook_meson {
     "${COOKBOOK_NINJA}" -j"${COOKBOOK_MAKE_JOBS}"
     DESTDIR="${COOKBOOK_STAGE}" "${COOKBOOK_NINJA}" install -j"${COOKBOOK_MAKE_JOBS}"
 }
+COOKBOOK_PYTHON="${COOKBOOK_TOOLCHAIN}/bin/python3"
+function cookbook_python {
+    ARCH="${TARGET%%-*}"
+    OS=$(echo "${TARGET}" | cut -d - -f3-4)
+    export PYTHONPYCACHEPREFIX="${COOKBOOK_BUILD}" _PYTHON_HOST_PLATFORM="$OS-$ARCH"
+    "${COOKBOOK_PYTHON}" -m pip install --prefix="${COOKBOOK_STAGE}/usr" "${COOKBOOK_SOURCE}" \
+    --ignore-installed --no-index --no-build-isolation "$@"
+    rsync -av "${COOKBOOK_BUILD}/${COOKBOOK_STAGE}/usr/" "${COOKBOOK_STAGE}/usr"
+}
 "#;
 
 pub(crate) static BUILD_POSTSCRIPT: &str = r#"

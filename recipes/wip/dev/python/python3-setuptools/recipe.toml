@@ -1,0 +1,16 @@
+[source]
+git = "https://github.com/pypa/setuptools"
+rev = "v82.0.1"
+shallow_clone = true
+
+[build]
+template = "python"
+dev-dependencies = [
+    "host:python312",
+]
+
+[package]
+dependencies = [
+    "python312"
+]
+

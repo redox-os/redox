@@ -103,6 +103,9 @@ pub enum BuildKind {
         #[serde(default)]
         mesonflags: Vec<String>,
     },
+    /// Will build and install using python pip
+    #[serde(rename = "python")]
+    Python,
     /// Will build and install using custom commands
     #[serde(rename = "custom")]
     Custom { script: String },
