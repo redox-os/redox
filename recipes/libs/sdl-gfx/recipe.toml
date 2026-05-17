@@ -1,27 +1,15 @@
 [source]
-tar = "https://sourceforge.net/projects/sdlgfx/files/SDL_gfx-2.0.25.tar.gz"
-blake3 = "e6f571a38e51d369b010f4b10eb35b95e3d2edae2edd796241c47ea8376581e6"
-patches = ["redox.patch"]
+tar = "https://sourceforge.net/projects/sdlgfx/files/SDL_gfx-2.0.27.tar.gz"
+blake3 = "6fe0ff88b5084d56e2c9259e50ef2eab14db4c8bc2fa7a4719a3adb4178e266f"
 script = """
+GNU_CONFIG_GET config.sub
 ./autogen.sh
 """
 
 [build]
-template = "custom"
+template = "configure"
 dependencies = [
     "sdl1",
     "liborbital",
     "libiconv",
 ]
-script = """
-COOKBOOK_CONFIGURE_FLAGS=(
-    --prefix=/
-    --build="$(gcc -dumpmachine)"
-    --host="${TARGET}"
-    --disable-shared
-)
-
-cookbook_configure
-
-rm -f "${COOKBOOK_STAGE}/lib/"*.la
-"""

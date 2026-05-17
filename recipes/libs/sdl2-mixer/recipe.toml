@@ -16,9 +16,7 @@ script = """
 DYNAMIC_INIT
 
 export SDL_LIBS="-lSDL2 -lorbital -lOSMesa -lvorbis -logg -lz -lm -lpthread -lstdc++"
-COOKBOOK_CONFIGURE_FLAGS=(
-    --prefix=/
-    --host="${TARGET}"
+COOKBOOK_CONFIGURE_FLAGS+=(
     --disable-sdltest
     --enable-music-ogg
     --disable-music-cmd

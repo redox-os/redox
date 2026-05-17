@@ -7,9 +7,10 @@ dependencies = [
 "lua54"
 ]
 script = """
-
+DYNAMIC_INIT
 COOKBOOK_CONFIGURE_FLAGS=(
-    --sysconfdir=$COOKBOOK_SYSROOT
+    --prefix=/usr
+    --sysconfdir=/etc
     --with-lua-include=$COOKBOOK_SYSROOT/include
     --with-lua-bin=$COOKBOOK_SYSROOT/bin
     --with-lua-lib=$COOKBOOK_SYSROOT/lib
