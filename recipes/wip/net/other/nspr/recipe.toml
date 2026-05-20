@@ -18,6 +18,8 @@ COOKBOOK_CONFIGURE_FLAGS+=(
     --enable-64bit
     --with-pthreads
     ac_cv_path_LD="$LD"
+    ac_cv_func_secure_getenv=no
+    ac_cv_func___secure_getenv=no
 )
 COOKBOOK_MAKE_JOBS=1
 COOKBOOK_CONFIGURE="$COOKBOOK_SOURCE/mozjs-sys/mozjs/nsprpub/configure"
