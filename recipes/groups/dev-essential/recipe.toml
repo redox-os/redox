@@ -7,14 +7,14 @@ dependencies = [
     "gcc13",
     "gcc13.cxx",
     "gnu-grep",
-    # "groff", #TODO: fix compilation error
+    "groff",
     "gawk",
     "file",
     "perl5",
     "python312",
     "ripgrep",
     "lua54",
-    # "m4",  #TODO: fix compilation error
+    "m4",
     "nasm",
     "patch",
     "pkg-config",

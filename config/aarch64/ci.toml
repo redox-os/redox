@@ -102,6 +102,7 @@ smith = {}
 terminfo = {}
 userutils = {}
 uutils = {}
+uutils-procps = {}
 vim = {}
 xz = {}
 zlib = {}
