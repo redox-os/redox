@@ -1,0 +1,12 @@
+diff --color -ruwN source/lib/freadahead.c source-new/lib/freadahead.c
+--- source/lib/freadahead.c	2021-04-23 03:28:47.000000000 +0700
++++ source-new/lib/freadahead.c	2026-05-20 10:32:33.459143178 +0700
+@@ -94,6 +94,8 @@
+   if (fp->state == 4 /* WR */ || fp->rp >= fp->wp)
+     return 0;
+   return fp->wp - fp->rp;
++#elif defined __redox__                /* Redox */
++  return 0;
+ #elif defined SLOW_BUT_NO_HACKS     /* users can define this */
+   abort ();
+   return 0;

@@ -1,5 +1,24 @@
-#TODO compilation error - port fseterr.c
 [source]
-tar = "https://ftp.gnu.org/gnu/groff/groff-1.23.0.tar.gz"
+tar = "https://ftp.gnu.org/gnu/groff/groff-1.24.1.tar.gz"
+blake3 = "dc2d3e0a91807ebb3a723d9ee01a45b1b40da10abff7127651861f54a0978466"
+patches = [ "redox.patch" ]
+script = """
+autotools_recursive_regenerate
+"""
+
 [build]
-template = "configure"
+template = "custom"
+dev-dependencies = [
+    "host:groff"
+]
+script = """
+DYNAMIC_INIT
+COOKBOOK_MAKE_FLAGS=()
+if [ "$TARGET" != "$COOKBOOK_HOST_TARGET" ]; then
+# todo
+COOKBOOK_MAKE_FLAGS+=( GROFFBIN="$COOKBOOK_TOOLCHAIN/bin/groff" GROFF_BIN_PATH="$COOKBOOK_TOOLCHAIN/bin" V=1 )
+fi
+"${COOKBOOK_CONFIGURE}" "${COOKBOOK_CONFIGURE_FLAGS[@]}"
+"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}" all "${COOKBOOK_MAKE_FLAGS[@]}"
+"${COOKBOOK_MAKE}" install DESTDIR="${COOKBOOK_STAGE}"
+"""
