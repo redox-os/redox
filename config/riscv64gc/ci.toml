@@ -95,6 +95,7 @@ smith = {}
 terminfo = {}
 userutils = {}
 uutils = {}
+uutils-procps = {}
 xz = {}
 #vim = {} # error compiling ncurses
 zlib = {}
