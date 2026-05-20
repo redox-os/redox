@@ -2,7 +2,8 @@
 tar = "https://github.com/fragglet/sdl-sopwith/releases/download/sdl-sopwith-2.9.0/sdl-sopwith-2.9.0.tar.gz"
 blake3 = "44e1404a9c4bea257d7778d2a4b1512231603a74b0a7b18eac5d18f36730ed3e"
 script = """
-./autogen.sh
+DYNAMIC_INIT
+autotools_recursive_regenerate
 """
 
 [build]
