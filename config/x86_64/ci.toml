@@ -69,6 +69,7 @@ extrautils = {}
 ffmpeg6 = {}
 file = {}
 findutils = {}
+firefox = {}
 fish-shell = {}
 flycast = {}
 fontconfig = {}
