@@ -67,7 +67,8 @@ fn init_binary_repo() -> (RepoManager, Repository) {
 fn download_repo(repo: &RepoManager, repo_path: PathBuf) -> crate::Result<Repository> {
     let (toml_str, _) = repo.get_package_toml(&PackageName::new("repo").unwrap())?;
     let repo = Repository::from_toml(&toml_str)?;
-    fs::serialize_and_write(&repo_path.join("repo.toml"), &repo)?;
+    let target = redoxer::target();
+    fs::serialize_and_write(&repo_path.join(format!("{target}_repo.toml")), &repo)?;
     Ok(repo)
 }
 
