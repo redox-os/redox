@@ -3,6 +3,7 @@
 tar = "https://archive.xfce.org/src/xfce/xfce4-settings/4.21/xfce4-settings-4.21.1.tar.xz"
 [build]
 dependencies = [
+    "host:libxml2",
     "atk",
     "cairo",
     "gdk-pixbuf",
