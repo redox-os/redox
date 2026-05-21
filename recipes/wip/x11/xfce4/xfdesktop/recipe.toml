@@ -1,8 +1,5 @@
 [source]
-tar = "https://archive.xfce.org/src/xfce/xfce4-panel/4.21/xfce4-panel-4.21.0.tar.xz"
-blake3 = "59a8f55ba237a56ccd16869a28426fa3890c292164a4502dd07ddba45e0268ed"
-patches = ["redox.patch"]
-
+tar = "https://archive.xfce.org/src/xfce/xfdesktop/4.20/xfdesktop-4.20.2.tar.bz2"
 [build]
 dependencies = [
     "atk",
@@ -23,6 +20,8 @@ dependencies = [
     "libjpeg",
     "libpng",
     "libpthread-stubs",
+    "libsm",
+    "libnotify",
     "libwnck3",
     "libx11",
     "libxau",
@@ -43,10 +42,12 @@ dependencies = [
     "pixman",
     "shared-mime-info",
     "x11proto",
+    "vte",
     "xfconf",
     "zlib",
+    "libexo",
+    "libyaml",
 ]
 template = "meson"
 mesonflags = [
-    "-Dintrospection=false",
 ]

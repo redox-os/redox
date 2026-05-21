@@ -16,9 +16,9 @@ dbus = {}
 gtk3 = {}
 mate-common = {}
 mesa-demos-x11 = {}
+#firefox = {}
 #webkitgtk3 = {} # not compiling
-#xfce4-panel = {}
-#xfwm4 = {}
+xfce4-common = {}
 x11-full = {}
 zenity = {}
 
@@ -60,6 +60,28 @@ nowait BROWSER=/bin/netsurf-fb VT=3 orbital orbital-x11
 """
 
 [[files]]
+path = "/run/user/0"
+data = ""
+directory = true
+mode = 0o700
+
+[[files]]
+path = "/home/root/.config/dconf"
+data = ""
+directory = true
+
+[[files]]
+path = "/home/root/Desktop"
+data = ""
+directory = true
+
+
+[[files]]
+path = "/usr/share/X11/xorg.conf.d"
+data = ""
+directory = true
+
+[[files]]
 path = "/usr/bin/orbital-x11"
 mode = 0o755
 data = """
@@ -70,11 +92,12 @@ set -ex
 # for ice authority and pixbuf
 export HOME=/home/root
 export XDG_DATA_DIRS=/usr/share
+export XDG_RUNTIME_DIR=/run/user/0
+export XDG_CONFIG_HOME=/home/root/.config
 
 # Generate config file
 WIDTH="$((0x$(grep FRAMEBUFFER_WIDTH /scheme/sys/env | cut -d '=' -f 2)))"
 HEIGHT="$((0x$(grep FRAMEBUFFER_HEIGHT /scheme/sys/env | cut -d '=' -f 2)))"
-mkdir -p /usr/share/X11/xorg.conf.d
 cat > /usr/share/X11/xorg.conf.d/orbital.conf <<EOF
 Section "Device"
     Identifier  "Configured Video Device"
@@ -105,22 +128,40 @@ EOF
 export DISPLAY=":0"
 X "${DISPLAY}" &
 sleep 1
-exec dbus-launch --exit-with-x11 orbital-x11-session
+exec dbus-launch --exit-with-x11 xfce4-x11-session
 """
 
 [[files]]
-path = "/usr/bin/orbital-x11-session"
+path = "/usr/bin/mate-x11-session"
 mode = 0o755
 data = """
 #!/usr/bin/env bash
-
 set -ex
 
+gdk-pixbuf-query-loaders --update-cache
+/usr/libexec/dconf-service &
+
 xterm&
-sleep 1
+#zenity --info --text="running mate as $(id)!"
+#exec marco
+exec mate-session
+"""
+
+
+[[files]]
+path = "/usr/bin/xfce4-x11-session"
+mode = 0o755
+data = """
+#!/usr/bin/env bash
+set -ex
 
 gdk-pixbuf-query-loaders --update-cache
-mate-session&
+/usr/lib/xfce4/xfconf/xfconfd &
+
+xterm&
+#zenity --info --text="running xfce4 as $(id)!"
+#exec xfwm4
+exec xfce4-session
 """
 
 

@@ -1,0 +1,15 @@
+[source]
+tar = "https://archive.xfce.org/src/xfce/exo/4.21/exo-4.21.0.tar.bz2"
+[build]
+dependencies = [
+    "atk",
+    "cairo",
+    "gdk-pixbuf",
+    "gettext",
+    "glib",
+    "gtk3",
+    "libxfce4ui",
+    "libxfce4util",
+]
+template = "configure"
+

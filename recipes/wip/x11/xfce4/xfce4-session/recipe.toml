@@ -1,0 +1,23 @@
+[source]
+tar = "https://archive.xfce.org/src/xfce/xfce4-session/4.21/xfce4-session-4.21.1.tar.xz"
+patches = [ "redox.patch" ]
+[build]
+dependencies = [
+    "atk",
+    "cairo",
+    "gdk-pixbuf",
+    "glib",
+    "gtk3",
+    "libice",
+    "libsm",
+    "libwnck3",
+    "libx11",
+    "libxfce4ui",
+    "libxfce4util",
+    "libxfce4windowing",
+    "pango",
+    "xfconf",
+]
+template = "meson"
+mesonflags = [
+]

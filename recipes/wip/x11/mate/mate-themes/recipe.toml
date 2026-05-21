@@ -1,0 +1,10 @@
+[source]
+git = "https://github.com/mate-desktop/mate-themes"
+shallow_clone = true
+
+[build]
+template = "custom"
+script = """
+mkdir -p ${COOKBOOK_STAGE}/usr/share/themes/
+rsync -a ${COOKBOOK_SOURCE}/desktop-themes/ ${COOKBOOK_STAGE}/usr/share/themes/
+"""

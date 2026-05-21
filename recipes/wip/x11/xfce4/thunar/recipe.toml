@@ -1,0 +1,29 @@
+[source]
+tar = "https://archive.xfce.org/src/xfce/thunar/4.21/thunar-4.21.5.tar.xz"
+[build]
+dependencies = [
+    "atk",
+    "cairo",
+    "gdk-pixbuf",
+    "gettext",
+    "glib",
+    "gtk3",
+    "libice",
+    "libnotify",
+    "libx11",
+    "libxfce4ui",
+    "libxfce4util",
+    "pango",
+    "pcre2",
+    "vte",
+    "xfconf",
+]
+dev-dependencies = [
+    "libstdcxx"
+]
+template = "meson"
+mesonflags = [
+    "-Dpolkit=disabled",
+    "-Dgudev=disabled",
+    "-Dintrospection=false"
+]

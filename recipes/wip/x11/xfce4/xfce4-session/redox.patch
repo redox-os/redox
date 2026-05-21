@@ -1,0 +1,35 @@
+diff --color -ruwN source/meson.build source-new/meson.build
+--- source/meson.build	2025-12-29 23:51:03.000000000 +0700
++++ source-new/meson.build	2026-05-21 21:53:44.879480320 +0700
+@@ -47,8 +47,6 @@
+ libxfce4windowing = dependency('libxfce4windowing-0', version: dependency_versions['libxfce4windowing'])
+ xfconf = dependency('libxfconf-0', version: dependency_versions['xfce4'])
+ 
+-gdk_pixbuf_csource = find_program(gdk_pixbuf.get_variable(pkgconfig: 'gdk_pixbuf_csource'), required: true)
+-
+ # Feature: 'x11'
+ x11_deps = []
+ x11_deps += dependency('gdk-x11-3.0', version: dependency_versions['gtk'], required: get_option('x11'))
+diff --color -ruwN source/xfce4-session/meson.build source-new/xfce4-session/meson.build
+--- source/xfce4-session/meson.build	2025-12-29 23:51:03.000000000 +0700
++++ source-new/xfce4-session/meson.build	2026-05-21 21:53:55.246584551 +0700
+@@ -89,7 +89,7 @@
+   'xfsm-chooser-icon.h',
+   input: 'xfsm-chooser-icon.png',
+   output: 'xfsm-chooser-icon.h',
+-  command: [gdk_pixbuf_csource, '--static', '--raw', '--stream', '--name=xfsm_chooser_icon_data', '@INPUT@'],
++  command: ['gdk-pixbuf-csource', '--static', '--raw', '--stream', '--name=xfsm_chooser_icon_data', '@INPUT@'],
+   capture: true,
+ )
+ 
+diff --color -ruwN source/xfce4-session/xfsm-manager.h source-new/xfce4-session/xfsm-manager.h
+--- source/xfce4-session/xfsm-manager.h	2025-12-29 23:51:03.000000000 +0700
++++ source-new/xfce4-session/xfsm-manager.h	2026-05-21 21:54:38.971024148 +0700
+@@ -26,6 +26,7 @@
+ #include <glib-object.h>
+ #include <libxfce4util/libxfce4util.h>
+ #include <xfconf/xfconf.h>
++#include <strings.h>
+ 
+ #include "xfsm-client.h"
+ #include "xfsm-global.h"

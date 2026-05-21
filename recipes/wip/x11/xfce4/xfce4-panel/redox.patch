@@ -1,0 +1,22 @@
+diff --color -ruwN source/panel/panel-module.h source-new/panel/panel-module.h
+--- source/panel/panel-module.h	2025-03-22 13:22:37.000000000 +0700
++++ source-new/panel/panel-module.h	2026-05-21 15:16:48.097953249 +0700
+@@ -23,6 +23,7 @@
+ #include "libxfce4panel/xfce-panel-plugin-provider.h"
+ 
+ #include <gtk/gtk.h>
++#include <strings.h>
+ 
+ G_BEGIN_DECLS
+ 
+diff --color -ruwN source/plugins/tasklist/tasklist-widget.h source-new/plugins/tasklist/tasklist-widget.h
+--- source/plugins/tasklist/tasklist-widget.h	2025-03-22 13:22:37.000000000 +0700
++++ source-new/plugins/tasklist/tasklist-widget.h	2026-05-21 15:17:12.117347685 +0700
+@@ -21,6 +21,7 @@
+ 
+ #include "libxfce4panel/libxfce4panel.h"
+ 
++#include <strings.h>
+ #include <gtk/gtk.h>
+ 
+ G_BEGIN_DECLS

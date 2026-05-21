@@ -1,6 +1,7 @@
 [package]
 dependencies = [
     "caja",
+    "dconf",
     "marco",
     "mate-control-center",
     "mate-icon-theme",
@@ -8,4 +9,5 @@ dependencies = [
     "mate-session-manager",
     "mate-settings-daemon",
     "mate-terminal",
+    "mate-themes",
 ]
