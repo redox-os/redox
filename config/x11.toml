@@ -69,13 +69,11 @@ mode = 0o700
 path = "/home/root/.config/dconf"
 data = ""
 directory = true
-postinstall = true
 
 [[files]]
 path = "/home/root/Desktop"
 data = ""
 directory = true
-postinstall = true
 
 
 [[files]]
@@ -130,7 +128,7 @@ EOF
 export DISPLAY=":0"
 X "${DISPLAY}" &
 sleep 1
-exec dbus-launch --exit-with-x11 mate-x11-session
+exec dbus-launch --exit-with-x11 xfce4-x11-session
 """
 
 [[files]]
