@@ -16,6 +16,11 @@ ac_add_options --enable-default-toolkit=cairo-gtk3-x11-only
 ac_add_options --enable-bootstrap=-clang # only use our clang
 ac_add_options --disable-release # todo enable later
 ac_add_options --with-system-nspr
+ac_add_options --with-system-zlib
+ac_add_options --with-system-icu
+ac_add_options --enable-system-ffi
+ac_add_options --enable-system-pixman
+ac_add_options --enable-frame-pointers
 ac_add_options --disable-jit # todo verify mcontext work and patch
 ac_add_options --disable-hardening
 ac_add_options --disable-tests
