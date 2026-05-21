@@ -22,6 +22,7 @@ mate-common = {}
 redox-tests = {}
 x11-minimal = {}
 x11-full = {}
+xfce4-common = {}
 
 # Normal packages below
 
