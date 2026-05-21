@@ -1,3 +1,15 @@
+diff -ruwN source/data/org.mate.session.gschema.xml.in source-new/data/org.mate.session.gschema.xml.in
+--- source/data/org.mate.session.gschema.xml.in	2024-02-17 00:25:07.000000000 +0700
++++ source-new/data/org.mate.session.gschema.xml.in	2026-05-21 23:05:41.642620533 +0700
+@@ -37,7 +37,7 @@
+       <description>List of applications that are part of the default session.</description>
+     </key>
+     <key name="required-components-list" type="as">
+-      <default>[ 'windowmanager', 'panel', 'filemanager', 'dock' ]</default>
++      <default>[ 'windowmanager', 'panel', 'filemanager' ]</default>
+       <summary>Required session components</summary>
+       <description>List of components that are required as part of the session. (Each element names a key under "/org/mate/desktop/session/required_components"). The Startup Applications preferences tool will not normally allow users to remove a required component from the session, and the session manager will automatically add the required components back to the session at login time if they do get removed.</description>
+     </key>
 diff -ruwN source/mate-session/gsm-manager.c source-new/mate-session/gsm-manager.c
 --- source/mate-session/gsm-manager.c	2024-02-17 00:25:07.000000000 +0700
 +++ source-new/mate-session/gsm-manager.c	2026-05-21 21:13:01.539990071 +0700
@@ -6,7 +18,7 @@ diff -ruwN source/mate-session/gsm-manager.c source-new/mate-session/gsm-manager
  #define GSM_MANAGER_DBUS_NAME "org.gnome.SessionManager"
  
 -#define GSM_MANAGER_PHASE_TIMEOUT 30 /* seconds */
-+#define GSM_MANAGER_PHASE_TIMEOUT 3 /* seconds */
++#define GSM_MANAGER_PHASE_TIMEOUT 5 /* seconds */
  
  /* In the exit phase, all apps were already given the chance to inhibit the session end
   * At that stage we don't want to wait much for apps to respond, we want to exit, and fast.
