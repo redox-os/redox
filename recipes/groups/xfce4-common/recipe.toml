@@ -1,0 +1,10 @@
+[package]
+dependencies = [
+    "thunar",
+    "xfconf",
+    "xfdesktop",
+    "xfce4-session",
+    "xfce4-panel",
+    "xfce4-settings",
+    "xfwm4",
+]

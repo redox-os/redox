@@ -1,0 +1,12 @@
+diff -ruwN source/mate-session/gsm-manager.c source-new/mate-session/gsm-manager.c
+--- source/mate-session/gsm-manager.c	2024-02-17 00:25:07.000000000 +0700
++++ source-new/mate-session/gsm-manager.c	2026-05-21 21:13:01.539990071 +0700
+@@ -70,7 +70,7 @@
+ #define GSM_MANAGER_DBUS_PATH "/org/gnome/SessionManager"
+ #define GSM_MANAGER_DBUS_NAME "org.gnome.SessionManager"
+ 
+-#define GSM_MANAGER_PHASE_TIMEOUT 30 /* seconds */
++#define GSM_MANAGER_PHASE_TIMEOUT 3 /* seconds */
+ 
+ /* In the exit phase, all apps were already given the chance to inhibit the session end
+  * At that stage we don't want to wait much for apps to respond, we want to exit, and fast.
