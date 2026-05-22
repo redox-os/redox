@@ -1,6 +1,7 @@
 [package]
 dependencies = [
     "thunar",
+    "tumbler",
     "xfconf",
     "xfdashboard",
     "xfdesktop",

@@ -28,3 +28,8 @@ mesonflags = [
     "-Dgudev=disabled",
     "-Dintrospection=false"
 ]
+
+[package]
+dependencies = [
+    "gnome-desktop-schemas"
+]

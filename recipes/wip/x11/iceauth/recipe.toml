@@ -1,0 +1,8 @@
+[source]
+tar = "https://xorg.freedesktop.org/archive/individual/app/iceauth-1.0.11.tar.xz"
+[build]
+template = "meson"
+dependencies = [
+    "x11proto",
+    "libice",
+]

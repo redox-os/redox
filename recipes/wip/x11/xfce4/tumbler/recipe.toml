@@ -1,0 +1,15 @@
+[source]
+tar = "https://archive.xfce.org/src/xfce/tumbler/4.21/tumbler-4.21.1.tar.xz"
+[build]
+dependencies = [
+    "freetype2", 
+    "gdk-pixbuf", 
+    "gettext", 
+    "glib", 
+    "libjpeg", 
+    "libpng", 
+    "libxfce4util",
+]
+template = "meson"
+mesonflags = [
+]
