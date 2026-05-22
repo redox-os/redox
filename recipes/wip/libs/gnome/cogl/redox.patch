@@ -1,0 +1,21 @@
+diff --color -ruwN source/configure source-new/configure
+--- source/configure	2020-06-04 14:59:51.000000000 +0200
++++ source-new/configure	2026-05-22 07:29:04.630575353 +0200
+@@ -10816,7 +10816,7 @@
+       lt_prog_compiler_static='-non_shared'
+       ;;
+ 
+-    linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu*)
++    linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu* | redox*)
+       case $cc_basename in
+       # old Intel for x86_64, which still supported -KPIC.
+       ecc*)
+@@ -13291,7 +13291,7 @@
+   ;;
+ 
+ # This must be glibc/ELF.
+-linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu*)
++linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu* | redox*)
+   version_type=linux # correct to gnu/linux during the next big refactor
+   need_lib_prefix=no
+   need_version=no

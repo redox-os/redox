@@ -18,5 +18,7 @@ script = """
 DYNAMIC_INIT
 cookbook_meson \
     -Ddefault_library=shared \
-    -Dxattr=false
+    -Dxattr=false \
+    -Dtests=false \
+    -Dfile_monitor_backend=auto
 """

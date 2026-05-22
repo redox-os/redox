@@ -1,10 +1,14 @@
 [package]
 dependencies = [
     "thunar",
+    "tumbler",
     "xfconf",
+    "xfdashboard",
     "xfdesktop",
+    "xfce4-appfinder",
     "xfce4-session",
     "xfce4-panel",
     "xfce4-settings",
+    "xfce4-terminal",
     "xfwm4",
 ]

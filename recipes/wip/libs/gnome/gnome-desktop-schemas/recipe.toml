@@ -1,0 +1,8 @@
+[source]
+tar = "https://download.gnome.org/sources/gsettings-desktop-schemas/50/gsettings-desktop-schemas-50.1.tar.xz"
+
+[build]
+template = "meson"
+mesonflags = [
+    "-Dintrospection=false"
+]

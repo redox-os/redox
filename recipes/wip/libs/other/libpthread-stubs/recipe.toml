@@ -1,5 +1,6 @@
 #TODO compiled but not tested
 [source]
 tar = "https://www.x.org/releases/individual/xcb/libpthread-stubs-0.5.tar.xz"
+blake3 = "e282d49eda2bbbc76345e68a9413a132b734033562d9ef56c4140912fa906a12"
 [build]
 template = "configure"

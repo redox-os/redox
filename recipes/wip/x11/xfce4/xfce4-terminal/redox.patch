@@ -1,0 +1,17 @@
+diff -ruwN source/terminal/terminal-window-dropdown.c source-new/terminal/terminal-window-dropdown.c
+--- source/terminal/terminal-window-dropdown.c	2026-03-08 12:12:45.000000000 +0100
++++ source-new/terminal/terminal-window-dropdown.c	2026-05-22 06:23:12.563462784 +0200
+@@ -567,11 +567,13 @@
+   if (dropdown->animation_timeout_id != 0)
+     g_source_remove (dropdown->animation_timeout_id);
+ 
++#ifdef HAVE_GTK_LAYER_SHELL
+   if (dropdown->set_monitor_idle_id != 0)
+     g_source_remove (dropdown->set_monitor_idle_id);
+ 
+   if (dropdown->monitor_removed_idle_id != 0)
+     g_source_remove (dropdown->monitor_removed_idle_id);
++#endif
+ 
+   if (dropdown->status_icon != NULL)
+     g_object_unref (G_OBJECT (dropdown->status_icon));

@@ -1,6 +1,6 @@
-diff --color -ruwN source/meson.build source-new/meson.build
---- source/meson.build	2025-12-29 23:51:03.000000000 +0700
-+++ source-new/meson.build	2026-05-21 21:53:44.879480320 +0700
+diff -ruwN source/meson.build source-new/meson.build
+--- source/meson.build	2025-12-29 17:51:03.000000000 +0100
++++ source-new/meson.build	2026-05-22 05:50:54.280346791 +0200
 @@ -47,8 +47,6 @@
  libxfce4windowing = dependency('libxfce4windowing-0', version: dependency_versions['libxfce4windowing'])
  xfconf = dependency('libxfconf-0', version: dependency_versions['xfce4'])
@@ -10,9 +10,27 @@ diff --color -ruwN source/meson.build source-new/meson.build
  # Feature: 'x11'
  x11_deps = []
  x11_deps += dependency('gdk-x11-3.0', version: dependency_versions['gtk'], required: get_option('x11'))
-diff --color -ruwN source/xfce4-session/meson.build source-new/xfce4-session/meson.build
---- source/xfce4-session/meson.build	2025-12-29 23:51:03.000000000 +0700
-+++ source-new/xfce4-session/meson.build	2026-05-21 21:53:55.246584551 +0700
+@@ -75,8 +73,6 @@
+     feature_cflags += '-DHAVE__ICETRANSNOLISTEN=1'
+   endif
+ 
+-  iceauth = find_program('iceauth', required: true)
+-
+   xsession_prefix = get_option('xsession-prefix')
+   if xsession_prefix == ''
+     xsession_prefix = '/usr'
+diff -ruwN source/xfce4-session/meson.build source-new/xfce4-session/meson.build
+--- source/xfce4-session/meson.build	2025-12-29 17:51:03.000000000 +0100
++++ source-new/xfce4-session/meson.build	2026-05-22 05:51:20.133774608 +0200
+@@ -42,7 +42,7 @@
+ 
+ if enable_x11
+   c_args += [
+-    '-DICEAUTH_CMD="@0@"'.format(iceauth.full_path()),
++    '-DICEAUTH_CMD="@0@"'.format('/usr/bin/iceauth'),
+   ]
+ 
+   session_sources += [
 @@ -89,7 +89,7 @@
    'xfsm-chooser-icon.h',
    input: 'xfsm-chooser-icon.png',
@@ -22,9 +40,9 @@ diff --color -ruwN source/xfce4-session/meson.build source-new/xfce4-session/mes
    capture: true,
  )
  
-diff --color -ruwN source/xfce4-session/xfsm-manager.h source-new/xfce4-session/xfsm-manager.h
---- source/xfce4-session/xfsm-manager.h	2025-12-29 23:51:03.000000000 +0700
-+++ source-new/xfce4-session/xfsm-manager.h	2026-05-21 21:54:38.971024148 +0700
+diff -ruwN source/xfce4-session/xfsm-manager.h source-new/xfce4-session/xfsm-manager.h
+--- source/xfce4-session/xfsm-manager.h	2025-12-29 17:51:03.000000000 +0100
++++ source-new/xfce4-session/xfsm-manager.h	2026-05-22 05:43:17.663128999 +0200
 @@ -26,6 +26,7 @@
  #include <glib-object.h>
  #include <libxfce4util/libxfce4util.h>

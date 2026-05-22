@@ -1,5 +1,6 @@
 [source]
 tar = "https://archive.xfce.org/src/xfce/thunar/4.21/thunar-4.21.5.tar.xz"
+blake3 = "3e7572c5c4c2621acc8bf743565b727af4b37bbe27bd07ce8a8d8def37a8a8c3"
 [build]
 dependencies = [
     "atk",
@@ -26,4 +27,9 @@ mesonflags = [
     "-Dpolkit=disabled",
     "-Dgudev=disabled",
     "-Dintrospection=false"
+]
+
+[package]
+dependencies = [
+    "gnome-desktop-schemas"
 ]

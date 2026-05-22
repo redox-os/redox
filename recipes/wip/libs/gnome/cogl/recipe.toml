@@ -1,13 +1,26 @@
-#TODO not compiled or tested
+#TODO compiled but not tested
 [source]
 tar = "https://download.gnome.org/sources/cogl/1.22/cogl-1.22.8.tar.xz"
+blake3 = "223495ca6149877b76ca31b43d1e8a47f2983f4c6c2dfc3ec50239599daa14cd"
+patches = ["redox.patch"]
 [build]
-template = "configure"
+template = "custom"
 dependencies = [
     "mesa-x11",
     "libxcomposite",
     "libxdamage",
     "libxext",
     "libxfixes",
+    "glib",
+    "cairo",
+    "pango",
     #"libwayland",
 ]
+script = """
+DYNAMIC_INIT
+export CPPFLAGS="$CPPFLAGS -DSTBI_SIMD=0"
+COOKBOOK_CONFIGURE_FLAGS+=(
+--disable-maintainer-flags
+)
+cookbook_configure
+"""

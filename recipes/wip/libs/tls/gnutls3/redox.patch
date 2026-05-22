@@ -1,0 +1,93 @@
+diff -ruwN source/lib/nettle/sysrng-linux.c source-new/lib/nettle/sysrng-linux.c
+--- source/lib/nettle/sysrng-linux.c	2023-08-03 21:42:26.000000000 +0700
++++ source-new/lib/nettle/sysrng-linux.c	2026-05-22 14:49:54.913642701 +0700
+@@ -48,7 +48,7 @@
+ 
+ get_entropy_func _rnd_get_system_entropy = NULL;
+ 
+-#if defined(__linux__)
++#if defined(__linux__) || defined(__redox__)
+ # ifdef HAVE_GETRANDOM
+ #  include <sys/random.h>
+ # else
+@@ -107,7 +107,7 @@
+ 	if (ret == -1) {
+ 		int e = errno;
+ 		gnutls_assert();
+-		_gnutls_debug_log
++		printf
+ 			("Failed to use getrandom: %s\n",
+ 					 strerror(e));
+ 		return GNUTLS_E_RANDOM_DEVICE_ERROR;
+@@ -127,7 +127,7 @@
+ 
+ 	urandom_fd = open("/dev/urandom", O_RDONLY);
+ 	if (urandom_fd < 0) {
+-		_gnutls_debug_log("Cannot open /dev/urandom!\n");
++		printf("Cannot open /dev/urandom!\n");
+ 		return GNUTLS_E_RANDOM_DEVICE_ERROR;
+ 	}
+ 
+@@ -140,11 +140,11 @@
+ 		if (res <= 0) {
+ 			int e = errno;
+ 			if (res < 0) {
+-				_gnutls_debug_log
++				printf
+ 					("Failed to read /dev/urandom: %s\n",
+ 					 strerror(e));
+ 			} else {
+-				_gnutls_debug_log
++				printf
+ 					("Failed to read /dev/urandom: end of file\n");
+ 			}
+ 
+@@ -159,18 +159,26 @@
+ 	return 0;
+ }
+ 
++static int _rnd_get_system_entropy_stub(void* _rnd, size_t size)
++{
++    if (_rnd != NULL && size > 0) {
++        memset(_rnd, 0, size);
++    }
++    return 0;
++}
++
+ int _rnd_system_entropy_init(void)
+ {
+ 	int urandom_fd;
+ 
+-#if defined(__linux__)
++#if defined(__linux__) || defined(__redox__)
+ 	/* Enable getrandom() usage if available */
+ 	if (have_getrandom()) {
+ 		_rnd_get_system_entropy = _rnd_get_system_entropy_getrandom;
+-		_gnutls_debug_log("getrandom random generator was selected\n");
++		printf("getrandom random generator was selected\n");
+ 		return 0;
+ 	} else {
+-		_gnutls_debug_log("getrandom is not available\n");
++		printf("getrandom is not available\n");
+ 	}
+ #endif
+ 
+@@ -179,13 +187,15 @@
+ 	/* Check that we can open it */
+ 	urandom_fd = open("/dev/urandom", O_RDONLY);
+ 	if (urandom_fd < 0) {
+-		_gnutls_debug_log("Cannot open /dev/urandom during initialization!\n");
+-		return gnutls_assert_val(GNUTLS_E_RANDOM_DEVICE_ERROR);
++		printf("Cannot open /dev/urandom during initialization!\n");
++		_rnd_get_system_entropy = _rnd_get_system_entropy_stub;
++		printf("USING VERY INSECURE NOT RANDOM ENTROPY!\n");
++		return 0;
+ 	}
+ 	close(urandom_fd);
+ 
+ 	_rnd_get_system_entropy = _rnd_get_system_entropy_urandom;
+-	_gnutls_debug_log("/dev/urandom random generator was selected\n");
++	printf("/dev/urandom random generator was selected\n");
+ 
+ 	return 0;
+ }

@@ -1,6 +1,7 @@
 
 [source]
 tar = "https://archive.xfce.org/src/xfce/xfce4-settings/4.21/xfce4-settings-4.21.1.tar.xz"
+blake3 = "41c37ce199e809e6c143f7cae041d4bddc33cea8e1505937c3c33fec79538d58"
 [build]
 dependencies = [
     "host:libxml2",

@@ -1,0 +1,20 @@
+[source]
+tar = "https://archive.xfce.org/src/apps/xfdashboard/1.1/xfdashboard-1.1.0.tar.xz"
+blake3 = "8d8d9fbd138105a52002df63652c570e43dc9a6729c859aff321519c8b2aeada"
+[build]
+dependencies = [
+    "cairo",
+    "gdk-pixbuf",
+    "glib",
+    "gtk3",
+    "libxfce4ui",
+    "libxfce4util",
+    "vte",
+    "xfconf",
+    "libwnck3",
+    "garcon",
+    "cogl",
+    "clutter",
+]
+template = "meson"
+mesonflags = []
