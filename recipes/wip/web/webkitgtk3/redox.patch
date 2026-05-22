@@ -238,6 +238,29 @@ diff -ruwN source/Source/JavaScriptCore/runtime/MachineContext.h source-new/Sour
  #if CPU(X86_64)
      return reinterpret_cast<void*&>((uintptr_t&) machineContext.r8);
  #else
+diff -ruwN source/Source/JavaScriptCore/runtime/Options.cpp source-new/Source/JavaScriptCore/runtime/Options.cpp
+--- source/Source/JavaScriptCore/runtime/Options.cpp	2025-03-20 18:07:59.015023500 +0100
++++ source-new/Source/JavaScriptCore/runtime/Options.cpp	2026-05-22 01:21:58.011957922 +0200
+@@ -36,6 +36,7 @@
+ #include <mutex>
+ #include <stdlib.h>
+ #include <string.h>
++#include <strings.h>
+ #include <wtf/ASCIICType.h>
+ #include <wtf/BitSet.h>
+ #include <wtf/Compiler.h>
+diff -ruwN source/Source/JavaScriptCore/yarr/YarrPattern.cpp source-new/Source/JavaScriptCore/yarr/YarrPattern.cpp
+--- source/Source/JavaScriptCore/yarr/YarrPattern.cpp	2025-03-07 12:11:01.486010300 +0100
++++ source-new/Source/JavaScriptCore/yarr/YarrPattern.cpp	2026-05-22 01:28:48.678618215 +0200
+@@ -2639,7 +2639,7 @@
+         return;
+     out.print(" {", quantityMinCount.value());
+     if (quantityMinCount != quantityMaxCount) {
+-        if (quantityMaxCount == UINT_MAX)
++        if (quantityMaxCount == (uint32_t)UINT_MAX)
+             out.print(",...");
+         else
+             out.print(",", quantityMaxCount.value());
 diff -ruwN source/Source/ThirdParty/ANGLE/GLESv2.cmake source-new/Source/ThirdParty/ANGLE/GLESv2.cmake
 --- source/Source/ThirdParty/ANGLE/GLESv2.cmake	2025-02-17 19:59:58.567796700 +0700
 +++ source-new/Source/ThirdParty/ANGLE/GLESv2.cmake	2025-09-09 09:08:03.495986361 +0700
