@@ -1,4 +1,3 @@
-#TODO: Install share/completion files
 [source]
 git = "https://github.com/fish-shell/fish-shell"
 rev = "54e8ad7e90a8213c01ba58de0640223bee6846d6"
@@ -13,4 +12,6 @@ DYNAMIC_INIT
 # The only default enabled feature is building the man pages.
 # However, that requires sphinx so it can just be enabled later.
 cookbook_cargo --no-default-features
+mkdir -p "${COOKBOOK_STAGE}/usr/share/fish"
+rsync -a "${COOKBOOK_SOURCE}/share/" "${COOKBOOK_STAGE}/usr/share/fish/"
 """
