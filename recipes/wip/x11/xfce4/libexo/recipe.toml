@@ -1,5 +1,6 @@
 [source]
 tar = "https://archive.xfce.org/src/xfce/exo/4.21/exo-4.21.0.tar.bz2"
+blake3 = "431f43ef89b9c84aa548732cc2099b0279fc5cfc7f7c83b47392decfd0fe096e"
 [build]
 dependencies = [
     "atk",

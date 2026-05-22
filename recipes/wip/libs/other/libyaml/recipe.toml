@@ -1,5 +1,6 @@
 #TODO compiled but not tested
 [source]
 tar = "http://pyyaml.org/download/libyaml/yaml-0.2.5.tar.gz"
+blake3 = "64cd0f69eb55904fdf4a6f20d46d565ab2433ae494e76edbdf835a25b57c98d9"
 [build]
 template = "configure"

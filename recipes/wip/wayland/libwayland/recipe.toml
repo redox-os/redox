@@ -2,6 +2,7 @@
 #TODO: F_DUPFD_CLOEXEC, MSG_CMSG_CLOEXEC, MSG_NOSIGNAL TFD_TIMER_ABSTIME
 [source]
 tar = "https://gitlab.freedesktop.org/wayland/wayland/-/releases/1.24.0/downloads/wayland-1.24.0.tar.xz"
+blake3 = "8c3b2bc792e5e262e9fb821fb8222b376de6fdf5d7af9b86d46e51ecf79704b9"
 patches = [
     #FIXME: This patch is just a shim. Remove this patch
     "redox.patch"

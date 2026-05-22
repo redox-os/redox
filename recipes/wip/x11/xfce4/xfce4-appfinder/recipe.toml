@@ -1,0 +1,16 @@
+[source]
+tar = "https://archive.xfce.org/src/xfce/xfce4-appfinder/4.21/xfce4-appfinder-4.21.1.tar.xz"
+blake3 = "45da27a937fec50d5721937b07ade3c05ac8d91c2656e76bd98a0b7215f45c15"
+[build]
+dependencies = [
+    "cairo",
+    "garcon",
+    "gdk-pixbuf",
+    "glib",
+    "gtk3",
+    "libxfce4ui",
+    "libxfce4util",
+    "xfconf",
+]
+template = "meson"
+mesonflags = []

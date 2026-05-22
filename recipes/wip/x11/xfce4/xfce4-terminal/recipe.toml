@@ -1,0 +1,20 @@
+[source]
+tar = "https://archive.xfce.org/src/apps/xfce4-terminal/1.2/xfce4-terminal-1.2.0.tar.xz"
+blake3 = "24b1ad1f765b99eef694909d4a59cdbbcfaedfdb4ba5c97c21741d047dabe533"
+patches = ["redox.patch"] # https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=293731
+[build]
+dependencies = [
+    "cairo",
+    "gdk-pixbuf",
+    "glib",
+    "gtk3",
+    "libxfce4ui",
+    "libxfce4util",
+    "vte",
+    "xfconf",
+]
+dev-dependencies = [
+    "libstdcxx"
+]
+template = "meson"
+mesonflags = []

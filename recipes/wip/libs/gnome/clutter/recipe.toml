@@ -1,7 +1,10 @@
-#TODO not compiled or tested
+#TODO compiled but not tested
 # build instructions: https://gitlab.gnome.org/Archive/clutter#building-and-installation
 [source]
 tar = "https://download.gnome.org/sources/clutter/1.26/clutter-1.26.4.tar.xz"
+blake3 = "d4f369fd488111ad3a954e831b2e5525731c9c2cbc3d6a17f94ee42e60705227"
+patches = ["redox.patch"]
+
 [build]
 template = "configure"
 dependencies = [
@@ -9,11 +12,17 @@ dependencies = [
     "json-glib",
     "atk",
     "cairo",
+    "gdk-pixbuf",
     "pango",
     "cogl",
     "libxcb",
-    "libxcomposite
+    "libxcomposite",
     "libxdamage",
     "libxext",
     "libxkbcommon",
+]
+configureflags = [
+    "--disable-wayland-compositor",
+    "--disable-egl-backend",
+    "--disable-examples"
 ]

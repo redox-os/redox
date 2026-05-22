@@ -1,5 +1,6 @@
 [source]
 tar = "https://archive.xfce.org/src/xfce/xfdesktop/4.20/xfdesktop-4.20.2.tar.bz2"
+blake3 = "b263f84181023186df1a37e2b2b4a2b61eb63d8f27862c4fbbd5fc4c563d7e0e"
 [build]
 dependencies = [
     "atk",

@@ -2,15 +2,13 @@
 # build instructions: https://gitlab.gnome.org/GNOME/json-glib/#build-and-installation
 [source]
 tar = "https://download.gnome.org/sources/json-glib/1.8/json-glib-1.8.0.tar.xz"
+blake3 = "6e2373041a935f622f71fbe3827a4921cceac662de15791b1fd10fc6d710307c"
 [build]
 template = "meson"
 mesonflags = [
-    "-Dintrospection=false",
-    "-Ddocumentation=false",
-    "-Dgtk_doc=false",
+    "-Dintrospection=disabled",
+    "-Dgtk_doc=disabled",
     "-Dtests=false",
-    "-Dconformance=false",
-    "-Dinstalled_tests=false",
 ]
 dependencies = [
     "glib",

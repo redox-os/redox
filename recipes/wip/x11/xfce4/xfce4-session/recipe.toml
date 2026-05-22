@@ -1,5 +1,6 @@
 [source]
 tar = "https://archive.xfce.org/src/xfce/xfce4-session/4.21/xfce4-session-4.21.1.tar.xz"
+blake3 = "9f485ef972e8d5b75e0a9cd499e2cd1afd6d76afe3e6713d202f84e9943e28b3"
 patches = [ "redox.patch" ]
 [build]
 dependencies = [
@@ -19,5 +20,9 @@ dependencies = [
     "xfconf",
 ]
 template = "meson"
-mesonflags = [
+mesonflags = []
+
+[package]
+dependencies = [
+# todo: port xorg-iceauth
 ]
