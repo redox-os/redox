@@ -1,0 +1,10 @@
+#TODO compile and test
+[source]
+git = "https://github.com/KhronosGroup/SPIRV-Headers"
+rev = "vulkan-sdk-1.4.350.0"
+shallow_clone = true
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DSPIRV_HEADERS_ENABLE_TESTS=OFF"
+]

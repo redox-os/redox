@@ -1,0 +1,10 @@
+#TODO missing script for compilation: https://github.com/ProjectPhysX/FluidX3D/blob/master/DOCUMENTATION.md
+[source]
+git = "https://github.com/ProjectPhysX/FluidX3D"
+rev = "v3.7"
+shallow_clone = true
+[build]
+template = "custom"
+dependencies = [
+    "pocl",
+]

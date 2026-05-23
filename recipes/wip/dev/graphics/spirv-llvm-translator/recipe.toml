@@ -1,0 +1,14 @@
+#TODO compile and test
+# build instructions: https://github.com/KhronosGroup/SPIRV-LLVM-Translator#build-instructions
+[source]
+git = "https://github.com/KhronosGroup/SPIRV-LLVM-Translator"
+rev = "v21.1.7"
+shallow_clone = true
+[build]
+template = "cmake"
+#cmakeflags = [
+    #"-DLLVM_DIR=" # probably avoid llvm compilation, use to specify the llvm21 recipe sysroot
+#]
+#dependencies = [
+#    "llvm21-common",
+#]

@@ -1,0 +1,11 @@
+#TODO compile and test
+[source]
+git = "https://github.com/qewer33/ratscad"
+shallow_clone = true
+[build]
+template = "cargo"
+[package]
+dependencies = [
+    "openscad",
+    "ratty",
+]

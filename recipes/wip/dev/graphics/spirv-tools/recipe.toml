@@ -1,0 +1,11 @@
+#TODO compile and test
+# build instructions: https://github.com/KhronosGroup/SPIRV-Tools#build
+[source]
+git = "https://github.com/KhronosGroup/SPIRV-Tools"
+rev = "vulkan-sdk-1.4.350.0"
+shallow_clone = true
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DSPIRV_SKIP_TESTS=ON"
+]
