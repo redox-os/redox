@@ -1,3 +1,272 @@
+diff --git a/src/uu/pgrep/src/process.rs b/src/uu/pgrep/src/process.rs
+index 6dce047..a1721ac 100644
+--- a/src/uu/pgrep/src/process.rs
++++ b/src/uu/pgrep/src/process.rs
+@@ -422,6 +422,7 @@ impl Namespace {
+ }
+ 
+ /// Process ID and its information
++#[cfg(target_os = "linux")]
+ #[derive(Debug, Clone, Default)]
+ pub struct ProcessInformation {
+     pub pid: usize,
+@@ -440,6 +441,21 @@ pub struct ProcessInformation {
+     thread_ids: OnceLock<Vec<usize>>,
+ }
+ 
++#[cfg(target_os = "redox")]
++#[derive(Debug, Clone, Default)]
++pub struct ProcessInformation {
++    pub pid: usize,
++    pub cmdline: String,
++    pub name: String,
++    pub euid: u32,
++    pub egid: u32,
++    pub time_str: String,
++    pub run_state_str: String,
++    pub inner_status: String,
++    pub inner_stat: String,
++}
++
++#[cfg(target_os = "linux")]
+ impl ProcessInformation {
+     /// Try new with pid path such as `/proc/self`
+     ///
+@@ -729,6 +745,166 @@ impl ProcessInformation {
+         Namespace::from_pid(self.pid)
+     }
+ }
++
++#[cfg(target_os = "redox")]
++impl ProcessInformation {
++    pub fn try_new(line: &str) -> Result<Self, io::Error> {
++        let parts: Vec<&str> = line.split_whitespace().collect();
++        // PID EUID EGID STAT CPU AFFINITY TIME PRIVATE PRIVATE_UNIT SHARED SHARED_UNIT NAME
++        if parts.len() < 12 {
++            return Err(io::Error::new(
++                io::ErrorKind::InvalidData,
++                "parts incomplete",
++            ));
++        }
++
++        let pid = parts[0]
++            .parse::<usize>()
++            .map_err(|_| io::ErrorKind::InvalidData)?;
++        let euid = parts[1]
++            .parse::<u32>()
++            .map_err(|_| io::ErrorKind::InvalidData)?;
++        let egid = parts[2]
++            .parse::<u32>()
++            .map_err(|_| io::ErrorKind::InvalidData)?;
++        let run_state_str = parts[3].to_string();
++        let time_str = parts[6].to_string();
++
++        let name = parts.last().unwrap_or(&"").to_string();
++        let cmdline = name.clone();
++
++        Ok(Self {
++            pid,
++            cmdline,
++            name,
++            euid,
++            egid,
++            run_state_str,
++            time_str,
++            inner_status: String::new(),
++            inner_stat: String::new(),
++        })
++    }
++
++    pub fn from_pid(pid: usize) -> Result<Self, io::Error> {
++        let content = fs::read_to_string("/scheme/sys/context")?;
++        for line in content.lines() {
++            if let Ok(proc_info) = Self::try_new(line) {
++                if proc_info.pid == pid {
++                    return Ok(proc_info);
++                }
++            }
++        }
++        Err(io::Error::new(io::ErrorKind::NotFound, "no process found"))
++    }
++
++    pub fn current_process_info() -> Result<ProcessInformation, io::Error> {
++        let pid = rustix::process::getpid();
++        Self::from_pid(pid.as_raw_pid() as usize)
++    }
++
++    pub fn proc_status(&self) -> &str {
++        ""
++    }
++    pub fn proc_stat(&self) -> &str {
++        ""
++    }
++
++    pub fn name(&mut self) -> Result<String, io::Error> {
++        Ok(self.name.clone())
++    }
++
++    pub fn start_time(&mut self) -> Result<u64, io::Error> {
++        Ok(0)
++    }
++
++    pub fn ppid(&mut self) -> Result<u64, io::Error> {
++        Ok(0)
++    }
++    pub fn pgid(&mut self) -> Result<u64, io::Error> {
++        Ok(0)
++    }
++    pub fn sid(&mut self) -> Result<u64, io::Error> {
++        Ok(0)
++    }
++
++    pub fn uid(&mut self) -> Result<u32, io::Error> {
++        Ok(self.euid)
++    }
++    pub fn euid(&mut self) -> Result<u32, io::Error> {
++        Ok(self.euid)
++    }
++    pub fn gid(&mut self) -> Result<u32, io::Error> {
++        Ok(self.egid)
++    }
++    pub fn egid(&mut self) -> Result<u32, io::Error> {
++        Ok(self.egid)
++    }
++    pub fn suid(&mut self) -> Result<u32, io::Error> {
++        Ok(self.euid)
++    }
++    pub fn sgid(&mut self) -> Result<u32, io::Error> {
++        Ok(self.egid)
++    }
++
++    pub fn signals_caught_mask(&mut self) -> Result<u64, io::Error> {
++        Ok(0)
++    }
++    pub fn signals_pending_mask(&mut self) -> Result<u64, io::Error> {
++        Ok(0)
++    }
++    pub fn signals_blocked_mask(&mut self) -> Result<u64, io::Error> {
++        Ok(0)
++    }
++    pub fn signals_ignored_mask(&mut self) -> Result<u64, io::Error> {
++        Ok(0)
++    }
++
++    pub fn root(&mut self) -> Result<PathBuf, io::Error> {
++        Ok(PathBuf::from("/"))
++    }
++
++    pub fn cgroups(&mut self) -> Result<Vec<CgroupMembership>, io::Error> {
++        Ok(vec![])
++    }
++    pub fn cgroup_v2_path(&mut self) -> Result<String, io::Error> {
++        Err(io::Error::new(io::ErrorKind::Unsupported, "no cgroups"))
++    }
++
++    pub fn run_state(&mut self) -> Result<RunState, io::Error> {
++        match self.run_state_str.as_str() {
++            "RR" | "UR" => RunState::try_from("R"),
++            "UB" => RunState::try_from("S"),
++            _ => RunState::try_from("S"),
++        }
++    }
++
++    pub fn tty(&mut self) -> Teletype {
++        Teletype::Unknown
++    }
++
++    pub fn thread_ids(&mut self) -> &[usize] {
++        &[]
++    }
++
++    pub fn env_vars(&self) -> Result<HashMap<String, String>, io::Error> {
++        Ok(HashMap::new())
++    }
++
++    pub fn namespaces(&self) -> Result<Namespace, io::Error> {
++        Err(io::Error::new(io::ErrorKind::Unsupported, "no namespaces"))
++    }
++}
++#[cfg(target_os = "redox")]
++impl TryFrom<&str> for ProcessInformation {
++    type Error = io::Error;
++
++    fn try_from(value: &str) -> Result<Self, Self::Error> {
++        Self::try_new(value)
++    }
++}
++
++#[cfg(target_os = "linux")]
+ impl TryFrom<DirEntry> for ProcessInformation {
+     type Error = io::Error;
+ 
+@@ -751,6 +927,7 @@ impl Hash for ProcessInformation {
+ /// Parsing `/proc/self/stat` file.
+ ///
+ /// TODO: If possible, test and use regex to replace this algorithm.
++#[cfg(target_os = "linux")]
+ fn stat_split(stat: &str) -> Vec<String> {
+     let stat = String::from(stat);
+ 
+@@ -767,6 +944,7 @@ fn stat_split(stat: &str) -> Vec<String> {
+     }
+ }
+ 
++#[cfg(target_os = "linux")]
+ /// Iterating pid in current system
+ pub fn walk_process() -> impl Iterator<Item = ProcessInformation> {
+     WalkDir::new("/proc/")
+@@ -778,10 +956,12 @@ pub fn walk_process() -> impl Iterator<Item = ProcessInformation> {
+         .flat_map(ProcessInformation::try_from)
+ }
+ 
++#[cfg(target_os = "linux")]
+ static THREAD_REGEX: LazyLock<Regex> = LazyLock::new(|| {
+     Regex::new(r"^/proc/[0-9]+$|^/proc/[0-9]+/task$|^/proc/[0-9]+/task/[0-9]+$").unwrap()
+ });
+ 
++#[cfg(target_os = "linux")]
+ pub fn walk_threads() -> impl Iterator<Item = ProcessInformation> {
+     WalkDir::new("/proc/")
+         .min_depth(1)
+@@ -794,6 +974,38 @@ pub fn walk_threads() -> impl Iterator<Item = ProcessInformation> {
+         .flat_map(ProcessInformation::try_from)
+ }
+ 
++#[cfg(target_os = "redox")]
++pub fn walk_process() -> impl Iterator<Item = ProcessInformation> {
++    use std::collections::HashSet;
++
++    let content = fs::read_to_string("/scheme/sys/context").unwrap();
++
++    let mut processes = Vec::new();
++    let mut seen_pids = HashSet::new();
++
++    for line in content.lines() {
++        if let Ok(proc_info) = ProcessInformation::try_new(line) {
++            if seen_pids.insert(proc_info.pid) {
++                processes.push(proc_info);
++            }
++        }
++    }
++    processes.into_iter()
++}
++
++#[cfg(target_os = "redox")]
++pub fn walk_threads() -> impl Iterator<Item = ProcessInformation> {
++    let content = fs::read_to_string("/scheme/sys/context").unwrap();
++
++    let mut threads = Vec::new();
++    for line in content.lines() {
++        if let Ok(proc_info) = ProcessInformation::try_new(line) {
++            threads.push(proc_info);
++        }
++    }
++    threads.into_iter()
++}
++
+ #[cfg(test)]
+ mod tests {
+     use super::*;
 diff --git a/src/uu/pgrep/src/process_matcher.rs b/src/uu/pgrep/src/process_matcher.rs
 index c991092..33adcff 100644
 --- a/src/uu/pgrep/src/process_matcher.rs
@@ -19,6 +288,30 @@ index c991092..33adcff 100644
      {
          0
      }
+diff --git a/src/uu/ps/src/picker.rs b/src/uu/ps/src/picker.rs
+index be0a1c4..496bf2d 100644
+--- a/src/uu/ps/src/picker.rs
++++ b/src/uu/ps/src/picker.rs
+@@ -148,13 +148,17 @@ fn time(proc_info: RefCell<ProcessInformation>) -> String {
+     // https://docs.kernel.org/filesystems/proc.html#id10
+     // Index of 13 14
+ 
++    #[cfg(target_os = "linux")]
+     let cumulative_cpu_time = {
+         let utime = proc_info.borrow_mut().stat()[13].parse::<i64>().unwrap();
+         let stime = proc_info.borrow_mut().stat()[14].parse::<i64>().unwrap();
+-        (utime + stime) / 100
++        format_time((utime + stime) / 100)
+     };
+ 
+-    format_time(cumulative_cpu_time)
++    #[cfg(target_os = "redox")]
++    let cumulative_cpu_time = { proc_info.borrow_mut().time_str.clone() };
++
++    cumulative_cpu_time
+ }
+ 
+ fn format_time(seconds: i64) -> String {
 diff --git a/src/uu/ps/src/process_selection.rs b/src/uu/ps/src/process_selection.rs
 index c2a0a5a..65c33a2 100644
 --- a/src/uu/ps/src/process_selection.rs
