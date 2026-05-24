@@ -1,0 +1,28 @@
+[source]
+git = "https://github.com/pop-os/cosmic-monitor.git"
+
+[build]
+template = "custom"
+dependencies = [
+    "gettext",
+    "libxkbcommon",
+]
+script = """
+DYNAMIC_INIT
+export GETTEXT_DIR="${COOKBOOK_SYSROOT}/usr"
+if [ "${COOKBOOK_DYNAMIC}" != "1" ]
+then
+    # Statically linked i586 and riscv64gc need libiconv manually linked
+    export RUSTFLAGS="${RUSTFLAGS} -liconv"
+fi
+cookbook_cargo --no-default-features
+
+#TODO: install with just?
+APPID="com.system76.CosmicMonitor"
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/applications/"
+cp -v "${COOKBOOK_SOURCE}/res/${APPID}.desktop" "${COOKBOOK_STAGE}/usr/share/applications/"
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/metainfo/"
+cp -v "${COOKBOOK_SOURCE}/res/${APPID}.metainfo.xml" "${COOKBOOK_STAGE}/usr/share/metainfo/"
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/icons/"
+cp -rv "${COOKBOOK_SOURCE}/res/icons/hicolor/" "${COOKBOOK_STAGE}/usr/share/icons/"
+"""
