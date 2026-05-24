@@ -1,0 +1,21 @@
+diff --color -ruwN source/configure source-new/configure
+--- source/configure	2018-09-06 01:53:32.000000000 +0700
++++ source-new/configure	2026-05-24 08:57:06.072736434 +0700
+@@ -5763,7 +5763,7 @@
+   ;;
+ 
+ # This must be glibc/ELF.
+-linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu*)
++linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu* | redox*)
+   lt_cv_deplibs_check_method=pass_all
+   ;;
+ 
+@@ -11450,7 +11450,7 @@
+   ;;
+ 
+ # This must be glibc/ELF.
+-linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu*)
++linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu* | redox*)
+   version_type=linux # correct to gnu/linux during the next big refactor
+   need_lib_prefix=no
+   need_version=no

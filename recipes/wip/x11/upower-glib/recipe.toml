@@ -1,0 +1,16 @@
+
+[source]
+tar = "https://gitlab.freedesktop.org/upower/upower/-/archive/v1.91.2/upower-v1.91.2.tar.gz"
+[build]
+template = "meson"
+dependencies = [
+    "glib",
+]
+mesonflags = [
+    "-Dintrospection=disabled",
+    "-Dos_backend=dummy",
+    "-Dsystemdsystemunitdir=no",
+    "-Dgtk-doc=false",
+    "-Dman=false",
+    "-Dinstalled_tests=false",
+]

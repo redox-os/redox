@@ -5,3 +5,8 @@ patches = ["redox.patch"]
 
 [build]
 template = "meson"
+
+[package]
+dependencies = [
+    "librsvg" # adwaita contains svg icons
+]

@@ -1,16 +1,12 @@
-#TODO not compiled or tested
-# build instructions: https://gitlab.gnome.org/GNOME/gtksourceview#installation
+#TODO compiled but not tested
 [source]
-tar = "https://download.gnome.org/sources/gtksourceview/5.10/gtksourceview-5.10.0.tar.xz"
+# later version uses GTK4
+tar = "https://download.gnome.org/sources/gtksourceview/3.24/gtksourceview-3.24.9.tar.xz"
 [build]
-template = "meson"
-mesonflags = [
-    "-Dbuild-testsuite=false",
-    "-Dintrospection=false",
-]
+template = "configure"
 dependencies = [
     "glib",
-    "gtk4",
+    "gtk3",
     "libxml2",
     "fribidi",
     "pcre",

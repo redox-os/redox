@@ -157,6 +157,9 @@ set -ex
 
 gdk-pixbuf-query-loaders --update-cache
 /usr/lib/xfce4/xfconf/xfconfd &
+/usr/lib/tumbler-1/tumblerd &
+/usr/libexec/upowerd &
+xfsettingsd &
 
 xterm&
 #zenity --info --text="running xfce4 as $(id)!"

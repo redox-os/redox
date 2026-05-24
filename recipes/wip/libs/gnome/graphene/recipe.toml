@@ -6,5 +6,4 @@ tar = "https://download.gnome.org/sources/graphene/1.10/graphene-1.10.8.tar.xz"
 template = "meson"
 mesonflags = [
     "-Dtests=false",
-    "-Dintrospection=false",
 ]
