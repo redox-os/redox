@@ -11,14 +11,17 @@ dependencies = [
     "gettext",
     "libffi",
     "libiconv",
+    "libinotify-stub",
     "pcre2",
     "zlib",
 ]
 script = """
 DYNAMIC_INIT
+export CFLAGS="$CFLAGS -I$COOKBOOK_SYSROOT/include/inotify"
+export LDFLAGS="$LDFLAGS -linotify"
 cookbook_meson \
     -Ddefault_library=shared \
     -Dxattr=false \
     -Dtests=false \
-    -Dfile_monitor_backend=auto
+    -Dfile_monitor_backend=inotify
 """

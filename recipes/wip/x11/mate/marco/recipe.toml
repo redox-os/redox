@@ -20,7 +20,6 @@ template = "meson"
 
 [package]
 dependencies = [
-    "librsvg",
     "mate-settings-daemon",
     "zenity",
 ]

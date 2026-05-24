@@ -1,0 +1,14 @@
+[source]
+tar = "https://archive.xfce.org/src/apps/mousepad/0.7/mousepad-0.7.0.tar.xz"
+[build]
+dependencies = [
+    "gettext",
+    "glib",
+    "gtk3",
+    "gtksourceview",
+    "libxfce4ui",
+    "pango",
+]
+template = "meson"
+mesonflags = [
+]

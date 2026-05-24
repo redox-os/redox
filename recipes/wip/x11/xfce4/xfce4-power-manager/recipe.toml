@@ -1,0 +1,22 @@
+
+[source]
+tar = "https://archive.xfce.org/src/xfce/xfce4-power-manager/4.21/xfce4-power-manager-4.21.1.tar.xz"
+[build]
+dependencies = [
+    "cairo",
+    "gettext",
+    "glib",
+    "gtk3",
+    "libnotify",
+    "libx11",
+    "libxext",
+    "libxfce4ui",
+    "libxfce4util",
+    "libxrandr",
+    "upower-glib",
+    "xfconf",
+]
+template = "meson"
+mesonflags = [
+    "-Dwayland=disabled",
+]

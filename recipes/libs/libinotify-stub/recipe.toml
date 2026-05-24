@@ -1,0 +1,9 @@
+[source]
+tar = "https://github.com/willnode/inotify-stub/archive/refs/tags/v0.1.tar.gz"
+
+[build]
+template = "custom"
+script = """
+DYNAMIC_INIT
+make -C "$COOKBOOK_SOURCE" install BUILD="$(pwd)" DESTDIR="$COOKBOOK_STAGE/usr"
+"""
