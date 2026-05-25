@@ -1,0 +1,21 @@
+diff --color -ruwN source/src/meson.build source-new/src/meson.build
+--- source/src/meson.build	2025-11-06 04:42:53.000000000 +0700
++++ source-new/src/meson.build	2026-05-25 18:43:46.412549117 +0700
+@@ -43,17 +43,3 @@
+     install: true,
+     install_dir: get_option('prefix') / get_option('datadir') / 'metainfo',
+ )
+-
+-help2man = find_program('help2man', required: false)
+-if help2man.found()
+-  custom_target(
+-    'xfce4-screenshooter.1',
+-    depends: screenshooter,
+-    output: 'xfce4-screenshooter.1',
+-    command: [
+-      help2man, ['--no-info'], '--output=@OUTPUT@', screenshooter.full_path(),
+-    ],
+-    install: true,
+-    install_dir: get_option('prefix') / get_option('mandir') / 'man1',
+-  )
+-endif

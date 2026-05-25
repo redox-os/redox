@@ -1,0 +1,23 @@
+[source]
+tar = "https://archive.xfce.org/src/apps/xfce4-notifyd/0.9/xfce4-notifyd-0.9.7.tar.bz2"
+
+[build]
+dependencies = [
+    "cairo",
+    "gdk-pixbuf",
+    "gettext",
+    "glib",
+    "gtk3",
+    "libnotify",
+    "libxfce4ui",
+    "libxfce4util",
+    "sqlite3",
+    "xfconf",
+    "xfce4-panel",
+]
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_meson
+patchelf --replace-needed "${COOKBOOK_SYSROOT}/usr/lib/libsqlite3.so" "libsqlite3.so" "${COOKBOOK_STAGE}/usr/lib/xfce4/notifyd/xfce4-notifyd"
+"""

@@ -1,0 +1,21 @@
+
+[source]
+tar = "https://archive.xfce.org/src/apps/xfce4-screenshooter/1.11/xfce4-screenshooter-1.11.3.tar.xz"
+patches = ["redox.patch"]
+
+[build]
+dependencies = [
+    "cairo",
+    "garcon",
+    "gdk-pixbuf",
+    "glib",
+    "gtk3",
+    "libxfce4ui",
+    "libxfce4util",
+    "xfce4-panel",
+    "xfconf",
+]
+template = "meson"
+mesonflags = [
+    "-Dwayland=disabled"
+]

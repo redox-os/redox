@@ -1,0 +1,17 @@
+[source]
+tar = "https://archive.xfce.org/src/apps/orage/4.21/orage-4.21.0.tar.xz"
+
+[build]
+dependencies = [
+    "cairo",
+    "garcon",
+    "gdk-pixbuf",
+    "glib",
+    "gtk3",
+    "libxfce4ui",
+    "libxfce4util",
+    "xfconf",
+    "libical",
+]
+template = "meson"
+mesonflags = []
