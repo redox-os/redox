@@ -1,22 +1,41 @@
-#TODO: common libc functions such as getsid
-#TODO: only watch is working
+#TODO: common libc functions such as getsid and utmpx in rustix
 [source]
 git = "https://github.com/uutils/procps"
+rev = "ee98c0a78fe2abe72589f80eb05b455fa228e757"
+patches = [ "redox.patch" ]
 shallow_clone = true
 [build]
 template = "custom"
 script = """
 DYNAMIC_INIT
-# TODO: more features support?
-CARGO_PROFILE_RELEASE_LTO=thin cookbook_cargo --no-default-features --features pmap,slabtop,sysctl,tload,vmstat,watch
 
 BINS=(
+    #free
+    hugetop
+    pgrep
+    pidof
+    pidwait
+    pkill
+    pmap
+    ps
+    pwdx
+    skill
+    snice
+    sysctl
+    tload
+    #top
+    vmstat
+    #w
     watch
 )
+
+(IFS=,; CARGO_PROFILE_RELEASE_LTO=thin cookbook_cargo --no-default-features --features "${BINS[*]}")
 
 for bin in "${BINS[@]}"
 do
   ln -sv procps "${COOKBOOK_STAGE}/usr/bin/$bin"
 done
-"""
 
+# conflict with coreutils
+rm "${COOKBOOK_STAGE}/usr/bin/ps"
+"""

@@ -1,0 +1,37 @@
+diff --git a/src/uu/pgrep/src/process_matcher.rs b/src/uu/pgrep/src/process_matcher.rs
+index c991092..33adcff 100644
+--- a/src/uu/pgrep/src/process_matcher.rs
++++ b/src/uu/pgrep/src/process_matcher.rs
+@@ -452,14 +452,14 @@ pub fn getpgrp() -> u64 {
+ 
+ /// Dummy implementation for unsupported platforms.
+ pub fn getsid(_pid: u32) -> u64 {
+-    #[cfg(unix)]
++    #[cfg(all(unix, not(target_os = "redox")))]
+     {
+         rustix::process::getsid(None)
+             .ok()
+             .map(|pid: rustix::process::Pid| pid.as_raw_nonzero().get() as u64)
+             .unwrap_or(0)
+     }
+-    #[cfg(not(unix))]
++    #[cfg(not(all(unix, not(target_os = "redox"))))]
+     {
+         0
+     }
+diff --git a/src/uu/ps/src/process_selection.rs b/src/uu/ps/src/process_selection.rs
+index c2a0a5a..65c33a2 100644
+--- a/src/uu/ps/src/process_selection.rs
++++ b/src/uu/ps/src/process_selection.rs
+@@ -20,6 +20,11 @@ fn getsid(pid: i32) -> Option<i32> {
+     }
+ }
+ 
++#[cfg(target_os = "redox")]
++fn getsid(_pid: i32) -> Option<i32> {
++    None
++}
++
+ // TODO: Temporary add to this file, this function will add to uucore.
+ #[cfg(target_family = "windows")]
+ fn getsid(_pid: i32) -> Option<i32> {
