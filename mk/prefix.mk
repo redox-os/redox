@@ -26,8 +26,7 @@ LIBCURL_TARGET=recipes/net/download/curl/target/$(HOST_TARGET)/$(TARGET)
 LIBGCC_TARGET=recipes/libs/libgcc/target/$(TARGET)
 LIBCPP_TARGET=recipes/libs/libstdcxx/target/$(TARGET)
 
-# official RISC-V support introduced in newer version
-UPSTREAM_RUSTC_VERSION=2025-11-15
+UPSTREAM_RUSTC_VERSION=2026-05-24
 
 export PREFIX_RUSTFLAGS=-L $(ROOT)/$(PREFIX_INSTALL)/$(TARGET)/lib
 export RUSTUP_TOOLCHAIN=$(ROOT)/$(PREFIX_INSTALL)
