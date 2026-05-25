@@ -1,0 +1,19 @@
+[source]
+tar = "https://archive.xfce.org/src/apps/parole/4.20/parole-4.20.0.tar.xz"
+patches = ["redox.patch"]
+
+[build]
+dependencies = [
+    "cairo",
+    "garcon",
+    "gdk-pixbuf",
+    "glib",
+    "gtk3",
+    "libxfce4ui",
+    "libxfce4util",
+    "xfconf",
+    "dbus-glib",
+    "gstreamer",
+]
+template = "meson"
+mesonflags = []

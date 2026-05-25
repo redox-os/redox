@@ -1,0 +1,15 @@
+# TODO: requires self compiling
+[source]
+tar = "https://github.com/libical/libical/releases/download/v3.0.20/libical-3.0.20.tar.gz"
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DLIBICAL_JAVA_BINDINGS=False",
+    "-DLIBICAL_GOBJECT_INTROSPECTION=False",
+    "-DLIBICAL_GLIB_BUILD_DOCS=False",
+]
+dependencies = [
+    "libxml2",
+    "glib",
+    "libicu",
+]

@@ -1,0 +1,8 @@
+[source]
+tar = "https://github.com/libexif/libexif/releases/download/v0.6.26/libexif-0.6.26.tar.xz"
+patches = ["redox.patch"]
+[build]
+template = "configure"
+configureflags = [
+    "--disable-docs"
+]

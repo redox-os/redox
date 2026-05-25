@@ -1,0 +1,16 @@
+[source]
+tar = "https://archive.xfce.org/src/apps/catfish/4.20/catfish-4.20.1.tar.xz"
+
+[build]
+dependencies = [
+    "cairo",
+    "garcon",
+    "gdk-pixbuf",
+    "glib",
+    "gtk3",
+    "libxfce4ui",
+    "libxfce4util",
+    "xfconf",
+]
+template = "meson"
+mesonflags = []

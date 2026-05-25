@@ -1,0 +1,17 @@
+[source]
+tar = "https://archive.xfce.org/src/apps/ristretto/0.14/ristretto-0.14.0.tar.xz"
+
+[build]
+dependencies = [
+    "cairo",
+    "garcon",
+    "gdk-pixbuf",
+    "glib",
+    "gtk3",
+    "libxfce4ui",
+    "libxfce4util",
+    "xfconf",
+    "libexif",
+]
+template = "meson"
+mesonflags = []

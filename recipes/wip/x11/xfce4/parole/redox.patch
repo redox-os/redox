@@ -1,0 +1,11 @@
+diff --color -ruwN source/src/parole-subtitle-encoding.c source-new/src/parole-subtitle-encoding.c
+--- source/src/parole-subtitle-encoding.c	2025-05-21 13:46:43.000000000 +0700
++++ source-new/src/parole-subtitle-encoding.c	2026-05-25 18:19:44.638244921 +0700
+@@ -34,6 +34,7 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
++#include <strings.h>
+ 
+ #include <glib.h>
+ #include <libxfce4util/libxfce4util.h>
