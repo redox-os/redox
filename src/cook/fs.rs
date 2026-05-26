@@ -388,6 +388,23 @@ impl GitRemoteTracking {
             ..Default::default()
         }
     }
+    pub fn check_updated(&self, url: &str, branch: &Option<String>) -> bool {
+        if self.local_branch != self.tracking_branch {
+            return false;
+        }
+        if let Some(branch) = branch
+            && branch != &self.tracking_branch
+        {
+            return false;
+        }
+        if branch.is_none() && self.remote_branch != self.tracking_branch {
+            return false;
+        }
+        if self.remote_name != "origin" || &self.remote_url != chop_dot_git(url) {
+            return false;
+        }
+        true
+    }
 }
 
 pub fn get_git_remote_tracking(dir: &PathBuf) -> Result<GitRemoteTracking> {
@@ -470,6 +487,17 @@ pub fn get_git_remote_tracking(dir: &PathBuf) -> Result<GitRemoteTracking> {
         remote_name
     ))?;
 
+    let remote_branch = get_git_remote_branch(dir, &remote_name)?;
+    Ok(GitRemoteTracking {
+        local_branch,
+        tracking_branch,
+        remote_name,
+        remote_branch,
+        remote_url,
+    })
+}
+
+pub fn get_git_remote_branch(dir: &PathBuf, remote_name: &str) -> Result<String> {
     let remote_branch = {
         let head_path = format!(".git/refs/remotes/{remote_name}/HEAD");
         let git_remote_head = dir.join(&head_path);
@@ -482,16 +510,10 @@ pub fn get_git_remote_tracking(dir: &PathBuf) -> Result<GitRemoteTracking> {
             ))?;
         get_git_branch_name(path.trim_end())?
     };
-    Ok(GitRemoteTracking {
-        local_branch,
-        tracking_branch,
-        remote_name,
-        remote_branch,
-        remote_url,
-    })
+    Ok(remote_branch)
 }
 
-pub(crate) fn chop_dot_git(url: &str) -> &str {
+fn chop_dot_git(url: &str) -> &str {
     if url.ends_with(".git") {
         return &url[..url.len() - ".git".len()];
     }

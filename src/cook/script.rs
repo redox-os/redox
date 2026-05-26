@@ -401,18 +401,6 @@ do
 done
 "#;
 
-pub(crate) static GIT_RESET_BRANCH: &str = r#"
-ORIGIN_BRANCH="$(git branch --remotes | grep '^  origin/HEAD -> ' | cut -d ' ' -f 5-)"
-if [ -n "$BRANCH" ]
-then
-    ORIGIN_BRANCH="origin/$BRANCH"
-fi
-
-if [ "$(git rev-parse HEAD)" != "$(git rev-parse $ORIGIN_BRANCH)" ]
-then
-    git checkout -B "$(echo "$ORIGIN_BRANCH" | cut -d / -f 2-)" "$ORIGIN_BRANCH"
-fi"#;
-
 pub static KILL_ALL_PID: &str = r#"
 THISPID=$$
 CHILDREN=$(ps -o pid= --ppid $PID | grep -v $THISPID);

@@ -252,22 +252,9 @@ pub fn fetch(recipe: &CookRecipe, check_source: bool, logger: &PtyOut) -> Result
                             }
                         }
                     }
-                    (None, false) => {
-                        let remote = get_git_remote_tracking(&source_dir)?;
-                        if remote.local_branch != remote.tracking_branch {
-                            false
-                        } else if let Some(branch) = branch
-                            && branch != &remote.tracking_branch
-                        {
-                            false
-                        } else if branch.is_none() && remote.remote_branch != remote.tracking_branch
-                        {
-                            false
-                        } else if remote.remote_name != "origin"
-                            || &remote.remote_url != chop_dot_git(git)
-                        {
-                            false
-                        } else {
+                    (None, false) => match get_git_remote_tracking(&source_dir) {
+                        Ok(remote) if !remote.check_updated(git, branch) => false,
+                        Ok(remote) => {
                             git_run_fetch(logger, &source_dir, git)?;
                             fetch_is_ran = true;
                             match get_git_fetch_rev(
@@ -282,7 +269,11 @@ pub fn fetch(recipe: &CookRecipe, check_source: bool, logger: &PtyOut) -> Result
                                 }
                             }
                         }
-                    }
+                        Err(e) => {
+                            log_to_pty!(logger, "{}", e);
+                            false
+                        }
+                    },
                     _ => false,
                 }
             };
@@ -312,14 +303,17 @@ pub fn fetch(recipe: &CookRecipe, check_source: bool, logger: &PtyOut) -> Result
                     command.arg("-C").arg(&source_dir);
                     command.arg("checkout").arg(rev);
                     run_command(command, logger)?;
-                } else if !is_redox() {
-                    //TODO: complicated stuff to check and reset branch to origin
-                    //TODO: redox can't undestand this (got exit status 1)
-                    let mut command = Command::new("bash");
-                    command.arg("-c").arg(GIT_RESET_BRANCH);
-                    if let Some(branch) = branch {
-                        command.env("BRANCH", branch);
-                    }
+                } else {
+                    let branch = match branch {
+                        Some(branch) => branch.clone(),
+                        None => get_git_remote_branch(&source_dir, "origin")?,
+                    };
+                    let mut command = Command::new("git");
+                    command
+                        .arg("checkout")
+                        .arg("-B")
+                        .arg(&branch)
+                        .arg(format!("remotes/origin/{branch}"));
                     command.current_dir(&source_dir);
                     run_command(command, logger)?;
                 }
