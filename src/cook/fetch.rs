@@ -253,19 +253,28 @@ pub fn fetch(recipe: &CookRecipe, check_source: bool, logger: &PtyOut) -> Result
                         }
                     }
                     (None, false) => {
-                        let (_, remote_branch, remote_name, remote_url) =
-                            get_git_remote_tracking(&source_dir)?;
-                        // TODO: how to get default branch and compare it here?
-                        if let Some(branch) = branch
-                            && branch != &remote_branch
+                        let remote = get_git_remote_tracking(&source_dir)?;
+                        if remote.local_branch != remote.tracking_branch {
+                            false
+                        } else if let Some(branch) = branch
+                            && branch != &remote.tracking_branch
                         {
                             false
-                        } else if remote_name != "origin" || &remote_url != chop_dot_git(git) {
+                        } else if branch.is_none() && remote.remote_branch != remote.tracking_branch
+                        {
+                            false
+                        } else if remote.remote_name != "origin"
+                            || &remote.remote_url != chop_dot_git(git)
+                        {
                             false
                         } else {
                             git_run_fetch(logger, &source_dir, git)?;
                             fetch_is_ran = true;
-                            match get_git_fetch_rev(&source_dir, &remote_url, &remote_branch) {
+                            match get_git_fetch_rev(
+                                &source_dir,
+                                &remote.remote_url,
+                                &remote.remote_branch,
+                            ) {
                                 Ok(fetch_rev) => fetch_rev == head_rev,
                                 Err(e) => {
                                     log_to_pty!(logger, "{}", e);
