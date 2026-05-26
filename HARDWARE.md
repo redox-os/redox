@@ -5,7 +5,6 @@ This document tracks the current hardware compatibility of Redox OS.
 - [Why are hardware reports needed?](#why-are-hardware-reports-needed)
 - [What if my computer is customized?](#what-if-my-computer-is-customized)
 - [Status](#status)
-- [General](#general)
 - [Contribute to this document](#contribute-to-this-document)
     - [Template](#template)
     - [Table row ordering](#table-row-ordering)
@@ -33,20 +32,26 @@ We also recommend to add your `pciutils` log as a comment on [this](https://gitl
 
 ## Status
 
-- **Recommended:** The operating system boots with video, sound, PS/2 or USB input, Ethernet, terminal and Orbital working.
-- **Booting:** The operating system boots with some issues or lacking hardware support (write the issues and what supported hardware is not working in the "Report" section).
-- **Broken:** The boot loader doesn't work or can't bootstrap the operating system.
-
-## General
-
-This section contain limitations that apply to any status.
+The following limitations apply to any status.
 
 - ACPI support is incomplete (some things are hardcoded in the kernel to work)
 - Wi-Fi and Bluetooth aren't supported yet
-- AMD, NVIDIA, ARM, and PowerVR GPUs aren't supported yet (only BIOS VESA and UEFI GOP)
+- Only Intel GPUs are supported, other GPU vendors use BIOS VESA or UEFI GOP
 - I2C devices aren't supported yet (PS/2 or USB devices should be used)
 - USB support varies on each device model because some USB devices require specific drivers (use input devices with standardized controls for more compatibility)
 - Automatic operating system discovery is not implemented in the boot loader yet (remember this before installing Redox)
+
+### Recommended
+
+This status is used when the operating system boots with video, sound, PS/2 or USB input, Ethernet, terminal and Orbital working.
+
+### Booting
+
+This status is used when the operating system successfully boot with some issues or lacking hardware support (write the issues and what supported hardware is not working in the "Report" section).
+
+### Broken
+
+This status is used when the boot loader or system boot doesn't work.
 
 ## Contribute to this document
 
