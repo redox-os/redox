@@ -45,7 +45,7 @@
 
               overlays = [ rust-overlay.overlays.default ];
             };
-            rust-bin = pkgs.rust-bin.nightly."2025-10-03".default.override {
+            rust-bin = pkgs.rust-bin.nightly."2026-05-24".default.override {
               extensions = [
                 "rust-analyzer"
                 "rust-src"
