@@ -108,7 +108,7 @@ HOME_URL="https://redox-os.org/"
 DOCUMENTATION_URL="https://redox-os.org/docs/"
 SUPPORT_URL="https://redox-os.org/community/"
 """
-# FIXME maybe add VARIANT= and VARIANT_ID= keys depending on the chosen configuration?
+# VARIANT and BUILD_ID are appended by redox_installer when creating images.
 
 [[files]]
 path = "/etc/os-release"
