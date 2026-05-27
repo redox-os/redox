@@ -367,25 +367,62 @@ pub fn get_git_fetch_rev(dir: &PathBuf, remote_url: &str, remote_branch: &str) -
     )())
 }
 
-/// (local_branch_name, remote_branch, remote_name, remote_url)
-///    -> ("fix_stuff", "master", "origin", "https://gitlab.redox-os.org/willnode/redox")
-pub fn get_git_remote_tracking(dir: &PathBuf) -> Result<(String, String, String, String)> {
-    let git_head = dir.join(".git/HEAD");
-    let git_config = dir.join(".git/config");
+#[derive(Default, Debug)]
+pub struct GitRemoteTracking {
+    /// from .git/HEAD
+    pub local_branch: String,
+    /// from .git/config -> [branch <local_branch_name>].merge
+    pub tracking_branch: String,
+    /// from .git/config -> [branch <local_branch_name>].remote (usually "origin")
+    pub remote_name: String,
+    /// from refs/remotes/<remote_name>/HEAD (the default branch on remote)
+    pub remote_branch: String,
+    /// from .git/config -> [remote <remote_branch_name>].url
+    pub remote_url: String,
+}
 
-    let head_content = read_to_string(&git_head)?;
-
-    if !head_content.starts_with("ref: ") {
-        let sha = head_content.trim_end().to_string();
-        return Ok((sha, "".to_string(), "".to_string(), "".to_string()));
+impl GitRemoteTracking {
+    pub fn detached(rev: String) -> Self {
+        Self {
+            local_branch: rev,
+            ..Default::default()
+        }
     }
+    pub fn check_updated(&self, url: &str, branch: &Option<String>) -> bool {
+        if self.local_branch != self.tracking_branch {
+            return false;
+        }
+        if let Some(branch) = branch
+            && branch != &self.tracking_branch
+        {
+            return false;
+        }
+        if branch.is_none() && self.remote_branch != self.tracking_branch {
+            return false;
+        }
+        if self.remote_name != "origin" || &self.remote_url != chop_dot_git(url) {
+            return false;
+        }
+        true
+    }
+}
 
-    let local_branch_path = head_content["ref: ".len()..].trim_end();
-    let local_branch_name = get_git_branch_name(local_branch_path)?;
+pub fn get_git_remote_tracking(dir: &PathBuf) -> Result<GitRemoteTracking> {
+    let git_head = dir.join(".git/HEAD");
+    let local_branch = {
+        let head_content = read_to_string(&git_head)?;
+        if !head_content.starts_with("ref: ") {
+            let rev = head_content.trim_end().to_string();
+            return Ok(GitRemoteTracking::detached(rev));
+        }
+        let path = &head_content["ref: ".len()..];
+        get_git_branch_name(path.trim_end())?
+    };
 
+    let git_config = dir.join(".git/config");
     let config_content = read_to_string(&git_config)?;
 
-    let branch_section = format!("[branch \"{}\"]", local_branch_name);
+    let branch_section = format!("[branch \"{}\"]", local_branch);
     let mut remote_name: Option<String> = None;
     let mut remote_branch: Option<String> = None;
     let mut parsing_branch_section = false;
@@ -413,13 +450,13 @@ pub fn get_git_remote_tracking(dir: &PathBuf) -> Result<(String, String, String,
         }
     }
 
-    let remote_name_str = remote_name.ok_or_else(wrap_other_err!(
+    let remote_name = remote_name.ok_or_else(wrap_other_err!(
         "Branch {:?} is not tracking a remote",
-        local_branch_name
+        local_branch
     ))?;
-    let remote_branch_str = remote_branch.unwrap_or("".into());
+    let tracking_branch = remote_branch.unwrap_or("".into());
 
-    let remote_section = format!("[remote \"{}\"]", remote_name_str);
+    let remote_section = format!("[remote \"{}\"]", remote_name);
     let mut remote_url: Option<String> = None;
     let mut parsing_remote_section = false;
 
@@ -445,34 +482,52 @@ pub fn get_git_remote_tracking(dir: &PathBuf) -> Result<(String, String, String,
         }
     }
 
-    let remote_url_str = remote_url.ok_or_else(wrap_other_err!(
+    let remote_url = remote_url.ok_or_else(wrap_other_err!(
         "Could not find URL for remote {:?} in .git/config.",
-        remote_name_str
+        remote_name
     ))?;
 
-    Ok((
-        local_branch_name,
-        remote_branch_str,
-        remote_name_str,
-        remote_url_str,
-    ))
+    let remote_branch = get_git_remote_branch(dir, &remote_name)?;
+    Ok(GitRemoteTracking {
+        local_branch,
+        tracking_branch,
+        remote_name,
+        remote_branch,
+        remote_url,
+    })
 }
 
-pub(crate) fn chop_dot_git(url: &str) -> &str {
+pub fn get_git_remote_branch(dir: &PathBuf, remote_name: &str) -> Result<String> {
+    let remote_branch = {
+        let head_path = format!(".git/refs/remotes/{remote_name}/HEAD");
+        let git_remote_head = dir.join(&head_path);
+        let head_content = read_to_string(&git_remote_head)?;
+        let path = head_content
+            .get("ref: ".len()..)
+            .ok_or_else(wrap_other_err!(
+                "Malformed content {:?} in {head_path}",
+                head_content
+            ))?;
+        get_git_branch_name(path.trim_end())?
+    };
+    Ok(remote_branch)
+}
+
+fn chop_dot_git(url: &str) -> &str {
     if url.ends_with(".git") {
         return &url[..url.len() - ".git".len()];
     }
     url
 }
 
-fn get_git_branch_name(local_branch_path: &str) -> Result<String> {
+fn get_git_branch_name(branch_path: &str) -> Result<String> {
     // TODO: incorrectly handle branch with slashes
-    Ok(local_branch_path
+    Ok(branch_path
         .split('/')
         .last()
         .ok_or_else(wrap_other_err!(
             "Failed to parse branch name of {:?}",
-            local_branch_path
+            branch_path
         ))?
         .to_string())
 }
