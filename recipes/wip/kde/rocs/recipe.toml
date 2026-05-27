@@ -1,0 +1,7 @@
+#TODO determine minimum dependencies from cmake log
+[source]
+git = "https://invent.kde.org/education/rocs"
+branch = "release/26.04"
+shallow_clone = true
+[build]
+template = "cmake"

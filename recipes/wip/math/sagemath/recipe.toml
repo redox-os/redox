@@ -1,0 +1,23 @@
+#TODO compile and test
+# build instructions: https://doc.sagemath.org/html/en/installation/index.html
+# minimum dependencies: https://doc.sagemath.org/html/en/reference/spkg/_prereq.html
+# all suite packages: https://doc.sagemath.org/html/en/reference/spkg/index.html
+[source]
+tar = "https://github.com/sagemath/sage/releases/download/10.9/sagemath-10.9.tar.gz"
+[build]
+template = "meson"
+mesonflags = [
+    "-Dbuild-docs=false"
+]
+dependencies = [
+    "boost",
+    "bzip2",
+    "zlib",
+]
+dev-dependencies = [
+    "host:python312"
+]
+[package]
+dependencies = [
+    "python312"
+]

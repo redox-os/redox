@@ -1,0 +1,5 @@
+#TODO discover minimum dependencies from configure log
+[source]
+tar = "https://www.jwz.org/xscreensaver/xscreensaver-6.15.tar.gz"
+[build]
+template = "configure"

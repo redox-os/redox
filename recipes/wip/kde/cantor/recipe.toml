@@ -1,0 +1,18 @@
+#TODO determine minimum dependencies from cmake log
+#TODO enable disabled dependencies once working
+# backends: https://invent.kde.org/education/cantor#available-backends
+[source]
+git = "https://invent.kde.org/education/cantor"
+branch = "release/26.04"
+shallow_clone = true
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DENABLE_EMBEDDED_DOCUMENTATION=OFF"
+]
+dependencies = [
+    "libqalculate",
+    #"kalgebra",
+    #"octave",
+    #"r",
+]
