@@ -172,7 +172,7 @@ FSTOOLS=build/fstools
 INSTALLER=$(FSTOOLS)/bin/redox_installer
 REDOXFS=$(FSTOOLS)/bin/redoxfs
 REDOXFS_MKFS=$(FSTOOLS)/bin/redoxfs-mkfs
-INSTALLER_OPTS=--cookbook=.
+INSTALLER_OPTS=--cookbook=. --config-name=$(CONFIG_NAME)
 INSTALLER_FEATURES=
 REDOXFS_FEATURES=
 COOKBOOK_OPTS="--filesystem=$(FILESYSTEM_CONFIG)"

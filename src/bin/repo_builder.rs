@@ -263,6 +263,7 @@ fn publish_packages(config: &CliConfig) -> Result<()> {
     }
 
     let repository = Repository {
+        build_id: get_ident().commit.clone(),
         packages,
         outdated_packages,
     };
