@@ -1,0 +1,13 @@
+#TODO not tested yet
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
+wget https://github.com/TASEmulators/freej2me-plus/releases/download/1.52/freej2me-v1.52.zip "${COOKBOOK_BUILD}"
+unzip "${COOKBOOK_BUILD}"/freej2me-v1.52.zip -d "${COOKBOOK_BUILD}"
+mv "${COOKBOOK_BUILD}"/*.jar "${COOKBOOK_STAGE}/usr/bin"
+echo "java -jar freej2me.jar" > "${COOKBOOK_STAGE}"/usr/bin/freej2me
+chmod a+x "${COOKBOOK_STAGE}"/usr/bin/freej2me
+"""
+[package]
+dependencies = ["openjdk17.x11"]

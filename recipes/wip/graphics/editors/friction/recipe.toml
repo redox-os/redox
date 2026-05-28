@@ -1,0 +1,26 @@
+#TODO compile and test
+# build instructions: https://friction.graphics/documentation/source-linux.html
+[source]
+tar = "https://github.com/friction2d/friction/releases/download/v1.0.0-rc.3/friction-1.0.0-rc.3.tar.xz"
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DBUILD_SKIA=OFF"
+]
+dependencies = [
+    "ffmpeg6",
+    "libunwind",
+    "expat",
+    "freetype2",
+    "fontconfig",
+    "libjpeg-turbo",
+    "libpng",
+    "libwebp",
+    "zlib",
+    "qt5-base",
+    "qt5-gui",
+    "qt5-widgets",
+    "qt5-3d",
+    "qt5-multimedia",
+    "qscintilla",
+]

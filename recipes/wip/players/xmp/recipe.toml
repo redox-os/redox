@@ -1,0 +1,10 @@
+#TODO compile and test
+# build instructions: https://github.com/libxmp/xmp-cli/blob/master/INSTALL
+[source]
+tar = "https://github.com/libxmp/xmp-cli/releases/download/xmp-4.3.0/xmp-4.3.0.tar.gz"
+[build]
+template = "configure"
+dependencies = [
+    "libxmp",
+    "libpulse",
+]

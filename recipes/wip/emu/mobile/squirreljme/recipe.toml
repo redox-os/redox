@@ -1,0 +1,12 @@
+#TODO waiting openjdk x11 feature creation
+# usage: https://multiphasicapps.net/doc/tip/assets/doc/usage-standalone.mkd
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
+wget https://multiphasicapps.net/uv/unstable/0.3.0/squirreljme-standalone-0.3.0.jar "${COOKBOOK_STAGE}/usr/bin/squirreljme.jar"
+echo "java -jar squirreljme.jar" > "${COOKBOOK_STAGE}"/usr/bin/squirreljme
+chmod a+x "${COOKBOOK_STAGE}"/usr/bin/squirreljme
+"""
+[package]
+dependencies = ["openjdk17.x11"]

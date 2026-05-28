@@ -1,0 +1,6 @@
+#TODO compile and test
+# build instructions: https://github.com/libxmp/libxmp/blob/master/INSTALL
+[source]
+tar = "https://github.com/libxmp/libxmp/releases/download/libxmp-4.7.0/libxmp-4.7.0.tar.gz"
+[build]
+template = "configure"

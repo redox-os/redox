@@ -1,0 +1,6 @@
+#TODO compile and test
+# build instructions: https://sg.danny.cz/sg/sdparm.html#__RefHeading___Toc168_3041630551
+[source]
+tar = "https://sg.danny.cz/sg/p/sdparm-1.12.tgz"
+[build]
+template = "configure"

@@ -1,0 +1,26 @@
+#TODO compile and test
+# build instructions: https://86box.readthedocs.io/en/latest/dev/buildguide.html
+[source]
+git = "https://github.com/86Box/86Box"
+rev = "v5.3"
+shallow_clone = true
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DRELEASE=ON",
+    "-DQT=OFF",
+    "-DDISCORD=OFF",
+    "-DOPENAL=OFF",
+    "-DRTMIDI=OFF",
+    "-DFLUIDSYNTH=OFF",
+]
+dependencies = [
+    "freetype2",
+    "libpng",
+    "libslirp",
+    "libsndfile",
+    #"fluidsynth",
+    #"rtmidi",
+    #"openal",
+    "sdl2",
+]

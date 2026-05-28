@@ -1,0 +1,7 @@
+#TODO missing script for qmake: https://github.com/brCreate/QScintilla#installation
+[source]
+git = "https://github.com/brCreate/QScintilla"
+rev = "6608e9a434b027f42e0c5961443d0f08047f0cd3"
+shallow_clone = true
+[build]
+template = "custom"

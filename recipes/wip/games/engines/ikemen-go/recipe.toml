@@ -1,0 +1,12 @@
+#TODO missing script for gnu make: https://github.com/ikemen-engine/Ikemen-GO/blob/develop/BUILDING.md
+[source]
+git = "https://github.com/ikemen-engine/Ikemen-GO"
+rev = "74f868b9433fa12d5471080c8a1267aafefce045"
+shallow_clone = true
+[build]
+template = "custom"
+dependencies = [
+    "sdl2",
+    "ffmpeg6",
+    "libxmp",
+]

@@ -1,0 +1,16 @@
+#TODO compile and test
+# build instructions: https://www.fluidsynth.org/wiki/BuildingWithCMake/
+[source]
+git = "https://github.com/FluidSynth/fluidsynth"
+rev = "v2.5.4"
+shallow_clone = true
+[build]
+template = "cmake"
+cmakeflags = [
+    "-Denable-ipv6=off",
+    "-Denable-openmp=off",
+]
+dependencies = [
+    "pipewire",
+    "readline",
+]
