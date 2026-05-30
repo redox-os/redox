@@ -133,3 +133,20 @@ FORCE:
 # Wireshark
 wireshark: FORCE
 	wireshark $(BUILD)/network.pcap
+
+KPROF_KERNEL_BINARY?=recipes/core/profiling-kernel/target/$(TARGET)/build/kernel
+KPROF_KERNEL_SYM?=build/flamegraph/$(TARGET)-kernel-syms.txt
+KPROF_OUTPUT_TXT?=build/$(ARCH)/$(CONFIG_NAME)/filesystem/home/root/kprof.txt
+KPROF_PERF_SVG?=build/flamegraph/$(TARGET)-$(CONFIG_NAME)-kflamegraph.svg
+# XXX: This assumes the TSC is invariant, that the value for cpu0 is the same as for all other CPUs, and that the value from ACPI actually reflects the TSC rate. It also only works on Linux.
+KPROF_CPU_GHZ?=$(shell (cat /sys/devices/system/cpu/cpu0/acpi_cppc/nominal_freq || echo 3400) | xargs echo "0.001 *" | bc)
+# See https://gitlab.redox-os.org/redox-os/kprofiling/-/blob/master/src/main.rs?ref_type=heads#L16-L18
+# Set e.g. to "xo" to show individual instruction offsets
+KPROF_OPTIONS?=_
+
+flamegraph:
+	mkdir -p build/flamegraph && \
+	make mount && \
+	nm -CS $(KPROF_KERNEL_BINARY) >$(KPROF_KERNEL_SYM) && \
+	redox-kprofiling $(KPROF_OUTPUT_TXT) $(KPROF_KERNEL_SYM) $(KPROF_OPTIONS) $(KPROF_CPU_GHZ) | inferno-collapse-perf | inferno-flamegraph > $(KPROF_PERF_SVG) && \
+	make unmount
