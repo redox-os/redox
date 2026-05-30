@@ -1,5 +1,6 @@
 [source]
 git = "https://github.com/jackpot51/sysinfo"
+branch = "redox-0.39"
 
 [build]
 template = "cargo"
