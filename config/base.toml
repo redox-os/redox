@@ -58,6 +58,7 @@ schemes = [
   "display.vesa",
   "display*",
   # Other schemes
+  "proc",
   "pty",
   "sudo",
   "audio",
