@@ -354,7 +354,7 @@ function cookbook_python {
     OS=$(echo "${TARGET}" | cut -d - -f3-4)
     export PYTHONPYCACHEPREFIX="${COOKBOOK_BUILD}" _PYTHON_HOST_PLATFORM="$OS-$ARCH"
     "${COOKBOOK_PYTHON}" -m pip install --prefix="${COOKBOOK_STAGE}/usr" "${COOKBOOK_SOURCE}" \
-    --ignore-installed --no-index --no-build-isolation "$@"
+    --ignore-installed --no-index "$@"
     rsync -av "${COOKBOOK_BUILD}/${COOKBOOK_STAGE}/usr/" "${COOKBOOK_STAGE}/usr"
 }
 "#;

@@ -5,14 +5,24 @@ blake3 = "e01a810629b11b2fa415ba47d2df3ba521286e9933f6c2b364e959c26401eb96"
 [build]
 template = "custom"
 dependencies = [
-    "cairo",
-    "glib",
+    "target:glib",
     "libffi",
-    "pcre2",
+]
+dev-dependencies = [
     "python312",
-    "zlib",
+    "python312.dev",
+    "host:python312",
+    "host:python3-setuptools",
 ]
 script = """
 DYNAMIC_INIT
-cookbook_meson -Dpython="${COOKBOOK_SYSROOT}/usr/bin/python3.12"
+cookbook_meson -Dpython="python3.12" \
+    -Dbuild_introspection_data=false
+sed -i "s|${COOKBOOK_TOOLCHAIN}||g" ${COOKBOOK_STAGE}/usr/bin/g-ir-annotation-tool
+sed -i "s|${COOKBOOK_TOOLCHAIN}||g" ${COOKBOOK_STAGE}/usr/bin/g-ir-scanner
 """
+
+[package]
+dependencies = [
+    "python312",
+]
