@@ -476,7 +476,7 @@ diff -ruwN source/tools/gyp/pylib/gyp/generator/make.py source-new/tools/gyp/pyl
                      libraries = self.xcode_settings.AdjustLibraries(libraries)
 -            self.WriteList(libraries, "LIBS")
 +            # patch out unneeded libraries for host toolchain (js2c)
-+            self.WriteList(libraries if self.toolset != "host" else ['-luv', '-L%s/usr/lib' % os.environ['COOKBOOK_TOOLCHAIN']], "LIBS")
++            self.WriteList(libraries if self.toolset != "host" else ['-luv', '-lz', '-L%s/usr/lib' % os.environ['COOKBOOK_TOOLCHAIN']], "LIBS")
              self.WriteLn(
                  "%s: GYP_LDFLAGS := $(LDFLAGS_$(BUILDTYPE))"
                  % QuoteSpaces(self.output_binary)
