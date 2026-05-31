@@ -1,6 +1,6 @@
 [source]
-tar = "https://github.com/tree-sitter/tree-sitter/archive/refs/tags/v0.26.8.tar.gz"
-blake3 = "c2312d7371fb5b814ed92d0a0ffa4efbae5800b3c1cccc4c9d88a1d810c87cff"
+tar = "https://github.com/tree-sitter/tree-sitter/archive/refs/tags/v0.26.9.tar.gz"
+blake3 = "3eb1abb42f4ae9d1ca30d978f5bda9cdb7e28dacdef131742b2274af996c4dee"
 patches = [
     "redox.patch"
 ]
