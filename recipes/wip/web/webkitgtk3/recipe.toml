@@ -16,7 +16,8 @@ dependencies = [
     "sqlite3",
 ]
 dev-dependencies = [
-    "host:gperf"
+    "host:gperf",
+    "libstdcxx",
 ]
 script = """
 DYNAMIC_INIT

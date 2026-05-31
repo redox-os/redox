@@ -12,7 +12,7 @@ patches = [
 template = "custom"
 dependencies = [
     "libiconv",
-    "target:libuv",
+    "libuv",
     "luv",
     "lpeg",
     "tree-sitter",
@@ -22,33 +22,23 @@ dependencies = [
 ]
 dev-dependencies = [
   "host:luajit",
-  "host:neovim",
 ]
 script = """
 DYNAMIC_INIT
 
 # the only official way to cross compile in future is via zig
 # https://github.com/neovim/neovim/issues/19579
-# the code path below is very hacky, and our zig support is poor yet
+# the only problem is to compile libnlua.so in host, so we do it here
 
 COOKBOOK_CMAKE_FLAGS+=(-DLUA_GEN_PRG=luajit)
 export DEPS_BUILD_DIR=$COOKBOOK_SYSROOT/usr
-if [ "$TARGET" = "$COOKBOOK_HOST_TARGET" ]; then
-cookbook_cmake
+(export COOKBOOK_NINJA=true && cookbook_cmake) 
 
-# needed to workaround bootstrapping process
-cp ./lib/libnlua0.so ${COOKBOOK_STAGE}/usr/lib/nvim/
-patchelf --replace-needed \
-  "${COOKBOOK_SYSROOT}/usr/lib/liblpeg.so" \
-  'liblpeg.so.1' ${COOKBOOK_STAGE}/usr/lib/nvim/libnlua0.so
+${CC_WRAPPER} gcc -shared -I${COOKBOOK_SOURCE}/src ${COOKBOOK_SOURCE}/src/nlua0.c \
+  -o ./libnlua0.so -lluajit-5.1 -I${COOKBOOK_TOOLCHAIN}/include/luajit-2.1 -L${COOKBOOK_TOOLCHAIN}/lib
 
-else
-
-# this is a very ugly workaround
-cookbook_cmake || true
-cp ${COOKBOOK_TOOLCHAIN}/usr/lib/nvim/libnlua0.so ./lib/libnlua0.so
-cookbook_cmake
-fi
+"${COOKBOOK_NINJA}" -j"${COOKBOOK_MAKE_JOBS}"
+DESTDIR="${COOKBOOK_STAGE}" "${COOKBOOK_NINJA}" install -j"${COOKBOOK_MAKE_JOBS}"
 
 # Lpeg is absolute path https://github.com/neovim/neovim/issues/23395
 patchelf --replace-needed \
