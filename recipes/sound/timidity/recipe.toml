@@ -17,10 +17,10 @@ cookbook_configure
 
 # Create configuration files
 mkdir -pv "${COOKBOOK_STAGE}/etc/timidity"
-echo "soundfont /share/generaluser-gs/generaluser-gs.sf2" >> "${COOKBOOK_STAGE}/etc/timidity/timidity.cfg"
+echo "soundfont /usr/share/generaluser-gs/generaluser-gs.sf2" >> "${COOKBOOK_STAGE}/etc/timidity/timidity.cfg"
 
-mkdir -pv "${COOKBOOK_STAGE}/share/timidity"
-echo "soundfont /share/generaluser-gs/generaluser-gs.sf2" >> "${COOKBOOK_STAGE}/share/timidity/timidity.cfg"
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/timidity"
+echo "soundfont /usr/share/generaluser-gs/generaluser-gs.sf2" >> "${COOKBOOK_STAGE}/usr/share/timidity/timidity.cfg"
 """
 
 [package]
