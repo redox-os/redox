@@ -1,0 +1,23 @@
+#TODO compile and test
+# build instructions: https://github.com/clangen/musikcube/wiki/building#linux-and-bsd
+[source]
+git = "https://github.com/clangen/musikcube"
+rev = "3.0.5"
+shallow_clone = true
+[build]
+template = "cmake"
+dependencies = [
+    "libogg",
+    "libvorbis",
+    "ffmpeg6",
+    "libpulse",
+    "curl",
+    "zlib",
+    "ncursesw",
+    "taglib",
+    "libmicrohttpd",
+    "libev",
+    "openssl3",
+    "libopenmpt",
+    "lame",
+]

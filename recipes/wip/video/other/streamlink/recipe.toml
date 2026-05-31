@@ -1,0 +1,10 @@
+#TODO add script for pip: https://streamlink.github.io/install.html#source-distribution
+#TODO missing dependencies
+[source]
+tar = "https://github.com/streamlink/streamlink/releases/download/8.4.0/streamlink-8.4.0.tar.gz"
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}/home/user/streamlink"
+cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}/home/user/streamlink"
+"""

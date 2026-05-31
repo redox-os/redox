@@ -1,0 +1,13 @@
+#TODO determine minimum dependencies from cmake log
+# optional dependencies enable the molecular editor
+[source]
+git = "https://invent.kde.org/education/kalzium"
+branch = "release/26.04"
+shallow_clone = true
+[build]
+template = "cmake"
+#dependencies = [
+    #"libeigen",
+    #"openbabel",
+    #"avogadro",
+#]

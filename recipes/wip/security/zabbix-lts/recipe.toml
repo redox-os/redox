@@ -1,0 +1,7 @@
+#TODO compile and test
+#TODO discover minimum dependencies from configure log
+# build and configuration instructions: https://www.zabbix.com/documentation/7.0/en/manual/installation/install
+[source]
+tar = "https://cdn.zabbix.com/zabbix/sources/stable/7.0/zabbix-7.0.26.tar.gz"
+[build]
+template = "configure"

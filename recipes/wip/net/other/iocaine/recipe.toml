@@ -1,0 +1,8 @@
+#TODO compile and test
+[source]
+git = "https://git.madhouse-project.org/iocaine/iocaine"
+branch = "iocaine-3.x"
+shallow_clone = true
+[build]
+template = "cargo"
+cargopackages = ["iocaine"]

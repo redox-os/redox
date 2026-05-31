@@ -1,0 +1,12 @@
+#TODO add script for cross-compilation: https://github.com/ossec/ossec-hids/blob/main/INSTALL
+[source]
+git = "https://github.com/ossec/ossec-hids"
+rev = "4.1.0"
+shallow_clone = true
+[build]
+template = "custom"
+dependencies = [
+    "openssl3",
+    "pcre2",
+    "zlib",
+]

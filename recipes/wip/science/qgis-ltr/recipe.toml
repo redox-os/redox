@@ -1,0 +1,31 @@
+#TODO determine minimum dependencies from cmake log
+# build instructions: https://github.com/qgis/QGIS/blob/release-4_0/INSTALL.md
+[source]
+git = "https://github.com/qgis/QGIS"
+rev = "final-4_0_3"
+shallow_clone = true
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DWITH_GUI=FALSE",
+    "-DWITH_3D=FALSE",
+    "-DWITH_QTPOSITIONING=FALSE",
+    "-DUSE_PRECOMPILED_HEADERS=OFF", # does it's needed?
+    "-DENABLE_TESTS=FALSE",
+]
+dependencies = [
+    #"qt6-base",
+    "sqlite3",
+    "expat",
+    "libzip",
+    "protobuf",
+    "geos",
+    #"qscintilla",
+    #"proj",
+    #"libspatialite",
+    #"libspatiaindex",
+    #"gdal",
+    #"qtkeychain",
+    #"qca-qt6",
+    #"qwt",
+]

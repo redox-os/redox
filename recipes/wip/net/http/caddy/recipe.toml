@@ -1,0 +1,6 @@
+#TODO implement "go" template
+# build instructions: https://caddyserver.com/docs/build
+[source]
+tar = "https://github.com/caddyserver/caddy/releases/download/v2.11.3/caddy_2.11.3_src.tar.gz"
+[build]
+template = "go"

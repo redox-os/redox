@@ -1,0 +1,5 @@
+#TODO add script for gnu make: https://www.chkrootkit.org/README
+[source]
+tar = "ftp://ftp.chkrootkit.org/pub/seg/pac/chkrootkit.tar.gz"
+[build]
+template = "custom"

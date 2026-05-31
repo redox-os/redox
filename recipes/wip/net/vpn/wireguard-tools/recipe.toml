@@ -1,0 +1,9 @@
+#TODO missing script for gnu make: https://git.zx2c4.com/wireguard-tools/tree/README.md
+[source]
+tar = "https://git.zx2c4.com/wireguard-tools/snapshot/wireguard-tools-1.0.20260223.tar.xz"
+[build]
+template = "custom"
+[package]
+dependencies = [
+    "wireguard-rs",
+]
