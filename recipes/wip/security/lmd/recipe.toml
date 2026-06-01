@@ -1,0 +1,7 @@
+#TODO add script to handle "install.sh" : https://github.com/rfxn/linux-malware-detect#2-installation
+[source]
+tar = "https://github.com/rfxn/linux-malware-detect/releases/download/v2.0.1/maldet-2.0.1.tar.gz"
+[build]
+template = "custom"
+[package]
+dependencies = ["bash"]

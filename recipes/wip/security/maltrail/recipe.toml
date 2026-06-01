@@ -1,0 +1,16 @@
+#TODO add script for proper packaging: https://github.com/stamparm/maltrail#requirements
+#TODO package pcapy-ng: https://github.com/stamparm/pcapy-ng/
+[source]
+git = "https://github.com/stamparm/maltrail"
+rev = "1.4"
+shallow_clone = true
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}/home/user/maltrail"
+cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}/home/user/maltrail"
+"""
+[package]
+dependencies = [
+    "python312",
+]

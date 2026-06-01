@@ -1,0 +1,25 @@
+#TODO discover minimum dependencies from cmake log
+# build instructions: https://github.com/greenbone/openvas-scanner/blob/main/INSTALL.md
+[source]
+git = "https://github.com/greenbone/openvas-scanner"
+rev = "v23.45.6"
+shallow_clone = true
+[build]
+template = "cmake"
+#dependencies = [
+    #"net-snmp",
+    #"libpcap",
+    #"glib",
+    #"json-glib",
+    #"libgcrypt",
+    #"gpgme",
+    #"redis",
+    #"libssh",
+    #"libksba",
+    #"gnutls",
+    #"curl",
+    #"libbsd",
+    #"krb5",
+    #"gvm-libs",
+    #"file",
+#]

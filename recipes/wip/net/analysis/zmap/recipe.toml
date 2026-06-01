@@ -1,0 +1,16 @@
+#TODO compile and test
+# build instructions: https://github.com/zmap/zmap/blob/main/INSTALL.md#building-from-source
+[source]
+git = "https://github.com/zmap/zmap"
+rev = "v4.4.0"
+shallow_clone = true
+[build]
+template = "cmake"
+dependencies = [
+    "libgmp",
+    "gengetopt",
+    "libpcap",
+    "json-c",
+    "libunistring",
+    "judy",
+]

@@ -1,0 +1,10 @@
+#TODO compile and test
+[source]
+tar = "https://github.com/radareorg/radare2/releases/download/6.1.4/radare2-6.1.4.tar.xz"
+[build]
+template = "meson"
+mesonflags = [
+    "-Duse_webui=false",
+    "-Denable_tests=false",
+    "-Denable_r2r=false",
+]

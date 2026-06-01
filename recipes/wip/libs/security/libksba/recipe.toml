@@ -1,0 +1,8 @@
+#TODO compile and test
+[source]
+tar = "https://www.gnupg.org/ftp/gcrypt/libksba/libksba-1.8.0.tar.bz2"
+[build]
+template = "configure"
+dependencies = [
+    "libgpg-error",
+]
