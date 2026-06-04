@@ -25,6 +25,14 @@ cargo-test:
   script:
     - cargo test --locked
 
+fetch-changed:
+  image: "rust:trixie"
+  stage: test
+  script:
+    - |
+      export PATH="$HOME/.cargo/bin:$PATH" PODMAN_BUILD=0 SKIP_CHECK_TOOLS=1 &&
+      ./scripts/fetch-changed.sh
+
 img:
   image: "redoxos/redox-base-x86_64"
   stage: test
