@@ -26,12 +26,14 @@ cargo-test:
     - cargo test --locked
 
 fetch-changed:
-  image: "rust:trixie"
+  image: "redoxos/redox-base-x86_64"
   stage: test
   script:
     - |
-      export PATH="$HOME/.cargo/bin:$PATH" PODMAN_BUILD=0 SKIP_CHECK_TOOLS=1 &&
-      ./scripts/fetch-changed.sh
+      export PATH="$HOME/.cargo/bin:$PATH" &&
+      (curl "https://sh.rustup.rs" -sSf | sh -s -- -y --default-toolchain stable --profile minimal ) &&
+      cargo install cbindgen &&
+      env PODMAN_BUILD=0 SKIP_CHECK_TOOLS=1 ./scripts/fetch-changed.sh
 
 img:
   image: "redoxos/redox-base-x86_64"
