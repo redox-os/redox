@@ -1,7 +1,5 @@
 [source]
 git = "https://github.com/pop-os/cosmic-edit.git"
-rev = "epoch-1.0.8"
-patches = [ "redox.patch" ]
 
 [build]
 template = "custom"
