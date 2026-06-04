@@ -1,7 +1,7 @@
 [source]
 git = "https://github.com/curl/curl.git"
 rev = "curl-8_20_0"
-patches = ["redox.patch"]
+patches = ["ipv6.patch", "redox.patch"]
 shallow_clone = true
 
 [build]
