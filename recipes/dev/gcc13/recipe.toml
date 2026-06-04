@@ -57,7 +57,6 @@ fi
 if [ "${CROSS_GNU_TARGET}" != "i586-unknown-redox" ]; then
 COOKBOOK_CONFIGURE_FLAGS+=(
     --enable-frame-pointer
-    --enable-default-pie
 )
 fi
 
