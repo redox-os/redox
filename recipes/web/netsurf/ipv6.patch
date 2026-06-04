@@ -1,12 +1,12 @@
-diff '--color=always' -Naur a/netsurf/utils/config.h b/netsurf/utils/config.h
-[1m--- a/netsurf/utils/config.h	2026-06-03 23:50:18.641104799 +0000[0m
-[1m+++ b/netsurf/utils/config.h	2026-06-03 23:53:51.866091024 +0000[0m
-[36m@@ -200,4 +200,8 @@[0m
+diff -Naur a/netsurf/utils/config.h b/netsurf/utils/config.h
+--- a/netsurf/utils/config.h	2026-06-03 23:50:18.641104799 +0000
++++ b/netsurf/utils/config.h	2026-06-03 23:53:51.866091024 +0000
+@@ -200,4 +200,8 @@
  	#define NO_IPV6
  #endif
- 
-[32m+#ifndef AF_INET6[0m
-[32m+	#define NO_IPV6[0m
-[32m+#endif[0m
-[32m+[0m
+
++#ifndef AF_INET6
++	#define NO_IPV6
++#endif
++
  #endif
