@@ -11,6 +11,7 @@ accept=*.html
 accept=*.ion
 accept=*.java
 accept=*.js
+accept=*.json
 accept=*.list
 accept=*.log
 accept=*.lua
