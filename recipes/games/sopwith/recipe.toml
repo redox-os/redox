@@ -1,6 +1,6 @@
 [source]
 tar = "https://github.com/fragglet/sdl-sopwith/releases/download/sdl-sopwith-2.9.0/sdl-sopwith-2.9.0.tar.gz"
-blake3 = "44e1404a9c4bea257d7778d2a4b1512231603a74b0a7b18eac5d18f36730ed3e"
+blake3 = "f06a6d0c826b42989c58074f85ed8e19fbfd5fe53a357ba356bc1109bcf91ef3"
 script = """
 DYNAMIC_INIT
 autotools_recursive_regenerate
@@ -9,14 +9,15 @@ autotools_recursive_regenerate
 [build]
 template = "custom"
 dependencies = [
-    "sdl1",
+    "sdl2",
     "liborbital",
     "libiconv",
 ]
+dev-dependencies = [
+    "libstdcxx"
+]
 script = """
 DYNAMIC_INIT
-export CFLAGS="${CFLAGS} -I${COOKBOOK_SYSROOT}/include/SDL"
-export LIBS="-lSDL -lorbital" # TODO: Uses sdl-config instead of pkg-config
 
 # For some reason, cook_configure breaks spectacularly on this
 # We will just copy instead
