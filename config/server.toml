@@ -15,6 +15,7 @@ bottom = {}
 curl = {}
 diffutils = {}
 findutils = {}
+gettext = {}
 git = {}
 installer = {}
 kibi = {}
