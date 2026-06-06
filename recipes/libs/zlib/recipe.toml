@@ -5,14 +5,11 @@ blake3 = "ec1abc6f672a7a6ee6f49ba544cc9529f73121b478310473be44fee22a140ebf"
 [build]
 template = "custom"
 script = """
-DYNAMIC_INIT
-COOKBOOK_CONFIGURE_FLAGS=(--prefix="/usr")
-if [ "${COOKBOOK_DYNAMIC}" == "1" ]
-then
-    COOKBOOK_CONFIGURE_FLAGS+=(--shared)
-else
-    COOKBOOK_CONFIGURE_FLAGS+=(--static)
-fi
+DYNAMIC_STATIC_INIT
+COOKBOOK_CONFIGURE_FLAGS=(--prefix="/usr" --shared --static)
+# TODO: fPIC is the default on linux but not on redox and
+#       required by libz-sys as zlib statically linked there
+export CFLAGS="$CFLAGS -fPIC"
 # See https://stackoverflow.com/questions/21396988/zlib-build-not-configuring-properly-with-cross-compiler-ignores-ar.
 env CHOST="${TARGET}" "${COOKBOOK_CONFIGURE}" "${COOKBOOK_CONFIGURE_FLAGS[@]}"
 "${COOKBOOK_MAKE}" -j "$(nproc)"
