@@ -34,3 +34,5 @@ COOKBOOK_CONFIGURE_FLAGS+=(
 )
 cookbook_configure
 """
+
+# TODO: split static library into dev
