@@ -1,7 +1,6 @@
 [source]
 git = "https://github.com/pop-os/cosmic-reader.git"
-rev = "ebea761ab6853a9ac15b1bfc90b040d620d1d00f"
-shallow_clone = true
+
 [build]
 template = "custom"
 dependencies = [
@@ -14,6 +13,8 @@ dependencies = [
 script = """
 DYNAMIC_INIT
 export BINDGEN_EXTRA_CLANG_ARGS="--sysroot=${COOKBOOK_HOST_SYSROOT}/${GNU_TARGET} -I${COOKBOOK_HOST_SYSROOT}/${GNU_TARGET}/include"
+# Define endianness for mupdf
+export CFLAGS="${CFLAGS} -D__LITTLE_ENDIAN__"
 "${COOKBOOK_CARGO}" rustc \
     --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
     --release \
