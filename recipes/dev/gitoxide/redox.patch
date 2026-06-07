@@ -1,0 +1,16 @@
+diff --git a/Cargo.toml b/Cargo.toml
+index 23147e56..520fbed3 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -206,11 +206,9 @@ zlib-rs = { opt-level = 3 }
+ 
+ [profile.release]
+ overflow-checks = false
+-lto = "thin"
+ # This bloats files but assures destructors are called, important for tempfiles. One day I hope we
+ # can wire up the 'abrt' signal handler so tempfiles will be removed in case of panics.
+ panic = "unwind"
+-incremental = false
+ 
+ # This profile is currently used in building releases for GitHub.
+ # It may be removed at any time and should not otherwise be relied on.
