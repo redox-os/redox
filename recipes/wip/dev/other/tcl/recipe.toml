@@ -1,9 +1,17 @@
-#TODO maybe wrong template, see https://www.tcl.tk/doc/howto/compile.html#unix
+#TODO compiled but not tested
 [source]
 tar = "http://prdownloads.sourceforge.net/tcl/tcl8.6.13-src.tar.gz"
+blake3 = "a44611c5d38d7dbc1e6ce49d6a78ae7d43817b861412b54b30357bc431510978"
+
 [build]
 template = "custom"
 script = """
-cd unix
+DYNAMIC_INIT
+COOKBOOK_CONFIGURE="$COOKBOOK_SOURCE/unix/configure"
+COOKBOOK_CONFIGURE_FLAGS+=(
+    ac_cv_func_memcmp_working=yes
+    tcl_cv_strstr_unbroken=
+    tcl_cv_strtoul_unbroken=
+)
 cookbook_configure
 """

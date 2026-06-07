@@ -1,0 +1,18 @@
+[source]
+git = "https://github.com/sqlite/sqlite"
+shallow_clone = true
+
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}/home/user/sqlite-test"
+cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}/home/user/sqlite-test"
+"""
+
+[package]
+dependencies = [
+    "gcc13",
+    "gnu-binutils",
+    "gnu-make",
+    "tcl",
+]
