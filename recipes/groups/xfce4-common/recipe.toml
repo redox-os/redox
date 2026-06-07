@@ -1,17 +1,12 @@
 [package]
 dependencies = [
-    "mousepad",
     "thunar",
     "tumbler",
     "xfconf",
-    "xfdashboard",
     "xfdesktop",
     "xfce4-appfinder",
-    "xfce4-notifyd",
     "xfce4-session",
     "xfce4-panel",
-    "xfce4-power-manager",
     "xfce4-settings",
-    "xfce4-terminal",
     "xfwm4",
 ]

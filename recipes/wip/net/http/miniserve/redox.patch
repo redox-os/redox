@@ -1,5 +1,5 @@
 diff --git a/Cargo.toml b/Cargo.toml
-index 68f26c9..98c4dde 100644
+index 8349e40..f4eab7f 100644
 --- a/Cargo.toml
 +++ b/Cargo.toml
 @@ -39,7 +39,6 @@ futures = "0.3"
@@ -21,7 +21,7 @@ index 68f26c9..98c4dde 100644
  default = ["tls"]
  # This feature allows us to use rustls only on architectures supported by ring.
 diff --git a/src/main.rs b/src/main.rs
-index aea9ed9..3c91968 100644
+index b26a3e0..13fe122 100644
 --- a/src/main.rs
 +++ b/src/main.rs
 @@ -193,6 +193,7 @@ async fn run(miniserve_config: MiniserveConfig) -> Result<(), StartupError> {

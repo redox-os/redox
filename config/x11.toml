@@ -19,7 +19,7 @@ libxcursor = {} # loaded dynamically
 mesa-demos-x11 = {}
 #firefox = {}
 #webkitgtk3 = {} # not compiling
-xfce4-common = {}
+xfce4-full = {}
 x11-full = {}
 zenity = {}
 

@@ -1,0 +1,12 @@
+[package]
+dependencies = [
+    "mousepad",
+    "parole",
+    "ristretto",
+    "xfdashboard",
+    "xfce4-screenshooter",
+    "xfce4-notifyd",
+    "xfce4-power-manager",
+    "xfce4-terminal",
+    "xfce4-common",
+]
