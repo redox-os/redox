@@ -23,6 +23,7 @@ redox-tests = {}
 x11-minimal = {}
 x11-full = {}
 xfce4-common = {}
+xfce4-full = {}
 
 # Normal packages below
 
