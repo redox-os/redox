@@ -1,0 +1,11 @@
+#TODO compile and test
+# maybe need to disable or patch bundled dependencies
+[source]
+git = "https://github.com/kdm9/axe"
+rev = "c8a636fd11d394034776bda45a5f0ef9b6e80046"
+shallow_clone = true
+[build]
+template = "cmake"
+dependencies = [
+    "zlib",
+]

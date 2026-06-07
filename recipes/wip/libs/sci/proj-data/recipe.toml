@@ -1,0 +1,8 @@
+[source]
+tar = "https://download.osgeo.org/proj/proj-data-1.24.tar.gz"
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}/home/user/.local/share/proj"
+cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}/home/user/.local/share/proj"
+"""

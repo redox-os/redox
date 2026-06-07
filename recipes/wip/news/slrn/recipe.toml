@@ -1,0 +1,8 @@
+#TODO compile and test
+[source]
+tar = "https://jedsoft.org/releases/slrn/slrn-1.0.3a.tar.bz2"
+[build]
+template = "configure"
+dependencies = [
+    "slang",
+]

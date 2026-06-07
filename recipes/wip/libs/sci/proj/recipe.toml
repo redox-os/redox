@@ -1,0 +1,19 @@
+#TODO compile and test
+# build instructions: https://proj.org/en/stable/install.html#compilation-and-installation-from-source-code
+[source]
+tar = "https://download.osgeo.org/proj/proj-9.8.1.tar.gz"
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DBUILD_TESTING=OFF",
+]
+dependencies = [
+    "sqlite3",
+    "nlohmann-json",
+    #"libtiff",
+    #"curl",
+]
+[package]
+dependencies = [
+    "proj-data",
+]
