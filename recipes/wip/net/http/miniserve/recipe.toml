@@ -1,6 +1,10 @@
 #TODO compiled but not tested
 [source]
 git = "https://github.com/svenstaro/miniserve"
+rev = "v0.35.0"
+patches = [
+    "redox.patch"
+]
 shallow_clone = true
 [build]
 template = "cargo"
