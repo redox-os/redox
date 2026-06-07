@@ -1,4 +1,4 @@
-diff --color -ruwN source/meson.build source-new/meson.build
+diff -ruwN source/meson.build source-new/meson.build
 --- source/meson.build	2024-03-24 04:23:43.000000000 +0700
 +++ source-new/meson.build	2025-10-29 10:55:30.355297899 +0700
 @@ -637,8 +637,6 @@
@@ -31,7 +31,7 @@ diff --color -ruwN source/meson.build source-new/meson.build
  if get_option('enable-xkbregistry')
      test(
          'registry',
-diff --color -ruwN source/src/x11/util.c source-new/src/x11/util.c
+diff -ruwN source/src/x11/util.c source-new/src/x11/util.c
 --- source/src/x11/util.c	2024-03-24 04:23:43.000000000 +0700
 +++ source-new/src/x11/util.c	2025-10-29 15:03:58.879274347 +0700
 @@ -39,7 +39,7 @@
