@@ -1,0 +1,6 @@
+#TODO determine minimum dependencies from configure log
+# build instructions: https://plasma-gate.weizmann.ac.il/Grace/doc/UsersGuide.html#ss2.1
+[source]
+tar = "https://plasma-gate.weizmann.ac.il/pub/grace/src/stable/grace-5.1.25.tar.gz"
+[build]
+template = "configure"

@@ -1,0 +1,5 @@
+#TODO missing script for gnu make, read the makefile in the tarball
+[source]
+tar = "https://www.rarlab.com/rar/unrarsrc-7.2.6.tar.gz"
+[build]
+template = "custom"

@@ -1,0 +1,10 @@
+# the rust reimplementation is prefered over c implementation, which is abandoned with security bugs: https://github.com/quininer/unzrip#safety
+#TODO compile and test
+[source]
+git = "https://github.com/quininer/unzrip"
+shallow_clone = true
+[build]
+template = "cargo"
+dependencies = [
+    "zstd",
+]

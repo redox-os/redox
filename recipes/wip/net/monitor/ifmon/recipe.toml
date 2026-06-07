@@ -1,0 +1,6 @@
+#TODO compile and test
+[source]
+git = "https://github.com/coder3101/ifmon"
+shallow_clone = true
+[build]
+template = "cargo"

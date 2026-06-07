@@ -1,0 +1,26 @@
+#TODO test
+[source]
+git = "https://github.com/Winetricks/winetricks"
+rev = "20260125"
+shallow_clone = true
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
+cp -rv "${COOKBOOK_SOURCE}"/src/winetricks "${COOKBOOK_STAGE}/usr/bin"
+#mkdir -pv "${COOKBOOK_STAGE}/usr/bin/winetricks-dir"
+#cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}/usr/bin/winetricks-dir"
+#echo "/usr/bin/winetricks-dir/winetricks" > "${COOKBOOK_STAGE}"/usr/bin/winetricks
+#chmod a+x "${COOKBOOK_STAGE}"/usr/bin/winetricks
+"""
+[package]
+dependencies = [
+    "dash",
+    "wget",
+    "xz",
+    "cabextract",
+    #"unrar",
+    "unzip-rs",
+    "7zip",
+    "zenity",
+]

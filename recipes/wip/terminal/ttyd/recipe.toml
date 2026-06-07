@@ -1,0 +1,12 @@
+#TODO compile and test
+# build instructions: https://tsl0922.github.io/ttyd/
+[source]
+git = "https://github.com/tsl0922/ttyd"
+rev = "1.7.7"
+shallow_clone = true
+[build]
+template = "cmake"
+dependencies = [
+    "libwebsockets",
+    "json-c",
+]

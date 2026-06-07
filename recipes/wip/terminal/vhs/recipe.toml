@@ -1,0 +1,11 @@
+#TODO implement go template
+# build instructions: https://github.com/charmbracelet/vhs#installation
+[source]
+tar = "https://github.com/charmbracelet/vhs/releases/download/v0.11.0/vhs-0.11.0.tar.gz"
+[build]
+template = "go"
+[package]
+dependencies = [
+    "ffmpeg6",
+    "ttyd",
+]

@@ -4,8 +4,8 @@
 template = "custom"
 dev-dependencies = [
     "host:lhasa",
-    "host:unzrip",
-    "host:7-zip",
+    "host:unzip-rs",
+    "host:7zip",
 ]
 script = """
 curl -O "https://github.com/Jason2Brownlee/QuakeOfficialArchive/raw/refs/heads/main/bin/quake106.zip"
