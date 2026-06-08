@@ -1,0 +1,15 @@
+#TODO add script for proper packaging: https://github.com/nicolargo/glances#source
+[source]
+git = "https://github.com/nicolargo/glances"
+rev = "v4.5.4"
+shallow_clone = true
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}/home/user/glances"
+cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}/home/user/glances"
+"""
+[package]
+dependencies = [
+    "python312",
+]

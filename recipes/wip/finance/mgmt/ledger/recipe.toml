@@ -1,0 +1,16 @@
+#TODO compile and test
+# build instructions: https://github.com/ledger/ledger#building
+[source]
+git = "https://github.com/ledger/ledger"
+rev = "v3.4.1"
+shallow_clone = true
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DBUILD_LIBRARY=OFF",
+]
+dependencies = [
+    "boost",
+    "libgmp",
+    "libmpfr",
+]

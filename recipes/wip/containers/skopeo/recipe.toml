@@ -1,6 +1,7 @@
-#TODO Implement the Cookbook template for the Go programming language
+#TODO implement go template
 [source]
 git = "https://github.com/containers/skopeo"
 branch = "release-1.16"
+shallow_clone = true
 [build]
 template = "go"

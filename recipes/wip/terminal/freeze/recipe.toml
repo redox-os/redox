@@ -1,0 +1,5 @@
+#TODO implement go template
+[source]
+tar = "https://github.com/charmbracelet/freeze/releases/download/v0.2.2/freeze-0.2.2.tar.gz"
+[build]
+template = "go"

@@ -1,6 +1,8 @@
-#TODO missing script for Go, see https://github.com/kahing/goofys/#installation
+#TODO implement go template
+# build instructions: https://github.com/kahing/goofys/#installation
 [source]
 git = "https://github.com/kahing/goofys"
-rev = "45b8d78375af1b24604439d2e60c567654bcdf88"
+rev = "v0.24.0"
+shallow_clone = true
 [build]
-template = "custom"
+template = "go"

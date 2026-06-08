@@ -1,0 +1,12 @@
+#TODO need the pcap driver
+#TODO compile and test
+# build instructions: https://github.com/jpr5/ngrep/blob/master/INSTALL
+[source]
+git = "https://github.com/jpr5/ngrep"
+rev = "v1.49.0"
+shallow_clone = true
+[build]
+template = "configure"
+dependencies = [
+    "libpcap",
+]

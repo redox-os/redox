@@ -1,0 +1,17 @@
+#TODO compile and test
+# build instructions: https://onotelli.github.io/justniffer/
+[source]
+git = "https://github.com/onotelli/justniffer"
+rev = "v0.6.13"
+shallow_clone = true
+[build]
+template = "custom"
+dependencies = [
+    "libpcap",
+    "boost",
+]
+script = """
+COOKBOOK_SOURCE="${COOKBOOK_SOURCE}/main"
+DYNAMIC_INIT
+cookbook_configure
+"""

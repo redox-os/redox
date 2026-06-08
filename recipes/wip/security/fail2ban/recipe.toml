@@ -1,0 +1,15 @@
+#TODO add script for proper packaging: https://github.com/fail2ban/fail2ban#installation
+[source]
+git = "https://github.com/fail2ban/fail2ban"
+rev = "1.1.0"
+shallow_clone = true
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}/home/user/fail2ban"
+cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}/home/user/fail2ban"
+"""
+[package]
+dependencies = [
+    "python312",
+]

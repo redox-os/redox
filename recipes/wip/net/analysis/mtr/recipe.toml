@@ -1,0 +1,9 @@
+#TODO compile and test
+# build instructions: https://github.com/traviscross/mtr#installing
+[source]
+tar = "https://www.bitwizard.nl/mtr/files/mtr-0.96.tar.gz"
+[build]
+template = "configure"
+configureflags = [
+    "--without-gtk"
+]

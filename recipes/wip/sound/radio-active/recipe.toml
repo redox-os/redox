@@ -1,0 +1,16 @@
+#TODO add script for proper packaging: https://deepwiki.com/deep5050/radio-active/2-installation-and-setup
+[source]
+git = "https://github.com/deep5050/radio-active"
+rev = "v4.0.2"
+shallow_clone = true
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}/home/user/radio-active"
+cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}/home/user/radio-active"
+"""
+[package]
+dependencies = [
+    "python312",
+    "ffmpeg6",
+]

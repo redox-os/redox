@@ -1,0 +1,11 @@
+#TODO port openjdk
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
+wget https://faculty.washington.edu/browning/beagle/beagle.27Feb25.75f.jar "${COOKBOOK_STAGE}"/usr/bin/beagle.jar
+echo "#!/usr/bin/env sh \n java -jar /usr/bin/beagle.jar" > "${COOKBOOK_STAGE}"/usr/bin/beagle
+chmod a+x "${COOKBOOK_STAGE}"/usr/bin/beagle
+"""
+[package]
+dependencies = ["openjdk17"]

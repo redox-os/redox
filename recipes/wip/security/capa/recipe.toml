@@ -1,0 +1,15 @@
+#TODO add script for proper packaging: https://github.com/mandiant/capa/blob/master/doc/installation.md
+[source]
+git = "https://github.com/mandiant/capa"
+rev = "v9.4.0"
+shallow_clone = true
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}/home/user/capa"
+cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}/home/user/capa"
+"""
+[package]
+dependencies = [
+    "python312",
+]

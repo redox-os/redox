@@ -1,0 +1,9 @@
+#TODO compile and test
+# build instructions: https://github.com/tgraf/bmon#compile-yourself
+[source]
+tar = "https://github.com/tgraf/bmon/releases/download/v4.0/bmon-4.0.tar.gz"
+[build]
+template = "configure"
+dependencies = [
+    "libconfuse",
+]

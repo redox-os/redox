@@ -1,0 +1,23 @@
+#TODO compile and test
+# probably missing dependencies
+# build instructions: https://github.com/ntop/ntopng/blob/6.6-stable/doc/README.compilation
+[source]
+git = "https://github.com/ntop/ntopng"
+rev = "6.6"
+shallow_clone = true
+script = """
+autotools_recursive_regenerate
+"""
+[build]
+template = "configure"
+dependencies = [
+    "glib",
+    "libxml2",
+    "sqlite3",
+    "curl",
+    "libmaxminddb",
+]
+[package]
+dependencies = [
+    "valkey",
+]
