@@ -24,3 +24,8 @@ cookbook_meson \
     -Denable-wayland=false \
     -Denable-x11=true
 """
+
+[package]
+dependencies = [
+    "xkeyboard-config"
+]

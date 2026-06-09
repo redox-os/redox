@@ -1,8 +1,8 @@
 #TODO promote
 [source]
-tar = "https://download.gnome.org/sources/gtk+/3.24/gtk%2B-3.24.43.tar.xz"
-blake3 = "5feab2bad81e6b5906895f70ddce6227cf96a6a14b16af0ef72c79991a48ddf4"
-patches = ["redox.patch"]
+git = "https://gitlab.redox-os.org/redox-os/gtk"
+branch = "redox-3.24.43"
+shallow_clone = true
 
 [build]
 dependencies = [
@@ -21,20 +21,21 @@ dependencies = [
     "libffi",
     "libiconv",
     "libjpeg",
+    "liborbital",
     "libpng",
     "libpthread-stubs",
     "libwayland",
-    "libx11",
-    "libxau",
+    # "libx11",
+    # "libxau",
     "libxkbcommon",
-    "libxcb",
-    "libxext",
-    "libxfixes",
-    "libxi",
-    "libxrandr",
-    "libxrender",
-    "libxxf86vm",
-    "mesa-x11",
+    # "libxcb",
+    # "libxext",
+    # "libxfixes",
+    # "libxi",
+    # "libxrandr",
+    # "libxrender",
+    # "libxxf86vm",
+    "mesa",
     "pango",
     "pcre2",
     "pixman",
@@ -49,6 +50,7 @@ DYNAMIC_INIT
 CFLAGS="${CFLAGS} -DM_SQRT2=1.41421356237309504880"
 cookbook_meson \
     -Dexamples=false \
+    -Dx11_backend=false \
     -Dintrospection=false \
     -Dtests=false
 """
