@@ -1,3 +1,4 @@
+# non-linux ports like macos use virtualization, examine the macos version
 #TODO implement go template
 [source]
 git = "https://github.com/docker/cli"

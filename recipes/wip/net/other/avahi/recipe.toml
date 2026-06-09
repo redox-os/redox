@@ -1,0 +1,16 @@
+#TODO compile and test
+# build instructions: https://github.com/avahi/avahi/blob/master/docs/INSTALL
+# dependencies: https://github.com/avahi/avahi/blob/master/docs/README#L15
+[source]
+tar = "https://avahi.org/download/avahi-0.8.tar.gz"
+[build]
+template = "configure"
+configureflags = [
+    "--disable-libsystemd"
+]
+dependencies = [
+    "glib",
+    "expat",
+    "libdaemon",
+    "dbus",
+]

@@ -1,0 +1,11 @@
+#TODO add script for compilation: https://docs.columnar.tech/dbc/getting_started/installation/
+[source]
+git = "https://github.com/columnar-tech/dbc"
+rev = "v0.3.0"
+shallow_clone = true
+[build]
+template = "custom"
+dev-dependencies = [
+    "host:python312",
+    "host:go",
+]

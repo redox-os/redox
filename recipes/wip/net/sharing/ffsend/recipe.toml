@@ -1,0 +1,10 @@
+#TODO compile and test
+[source]
+git = "https://github.com/timvisee/ffsend"
+shallow_clone = true
+[build]
+template = "cargo"
+cargoflags = ["--no-default-features --features send3,crypto-ring"]
+dependencies = [
+    "openssl3",
+]

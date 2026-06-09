@@ -1,0 +1,5 @@
+#TODO implement go template
+[source]
+tar = "https://github.com/charmbracelet/glow/releases/download/v2.1.2/glow-2.1.2.tar.gz"
+[build]
+template = "go"

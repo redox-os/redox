@@ -1,0 +1,5 @@
+#TODO compile and test
+[source]
+tar = "https://gitlab.freedesktop.org/uchardet/uchardet/-/archive/v0.0.8/uchardet-v0.0.8.tar.bz2"
+[build]
+template = "cmake"

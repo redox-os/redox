@@ -1,0 +1,22 @@
+#TODO compile and test
+# build instructions: https://pragtical.dev/docs/setup/building
+[source]
+git = "https://github.com/pragtical/pragtical"
+rev = "v3.12.0"
+shallow_clone = true
+[build]
+template = "meson"
+mesonflags = [
+    "-Drenderer=true",
+    "-Drenderer_backend=sdlrenderer",
+    "-Duse_system_lua=true",
+    "-Djit=false",
+    "-Dnet=false",
+]
+dependencies = [
+    "lua54",
+    "sdl3",
+    "freetype2",
+    "pcre2",
+    "uchardet",
+]

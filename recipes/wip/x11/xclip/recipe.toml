@@ -1,0 +1,16 @@
+#TODO compile and test
+# build instructions: https://github.com/astrand/xclip/blob/master/INSTALL
+[source]
+git = "https://github.com/astrand/xclip"
+rev = "0.13"
+shallow_clone = true
+script = """
+autotools_recursive_regenerate
+"""
+[build]
+template = "configure"
+dependencies = [
+    "libx11",
+    "libxmu",
+    "libxt",
+]

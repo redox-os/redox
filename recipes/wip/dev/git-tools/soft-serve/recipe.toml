@@ -1,0 +1,5 @@
+#TODO implement go template
+[source]
+tar = "https://github.com/charmbracelet/soft-serve/releases/download/v0.11.6/soft-serve-0.11.6.tar.gz"
+[build]
+template = "go"
