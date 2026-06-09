@@ -858,6 +858,9 @@ fn handle_push(recipes: &Vec<CookRecipe>, config: &CliConfig) -> Result<()> {
                                   _is_last: bool,
                                   entry: &WalkTreeEntry|
           -> Result<bool> {
+        if package_name.is_host() {
+            return Ok(true); // TODO: skip altogether from recipes list
+        }
         let r = match entry {
             WalkTreeEntry::Built(archive_path, _) => {
                 let install_path = PUSH_SYSROOT_DIR.get().unwrap();
