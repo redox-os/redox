@@ -1,0 +1,5 @@
+#TODO compile and test
+[source]
+tar = "https://sourceforge.net/projects/judy/files/judy/Judy-1.0.5/Judy-1.0.5.tar.gz/download"
+[build]
+template = "configure"

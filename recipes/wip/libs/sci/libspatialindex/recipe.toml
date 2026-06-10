@@ -1,0 +1,5 @@
+#TODO compile and test
+[source]
+tar = "https://github.com/libspatialindex/libspatialindex/releases/download/2.1.0/spatialindex-src-2.1.0.tar.bz2"
+[build]
+template = "cmake"

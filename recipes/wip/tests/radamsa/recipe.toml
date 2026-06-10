@@ -1,0 +1,5 @@
+#TODO add script for gnu make:https://gitlab.com/akihe/radamsa#building-radamsa
+[source]
+tar = "https://gitlab.com/akihe/radamsa/-/archive/v0.7/radamsa-v0.7.tar.bz2"
+[build]
+template = "custom"

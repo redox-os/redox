@@ -1,0 +1,10 @@
+#TODO compile and test
+[source]
+git = "https://github.com/frankosterfeld/qtkeychain"
+rev = "0.16.0"
+shallow_clone = true
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DBUILD_TRANSLATIONS=OFF"
+]

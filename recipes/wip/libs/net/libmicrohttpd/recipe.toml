@@ -1,0 +1,8 @@
+#TODO compile and test
+[source]
+tar = "https://ftp.gnu.org/gnu/libmicrohttpd/libmicrohttpd-1.0.5.tar.gz"
+[build]
+template = "configure"
+dependencies = [
+    "gnutls3",
+]

@@ -1,0 +1,9 @@
+#TODO compile and test
+# dependencies: https://github.com/OpenMPT/openmpt/blob/master/doc/libopenmpt/dependencies.md
+[source]
+tar = "https://lib.openmpt.org/files/libopenmpt/src/libopenmpt-0.8.7+release.autotools.tar.gz"
+[build]
+template = "configure"
+dependencies = [
+    "sdl2",
+]

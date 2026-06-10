@@ -1,0 +1,8 @@
+#TODO discover minimum dependencies from cmake log
+# build instructions: https://github.com/greenbone/gvm-libs/blob/main/INSTALL.md
+[source]
+git = "https://github.com/greenbone/gvm-libs"
+rev = "v23.2.2"
+shallow_clone = true
+[build]
+template = "cmake"

@@ -1,0 +1,5 @@
+#TODO compile and test
+[source]
+tar = "https://ftp.gnu.org/gnu/gengetopt/gengetopt-2.23.tar.xz"
+[build]
+template = "configure"

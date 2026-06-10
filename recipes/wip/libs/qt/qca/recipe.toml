@@ -1,0 +1,11 @@
+#TODO compile and test
+[source]
+git = "https://invent.kde.org/libraries/qca"
+rev = "v2.3.10"
+shallow_clone = true
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DBUILD_WITH_QT6=ON",
+    "-DBUILD_TESTS=OFF",
+]

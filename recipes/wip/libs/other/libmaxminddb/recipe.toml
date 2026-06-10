@@ -1,0 +1,5 @@
+#TODO compile and test
+[source]
+tar = "https://github.com/maxmind/libmaxminddb/releases/download/1.13.3/libmaxminddb-1.13.3.tar.gz"
+[build]
+template = "configure"

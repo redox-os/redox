@@ -1,0 +1,9 @@
+#TODO add script for gnu make:
+# https://aflplus.plus/building/
+# https://github.com/AFLplusplus/AFLplusplus/blob/stable/docs/INSTALL.md # has feature flags
+[source]
+git = "https://github.com/AFLplusplus/AFLplusplus"
+rev = "v5.00c"
+shallow_clone = true
+[build]
+template = "custom"

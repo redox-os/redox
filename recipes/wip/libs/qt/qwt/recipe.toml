@@ -1,0 +1,5 @@
+#TODO add script for gnu make or qmake: https://qwt.sourceforge.io/qwtinstall.html
+[source]
+tar = "https://sourceforge.net/projects/qwt/files/qwt/6.3.0/qwt-6.3.0.tar.bz2/download"
+[build]
+template = "custom"
