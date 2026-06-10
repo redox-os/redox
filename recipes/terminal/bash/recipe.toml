@@ -1,23 +1,22 @@
 [source]
-tar = "https://ftp.gnu.org/gnu/bash/bash-5.2.15.tar.gz"
-blake3 = "c1548e3f2a9b6de5296e18c28b3d2007985e647273e03f039efd3e489edaa41f"
-patches = [
-    "redox.patch"
-]
+tar = "https://ftp.gnu.org/gnu/bash/bash-5.3.tar.gz"
 
 [build]
 template = "custom"
 dependencies = [
-    "termcap",
+    "readline",
 ]
 script = """
-# compiled statically
+DYNAMIC_INIT
 COOKBOOK_CONFIGURE_FLAGS+=(
     bash_cv_func_sigsetjmp=no
+    ac_cv_func_getrlimit=no
+    ac_cv_func_dlopen=no
+    ac_cv_func_dlclose=no
     bash_cv_getenv_redef=no
-    --enable-static-link # This ensures loadables are not built, which will fail
+    --with-bash-malloc=no
+    --with-installed-readline=yes
 )
-COOKBOOK_MAKE_JOBS=1 # workaround for parallel make bugs
 cookbook_configure
 ln -s "bash" "${COOKBOOK_STAGE}/usr/bin/sh"
 cp -r "${COOKBOOK_RECIPE}/etc" "${COOKBOOK_STAGE}/etc"
