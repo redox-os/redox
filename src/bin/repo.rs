@@ -226,7 +226,7 @@ fn main_inner() -> Result<()> {
     }
 
     let (config, command, recipes) = parse_args(args)?;
-    if command.is_building() {
+    if command.is_building() || matches!(command, CliCommand::ChangeRuleLocal) {
         ident::init_ident();
     }
     if command == CliCommand::Cook && config.cook.tui {
@@ -994,6 +994,7 @@ fn handle_change_rule(
         CliCommand::ChangeRule | CliCommand::ChangeRuleLocal
     );
     let is_capture_rev = matches!(command, CliCommand::CaptureRev);
+    let is_change_rule_local = matches!(command, CliCommand::ChangeRuleLocal);
     for recipe in recipes {
         if is_change_rule && recipe.name.is_host() {
             // host packages will always be "source" so it's pointless to change their rule
@@ -1050,13 +1051,23 @@ fn handle_change_rule(
         } else {
             lock.insert(recipe_name.to_string(), recipe_lock);
         }
+        let mut fetch_cached = true;
+        if is_change_rule_local && !recipe.dir.join("source").exists() {
+            // previously, this is "binary", then user wants to hack around with the source, so we do fetch here
+            let mut recipe = recipe.clone();
+            recipe.rule = "source".into();
+            recipe.reload_recipe()?;
+            if recipe.recipe.source.is_some() {
+                fetch_cached = handle_fetch(&recipe, config, false, &None)?.cached;
+            }
+        }
         let clean_cached = if !cached && is_change_rule {
             handle_clean(recipe, config, &CliCommand::Clean)?
         } else {
             true
         };
 
-        if cached && clean_cached {
+        if cached && clean_cached && fetch_cached {
             print_cached(command, &recipe.name);
         } else {
             print_success(command, &recipe.name);
