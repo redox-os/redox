@@ -18,7 +18,6 @@ script = """
 
 mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
 
-cp -v "target/${TARGET}/release/hnefatafl-ai" "${COOKBOOK_STAGE}/usr/bin/hnefatafl-ai"
 cp -v "target/${TARGET}/release/hnefatafl-client" "${COOKBOOK_STAGE}/usr/bin/hnefatafl-client"
 cp -v "target/${TARGET}/release/hnefatafl-server" "${COOKBOOK_STAGE}/usr/bin/hnefatafl-server"
 cp -v "target/${TARGET}/release/hnefatafl-text-protocol" "${COOKBOOK_STAGE}/usr/bin/hnefatafl-text-protocol"
@@ -26,7 +25,7 @@ cp -v "target/${TARGET}/release/hnefatafl-text-protocol" "${COOKBOOK_STAGE}/usr/
 mkdir -pv "${COOKBOOK_STAGE}"/usr/games
 mkdir -pv "${COOKBOOK_STAGE}"/usr/share/ui/apps
 mkdir -pv "${COOKBOOK_STAGE}"/usr/share/icons/apps
-cp -rv "${COOKBOOK_SOURCE}"/src/bin/hnefatafl-client/helmet.png "${COOKBOOK_STAGE}"/usr/share/icons/apps/helmet.png
+cp -rv "${COOKBOOK_SOURCE}"/src/bin/hnefatafl-client/assets/helmet.png "${COOKBOOK_STAGE}"/usr/share/icons/apps/helmet.png
 cp -rv "${COOKBOOK_SOURCE}"/packages/redox/manifest "${COOKBOOK_STAGE}"/usr/share/ui/apps/hnefatafl-client
 mv "${COOKBOOK_STAGE}"/usr/bin/hnefatafl-client "${COOKBOOK_STAGE}"/usr/games/hnefatafl-client
 """
