@@ -1,5 +1,6 @@
 [source]
 tar = "https://ftp.gnu.org/gnu/bash/bash-5.3.tar.gz"
+blake3 = "5bf3ac6c18f3dc3fe3e049a1e10ea5ae5c5b39dac2356cd796730f49b273fd0f"
 
 [build]
 template = "custom"
