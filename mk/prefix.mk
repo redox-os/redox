@@ -49,7 +49,7 @@ endif
 static_clean: | $(FSTOOLS_TAG)
 	$(MAKE) c.relibc
 	$(MAKE) c.base,extrautils,kernel,redoxfs
-	$(MAKE) c.bash,luajit,gettext,libgcc,libstdcxx,openssl1,openssl3,pcre2,sdl1,zstd,zlib,bzip2,xz
+	$(MAKE) c.luajit,gettext,libgcc,libstdcxx,openssl1,openssl3,pcre2,sdl1,zstd,zlib,bzip2,xz
 	$(MAKE) c.expat,freetype2,libffi,libiconv,libjpeg,liborbital,libpng,libxml2,ncurses,ncursesw,termcap
 	rm -rf $(REPO_TAG)
 
