@@ -16,7 +16,7 @@ endif
 
 # Cache layers to redox-os docker hub
 PODMAN_CACHE=
-PODMAN_CACHE_PATH=?docker.io/redoxos/$(IMAGE_TAG)-$(HOST_ARCH)
+PODMAN_CACHE_PATH?=docker.io/redoxos/$(IMAGE_TAG)-$(HOST_ARCH)
 
 PODMAN_CACHE_PULL?=1
 ifeq ($(PODMAN_CACHE_PULL),1)
