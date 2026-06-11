@@ -7,9 +7,10 @@ autotools_recursive_regenerate
 
 [build]
 dependencies = [
-    "libpthread-stubs",
-    "libxau",
     "libxcb",
+]
+dev-dependencies = [
+    "libxau",
     "x11proto",
     "xtrans",
 ]

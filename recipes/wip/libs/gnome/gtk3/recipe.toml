@@ -23,25 +23,17 @@ dependencies = [
     "libjpeg",
     "liborbital",
     "libpng",
-    "libpthread-stubs",
-    "libwayland",
-    # "libx11",
-    # "libxau",
+    "libxfixes",
     "libxkbcommon",
-    # "libxcb",
-    # "libxext",
-    # "libxfixes",
-    # "libxi",
-    # "libxrandr",
-    # "libxrender",
-    # "libxxf86vm",
+    "libxi",
+    "libxrandr",
+    "libx11",
+    "libwayland",
     "mesa",
     "pango",
     "pcre2",
     "pixman",
-    "shared-mime-info",
     "wayland-protocols",
-    "x11proto",
     "zlib",
 ]
 template = "custom"
@@ -50,7 +42,6 @@ DYNAMIC_INIT
 CFLAGS="${CFLAGS} -DM_SQRT2=1.41421356237309504880"
 cookbook_meson \
     -Dexamples=false \
-    -Dx11_backend=false \
     -Dintrospection=false \
     -Dtests=false
 """
