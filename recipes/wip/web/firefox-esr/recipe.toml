@@ -17,7 +17,7 @@ dependencies = [
     # "glib",
     "gtk3",
     "pango",
-    "libxkbcommon-x11",
+    "libxkbcommon",
     "libice",
     "mesa-x11",
     "x11proto-kb",

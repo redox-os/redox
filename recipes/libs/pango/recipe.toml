@@ -6,30 +6,14 @@ patches = ["redox.patch"]
 [build]
 dependencies = [
     "cairo",
-    "expat",
     "fontconfig",
     "freetype2",
     "fribidi",
-    "gettext",
     "glib",
     "harfbuzz",
-    "libffi",
-    "libiconv",
-    "libpng",
-    "libpthread-stubs",
-    "libx11",
-    "libxau",
-    "libxcb",
-    "libxext",
-    "libxft",
-    "libxrender",
-    "pcre",
-    "pcre2",
-    "pixman",
-    "x11proto",
-    "xcb-proto",
-    "xextproto",
-    "zlib",
+    # "libx11",
+    # "libxft",
+    # "libxrender",
 ]
 template = "custom"
 script = """

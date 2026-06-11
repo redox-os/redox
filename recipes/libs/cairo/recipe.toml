@@ -5,30 +5,24 @@ patches = ["redox.patch"]
 
 [build]
 dependencies = [
-	"expat",
-	"freetype2",
-	"fontconfig",
-    "gettext",
+    "fontconfig",
+    "freetype2",
     "glib",
-    "libffi",
-    "libiconv",
-	"libpng",
-    "libpthread-stubs",
+    "libpng",
     "libx11",
-    "libxau",
     "libxcb",
     "libxext",
-    "pcre2",
-	"pixman",
-    "x11proto",
-	"zlib",
+    "libxrender",
+    "pixman",
+]
+dev-dependencies = [
+    # xext and xrender is required by pkg-config, don't move them here
 ]
 template = "custom"
 script = """
 DYNAMIC_INIT
-#TODO: fix mutex implementation
 #TODO: why are math defines missing?
-CFLAGS="${CFLAGS} -DCAIRO_NO_MUTEX=1 -DM_SQRT2=1.41421356237309504880 -DM_LN2=0.69314718055994530942"
+CFLAGS="${CFLAGS} -DM_SQRT2=1.41421356237309504880 -DM_LN2=0.69314718055994530942"
 cookbook_meson \
     -Dxlib-xcb=enabled \
     -Dtests=disabled
