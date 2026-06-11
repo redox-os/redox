@@ -5,7 +5,7 @@ blake3 = "5657d84c78549f198f1335ec9d2f1de2b0ac2771fe081cbf00016370872c13f3"
 patches = ["redox.patch"]
 
 [build]
-dependencies = [
+dev-dependencies = [
     "host:libicu"
 ]
 template = "custom"
@@ -28,5 +28,4 @@ if [ "$TARGET" = "$COOKBOOK_HOST_TARGET" ]; then
 # this is not ideal, but there's no other better way
 rsync -a ./ "${COOKBOOK_STAGE}/usr"
 fi
-
 """

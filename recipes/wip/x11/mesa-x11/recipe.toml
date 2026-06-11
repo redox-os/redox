@@ -24,9 +24,11 @@ script = """
 DYNAMIC_INIT
 cookbook_meson \
     -Ddri-drivers-path=/usr/lib/dri \
-    -Degl=enabled \
+    -Degl=disabled \
     -Dglx=dri \
     -Dllvm=enabled \
+    -Dgles1=disabled \
+    -Dgles2=disabled \
     -Dplatforms=x11 \
     -Dshader-cache=disabled
 """

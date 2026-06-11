@@ -13,7 +13,7 @@ dependencies = [
     "freetype2",
     "gtk3",
     "pango",
-    "libxkbcommon-x11",
+    "libxkbcommon",
     "libice",
     "mesa-x11",
     "nspr",

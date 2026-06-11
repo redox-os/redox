@@ -7,11 +7,7 @@ autotools_recursive_regenerate
 
 [build]
 dependencies = [
-    "libpthread-stubs",
     "libx11",
-    "libxau",
-    "libxcb",
-    "x11proto",
 ]
 template = "custom"
 script = """

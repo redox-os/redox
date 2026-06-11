@@ -7,7 +7,7 @@ blake3 = "3b54ed52759339e545a7a5f602946abc0164c37eb801e79c0cb40f93dbae53d2"
 dependencies = [
     "cairo",
     "libev",
-    "libxkbcommon-x11",
+    "libxkbcommon",
     "pango",
     "pcre2",
     "startup-notification",
