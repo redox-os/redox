@@ -1,0 +1,6 @@
+#TODO compile and test
+[source]
+git = "https://github.com/jrgerber/dmidecode-rs"
+shallow_clone = true
+[build]
+template = "cargo"

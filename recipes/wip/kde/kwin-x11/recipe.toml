@@ -1,0 +1,13 @@
+#TODO determine minimum dependencies from cmake log
+[source]
+git = "https://invent.kde.org/plasma/kwin-x11"
+branch = "Plasma/6.6"
+shallow_clone = true
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DKWIN_BUILD_KCMS=OFF",
+    "-DKWIN_BUILD_SCREENLOCKER=OFF",
+    "-DKWIN_BUILD_TABBOX=OFF",
+    "-DKWIN_BUILD_RUNNERS=OFF",
+]

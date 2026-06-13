@@ -1,0 +1,5 @@
+#TODO add script for gnu make: https://pyropus.ca./software/memtester/
+[source]
+tar = "https://pyropus.ca./software/memtester/old-versions/memtester-4.7.1.tar.gz"
+[build]
+template = "custom"

@@ -1,0 +1,15 @@
+#TODO discover minimum dependencies from cmake log
+[source]
+git = "https://invent.kde.org/graphics/gwenview"
+branch = "release/26.04"
+shallow_clone = true
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DGWENVIEW_NO_WAYLAND_GESTURES=ON"
+]
+#dependencies = [
+    #"libjpeg",
+    #"libpng",
+    #"exiv2",
+#]

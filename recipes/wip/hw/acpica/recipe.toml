@@ -1,0 +1,5 @@
+#TODO add script for makefile
+[source]
+tar = "https://github.com/acpica/acpica/releases/download/20260408/acpica-unix-20260408.tar.gz"
+[build]
+template = "custom"

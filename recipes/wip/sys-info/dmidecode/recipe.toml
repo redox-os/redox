@@ -1,0 +1,5 @@
+#TODO add script for gnu make: https://cgit.git.savannah.nongnu.org/cgit/dmidecode.git/tree/README#n22
+[source]
+tar = "https://download.savannah.gnu.org/releases/dmidecode/dmidecode-3.7.tar.xz"
+[build]
+template = "custom"

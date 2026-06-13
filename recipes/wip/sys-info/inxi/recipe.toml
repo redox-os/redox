@@ -1,0 +1,15 @@
+#TODO test
+[source]
+tar = "https://codeberg.org/smxi/inxi/archive/3.3.40-1.tar.gz"
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
+cp -rv "${COOKBOOK_SOURCE}"/inxi "${COOKBOOK_STAGE}/usr/bin"
+chmod +x "${COOKBOOK_STAGE}/usr/bin/inxi"
+"""
+[package]
+dependencies = [
+    "perl5",
+    #"usbutils",
+]

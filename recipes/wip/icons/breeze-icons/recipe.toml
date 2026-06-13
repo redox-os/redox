@@ -1,6 +1,5 @@
-#TODO not compiled or tested
-# lacking build instructions
+#TODO determine minimum dependencies from cmake log
 [source]
-tar = "https://download.kde.org/stable/frameworks/5.112/breeze-icons-5.112.0.tar.xz"
+tar = "https://invent.kde.org/frameworks/breeze-icons/-/archive/v6.27.0/breeze-icons-v6.27.0.tar.bz2"
 [build]
 template = "cmake"

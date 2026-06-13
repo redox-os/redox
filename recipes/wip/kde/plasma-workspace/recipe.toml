@@ -1,0 +1,7 @@
+#TODO determine minimum dependencies from cmake log
+[source]
+git = "https://invent.kde.org/plasma/plasma-workspace"
+branch = "Plasma/6.6"
+shallow_clone = true
+[build]
+template = "cmake"

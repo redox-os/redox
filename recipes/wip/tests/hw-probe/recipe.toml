@@ -1,0 +1,27 @@
+#TODO test
+# dependencies: https://github.com/linuxhw/hw-probe/blob/master/INSTALL.md#install-from-source
+# how to use for system testing: https://wiki.archlinux.org/title/Hardware_probe#Benchmarking
+[source]
+git = "https://github.com/linuxhw/hw-probe"
+rev = "1.6"
+shallow_clone = true
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
+cp -rv "${COOKBOOK_SOURCE}"/hw-probe.pl "${COOKBOOK_STAGE}/usr/bin/hw-probe"
+chmod +x "${COOKBOOK_STAGE}"/usr/bin/hw-probe
+"""
+[package]
+dependencies = [
+    "perl5",
+    "curl",
+    "pciutils",
+    "usbutils",
+    "dmidecode",
+    #"memtester",
+    #"sysstat",
+    #"mesa-demos",
+    #"smartmontools",
+    #"acpica",
+]

@@ -1,0 +1,11 @@
+#TODO determine minimum dependencies from cmake log
+[source]
+git = "https://invent.kde.org/plasma/breeze"
+branch = "Plasma/6.6"
+shallow_clone = true
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DBUILD_TESTING=OFF",
+    "-DBUILD_QT5=OFF", # disabled temporarily to reduce porting effort
+]
