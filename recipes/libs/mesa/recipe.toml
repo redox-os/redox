@@ -37,7 +37,8 @@ cookbook_meson \
     -Dosmesa=true \
     -Dplatforms=redox \
     -Dshader-cache=disabled \
-    -Dvulkan-drivers=swrast
+    -Dvulkan-drivers=swrast \
+    -Dgallium-drivers=swrast
 
 # Hack to add LLVM libs, the list can be seen from meson log and check for matches $("${LLVM_CONFIG}" --libs)
 LLVMLIBS="-lLLVMBitReader -lLLVMCore -lLLVMExecutionEngine -lLLVMInstCombine -lLLVMMCDisassembler" 

@@ -1,6 +1,61 @@
-diff -ruwN libepoxy-1.5.10/src/dispatch_common.c source/src/dispatch_common.c
---- libepoxy-1.5.10/src/dispatch_common.c	2022-02-17 05:56:12.000000000 -0700
-+++ source/src/dispatch_common.c	2025-05-04 17:57:31.910921783 -0600
+diff -ruwN source/registry/egl.xml source-new/registry/egl.xml
+--- source/registry/egl.xml	2022-02-17 19:56:12.000000000 +0700
++++ source-new/registry/egl.xml	2026-06-11 22:13:16.770461177 +0700
+@@ -581,7 +581,9 @@
+         <enum value="0x31D7" name="EGL_PLATFORM_GBM_MESA" alias="EGL_PLATFORM_GBM_KHR"/>
+         <enum value="0x31D8" name="EGL_PLATFORM_WAYLAND_KHR"/>
+         <enum value="0x31D8" name="EGL_PLATFORM_WAYLAND_EXT" alias="EGL_PLATFORM_WAYLAND_KHR"/>
+-            <unused start="0x31D9" end="0x31DC"/>
++        <enum value="0x31D9" name="EGL_PLATFORM_REDOX_KHR"/>
++        <enum value="0x31D9" name="EGL_PLATFORM_REDOX_EXT" alias="EGL_PLATFORM_REDOX_KHR"/>
++            <unused start="0x31DA" end="0x31DC"/>
+         <enum value="0x31DD" name="EGL_PLATFORM_SURFACELESS_MESA"/>
+             <unused start="0x31DE" end="0x31DF"/>
+     </enums>
+@@ -2490,6 +2492,11 @@
+                 <enum name="EGL_PLATFORM_X11_SCREEN_EXT"/>
+             </require>
+         </extension>
++        <extension name="EGL_EXT_platform_redox" supported="egl">
++            <require>
++                <enum name="EGL_PLATFORM_REDOX_EXT"/>
++            </require>
++        </extension>
+         <extension name="EGL_EXT_protected_content" supported="egl">
+             <require>
+                 <enum name="EGL_PROTECTED_CONTENT_EXT"/>
+@@ -2834,6 +2841,11 @@
+                 <enum name="EGL_PLATFORM_X11_SCREEN_KHR"/>
+             </require>
+         </extension>
++        <extension name="EGL_KHR_platform_redox" supported="egl">
++            <require>
++                <enum name="EGL_PLATFORM_REDOX_KHR"/>
++            </require>
++        </extension>
+         <extension name="EGL_KHR_reusable_sync" protect="KHRONOS_SUPPORT_INT64" supported="egl">
+             <require>
+                 <enum name="EGL_SYNC_STATUS_KHR"/>
+@@ -3219,6 +3231,16 @@
+                 <enum name="EGL_TRIPLE_BUFFER_NV"/>
+             </require>
+         </extension>
++        <extension name="EGL_REDOX_image_native_buffer" supported="egl">
++            <require>
++                <enum name="EGL_NATIVE_BUFFER_REDOX"/>
++            </require>
++        </extension>
++        <extension name="EGL_REDOX_platform_screen" supported="egl">
++            <require>
++                <enum name="EGL_PLATFORM_SCREEN_REDOX"/>
++            </require>
++        </extension>
+         <extension name="EGL_TIZEN_image_native_buffer" supported="egl">
+             <require>
+                 <enum name="EGL_NATIVE_BUFFER_TIZEN"/>
+diff -ruwN source/src/dispatch_common.c source-new/src/dispatch_common.c
+--- source/src/dispatch_common.c	2022-02-17 19:56:12.000000000 +0700
++++ source-new/src/dispatch_common.c	2026-06-11 23:46:49.992415192 +0700
 @@ -264,13 +264,7 @@
      long begin_count;
  };
@@ -15,4 +70,13 @@ diff -ruwN libepoxy-1.5.10/src/dispatch_common.c source/src/dispatch_common.c
 +static struct api api = {0};
  
  static bool library_initialized;
+ 
+@@ -810,7 +804,7 @@
+      * use that.
+      */
+ #if PLATFORM_HAS_GLX
+-    if (api.glx_handle && glXGetCurrentContext())
++    if (api.glx_handle && getenv("ORBITAL_DISPLAY") == NULL && glXGetCurrentContext())
+         return epoxy_gl_dlsym(name);
+ #endif
  
