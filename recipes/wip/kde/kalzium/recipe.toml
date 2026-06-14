@@ -9,5 +9,5 @@ template = "cmake"
 #dependencies = [
     #"libeigen",
     #"openbabel",
-    #"avogadro",
+    #"avogadro-libs",
 #]

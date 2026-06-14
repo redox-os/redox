@@ -1,0 +1,16 @@
+#TODO compile and test
+[source]
+git = "https://github.com/Exiv2/exiv2"
+rev = "v0.28.8"
+shallow_clone = true
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DEXIV2_ENABLE_XMP=OFF",
+    "-DEXIV2_ENABLE_BROTLI=OFF",
+    "-DBUILD_WITH_CCACHE=ON",
+]
+dependencies = [
+    "zlib",
+    "libiconv",
+]

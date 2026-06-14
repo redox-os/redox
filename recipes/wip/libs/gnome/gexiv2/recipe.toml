@@ -7,3 +7,6 @@ template = "meson"
 mesonflags = [
     "-Dintrospection=false"
 ]
+dependencies = [
+    "exiv2"
+]

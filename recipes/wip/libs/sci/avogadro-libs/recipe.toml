@@ -1,0 +1,16 @@
+#TODO determine minimum dependencies from cmake log
+# build instructions: https://avogadro.cc/develop/build.html#develop-build
+[source]
+git = "https://github.com/OpenChemistry/avogadrolibs"
+rev = "2.0.0"
+shallow_clone = true
+[build]
+template = "cmake"
+#dependencies = [
+    #"openbabel",
+    #"mesa-glu",
+    #"libxml2",
+    #"xz",
+    #"readline",
+    #"rapidjson",
+#]
