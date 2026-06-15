@@ -1,0 +1,53 @@
+# the ungoogled-chromium reduces the porting effort by removing google domain specific code and binary blobs:
+# https://github.com/ungoogled-software/ungoogled-chromium#feature-overview
+#TODO add script for gn
+#TODO determine minimum dependencies
+# ungoogled-chromium build instructions: https://ungoogled-software.github.io/source-code/
+# upstream build instructions: https://chromium.googlesource.com/chromium/src/+/main/docs/linux/build_instructions.md
+# dependencies reference:
+# https://chromium.googlesource.com/chromium/src/+/main/build/install-build-deps.py#214
+# https://chromium.googlesource.com/chromium/src/+/main/build/install-build-deps.py#355
+# freebsd patches: https://github.com/freebsd/freebsd-ports/tree/main/www/ungoogled-chromium/files
+# openbsd patches: https://github.com/openbsd/ports/tree/master/www/ungoogled-chromium/patches
+[source]
+git = "https://github.com/ungoogled-software/ungoogled-chromium"
+rev = "149.0.7827.114-1"
+shallow_clone = true
+#tar = "https://commondatastorage.googleapis.com/chromium-browser-official/chromium-119.0.6045.123.tar.xz" # upstream tarball
+[build]
+template = "custom"
+# dependencies = [
+#     "gtk3",
+#     "nss",
+#     "nspr",
+#     "xdg-utils",
+#     "libgcrypt",
+#     "dbus",
+#     "libva",
+#     "libffi",
+#     "fontconfig",
+#     "libjpeg",
+#     "libflac",
+#     "libxml2",
+#     "ffmpeg6",
+#     "libwebp",
+#     "opus",
+#     "harfbuzz",
+#     "libpng",
+#     "freetype2",
+#     "bzip2",
+#     "expat",
+#     "glib",
+#     "cairo",
+#     "atk",
+#     "libcap",
+#     "pango",
+#     "java21",
+#     "libpulse",
+#     "libx11",
+#     "libxtst",
+#     "libxkbcommon",
+# ]
+script = """
+DYNAMIC_INIT
+"""

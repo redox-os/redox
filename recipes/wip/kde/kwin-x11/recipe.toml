@@ -1,4 +1,5 @@
 #TODO determine minimum dependencies from cmake log
+# openbsd patches: https://github.com/openbsd/ports/tree/master/x11/kde-plasma/kwin/patches
 [source]
 git = "https://invent.kde.org/plasma/kwin-x11"
 branch = "Plasma/6.6"

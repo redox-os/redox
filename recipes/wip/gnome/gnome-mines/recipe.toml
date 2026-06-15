@@ -1,0 +1,11 @@
+#TODO compile and test
+[source]
+tar = "https://download.gnome.org/sources/gnome-mines/49/gnome-mines-49.0.1.tar.xz"
+[build]
+template = "meson"
+dependencies = [
+    "glib",
+    "gtk4",
+    "libadwaita",
+    "librsvg",
+]

@@ -1,0 +1,14 @@
+#TODO compile and test
+# build instructions: https://gitlab.gnome.org/GNOME/gnome-session/-/tree/gnome-49?ref_type=heads#building-and-installing
+[source]
+tar = "https://download.gnome.org/sources/gnome-session/49/gnome-session-49.2.tar.xz"
+[build]
+template = "meson"
+mesonflags = [
+    "-Ddocbook=false",
+    "-Dman=false",
+    "-Dx11=true",
+]
+dependencies = [
+    "gnome-desktop"
+]

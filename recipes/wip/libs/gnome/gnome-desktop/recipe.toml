@@ -1,0 +1,12 @@
+#TODO compile and test
+[source]
+tar = "https://download.gnome.org/sources/gnome-desktop/44/gnome-desktop-44.5.tar.xz"
+[build]
+template = "meson"
+mesonflags = [
+    "-Ddesktop_docs=false",
+    "-Ddebug_tools=false",
+    "-Dintrospection=false",
+    "-Dudev=disabled",
+    "-Dsystemd=disabled",
+]

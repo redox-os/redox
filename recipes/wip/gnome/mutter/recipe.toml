@@ -1,0 +1,35 @@
+# the 49.x version is the latest with x11 support and logind/udev feature flags
+#TODO discover minimum dependencies from meson log
+# build instructions: https://gitlab.gnome.org/GNOME/mutter/-/blob/gnome-49/doc/building-and-running.md
+# build options: https://gitlab.gnome.org/GNOME/mutter/-/blob/gnome-49/meson.options?ref_type=heads
+# freebsd and openbsd patches:
+# https://github.com/freebsd/freebsd-ports/tree/main/x11-wm/mutter/files
+# https://github.com/openbsd/ports/tree/master/x11/gnome/mutter/patches
+[source]
+tar = "https://download.gnome.org/sources/mutter/49/mutter-49.6.tar.xz"
+[build]
+template = "meson"
+mesonflags = [
+    "-Dopengl=false",
+    "-Dgles2=false",
+    "-Degl=false",
+    "-Dwayland=false",
+    "-Dx11=true",
+    "-Dlogind=false",
+    "-Dudev=false",
+    "-Dremote_desktop=false",
+    "-Dlibgnome_desktop=false",
+    "-Dlibwacom=false",
+    "-Dsound_player=false",
+    "-Dstartup_notification=false",
+    "-Dintrospection=false",
+    "-Dtests=disabled",
+    "-Dprofiler=false",
+    "-Dinstalled_tests=false",
+    "-Dbash_completion=false",
+    "-Ddevkit=disabled",
+]
+#dependencies = [
+#    #"xwayland",
+#    "pango",
+#]

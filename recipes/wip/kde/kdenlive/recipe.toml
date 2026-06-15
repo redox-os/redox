@@ -3,7 +3,7 @@
 # build instructions: https://invent.kde.org/multimedia/kdenlive/-/blob/master/dev-docs/build.md#build-and-install-the-projects
 [source]
 git = "https://invent.kde.org/multimedia/kdenlive"
-branch = "release/25.12"
+branch = "release/26.04"
 shallow_clone = true
 [build]
 template = "cmake"
