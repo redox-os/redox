@@ -1,9 +1,19 @@
-#TODO not compiled or tested
-# build instructions: https://gitlab.freedesktop.org/mesa/demos/-/blob/main/README.rst?ref_type=heads
+#TODO wayland only
 [source]
 tar = "https://archive.mesa3d.org/demos/mesa-demos-9.0.0.tar.xz"
 [build]
 template = "meson"
 dependencies = [
     "freeglut",
+    "mesa",
+    #this is possible, but demos remain using wayland (freeglut)
+    #"mesa-x11",
+    "wayland-protocols",
+    "libdecor",
 ]
+dev-dependencies = [
+    "libstdcxx",
+]
+
+[package]
+description = "Mesa demos (wayland only)"

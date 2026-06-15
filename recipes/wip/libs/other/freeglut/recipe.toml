@@ -1,13 +1,20 @@
-#TODO need x11/wayland
+#TODO wayland only
 [source]
 tar = "https://github.com/freeglut/freeglut/releases/download/v3.4.0/freeglut-3.4.0.tar.gz"
-#blake3 = "08c8874d6ddad5be4860813865d4d4e2a84c294da0f3cf82a29e43920806b0da"
+blake3 = "e11ef6f8710c995ca200c0213a5fee2c8710d5cfd1284ec442c9c734dd3f98fb"
 [build]
 dependencies = [
     "mesa",
     "mesa-glu",
+    "libwayland",
+    "libxkbcommon",
 ]
 template = "cmake"
 cmakeflags = [
-    "-DFREEGLUT_GLES=0"
+    "-DFREEGLUT_WAYLAND=1",
+    "-DFREEGLUT_GLES=1",
+    "-DFREEGLUT_BUILD_DEMOS=1"
 ]
+
+[package]
+description = "FreeGLUT (wayland only)"

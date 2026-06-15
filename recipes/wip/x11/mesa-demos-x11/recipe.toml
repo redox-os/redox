@@ -1,7 +1,5 @@
 [source]
-tar = "https://archive.mesa3d.org/demos/mesa-demos-9.0.0.tar.xz"
-blake3 = "eef628aebdaa65d3bb1078bb6d6bdd7685c41fb67674e7f7b0e1e15f10433240"
-patches = ["redox.patch"]
+same_as = "../../demos/mesa-demos"
 
 [build]
 dependencies = [
@@ -10,10 +8,4 @@ dependencies = [
 dev-dependencies = [
     "libstdcxx",
 ]
-
-template = "custom"
-script = """
-DYNAMIC_INIT
-#TODO: implement sincos for es2gears
-cookbook_meson -Dgles2=disabled
-"""
+template = "meson"

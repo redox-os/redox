@@ -53,6 +53,8 @@ export RUST_BACKTRACE=full
 export RUST_LOG=debug
 export XCURSOR_THEME=Pop
 export XDG_RUNTIME_DIR=/tmp/run/user/0
+# Comment out once responsive
+export WAYLAND_DEBUG=1
 
 # Create XDG runtime directory
 #TODO: mkdir -p not working

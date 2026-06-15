@@ -1,13 +1,17 @@
-#TODO not compiled or tested
-# build instructions: https://gitlab.freedesktop.org/libdecor/libdecor#build--install
+#TODO compiled but not tested
 [source]
 tar = "https://gitlab.freedesktop.org/libdecor/libdecor/-/releases/0.2.5/downloads/libdecor-0.2.5.tar.xz"
+blake3 = "83c2f4cf6b6abf654499ba6cb138eb1c044229f90b6b96207776d18de2031654"
+patches = [ "redox.patch" ]
 [build]
 template = "meson"
 mesonflags = [
-    "-Ddbus=disabled"
+    "-Ddbus=disabled",
+    "-Ddemo=false",
 ]
 dependencies = [
     "pango",
     "libwayland",
+    "wayland-protocols",
+    "gtk3",
 ]

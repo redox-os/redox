@@ -1,0 +1,48 @@
+diff --color -ruwN source/demo/meson.build source-new/demo/meson.build
+--- source/demo/meson.build	2025-12-16 16:21:49.000000000 +0700
++++ source-new/demo/meson.build	2026-06-12 06:10:07.177986398 +0700
+@@ -5,7 +5,7 @@
+ math_dep = cc.find_library('m')
+ 
+ egl_dep = dependency('egl')
+-gl_dep = dependency('opengl')
++gl_dep = dependency('opengl', required: false)
+ wayland_egl_dep = dependency('wayland-egl')
+ 
+ xkb_dep = dependency('xkbcommon')
+diff --color -ruwN source/src/plugins/cairo/libdecor-cairo.c source-new/src/plugins/cairo/libdecor-cairo.c
+--- source/src/plugins/cairo/libdecor-cairo.c	2025-12-16 16:21:49.000000000 +0700
++++ source-new/src/plugins/cairo/libdecor-cairo.c	2026-06-14 15:04:29.759947146 +0700
+@@ -26,7 +26,14 @@
+ 
+ #include "config.h"
+ 
++#ifdef __linux__
+ #include <linux/input.h>
++#else
++// https://github.com/torvalds/linux/blob/master/include/uapi/linux/input-event-codes.h
++#define BTN_LEFT		0x110
++#define BTN_RIGHT		0x111
++#define BTN_MIDDLE		0x112
++#endif
+ #include <fcntl.h>
+ #include <poll.h>
+ #include <string.h>
+diff --color -ruwN source/src/plugins/gtk/libdecor-gtk.c source-new/src/plugins/gtk/libdecor-gtk.c
+--- source/src/plugins/gtk/libdecor-gtk.c	2025-12-16 16:21:49.000000000 +0700
++++ source-new/src/plugins/gtk/libdecor-gtk.c	2026-06-14 15:05:18.818276809 +0700
+@@ -26,7 +26,14 @@
+ 
+ #include "config.h"
+ 
++#ifdef __linux__
+ #include <linux/input.h>
++#else
++// https://github.com/torvalds/linux/blob/master/include/uapi/linux/input-event-codes.h
++#define BTN_LEFT		0x110
++#define BTN_RIGHT		0x111
++#define BTN_MIDDLE		0x112
++#endif
+ #include <fcntl.h>
+ #include <string.h>
+ #include <sys/mman.h>

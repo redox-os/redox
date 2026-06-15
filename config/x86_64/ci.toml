@@ -158,6 +158,7 @@ lz4 = {}
 mednafen = {}
 mesa = {}
 mesa-glu = {}
+mesa-demos = {}
 mesa-demos-x11 = {}
 mgba = {}
 miniserve = {}
