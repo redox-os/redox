@@ -9,12 +9,15 @@ dependencies = [
 ]
 script = """
 DYNAMIC_INIT
+export CPPFLAGS+=" -DHAVE_STRCHRNUL"
 COOKBOOK_CONFIGURE_FLAGS+=(
     bash_cv_func_sigsetjmp=no
     ac_cv_func_getrlimit=no
     ac_cv_func_dlopen=no
     ac_cv_func_dlclose=no
     bash_cv_getenv_redef=no
+    bash_cv_getcwd_malloc=yes
+    bash_cv_func_strchrnul_works=yes
     --with-bash-malloc=no
     --with-installed-readline=yes
 )

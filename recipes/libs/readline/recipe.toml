@@ -12,8 +12,10 @@ DYNAMIC_INIT
 cookbook_configure
 OS=$(echo "${TARGET}" | cut -d - -f3)
 if [ "${OS}" = "redox" ]; then
+if [ "${COOKBOOK_DYNAMIC}" = "1" ]; then
     ln -s "libhistory.so.8" "${COOKBOOK_STAGE}"/usr/lib/libhistory.so
     ln -s "libreadline.so.8" "${COOKBOOK_STAGE}"/usr/lib/libreadline.so
     patchelf --add-needed libncursesw.so "${COOKBOOK_STAGE}/usr/lib/libreadline.so.8"
+fi
 fi
 """
