@@ -1,4 +1,4 @@
-#TODO compiled but not tested (after cargo update and a patch on ring)
+#TODO compiles, fails to run: termbox crate: Termbox::init() function
 [source]
 git = "https://github.com/osa1/tiny"
 shallow_clone = true
