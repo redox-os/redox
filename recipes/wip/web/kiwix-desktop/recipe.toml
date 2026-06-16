@@ -1,0 +1,13 @@
+#TODO add script for qmake: https://github.com/kiwix/kiwix-desktop#compilation
+[source]
+tar = "https://mirror.download.kiwix.org/release/kiwix-desktop/kiwix-desktop-2.5.1.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "libzim",
+    "libkiwix",
+    "aria2",
+    "qt6-base",
+    "qt6-webengine",
+    "qt6-svg",
+]

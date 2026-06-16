@@ -1,0 +1,11 @@
+#TODO compile and test
+[source]
+git = "https://github.com/Tencent/rapidjson"
+rev = "24b5e7a8b27f42fa16b96fc70aade9106cf7102f"
+shallow_clone = true
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}/usr/include"
+cp -rv "${COOKBOOK_SOURCE}"/include/rapidjson "${COOKBOOK_STAGE}/usr/include"
+"""

@@ -1,0 +1,17 @@
+#TODO discover minimum dependencies from cmake log
+# build instructions: https://gitlab.gnome.org/GNOME/evolution#configuring-evolution
+[source]
+tar = "https://download.gnome.org/sources/evolution/3.60/evolution-3.60.2.tar.xz"
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DENABLE_GNOME_DESKTOP=OFF",
+    "-DENABLE_ALARM_NOTIFY_MODULE=OFF",
+    "-DENABLE_CANBERRA=OFF",
+    "-DENABLE_AUTOAR=OFF",
+    "-DWITH_HELP=OFF",
+    "-DENABLE_TEXT_HIGHLIGHT=OFF",
+    "-DENABLE_WEATHER=OFF",
+    "-DENABLE_CONTACT_MAPS=OFF",
+    "-DENABLE_PST_IMPORT=OFF",
+]

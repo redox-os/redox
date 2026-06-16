@@ -1,0 +1,16 @@
+#TODO compile and test
+[source]
+tar = "https://download.openzim.org/release/libzim/libzim-9.7.0.tar.xz"
+[build]
+template = "meson"
+mesonflags = [
+    "-Dexamples=false",
+    "-Dtests=false",
+    "-Dwith_xapian=false",
+]
+dependencies = [
+    "xz",
+    "libicu",
+    "zstd",
+    #"xapian-core",
+]

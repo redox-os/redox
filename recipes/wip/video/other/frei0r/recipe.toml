@@ -1,0 +1,14 @@
+#TODO compile and test
+# build instructions: https://github.com/dyne/frei0r/blob/master/BUILD.md
+[source]
+git = "https://github.com/dyne/frei0r"
+rev = "v3.2.1"
+shallow_clone = true
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DWITHOUT_OPENCV=ON",
+    "-DWITHOUT_FACERECOGNITION=ON",
+    "-DWITHOUT_CAIRO=ON",
+    "-DWITHOUT_GAVL=ON",
+]
