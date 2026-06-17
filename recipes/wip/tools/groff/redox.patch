@@ -1,6 +1,6 @@
 diff -ruwN source/lib/fseterr.c source-new/lib/fseterr.c
---- source/lib/fseterr.c	2026-03-08 14:32:36.000000000 +0100
-+++ source-new/lib/fseterr.c	2026-05-22 02:26:26.702378190 +0200
+--- source/lib/fseterr.c	2026-03-08 20:32:36.000000000 +0700
++++ source-new/lib/fseterr.c	2026-06-16 16:02:23.420661088 +0700
 @@ -53,7 +53,7 @@
  #elif defined EPLAN9                /* Plan9 */
    if (fp->state != 0 /* CLOSED */)
@@ -10,40 +10,12 @@ diff -ruwN source/lib/fseterr.c source-new/lib/fseterr.c
    /* Portable fallback, based on an idea by Rich Felker.
       Wow! 6 system calls for something that is just a bit operation!
       Not activated on any system, because there is no way to repair FP when
-diff -ruwN source/Makefile.in source-new/Makefile.in
---- source/Makefile.in	2026-03-14 08:53:46.000000000 +0100
-+++ source-new/Makefile.in	2026-05-22 02:22:50.090427159 +0200
-@@ -5877,7 +5877,6 @@
- #
- # Use '-K utf8', not '-k', in case 'configure' didn't find uchardet.
- MOMPDFMOM = \
--  GROFF_COMMAND=test-groff \
-   GROFF_COMMAND_PREFIX= \
-   GROFF_BIN_PATH="$(GROFF_BIN_PATH)" \
-   $(PDFMOMBIN) $(FFLAG) $(MFLAG) -M$(mom_srcdir) -K utf8 -p -e -t \
-@@ -6020,7 +6019,6 @@
- @HAVE_URW_FONTS_TRUE@pdfmomoption = -P-W
- @HAVE_URW_FONTS_TRUE@groffmanpagesoption = -P-e
- DOC_PDFMOM = \
--  GROFF_COMMAND=test-groff \
-   GROFF_COMMAND_PREFIX= \
-   GROFF_BIN_PATH="$(GROFF_BIN_PATH)" \
-   $(PDFMOMBIN) $(MFLAG) $(FFLAG) -ww -b $(pdfmomoption) --roff
-@@ -6088,7 +6086,7 @@
- PROCESSEDFILES_DEPS_PS = groff troff grops tmac/ps.tmac \
-   font/devps/stamp
+diff -ruwN source/test-groff.in source-new/test-groff.in
+--- source/test-groff.in	2026-03-14 14:18:16.000000000 +0700
++++ source-new/test-groff.in	2026-06-16 16:01:09.900793444 +0700
+@@ -52,4 +52,4 @@
+ export GROFF_COMMAND_PREFIX
+ export GROFF_BIN_PATH GROFF_FONT_PATH GROFF_TMAC_PATH
  
--PROCESSEDFILES_DEPS_PDF = test-groff groff troff gropdf tmac/pdf.tmac \
-+PROCESSEDFILES_DEPS_PDF = groff troff gropdf tmac/pdf.tmac \
-   font/devpdf/stamp
- 
- PROCESSEDFILES_DEPS_TXT = groff troff grotty tmac/tty.tmac \
-@@ -19229,7 +19227,7 @@
- 	&& LC_ALL=C $(MOMPDFMOM) $< >$@
- 
- $(MOMPROCESSEDEXAMPLEFILES): $(MOMNORMALFILES) \
--  test-groff groff troff gropdf pdfmom penguin.ps penguin.pdf \
-+  groff troff gropdf pdfmom penguin.ps penguin.pdf \
-   font/devpdf/stamp tmac/pdf.tmac
- 
- penguin.ps:
+-exec $builddir/groff "$@"
++#exec $builddir/groff "$@"

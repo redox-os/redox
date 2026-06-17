@@ -14,6 +14,7 @@ dev-dependencies = [
 script = """
 DYNAMIC_INIT
 COOKBOOK_MAKE_FLAGS=()
+export PATH="$PWD:$PATH" # for test-groff
 if [ "$TARGET" != "$COOKBOOK_HOST_TARGET" ]; then
 # todo
 COOKBOOK_MAKE_FLAGS+=( GROFFBIN="$COOKBOOK_TOOLCHAIN/bin/groff" GROFF_BIN_PATH="$COOKBOOK_TOOLCHAIN/bin" V=1 )
