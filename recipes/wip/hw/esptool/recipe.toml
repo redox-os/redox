@@ -1,0 +1,15 @@
+#TODO add script for installation: https://docs.espressif.com/projects/esptool/en/latest/esp32/installation.html
+[source]
+git = "https://github.com/espressif/esptool"
+rev = "v5.3.0"
+shallow_clone = true
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}/home/user/esptool"
+cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}/home/user/esptool"
+"""
+[package]
+dependencies = [
+    "python312",
+]

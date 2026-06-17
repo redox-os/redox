@@ -1,0 +1,8 @@
+#TODO compile and test
+[source]
+git = "https://gitlab.com/surfer-project/surfer"
+shallow_clone = true
+[build]
+template = "cargo"
+cargopackages = ["surfer"]
+cargoflags = ["--no-default-features"]

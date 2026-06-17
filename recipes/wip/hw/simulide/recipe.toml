@@ -1,0 +1,14 @@
+#TODO add script for gnu make: https://github.com/Arcachofo/SimulIDE-dev#building-simulide
+# probably missing dependencies
+[source]
+git = "https://github.com/Arcachofo/SimulIDE-dev"
+rev = "ed253d6612b1293a320d68d6e27968cd7e6523c4"
+shallow_clone = true
+[build]
+template = "custom"
+dependencies = [
+    "qt5-base",
+    "qt5-svg",
+    "qt5-multimedia",
+    "qt5-serialport",
+]

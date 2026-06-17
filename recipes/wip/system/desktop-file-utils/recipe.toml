@@ -1,0 +1,10 @@
+#TODO compile and test
+[source]
+git = "https://gitlab.freedesktop.org/xdg/desktop-file-utils"
+rev = "0.28"
+shallow_clone = true
+[build]
+template = "meson"
+dependencies = [
+    "glib",
+]

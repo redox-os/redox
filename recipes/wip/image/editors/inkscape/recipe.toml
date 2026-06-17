@@ -6,6 +6,21 @@
 tar = "https://inkscape.org/gallery/item/58914/inkscape-1.4.3.tar.xz"
 [build]
 template = "cmake"
+cmakeflags = [
+    "-DWITH_GNU_READLINE=OFF",
+    "-DENABLE_LCMS=OFF",
+    "-DWITH_SVG2=OFF",
+    "-DWITH_POPPLER=OFF",
+    "-DWITH_CAPYPDF=OFF",
+    "-DWITH_IMAGE_MAGICK=OFF",
+    "-DWITH_GRAPHICS_MAGICK=OFF",
+    "-DWITH_LIBCDR=OFF",
+    "-DWITH_LIBVISIO=OFF",
+    "-DWITH_LIBWPG=OFF",
+    "-DWITH_LIBSPELLING=OFF",
+    "-DWITH_GSOURCEVIEW=OFF",
+    "-DWITH_NLS=OFF",
+]
 # dependencies = [
 #     "boost",
 #     "glib",

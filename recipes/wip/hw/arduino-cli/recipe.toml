@@ -1,0 +1,8 @@
+#TODO add script for building: https://arduino.github.io/arduino-cli/1.5/CONTRIBUTING/#building-the-source-code
+# does the go template can be used?
+[source]
+git = "https://github.com/arduino/arduino-cli"
+rev = "v1.5.1"
+shallow_clone = true
+[build]
+template = "custom"

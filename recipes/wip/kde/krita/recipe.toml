@@ -10,6 +10,7 @@ template = "cmake"
 cmakeflags = [
     "-DLIMIT_LONG_TESTS=OFF",
     "-DENABLE_UPDATERS=OFF",
+    "-DBUILD_WITH_QT6=ON",
 ]
 # dependencies = [
 #     "gexiv2",
