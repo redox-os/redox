@@ -1,0 +1,14 @@
+#TODO discover minimum dependencies from meson log
+# build instructions: https://www.flashrom.org/dev_guide/building_from_source.html
+[source]
+git = "https://github.com/flashrom/flashrom"
+rev = "v1.7.0"
+shallow_clone = true
+[build]
+template = "meson"
+mesonflags = [
+    "-Dtests=disabled",
+    "-Dbash-completion=disabled",
+    "-Dman-pages=disabled",
+    "-Ddocumentation=disabled",
+]

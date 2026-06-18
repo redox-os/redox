@@ -1,0 +1,9 @@
+#TODO compile and test
+# build instructions: https://xapian.org/docs/install.html
+[source]
+tar = "https://oligarchy.co.uk/xapian/2.0.0/xapian-core-2.0.0.tar.xz"
+[build]
+template = "configure"
+dependencies = [
+    "zlib"
+]

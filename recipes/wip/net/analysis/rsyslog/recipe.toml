@@ -1,0 +1,15 @@
+#TODO determine minimum dependencies from configure log
+# build instructions: https://docs.rsyslog.com/doc/installation/install_from_source.html
+[source]
+tar = "https://www.rsyslog.com/files/download/rsyslog/rsyslog-8.2604.0.tar.gz"
+[build]
+template = "configure"
+#dependencies = [
+    #"zlib",
+    #"json-c",
+    #"libgcrypt",
+    #"libuuid",
+    #"libestr",
+    #"liblognorm",
+    #"libfastjson",
+#]

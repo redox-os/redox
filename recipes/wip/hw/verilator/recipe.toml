@@ -1,0 +1,8 @@
+#TODO discover minimum dependencies from configure log
+# build instructions: https://verilator.org/guide/latest/install.html
+[source]
+git = "https://github.com/verilator/verilator"
+rev = "v5.048"
+shallow_clone = true
+[build]
+template = "configure"

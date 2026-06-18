@@ -1,0 +1,17 @@
+#TODO determine minimum dependencies from meson log
+# build instructions: https://gtkwave.github.io/gtkwave/install/unix_linux.html
+[source]
+tar = "https://gtkwave.sourceforge.net/gtkwave-gtk3-3.3.127.tar.gz"
+[build]
+template = "configure"
+configureflags = [
+    "--enable-gtk3"
+]
+#dependencies = [
+    #"gtk3",
+    #"bzip2",
+    #"xz",
+    #"judy",
+    #"tcl",
+    #"tk",
+#]

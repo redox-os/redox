@@ -1,0 +1,10 @@
+#TODO discover minimum dependencies from configure log
+[source]
+tar = "https://sourceforge.net/projects/tcl/files/Tcl/8.6.18/tk8.6.18-src.tar.gz"
+[build]
+template = "custom"
+script = """
+DYNAMIC_INIT
+COOKBOOK_CONFIGURE="$COOKBOOK_SOURCE/unix/configure"
+cookbook_configure
+"""

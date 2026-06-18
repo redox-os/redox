@@ -1,0 +1,16 @@
+#TODO compile and test
+[source]
+tar = "https://github.com/mltframework/shotcut/releases/download/v26.4.30/shotcut-src-26.4.30.txz"
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DEXTERNAL_LAUNCHERS=OFF",
+]
+dependencies = [
+    "mlt",
+    #"qt6-base",
+    "fftw",
+    "ffmpeg6",
+    "frei0r",
+    "sdl2",
+]

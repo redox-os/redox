@@ -9,6 +9,8 @@ cmakeflags = [
     "-DENABLE_UI=OFF",
     "-DENABLE_SCRIPTING=OFF",
     "-DENABLE_HEVC=OFF",
+    "-DENABLE_PULSEAUDIO=OFF",
+    "-DENABLE_WAYLAND=OFF",
 ]
 # dependencies = [
 #     "boost",
@@ -27,7 +29,6 @@ cmakeflags = [
 #     "libva",
 #     "qt5-base",
 #     "qt5-svg",
-#     "eudev",
 #     "pciutils",
 #     "libqrcodegenc",
 #     "librist",

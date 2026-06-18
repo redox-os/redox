@@ -1,26 +1,39 @@
 #TODO not compiled or tested
 #TODO discover minimum dependencies from meson log
 # build instructions: https://gitlab.freedesktop.org/NetworkManager/NetworkManager/-/blob/main/CONTRIBUTING.md#building-from-source
+# freebsd has a shim to bypass linux dependencies: https://github.com/freebsd/freebsd-ports/blob/main/net-mgmt/networkmanager-shim/Makefile
 [source]
 tar = "https://gitlab.freedesktop.org/NetworkManager/NetworkManager/-/releases/1.56.0/downloads/NetworkManager-1.56.0.tar.xz"
 [build]
 template = "meson"
 mesonflags = [
     "-Dsession_tracking=no",
-    "-Dsuspend_resume=elogind",
+    #"-Dsuspend_resume=consolekit", # maybe unnecessary
     "-Dpolkit=false",
     "-Dselinux=false",
     "-Dsystemd_journal=false",
+    "-Dsystemdsystemunitdir=disabled",
     "-Dwifi=false",
+    "-Dmodem_manager=false",
+    "-Dnm_cloud_setup=false",
+    "-Dnbft=false",
+    "-Dclat=false",
     "-Dintrospection=false",
     "-Dman=false",
     "-Dtests=no",
     "-Dfirewalld_zone=false",
     "-Dcrypto=gnutls",
     "-Dqt=false",
+    "-Dlibpsl=false",
+    "-Dreadline=none",
+    "-Dconcheck=false",
+    "-Dovs=false",
+    "-Dlibaudit=no",
+    "-Dcrypto=null",
+    "-Dppp=false",
 ]
-dependencies = [
-    "libpsl",
-    "readline",
-    "gnutls3",
-]
+#dependencies = [
+    #"libpsl",
+    #"readline",
+    #"gnutls3",
+#]
