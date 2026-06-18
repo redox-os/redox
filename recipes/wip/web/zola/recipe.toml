@@ -2,7 +2,7 @@
 [source]
 git = "https://github.com/getzola/zola"
 shallow_clone = true
-rev = "33f03bb11158464e3ff877cdc5f1c55bbe7337ac"
+rev = "ffb8327"
 patches = [
     "redox.patch"
 ]

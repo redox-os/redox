@@ -283,6 +283,7 @@ zenity = {}
 zoxide = {}
 zsh = {}
 zlib = {}
+zola = {}
 zstd = {}
 
 #benchmarks = {}
