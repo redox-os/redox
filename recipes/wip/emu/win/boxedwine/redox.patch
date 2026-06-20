@@ -1,5 +1,5 @@
 diff --git a/include/platformBoxedwine.h b/include/platformBoxedwine.h
-index b7a798d..6ab00a3 100644
+index b7a798d6..6ab00a3e 100644
 --- a/include/platformBoxedwine.h
 +++ b/include/platformBoxedwine.h
 @@ -30,7 +30,7 @@
@@ -12,7 +12,7 @@ index b7a798d..6ab00a3 100644
  #endif
  
 diff --git a/lib/asmjit/asmjit/core/api-build_p.h b/lib/asmjit/asmjit/core/api-build_p.h
-index 2de68d2..d0b5688 100644
+index 2de68d25..d0b56889 100644
 --- a/lib/asmjit/asmjit/core/api-build_p.h
 +++ b/lib/asmjit/asmjit/core/api-build_p.h
 @@ -40,7 +40,8 @@
@@ -26,7 +26,7 @@ index 2de68d2..d0b5688 100644
    #else
      #define ASMJIT_FILE64_API(NAME) NAME##64
 diff --git a/lib/glew/src/glew.cpp b/lib/glew/src/glew.cpp
-index d19534c..994db49 100644
+index d19534c6..994db49d 100644
 --- a/lib/glew/src/glew.cpp
 +++ b/lib/glew/src/glew.cpp
 @@ -38,6 +38,7 @@
@@ -37,8 +37,21 @@ index d19534c..994db49 100644
  #  include <GL/osmesa.h>
  #elif defined(GLEW_EGL)
  #  include <GL/eglew.h>
+diff --git a/lib/imgui/imgui_draw.cpp b/lib/imgui/imgui_draw.cpp
+index 69d18945..d6835166 100644
+--- a/lib/imgui/imgui_draw.cpp
++++ b/lib/imgui/imgui_draw.cpp
+@@ -36,7 +36,7 @@ Index of this file:
+ 
+ #include <stdio.h>      // vsnprintf, sscanf, printf
+ #if !defined(alloca)
+-#if defined(__GLIBC__) || defined(__sun) || defined(__CYGWIN__) || defined(__APPLE__) || defined(__SWITCH__)
++#if defined(__GLIBC__) || defined(__sun) || defined(__CYGWIN__) || defined(__APPLE__) ||  defined(__redox__) || defined(__SWITCH__)
+ #include <alloca.h>     // alloca (glibc uses <alloca.h>. Note that Cygwin may have _WIN32 defined, so the order matters here)
+ #elif defined(_WIN32)
+ #include <malloc.h>     // alloca
 diff --git a/lib/simde/simde/simde-math.h b/lib/simde/simde/simde-math.h
-index d18bf4f..ebecd1c 100644
+index d18bf4f9..ebecd1c0 100644
 --- a/lib/simde/simde/simde-math.h
 +++ b/lib/simde/simde/simde-math.h
 @@ -1285,9 +1285,7 @@ simde_math_fpclass(double v, const int imm8) {
@@ -53,7 +66,7 @@ index d18bf4f..ebecd1c 100644
    #elif defined(simde_math_roundf) && defined(simde_math_fabsf)
      static HEDLEY_INLINE
 diff --git a/project/linux/makefile b/project/linux/makefile
-index c27766c..ad656a9 100644
+index 20565fd7..5f36dca1 100644
 --- a/project/linux/makefile
 +++ b/project/linux/makefile
 @@ -4,8 +4,9 @@ ifndef BUILD_DIR
@@ -86,15 +99,16 @@ index c27766c..ad656a9 100644
  SOURCES += $(PROJDIR)/lib/imgui/imgui_widgets.cpp
  SOURCES += $(PROJDIR)/lib/imgui/imgui_draw.cpp
  SOURCES += $(PROJDIR)/lib/imgui/imgui.cpp
-@@ -95,32 +96,34 @@ DEPS := $(ALL:.o=.d)
- $(OBJS): INCLUDES := -I../../lib/asmjit -I../../include -I../../lib/glew/include -I../../lib/imgui -I../../lib/simde -I../../lib/pugixml/src
+@@ -103,32 +104,35 @@ DEPS := $(ALL:.o=.d)
+ $(OBJS): INCLUDES := -I../../lib/asmjit -I../../include -I../../lib/glew/include -I../../lib/imgui -I../../lib/simde -I../../lib/pugixml/src -I../../lib/zlib -I../../lib/zlib/contrib/minizip
  $(SOFT_OBJS): INCLUDES := -I../../lib/softfloat/source/include -I../../lib/softfloat/source -I../../lib/softfloat/source/8086-SSE
  
 -SDL_CFLAGS = $(shell sdl2-config --cflags)
 -SDL_LIBS = $(shell sdl2-config --libs)
 -CPPFLAGS ?= -std=c++20 -O2 $(EXTRA_CPP_FLAGS) $(GCC_EXTRA_FLAGS) -Werror=switch -Wall -Wno-invalid-offsetof -Wno-delete-incomplete -Wno-unused-result -Wno-unknown-pragmas -Wno-unused-local-typedefs -Wno-unused-variable -Wno-unused-function -Wno-unused-but-set-variable $(INCLUDES) -DBOXEDWINE_RECORDER -DBOXEDWINE_ZLIB -DBOXEDWINE_HAS_SETJMP -DSDL2=1 "-DGLH=<SDL_opengl.h>" -DBOXEDWINE_OPENGL_SDL -DSIMDE_SSE2_NO_NATIVE -DBOXEDWINE_POSIX -DBOXEDWINE_OPENGL_IMGUI_V2 $(SDL_CFLAGS)
 -CFLAGS ?= -O2 $(INCLUDES)
--LDFLAGS = -L./linux_build/lib -lcurl -lssl -lcrypto -lpthread -lm -lz -lminizip -lGL -lstdc++ -lstdc++fs $(SDL_LIBS)
+-LDFLAGS = -L./linux_build/lib -lcurl -lssl -lcrypto -lpthread -lm -lz -lGL -lstdc++ -lstdc++fs $(SDL_LIBS)
+-
 +PKG_CONFIG ?= pkg-config
 +SDL_CFLAGS = $(shell $(PKG_CONFIG) --cflags sdl2)
 +SDL_LIBS = $(shell $(PKG_CONFIG) --libs sdl2)
@@ -102,7 +116,8 @@ index c27766c..ad656a9 100644
 +LDFLAGS ?= 
 +CPPFLAGS := $(CPPFLAGS) -O2 $(EXTRA_CPP_FLAGS) $(GCC_EXTRA_FLAGS) -Werror=switch -Wall -Wno-unused-result -Wno-unknown-pragmas -Wno-unused-local-typedefs -Wno-unused-variable -Wno-unused-function -Wno-unused-but-set-variable -DBOXEDWINE_RECORDER -DBOXEDWINE_ZLIB -DBOXEDWINE_HAS_SETJMP -DSDL2=1 "-DGLH=<SDL_opengl.h>" -DSIMDE_SSE2_NO_NATIVE -DBOXEDWINE_POSIX -DIMGUI_IMPL_OPENGL_ES3 $(SDL_CFLAGS)
 +LDFLAGS := $(LDFLAGS) -L./linux_build/lib -lcurl -lssl -lcrypto -lpthread -lm -lz -lminizip -lstdc++ -lOSMesa -lGLESv2 $(SDL_LIBS)
- 
++CXXFLAGS := -std=c++20 -Wno-invalid-offsetof -Wno-delete-incomplete 
++ 
  #$(TEST_BUILD_DIR)/boxedwineTest: $(TEST_OBJS)
  #	$(CC) $(TEST_OBJS) -o $@ $(LDFLAGS)
  
@@ -129,12 +144,12 @@ index c27766c..ad656a9 100644
 -	@$(MKDIR_P) $(dir $@)
 -	@$(CXX) $(CPPFLAGS) $(CXXFLAGS) -MMD -MP -c $< -o $@
 +	$(MKDIR_P) $(dir $@)
-+	$(CXX) $(CPPFLAGS) -std=c++20 -Wno-invalid-offsetof -Wno-delete-incomplete  $(INCLUDES) -MMD -MP -c $< -o $@
++	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(INCLUDES) -MMD -MP -c $< -o $@
  
  .PHONY: clean
  
 diff --git a/source/io/fs.h b/source/io/fs.h
-index eb60eb6..49227ff 100644
+index eb60eb6b..49227fff 100644
 --- a/source/io/fs.h
 +++ b/source/io/fs.h
 @@ -41,8 +41,6 @@
@@ -147,7 +162,7 @@ index eb60eb6..49227ff 100644
  #define K_F_SEAL_SHRINK         0x02
  #define K_F_SEAL_GROW           0x04
 diff --git a/source/kernel/knativesocket.cpp b/source/kernel/knativesocket.cpp
-index 4f6a435..5b9ec44 100644
+index 1d5f0ad1..7e7fd080 100644
 --- a/source/kernel/knativesocket.cpp
 +++ b/source/kernel/knativesocket.cpp
 @@ -33,6 +33,7 @@ static int winsock_intialized;
@@ -158,30 +173,18 @@ index 4f6a435..5b9ec44 100644
  #include <sys/types.h>
  #include <sys/socket.h>
  #include <netinet/in.h>
-@@ -524,10 +525,10 @@ struct ifconf {
- };
- */
- #define K_IFNAMSIZ 16
--
- U32 KNativeSocketObject::ioctl(KThread* thread, U32 request) {
-     CPU* cpu = thread->cpu;
-     if (request == 0x541b) {        
-+/*
- #ifdef WIN32
-         u_long value=0;
-         U32 result = ioctlsocket(this->nativeSocket, FIONREAD, &value);
-@@ -718,12 +719,13 @@ U32 KNativeSocketObject::ioctl(KThread* thread, U32 request) {
-         thread->memory->writew(address + K_IFNAMSIZ, ifr.ifr_mtu);
-         return 0;
- #endif
-+*/
-+        kwarn_fmt("KNativeSocketObject::ioctl request=%x commented out", request);
-     } else {
-         kwarn_fmt("KNativeSocketObject::ioctl request=%x not implemented", request);
+@@ -576,10 +577,10 @@ KNativeSocketObject::KNativeSocketObject(U32 domain, U32 type, U32 protocol) : K
+     if (this->error) {
+         return;
      }
-     return -K_ENOTTY;
- }
--
- S64 KNativeSocketObject::seek(S64 pos) {
-     return -K_ESPIPE;
- }
+-#ifdef __EMSCRIPTEN__
+-    this->error = 0;
+-    return;
+-#endif
++#ifdef __EMSCRIPTEN__
++    this->error = 0;
++    return;
++#endif
+     this->nativeSocket = (S32)socket(AF_INET, nativeType, nativeProtocol);
+     LOG_SOCK("%x native socket: %x open nativeType=%x nativeProtocol=%x", KThread::currentThread()->id, nativeSocket, nativeType, nativeProtocol);
+ #ifndef BOXEDWINE_MULTI_THREADED
