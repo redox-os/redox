@@ -1,18 +1,9 @@
 [source]
-git = "https://gitlab.redox-os.org/redox-os/gawk.git"
-upstream = "https://git.savannah.gnu.org/git/gawk.git"
-branch = "redox"
+tar = "https://ftp.gnu.org/gnu/gawk/gawk-5.2.0.tar.xz"
+blake3 = "31b907e8223fc265b73d94f32a6fce8082993da8558ed6e9f4ec95cdb98ad032"
 script = """
 autotools_recursive_regenerate
 """
 
 [build]
-template = "custom"
-script = """
-DYNAMIC_INIT
-COOKBOOK_CONFIGURE_FLAGS+=(
-    ac_cv_func_gethostbyname=no
-    ac_cv_func_connect=no
-)
-cookbook_configure
-"""
+template = "configure"
