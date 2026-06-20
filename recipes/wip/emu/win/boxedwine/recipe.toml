@@ -1,7 +1,7 @@
 #TODO runtime crash
 [source]
 git = "https://github.com/danoon2/Boxedwine"
-rev = "7328e70"
+rev = "bc50fe303ceb5c8597a493b2e893b1bde67bd7df"
 shallow_clone = true
 patches = [
     "redox.patch"
