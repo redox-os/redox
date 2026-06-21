@@ -7,5 +7,5 @@ template = "custom"
 script = """
 mkdir -pv "${COOKBOOK_STAGE}"/usr/bin
 cp "${COOKBOOK_SOURCE}"/neofetch "${COOKBOOK_STAGE}"/usr/bin/neofetch
-chmod a+x "${COOKBOOK_STAGE}"/usr/bin/neofetch
+chmod +x "${COOKBOOK_STAGE}"/usr/bin/neofetch
 """

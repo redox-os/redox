@@ -6,5 +6,5 @@ template = "custom"
 script = """
 mkdir -pv "${COOKBOOK_STAGE}"/usr/bin
 cp "${COOKBOOK_SOURCE}"/lsix "${COOKBOOK_STAGE}"/usr/bin/lsix
-chmod a+x "${COOKBOOK_STAGE}"/usr/bin/lsix
+chmod +x "${COOKBOOK_STAGE}"/usr/bin/lsix
 """

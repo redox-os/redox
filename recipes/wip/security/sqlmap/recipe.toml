@@ -9,7 +9,7 @@ script = """
 mkdir -pv "${COOKBOOK_STAGE}"/usr/bin/sqlmap-dir
 cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}"/usr/bin/sqlmap-dir
 echo "python3 /usr/bin/sqlmap-dir/sqlmap.py" > "${COOKBOOK_STAGE}"/usr/bin/sqlmap
-chmod a+x "${COOKBOOK_STAGE}"/usr/bin/sqlmap
+chmod +x "${COOKBOOK_STAGE}"/usr/bin/sqlmap
 """
 [package]
 dependencies = [

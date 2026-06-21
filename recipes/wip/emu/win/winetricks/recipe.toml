@@ -11,7 +11,7 @@ cp -rv "${COOKBOOK_SOURCE}"/src/winetricks "${COOKBOOK_STAGE}/usr/bin"
 #mkdir -pv "${COOKBOOK_STAGE}/usr/bin/winetricks-dir"
 #cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}/usr/bin/winetricks-dir"
 #echo "/usr/bin/winetricks-dir/winetricks" > "${COOKBOOK_STAGE}"/usr/bin/winetricks
-#chmod a+x "${COOKBOOK_STAGE}"/usr/bin/winetricks
+#chmod +x "${COOKBOOK_STAGE}"/usr/bin/winetricks
 """
 [package]
 dependencies = [

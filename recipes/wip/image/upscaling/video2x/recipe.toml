@@ -8,5 +8,5 @@ mkdir -pv "${COOKBOOK_STAGE}"/usr/share/video2x
 mkdir -pv "${COOKBOOK_STAGE}"/usr/bin
 cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}"/usr/share/video2x
 echo "#!/usr/bin/env sh \n cd /usr/share/video2x \n python3 -m video2x" > "${COOKBOOK_STAGE}"/usr/bin/video2x
-chmod a+x "${COOKBOOK_STAGE}"/usr/bin/video2x
+chmod +x "${COOKBOOK_STAGE}"/usr/bin/video2x
 """

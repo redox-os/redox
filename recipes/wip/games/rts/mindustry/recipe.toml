@@ -5,7 +5,7 @@ script = """
 mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
 wget https://github.com/Anuken/Mindustry/releases/download/v146/Mindustry.jar "${COOKBOOK_STAGE}/usr/bin"
 echo "#!/usr/bin/env sh \n java -jar /usr/bin/Mindustry.jar" > "${COOKBOOK_STAGE}"/usr/bin/mindustry
-chmod a+x "${COOKBOOK_STAGE}"/usr/bin/mindustry
+chmod +x "${COOKBOOK_STAGE}"/usr/bin/mindustry
 """
 [package]
 dependencies = ["openjdk17.x11"]

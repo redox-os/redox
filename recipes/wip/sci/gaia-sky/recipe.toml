@@ -7,5 +7,5 @@ script = """
 mkdir -pv "${COOKBOOK_STAGE}"/usr/bin
 cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}"/usr/bin/gaia-sky-dir
 echo "gaia-sky-dir/gaia-sky" > "${COOKBOOK_STAGE}"/usr/bin/gaia-sky
-chmod a+x "${COOKBOOK_STAGE}"/usr/bin/gaia-sky
+chmod +x "${COOKBOOK_STAGE}"/usr/bin/gaia-sky
 """

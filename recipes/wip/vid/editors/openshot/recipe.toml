@@ -10,7 +10,7 @@ script = """
 mkdir -pv "${COOKBOOK_STAGE}/usr/bin/openshot-qt"
 cp -rv "${COOKBOOK_SOURCE}"/src/* "${COOKBOOK_STAGE}/usr/bin/openshot-qt"
 echo "#!/usr/bin/env sh \n python3 /usr/bin/openshot-qt/src/launch.py" > "${COOKBOOK_STAGE}"/usr/bin/openshot
-chmod a+x "${COOKBOOK_STAGE}"/usr/bin/openshot
+chmod +x "${COOKBOOK_STAGE}"/usr/bin/openshot
 """
 [package]
 dependencies = [

@@ -6,5 +6,5 @@ template = "custom"
 script = """
 mkdir -pv "${COOKBOOK_STAGE}"/usr/bin
 cp "${COOKBOOK_SOURCE}"/lobster.sh "${COOKBOOK_STAGE}"/usr/bin/lobster
-chmod a+x "${COOKBOOK_STAGE}"/usr/bin/lobster
+chmod +x "${COOKBOOK_STAGE}"/usr/bin/lobster
 """

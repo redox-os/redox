@@ -11,7 +11,7 @@ script = """
 mkdir -pv "${COOKBOOK_STAGE}"/usr/bin/responder-dir
 cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}"/usr/bin/responder-dir
 echo "/usr/bin/responder-dir/Responder.py" > "${COOKBOOK_STAGE}"/usr/bin/responder
-chmod a+x "${COOKBOOK_STAGE}"/usr/bin/responder
+chmod +x "${COOKBOOK_STAGE}"/usr/bin/responder
 """
 [package]
 dependencies = [

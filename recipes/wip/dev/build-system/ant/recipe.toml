@@ -7,7 +7,7 @@ script = """
 mkdir -pv "${COOKBOOK_STAGE}/usr/bin/ant-dir"
 cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}/usr/bin/ant-dir"
 echo "/usr/bin/ant-dir/bin/ant" > "${COOKBOOK_STAGE}"/usr/bin/ant
-chmod a+x "${COOKBOOK_STAGE}"/usr/bin/ant
+chmod +x "${COOKBOOK_STAGE}"/usr/bin/ant
 """
 [package]
 dependencies = ["openjdk21",]

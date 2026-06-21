@@ -6,7 +6,7 @@ template = "custom"
 script = """
 mkdir -pv "${COOKBOOK_STAGE}"/usr/bin
 cp "${COOKBOOK_SOURCE}"/asciiquarium "${COOKBOOK_STAGE}"/usr/bin/asciiquarium
-chmod a+x "${COOKBOOK_STAGE}"/usr/bin/asciiquarium
+chmod +x "${COOKBOOK_STAGE}"/usr/bin/asciiquarium
 """
 [package]
 dependencies = [

@@ -9,7 +9,7 @@ script = """
 mkdir -pv "${COOKBOOK_STAGE}"/usr/bin/webtorrent-dir
 cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}"/usr/bin/webtorrent-dir
 echo "#!/usr/bin/env sh \n cd /usr/bin/webtorrent-dir \n npx webtorrent-cli" > "${COOKBOOK_STAGE}"/usr/bin/webtorrent
-chmod a+x "${COOKBOOK_STAGE}"/usr/bin/webtorrent
+chmod +x "${COOKBOOK_STAGE}"/usr/bin/webtorrent
 """
 [package]
 dependencies = ["nodejs24"]

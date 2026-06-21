@@ -10,7 +10,7 @@ script = """
 mkdir -pv "${COOKBOOK_STAGE}"/usr/bin/metasploit-dir
 cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}"/usr/bin/metasploit-dir
 echo "metasploit-dir/msfconsole" > "${COOKBOOK_STAGE}"/usr/bin/metasploit
-chmod a+x "${COOKBOOK_STAGE}"/usr/bin/metasploit
+chmod +x "${COOKBOOK_STAGE}"/usr/bin/metasploit
 """
 [package]
 dependencies = [

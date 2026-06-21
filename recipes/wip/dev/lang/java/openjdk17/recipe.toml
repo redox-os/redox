@@ -4,7 +4,7 @@
 git = "https://github.com/openjdk/jdk17u"
 rev = "jdk-17.0.17-ga"
 shallow_clone = true
-script = "chmod a+x configure"
+script = "chmod +x configure"
 [build]
 template = "configure"
 configureflags = [
