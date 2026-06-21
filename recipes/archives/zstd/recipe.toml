@@ -10,5 +10,10 @@ DYNAMIC_STATIC_INIT
 #       required by llvm21 as zstd statically linked there
 export CPPFLAGS="$CPPFLAGS -fPIC"
 COOKBOOK_SOURCE="$COOKBOOK_SOURCE/build/cmake"
+if [ "${COOKBOOK_DYNAMIC}" != "1" ]; then
+    COOKBOOK_CMAKE_FLAGS+=(
+        -DZSTD_BUILD_SHARED=OFF
+    )
+fi
 cookbook_cmake
 """

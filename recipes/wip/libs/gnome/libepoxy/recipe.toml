@@ -4,14 +4,21 @@ blake3 = "0ccee9635115fe417cfc4bc33ffd160bf1e2852bd6c03816b4af771d59462f53"
 patches = ["redox.patch"]
 
 [build]
-template = "meson"
+template = "custom"
 dev-dependencies = [
     "libx11",
     "mesa",
 ]
-mesonflags = [
-    "-Degl=yes",
-# we're forcing x11 backend via EGL
-    "-Dx11=true",
-    "-Dtests=false",
-]
+script = """
+DYNAMIC_INIT
+if [ "${COOKBOOK_DYNAMIC}" = "1" ]; then
+    # Forcing x11 via EGL
+    COOKBOOK_MESON_FLAGS+=(-Degl=yes)
+else
+    # No EGL, No wayland
+    COOKBOOK_MESON_FLAGS+=(-Degl=no)
+fi
+
+COOKBOOK_MESON_FLAGS+=(-Dx11=true -Dtests=false)
+cookbook_meson
+"""

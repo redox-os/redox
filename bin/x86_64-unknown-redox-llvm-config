@@ -7,6 +7,7 @@
 import os
 import sys
 import subprocess
+import re
 
 LLVM_CONFIG = "/bin/llvm-config" 
 
@@ -50,6 +51,8 @@ def main():
     target_arch = target_triple.split('-')[0] if target_triple else ""
     mapped_archs = ARCH_MAP.get(target_arch)
     target_built_name, comp_prefix, lib_prefix = mapped_archs
+    toolchain_path = toolchain_path.rstrip(os.sep)
+    sysroot_path = sysroot_path.rstrip(os.sep)
 
     cmd = [toolchain_path + LLVM_CONFIG] + sys.argv[1:]
 
@@ -57,7 +60,7 @@ def main():
         result = subprocess.run(
             cmd,
             stdout=subprocess.PIPE,
-            stderr=sys.stderr,
+            stderr=subprocess.PIPE,
             check=False,
             text=True
         )
@@ -65,12 +68,26 @@ def main():
         print(f"Error: Could not find executable '{LLVM_CONFIG}'", file=sys.stderr)
         sys.exit(1)
 
-    if result.returncode != 0:
-        sys.exit(result.returncode)
-
-    output = result.stdout.strip()
-    
     args_set = set(sys.argv[1:])
+
+    if result.returncode != 0:
+        # static libs is not part of the toolchain, but they do
+        # exist for platforms without dynamic library support
+        if "--link-static" in args_set and "--libfiles" in args_set:
+            output = result.stderr.strip()
+            output = output.replace("llvm-config: error: missing: ", "")
+        elif "--link-static" in args_set and "--libs" in args_set:
+            output = result.stderr.strip()
+            libpath = toolchain_path + "/lib"
+            output = output.replace(f"llvm-config: error: missing: {libpath}/lib", "-l")
+            output = output.replace(f".a", "")
+            output = re.sub('-lLLVMX86\w+ ?', '', output, count=0, flags=0) # TODO: why?
+            output = f"-L{libpath} {output}"
+        else:
+            print(result.stderr)
+            sys.exit(result.returncode)
+    else:
+        output = result.stdout.strip()
 
     if "--bindir" in args_set:
         output = toolchain_path + "/usr/bin"
@@ -89,13 +106,9 @@ def main():
         output = " ".join(filtered)
         
         # if "--ldflags" in args_set:
-        src = toolchain_path.rstrip(os.sep)
-        dst = sysroot_path.rstrip(os.sep)
-        output = output.replace(src, dst)
+        output = output.replace(toolchain_path, sysroot_path)
     else: 
-        src = toolchain_path.rstrip(os.sep)
-        dst = sysroot_path.rstrip(os.sep)
-        output = output.replace(src, dst)
+        output = output.replace(toolchain_path, sysroot_path)
 
     print(output + '\n', end='')
 
