@@ -1,3 +1,4 @@
+#TODO promote
 [source]
 tar = "https://gitlab.freedesktop.org/wayland/wayland-protocols/-/releases/1.32/downloads/wayland-protocols-1.32.tar.xz"
 blake3 = "7ae608d3b04be91e89fd07b8e326fa6dcf718beda85cccc33e7cc2afe746a8ba"

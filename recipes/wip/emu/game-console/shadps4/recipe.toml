@@ -1,5 +1,6 @@
 #TODO not compiled or tested
 #TODO missing dependencies
+#TODO verify if udev is optional
 # build instructions - https://github.com/shadps4-emu/shadPS4/blob/main/documents/building-linux.md
 [source]
 git = "https://github.com/shadps4-emu/shadPS4"
@@ -9,12 +10,11 @@ template = "cmake"
     #"-DENABLE_QT_GUI=ON"
 #]
 dependencies = [
-    "libpulse",
-    "openal",
+    #"libpulse",
+    #"openal",
     "openssl3",
     "libedit",
-    "eudev",
-    "libevdev",
+    #"libevdev",
     "sdl2",
     "sndio",
     #"qt6-base",

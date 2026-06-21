@@ -1,7 +1,8 @@
+#TODO fix bad wayland performance
 [source]
 git = "https://github.com/jackpot51/libcosmic.git"
 branch = "redox-wayland"
-
+shallow_clone = true
 [build]
 dependencies = [
     "libwayland",

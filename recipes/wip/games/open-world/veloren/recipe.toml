@@ -1,17 +1,17 @@
 #TODO quinn-udp crate error
+#TODO verify if udev is optional
 [source]
-git = "https://github.com/veloren/veloren"
-shallow = true
+git = "https://gitlab.com/veloren/veloren"
+shallow_clone = true
 [build]
 template = "cargo"
-package_path="client"
-dependencies = [
-    "glib",
-    "cairo",
-    "pango",
-    "atk",
-    "gdk-pixbuf",
-    "gtk3",
-    "eudev",
-    "mesa",
-]
+cargopackages = ["veloren-client"]
+#dependencies = [
+    #"glib",
+    #"cairo",
+    #"pango",
+    #"atk",
+    #"gdk-pixbuf",
+    #"gtk3",
+    #"mesa",
+#]

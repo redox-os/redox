@@ -1,8 +1,8 @@
-#TODO make libwayland work
+#TODO promote
 [source]
 git = "https://github.com/jackpot51/wayland-rs"
 branch = "redox"
-
+shallow_clone = true
 [build]
 template = "custom"
 dependencies = [

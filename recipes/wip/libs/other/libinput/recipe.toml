@@ -1,4 +1,5 @@
 #TODO not compiled or tested
+#TODO disable udev codepath or translate udev api to redox like freebsd does?
 # build instructions: https://wayland.freedesktop.org/libinput/doc/latest/building.html#building
 [source]
 tar = "https://gitlab.freedesktop.org/libinput/libinput/-/archive/1.30.2/libinput-1.30.2.tar.bz2"
@@ -11,6 +12,5 @@ mesonflags = [
     "-Dtests=false",
 ]
 dependencies = [
-    "eudev",
     "libevdev",
 ]

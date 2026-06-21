@@ -2,5 +2,7 @@
 # build instructions: https://github.com/NilsBrause/waylandpp#building
 [source]
 git = "https://github.com/NilsBrause/waylandpp"
+rev = "1.0.1"
+shallow_clone = true
 [build]
 template = "cmake"

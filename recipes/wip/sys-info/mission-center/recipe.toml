@@ -1,6 +1,7 @@
 #TODO not compiled or tested
-# build instructions: https://gitlab.com/mission-center-devs/mission-center#building---native
+#TODO disable udev codepath or translate udev api to redox like freebsd does?
 #TODO patch to disable libgbm
+# build instructions: https://gitlab.com/mission-center-devs/mission-center#building---native
 [source]
 git = "https://gitlab.com/mission-center-devs/mission-center"
 [build]
@@ -8,7 +9,6 @@ template = "meson"
 dependencies = [
     "gtk4",
     "libadwaita",
-    "eudev",
     "libdrm",
     "dbus",
 ]

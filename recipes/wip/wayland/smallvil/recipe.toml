@@ -1,8 +1,8 @@
-#TODO make libwayland work
+#TODO fix bad performance
 [source]
 git = "https://github.com/jackpot51/smithay"
 branch = "redox"
-
+shallow_clone = true
 [build]
 template = "cargo"
 dependencies = [

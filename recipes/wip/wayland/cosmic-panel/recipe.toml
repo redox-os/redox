@@ -1,7 +1,8 @@
+#TODO fix bad wayland performance
 [source]
 git = "https://github.com/jackpot51/cosmic-panel"
 branch = "redox"
-
+shallow_clone = true
 [build]
 template = "custom"
 dependencies = [

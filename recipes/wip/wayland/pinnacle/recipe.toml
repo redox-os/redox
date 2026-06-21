@@ -1,15 +1,13 @@
-#TODO make all dependencies work
+#TODO not compiled or tested
 [source]
 git = "https://github.com/pinnacle-comp/pinnacle"
+shallow_clone = true
 [build]
-template = "custom"
+template = "cargo"
+cargopackages = ["pinnacle"]
 dependencies = [
     "libwayland",
     "libxkbcommon",
-    "libinput",
-    "libeudev",
+    #"libinput",
     "seatd",
 ]
-script = """
-cookbook_cargo_packages pinnacle
-"""

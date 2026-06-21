@@ -1,11 +1,17 @@
-#TODO not compiled or tested
+#TODO update wlroots version to 0.20 or above
 # build instructions: https://github.com/swaywm/sway#compiling-from-source
 [source]
-tar = "https://github.com/swaywm/sway/releases/download/1.9/sway-1.9.tar.gz"
-blake3 = "6ae892f82daedef76d26e32c64ebd09cc454ae71f416d2179a512f7764138268"
+tar = "https://github.com/swaywm/sway/releases/download/1.12/sway-1.12.tar.gz"
+#blake3 = "6ae892f82daedef76d26e32c64ebd09cc454ae71f416d2179a512f7764138268"
 
 [build]
 template = "meson"
+mesonflags = [
+    "-Dman-pages=disabled",
+    "-Dtray=disabled",
+    "-Dswaynag=false",
+    "-Dgdk-pixbuf=disabled",
+]
 dependencies = [
     "cairo",
     "expat",

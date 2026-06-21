@@ -1,8 +1,7 @@
 #TODO not compiled or tested
 # build instructions: https://wiki.hyprland.org/Getting-Started/Installation/#cmake-recommended
 [source]
-git = "https://github.com/hyprwm/Hyprland"
-rev = "ed936430216e7aa5f6f53d22eff713f8e9ed69ac"
+tar = "https://github.com/hyprwm/Hyprland/releases/download/v0.55.4/source-v0.55.4.tar.gz"
 [build]
 template = "custom"
 dependencies = [
@@ -21,6 +20,9 @@ dependencies = [
 ]
 script = """
 DYNAMIC_INIT
+COOKBOOK_CMAKE_FLAGS+=(
+    -DNO_SYSTEMD=ON
+)
 cookbook_cmake
 mkdir -pv "${COOKBOOK_STAGE}"/usr/share/wayland-sessions
 cp -rv "${COOKBOOK_SOURCE}"/example/hyprland.desktop "${COOKBOOK_STAGE}"/usr/share/wayland-sessions
