@@ -1,0 +1,43 @@
+diff --color -ruwN source/getopt1.c source-new/getopt1.c
+--- source/getopt1.c	2023-06-01 20:40:35.000000000 +0200
++++ source-new/getopt1.c	2026-06-21 12:59:43.982043176 +0200
+@@ -45,6 +45,10 @@
+ #endif
+ #endif
+ 
++#ifdef __RELIBC__
++#define ELIDE_CODE
++#endif
++
+ #ifndef ELIDE_CODE
+ 
+ 
+diff --color -ruwN source/getopt.c source-new/getopt.c
+--- source/getopt.c	2023-06-01 20:40:35.000000000 +0200
++++ source-new/getopt.c	2026-06-21 12:59:43.982043176 +0200
+@@ -51,6 +51,10 @@
+ # endif
+ #endif
+ 
++#ifdef __RELIBC__
++#define ELIDE_CODE
++#endif
++
+ #ifndef ELIDE_CODE
+ 
+ 
+diff --color -ruwN source/getopt.h source-new/getopt.h
+--- source/getopt.h	2023-06-01 20:40:35.000000000 +0200
++++ source-new/getopt.h	2026-06-21 12:59:44.908095155 +0200
+@@ -22,6 +22,11 @@
+ # define _GETOPT_H 1
+ #endif
+ 
++#ifdef __RELIBC__
++#define __GNU_LIBRARY__
++#endif
++
++
+ /* If __GNU_LIBRARY__ is not already defined, either we are being used
+    standalone, or this is the first header included in the source file.
+    If we are being used with glibc, we need to include <features.h>, but

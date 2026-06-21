@@ -19,9 +19,17 @@ script = """
 DYNAMIC_INIT
 export CFLAGS="$CFLAGS -I$COOKBOOK_SYSROOT/include/inotify"
 export LDFLAGS="$LDFLAGS -linotify"
+LIBRARY=shared
+if [ "${COOKBOOK_DYNAMIC}" != "1" ]; then
+    LIBRARY=static
+fi
 cookbook_meson \
-    -Ddefault_library=shared \
+    -Ddefault_library=$LIBRARY \
     -Dxattr=false \
     -Dtests=false \
     -Dfile_monitor_backend=inotify
+
+if [ "${COOKBOOK_DYNAMIC}" != "1" ]; then
+    sed -i 's/^Libs:.*$/& -linotify/' "${COOKBOOK_STAGE}/usr/lib/pkgconfig/gio-2.0.pc"
+fi
 """

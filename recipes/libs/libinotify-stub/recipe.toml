@@ -1,9 +1,13 @@
 [source]
-tar = "https://github.com/willnode/inotify-stub/archive/refs/tags/v0.1.tar.gz"
+tar = "https://github.com/willnode/inotify-stub/archive/refs/tags/v0.2.tar.gz"
+blake3 = "f76d204b0453e56688a4d8609d0b5680163eb9d2984cbd9e897f514becaf8e31"
 
 [build]
 template = "custom"
 script = """
 DYNAMIC_INIT
-make -C "$COOKBOOK_SOURCE" install BUILD="$(pwd)" DESTDIR="$COOKBOOK_STAGE/usr"
+COOKBOOK_DYNAMIC=${COOKBOOK_DYNAMIC:-0}
+make -C "$COOKBOOK_SOURCE" install \
+    SHARED="${COOKBOOK_DYNAMIC}" BUILD="$(pwd)" \
+    DESTDIR="$COOKBOOK_STAGE/usr"
 """

@@ -23,21 +23,20 @@ export CFLAGS+=" -DHAVE_PTHREAD=1 -I${COOKBOOK_SYSROOT}/include/libdrm"
 export LLVM_CONFIG="${TARGET}-llvm-config"
 export LDFLAGS+=" -lorbital"
 
-if [ "${COOKBOOK_DYNAMIC}" == "1" ]; then
-    COOKBOOK_MESON_FLAGS+=(-Dshared-llvm=enabled)
+if [ "${COOKBOOK_DYNAMIC}" = "1" ]; then
+    # TODO: Fix wayland-scanner and enable wayland platform
+    COOKBOOK_MESON_FLAGS+=(-Dshared-llvm=enabled -Degl=enabled -Dplatforms=redox -Dvulkan-drivers=swrast)
 else
-    COOKBOOK_MESON_FLAGS+=(-Dshared-llvm=disabled)
+    # No vulkan, lavapipe or EGL which is strictly requires shared library support
+    COOKBOOK_MESON_FLAGS+=(-Dshared-llvm=disabled -Dshared-glapi=disabled -Dgbm=disabled -Dplatforms=)
 fi
 
 cookbook_meson \
     -Ddri-drivers-path=/usr/lib/dri \
-    -Degl=enabled \
     -Dglx=disabled \
     -Dllvm=enabled \
     -Dosmesa=true \
-    -Dplatforms=redox \
     -Dshader-cache=disabled \
-    -Dvulkan-drivers=swrast \
     -Dgallium-drivers=swrast
 
 # Hack to add LLVM libs, the list can be seen from meson log and check for matches $("${LLVM_CONFIG}" --libs)

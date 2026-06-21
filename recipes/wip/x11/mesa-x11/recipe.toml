@@ -22,10 +22,16 @@ dev-dependencies = [
 
 script = """
 DYNAMIC_INIT
+
+if [ "${COOKBOOK_DYNAMIC}" = "1" ]; then
+    COOKBOOK_MESON_FLAGS+=(-Dglx=dri)
+else
+    COOKBOOK_MESON_FLAGS+=(-Dglx=xlib -Dshared-glapi=disabled)
+fi
+
 cookbook_meson \
     -Ddri-drivers-path=/usr/lib/dri \
     -Degl=disabled \
-    -Dglx=dri \
     -Dllvm=enabled \
     -Dgles1=disabled \
     -Dgles2=disabled \

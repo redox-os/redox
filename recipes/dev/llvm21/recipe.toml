@@ -28,9 +28,22 @@ fi
 # This just build the LLVM library and tools just enough for Rust, to build the rest of LLVM see
 # https://github.com/llvm/llvm-zorg/blob/main/zorg/buildbot/builders/annotated/standalone-build.sh
 
+
+if [ "${COOKBOOK_DYNAMIC}" = "1" ]; then
+    COOKBOOK_CMAKE_FLAGS+=(
+        -DLLVM_BUILD_LLVM_DYLIB=On
+        -DLLVM_LINK_LLVM_DYLIB=On
+    )
+else
+    COOKBOOK_CMAKE_FLAGS+=(
+        -DLLVM_BUILD_LLVM_DYLIB=OFF
+        -DLLVM_LINK_LLVM_DYLIB=OFF
+        -DLLVM_BUILD_STATIC=True
+        -DLLVM_ENABLE_PIC=False
+    )
+fi
+
 COOKBOOK_CMAKE_FLAGS+=(
-    -DLLVM_BUILD_LLVM_DYLIB=On
-    -DLLVM_LINK_LLVM_DYLIB=On
     -DLLVM_INCLUDE_UTILS=On
     -DLLVM_INSTALL_UTILS=On
     -DLLVM_TOOL_LLVM_COV_BUILD=On
