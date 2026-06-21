@@ -40,6 +40,11 @@ template = "custom"
 script = """
 DYNAMIC_INIT
 CFLAGS="${CFLAGS} -DM_SQRT2=1.41421356237309504880"
+
+if [ "${COOKBOOK_DYNAMIC}" != "1" ]; then
+    COOKBOOK_MESON_FLAGS+=(-Dwayland_backend=false)
+fi
+
 cookbook_meson \
     -Dexamples=false \
     -Dintrospection=false \

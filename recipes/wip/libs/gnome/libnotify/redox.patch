@@ -1,0 +1,11 @@
+diff -ruwN source/tools/notify-send.c source-new/tools/notify-send.c
+--- source/tools/notify-send.c	2025-02-20 03:59:41.000000000 +0100
++++ source-new/tools/notify-send.c	2026-06-21 12:16:03.152538528 +0200
+@@ -25,6 +25,7 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
++#include <strings.h>
+ #include <glib.h>
+ #include <glib-unix.h>
+ #include <glib/gprintf.h>

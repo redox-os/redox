@@ -2,6 +2,9 @@
 [source]
 tar = "https://download.gnome.org/sources/libnotify/0.8/libnotify-0.8.4.tar.xz"
 blake3 = "1c749e4f1cc85f88348bb363b6d78c8373baa19a6db4d2b3a4cf537c1af6b929"
+patches = [
+    "redox.patch"
+]
 
 [build]
 dependencies = [
@@ -15,4 +18,3 @@ mesonflags = [
     "-Dtests=false",
     "-Dintrospection=disabled",
 ]
-    

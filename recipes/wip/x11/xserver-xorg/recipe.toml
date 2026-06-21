@@ -24,6 +24,7 @@ dependencies = [
     "mesa-x11",
     "openssl3",
     "pixman",
+    "xkbcomp",
     "x11proto",
     "xtrans",
     "zlib",
@@ -31,6 +32,11 @@ dependencies = [
 template = "custom"
 script = """
 DYNAMIC_INIT
+
+if [ "${COOKBOOK_DYNAMIC}" != "1" ]; then
+    COOKBOOK_MESON_FLAGS+=(-Dglx=false -Dxnest=false)
+fi
+
 cookbook_meson \
     -Ddri1=false \
     -Dglamor=false \
