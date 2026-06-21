@@ -5,7 +5,7 @@ template = "custom"
 script = """
 mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
 cp -rv "${COOKBOOK_RECIPE}/auto-test.ion" "${COOKBOOK_STAGE}/usr/bin/auto-test"
-chmod a+x "${COOKBOOK_STAGE}/usr/bin/auto-test"
+chmod +x "${COOKBOOK_STAGE}/usr/bin/auto-test"
 """
 [package]
 dependencies = [
