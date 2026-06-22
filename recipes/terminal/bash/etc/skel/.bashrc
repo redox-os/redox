@@ -75,6 +75,7 @@ fi
 alias ll='ls -alF'
 alias la='ls -A'
 alias l='ls -CF'
+#alias cl='clear' # optional alias for the "clear" command
 
 # TODO
 # Add an "alert" alias for long running commands.  Use like so:
