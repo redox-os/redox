@@ -2,4 +2,10 @@
 git = "https://gitlab.redox-os.org/redox-os/ion.git"
 
 [build]
-template = "cargo"
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_cargo
+mkdir -pv "${COOKBOOK_STAGE}/home/user/.config/ion"
+cp -rv "${COOKBOOK_RECIPE}"/initrc "${COOKBOOK_STAGE}/home/user/.config/ion"
+"""

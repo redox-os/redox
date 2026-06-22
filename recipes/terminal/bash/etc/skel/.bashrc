@@ -97,3 +97,7 @@ if ! shopt -oq posix; then
    . /etc/bash_completion
  fi
 fi
+
+# set orbital screen resolution to workaround shell quirks and avoid x11 or wayland fallback for applications in a orbital session
+export DISPLAY=/scheme/orbital/99.0
+export ORBITAL_DISPLAY=/scheme/orbital

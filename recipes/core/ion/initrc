@@ -1,0 +1,5 @@
+# set orbital screen resolution to avoid x11 or wayland fallback for applications in a orbital session and workaround shell quirks
+export DISPLAY=/scheme/orbital/99.0
+export ORBITAL_DISPLAY=/scheme/orbital
+# optional alias for the "clear" command
+#alias cl = "clear"
