@@ -6,6 +6,6 @@ template = "custom"
 script = """
 DYNAMIC_INIT
 cookbook_cargo
-mkdir -pv "${COOKBOOK_STAGE}/home/user/.config/ion"
-cp -rv "${COOKBOOK_RECIPE}"/initrc "${COOKBOOK_STAGE}/home/user/.config/ion"
+mkdir -pv "${COOKBOOK_STAGE}/etc/skel/.config/ion"
+cp -rv "${COOKBOOK_RECIPE}"/config "${COOKBOOK_STAGE}/etc/skel/.config/ion"
 """
