@@ -16,6 +16,8 @@ dependencies = [
     "zlib",
 ]
 script = """
+DYNAMIC_INIT
+
 rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 
 # Unsure if the bundle dir is necessary
@@ -25,7 +27,7 @@ rsync -av --delete "${COOKBOOK_SOURCE}/" ./
     --build="$(gcc -dumpmachine)" \\
     --host="${TARGET}" \\
     --prefix="" \\
-    --enable-static \\
+    --disable-static \\
     --without-liblzo2 \\
     --disable-network \\
     --without-threads
