@@ -11,6 +11,8 @@ dependencies = [
     "zlib",
 ]
 script = """
+DYNAMIC_INIT
+
 export CFLAGS="${CFLAGS} -I${COOKBOOK_SYSROOT}/include"
 export CXXFLAGS="${CXXFLAGS} -I${COOKBOOK_SYSROOT}/include"
 export DATAPATH="/usr/share/games/openjazz/"
