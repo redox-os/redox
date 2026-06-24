@@ -30,8 +30,16 @@ make OS=Redox \
     -j "${COOKBOOK_MAKE_JOBS}" \
     all
 
+make OS=Redox \
+    CC="${CC_WRAPPER} ${GNU_TARGET}-gcc" \
+    CFLAGS="-I${COOKBOOK_SYSROOT}/include" \
+    CPPFLAGS="-I${COOKBOOK_SYSROOT}/include" \
+    LDFLAGS="-L${COOKBOOK_SYSROOT}/lib" \
+    EXTRA_LDFLAGS= \
+    misc/html
+
 skips=(
-    # These tests hang
+    # These tests hang https://gitlab.redox-os.org/redox-os/redox/-/issues/1752
     basic/poll/poll
     basic/pthread/pthread_barrierattr_setpshared
     basic/pthread/pthread_condattr_setpshared
@@ -46,7 +54,8 @@ skips=(
 for skip in "${skips[@]}"
 do
     mkdir -p out.known/redox/"$(dirname "${skip}")"
-    echo "skipped" > out.known/redox/"${skip}.out"
+    echo "hang" > out.known/redox/"${skip}.out"
+    echo out.known/redox/"${skip}.out" >> "skipped.txt"
 done
 
 cp -t out -R out.known/redox
@@ -58,25 +67,37 @@ cat > "${COOKBOOK_STAGE}/usr/bin/os-test-runner" <<EOF
 set -e
 cd /home/user/os-test
 
-echo "Ensuring executables are newer than sources"
-find . -type f -perm /111 -exec touch '{}' ';'
-
-echo "Ensuring outputs are newer than sources and executables"
-find out -type f -exec touch '{}' ';'
-
-make test
-make html
-make json
+make test html json
 EOF
 chmod +x "${COOKBOOK_STAGE}/usr/bin/os-test-runner"
 """
 
 [package]
 dependencies = [
-    "gcc13",
-    "gnu-binutils",
     "gnu-grep",
     "gnu-make",
     "libarchive",
     "sed",
+]
+
+# The installation order must be exact in order to satisfy Makefile requirement
+# Cookbook/installer install order is based on package name, while pkg is based on dependencies
+[[optional-packages]]
+name = "a-sources"
+files = [
+    "home/user/os-test/**/*.c",
+]
+
+[[optional-packages]]
+name = "outputs"
+dependencies = [ ".bins" ]
+files = [
+    "home/user/os-test/out/**",
+]
+
+[[optional-packages]]
+name = "bins"
+dependencies = [ ".a-sources" ]
+files = [
+    "home/user/os-test/**",
 ]
