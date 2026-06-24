@@ -196,7 +196,7 @@ pub fn generate_html_pkg(
 </html>"#,
         network_size = format_size(package.network_size),
         storage_size = format_size(package.storage_size),
-        published_short = &package.time_identifier[0..10],
+        published_short = &package.time_identifier.get(0..10).unwrap_or("-"),
         published = package.time_identifier,
         blake3 = package.blake3,
     );
