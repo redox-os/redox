@@ -12,6 +12,6 @@ dependencies = [
     "acid",
     "coreutils",
     "ion",
-    "os-test-bins",
+    "os-test-bins.outputs",
     "relibc-tests-bins",
 ]
