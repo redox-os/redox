@@ -4,7 +4,7 @@ use cookbook::cook::cook_build::{build, get_stage_dirs, remove_stage_dir};
 use cookbook::cook::fetch::{FetchResult, fetch, fetch_offline};
 use cookbook::cook::fs::{
     create_dir, create_target_dir, get_git_commit_date, get_git_head_rev, get_git_rev_before_date,
-    remove_all, run_command,
+    read_toml, remove_all, run_command,
 };
 use cookbook::cook::package::{package, package_handle_push};
 use cookbook::cook::pty::{PtyOut, UnixSlavePty, flush_pty, setup_pty, write_to_pty};
@@ -24,7 +24,7 @@ use ratatui::text::{Line, Span, Text};
 use ratatui::widgets::{Block, Borders, Clear, List, ListItem, ListState, Paragraph, Wrap};
 use redox_installer::PackageConfig;
 use std::borrow::Cow;
-use std::collections::{BTreeMap, HashMap, HashSet};
+use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use std::io::{Read, Write, stderr, stdin, stdout};
 use std::path::PathBuf;
 use std::process::Command;
@@ -515,29 +515,40 @@ fn parse_args(args: Vec<String>) -> Result<(CliConfig, CliCommand, Vec<CookRecip
 
     if recipe_names.is_empty() {
         if config.all || config.category.is_some() {
-            if !recipe_names.is_empty() {
-                bail_options_err!(
-                    "Do not specify recipe names when using the --all or --category flag"
-                );
-            }
-            if config.all && config.category.is_some() {
-                bail_options_err!("Do not specify both --all and --category flag.");
-            }
-            if config.all && !command.is_cleaning() {
-                // because read_recipe is false by logic below
-                // some recipes on wip folders are invalid anyway
-                bail_options_err!(
-                    "Refusing to run an unrealistic command to {} all recipes",
-                    command.to_string()
-                );
-            }
+            let all_recipes_path = match command.is_cleaning() || config.all {
+                true => staged_pkg::list(""),
+                false => {
+                    // get the list from repo/TARGET/repo.toml
+                    let repo_toml_path = config.repo_dir.join(redoxer::target()).join("repo.toml");
+                    if !repo_toml_path.is_file() {
+                        bail_options_err!(
+                            "The repository is not found: {}",
+                            repo_toml_path.display()
+                        );
+                    };
+                    let repos: pkg::Repository = read_toml(&repo_toml_path)?;
+                    repos
+                        .packages
+                        .keys()
+                        .filter_map(|n| staged_pkg::find(n).map(|s| s.to_path_buf()))
+                        .collect::<BTreeSet<_>>()
+                }
+            };
+
             let all_recipes_path = match &config.category {
-                None => staged_pkg::list(""),
-                Some(prefix) => staged_pkg::list("")
+                None => all_recipes_path,
+                Some(prefix) => all_recipes_path
                     .into_iter()
                     .filter(|p| p.starts_with(prefix))
                     .collect(),
             };
+
+            if all_recipes_path.is_empty() {
+                bail_options_err!(
+                    "No recipes found from the combination.\n\
+                    Try pass both --all and --category=name"
+                );
+            }
 
             for path in all_recipes_path {
                 // TODO: Allow selecting recipes from category as host?
