@@ -9,17 +9,18 @@ branch = "redox-3.4.10"
 [build]
 template = "cmake"
 cmakeflags = [
+    "-DSDL_DBUS=OFF",
+    "-DSDL_DISABLE_INSTALL_DOCS=ON",
+    "-DSDL_IBUS=OFF",
+    "-DSDL_LIBUDEV=OFF",
+    "-DSDL_LIBURING=OFF",
+    "-DSDL_OPENGL=OFF",
+    "-DSDL_OPENGLES=OFF",
     "-DSDL_SHARED=ON",
     "-DSDL_STATIC=OFF",
     "-DSDL_TEST_LIBRARY=OFF",
-    "-DSDL_DISABLE_INSTALL_DOCS=ON",
-    "-DSDL_DBUS=OFF",
-    "-DSDL_LIBURING=OFF",
-    "-DSDL_IBUS=OFF",
-    "-DSDL_OPENGL=OFF",
-    "-DSDL_OPENGLES=OFF",
-    "-DSDL_LIBUDEV=OFF",
-    "-DSDL_AUDIO=OFF",
+    #TODO: orbital support
+    "-DSDL_UNIX_CONSOLE_BUILD=ON",
 ]
 #dependencies = [
 #    "liborbital",
