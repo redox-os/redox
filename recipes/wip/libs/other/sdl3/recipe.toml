@@ -3,7 +3,9 @@
 # build instructions: https://github.com/libsdl-org/SDL/blob/main/docs/README-cmake.md
 # dependencies: https://github.com/libsdl-org/SDL/blob/main/docs/README-linux.md
 [source]
-tar = "https://github.com/libsdl-org/SDL/releases/download/release-3.4.0/SDL3-3.4.0.tar.gz"
+git = "https://gitlab.redox-os.org/redox-os/sdl3.git"
+branch = "redox-3.4.10"
+
 [build]
 template = "cmake"
 cmakeflags = [
