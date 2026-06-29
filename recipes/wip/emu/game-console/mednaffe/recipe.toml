@@ -1,0 +1,13 @@
+[source]
+tar = "https://github.com/AmatCoder/mednaffe/releases/download/0.9.3/mednaffe-0.9.3.tar.gz"
+blake3 = "f00adc310f72dbad09e0da661e5e547e9bfc1c54db39ee1c0fd9f78d84cdbea0"
+
+[build]
+dependencies = [
+    "gtk3",
+]
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_configure
+"""
