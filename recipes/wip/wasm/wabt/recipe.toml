@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+# TODO compiled and tested, can promote
 # build instructions: https://github.com/WebAssembly/wabt#building-using-cmake-directly-linux-and-macos
 [source]
 tar = "https://github.com/WebAssembly/wabt/releases/download/1.0.39/wabt-1.0.39.tar.xz"
