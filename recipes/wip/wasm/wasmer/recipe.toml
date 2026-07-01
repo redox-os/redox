@@ -1,8 +1,21 @@
-# TODO region crate error (https://gitlab.redox-os.org/redox-os/redox/-/work_items/1837)
+# TODO remove region crate patch when ready (https://gitlab.redox-os.org/redox-os/redox/-/work_items/1837)
+# TODO add redox support to termios-rs
 [source]
 git = "https://github.com/wasmerio/wasmer"
+patches = [
+  "redox.patch"
+]
+shallow_clone = true
 [build]
 template = "custom"
 script = """
-cookbook_cargo_packages wasmer-cli
+package=wasmer-cli
+"${COOKBOOK_CARGO}" build \
+            --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
+            --package "${package}" \
+            --release
+        mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
+        cp -v \
+            "target/${TARGET}/release/${package}" \
+            "${COOKBOOK_STAGE}/usr/bin/${package}"
 """
