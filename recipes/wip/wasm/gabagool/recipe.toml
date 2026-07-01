@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+# TODO compiled and tested, can promote
 [source]
 git = "https://github.com/friendlymatthew/gabagool"
 shallow_clone = true
@@ -7,7 +7,4 @@ template = "custom"
 script = """
 DYNAMIC_INIT
 cookbook_cargo_packages gabagool
-mkdir -pv "${COOKBOOK_STAGE}/usr/share/gabagool"
-cp -rv "${COOKBOOK_SOURCE}"/examples/game-of-life/wasm/game.wasm "${COOKBOOK_STAGE}/usr/share/gabagool"
-cp -rv "${COOKBOOK_SOURCE}"/programs/*.wasm "${COOKBOOK_STAGE}/usr/share/gabagool"
 """

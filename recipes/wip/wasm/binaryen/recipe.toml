@@ -1,4 +1,4 @@
-#TODO compiled but not tested
+# TODO compiled and tested, can promote
 # build instructions: https://github.com/WebAssembly/binaryen#building
 [source]
 git = "https://github.com/WebAssembly/binaryen"

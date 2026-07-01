@@ -1,5 +1,5 @@
-#TODO requires *at functions in fcntl.h
-#TODO (willnode) push changes upstream
+# TODO (willnode) push changes upstream
+# TODO upgrade to latest v47
 [source]
 git = "https://github.com/willnode/wasmtime"
 branch = "v36-redox"

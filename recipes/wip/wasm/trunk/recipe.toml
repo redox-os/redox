@@ -1,4 +1,4 @@
-#TODO fs_at and libc crates error
+# TODO aws-lc-sys missing RANDGETENTCNT (https://gitlab.redox-os.org/redox-os/redox/-/work_items/1841)
 [source]
 git = "https://github.com/trunk-rs/trunk"
 [build]

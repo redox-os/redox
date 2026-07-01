@@ -1,4 +1,4 @@
-#TODO fs4 crate error
+# TODO fs4 crate error (https://gitlab.redox-os.org/redox-os/redox/-/work_items/1840)
 [source]
 git = "https://github.com/rustwasm/wasm-pack"
 [build]
