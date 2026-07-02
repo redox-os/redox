@@ -244,18 +244,26 @@ fn get_package_name_inner(name: &str, package: Option<&str>) -> String {
 }
 
 pub fn package_handle_push(
-    state: &mut PackageState,
+    state: Option<&mut PackageState>,
     archive_path: &Path,
     sysroot_dir: &Path,
-    reinstall: bool,
 ) -> crate::Result<bool> {
     let archive_toml = archive_path.with_extension("toml");
     let pkey_path = "build/id_ed25519.pub.toml";
     let pkg_toml = Package::from_file(&archive_toml)?;
     // "local" is what remote name from installer is hardcoded into
     let remote_name = "local".to_string();
+    let Some(state) = state else {
+        // Bare install without metadata, cache mechanism or anything
+        if archive_path.is_file() {
+            let pkey = PublicKeyFile::open(pkey_path)?.pkey;
+            let mut package = PackageFile::new(archive_path, &pkey)?;
+            Transaction::install(&mut package, sysroot_dir)?.commit()?;
+        }
+        return Ok(false);
+    };
     let (cached, pstate) = match state.installed.get(&pkg_toml.name) {
-        Some(s) if !reinstall && pkg_toml.blake3 == s.blake3 => (true, None),
+        Some(s) if pkg_toml.blake3 == s.blake3 => (true, None),
         Some(s) => (false, Some((s.manual, s.dependents.clone()))),
         None => {
             // TODO: Handle manual & dependents
@@ -272,6 +280,10 @@ pub fn package_handle_push(
                 "var/lib/packages/{}.pkgar_head",
                 pkg_toml.name.as_str()
             ));
+            let head_parent = head_path.parent();
+            if head_parent.is_some_and(|s| !s.is_dir()) {
+                create_dir(head_parent.unwrap())?;
+            }
             package.split(&head_path, None::<&Path>)?;
         }
 
