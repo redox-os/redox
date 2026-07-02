@@ -1,0 +1,14 @@
+[source]
+same_as = "../../core/relibc"
+
+[build]
+template = "custom"
+script = """
+cd "${COOKBOOK_SOURCE}${COOKBOOK_CARGO_PATH:+/$COOKBOOK_CARGO_PATH}"
+export RUSTDOCFLAGS="--enable-index-page -Zunstable-options"
+"${COOKBOOK_CARGO}" doc \
+    --target-dir "${COOKBOOK_BUILD}" --no-deps \
+    -j "${COOKBOOK_MAKE_JOBS}" ${COOKBOOK_CARGO_FLAGS[@]}
+mkdir -p "${COOKBOOK_STAGE}/usr/share/relibc"
+cp -rv "${COOKBOOK_BUILD}/${TARGET}/doc"/* "${COOKBOOK_STAGE}/usr/share/relibc/"
+"""
