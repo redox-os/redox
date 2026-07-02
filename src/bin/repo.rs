@@ -68,6 +68,7 @@ const REPO_HELP_STR: &str = r#"
         --filesystem=<filesystem>  override recipes config using installer file
         --repo-binary              override recipes config to use repo_binary
         --sysroot=<sysroot_dir>    used in "push", the "root" dir, default to $PWD/sysroot
+        --no-metadata              used in "push", do not write pkgar_head or etc dir
         --set-rule=<rule>          used in "change-rule", set wanted config rule
         --rollback                 used in "capture-rev", allow git to rollback
         --unset                    used in "capture-rev" and "change-rule", unset locks
@@ -97,6 +98,7 @@ struct CliConfig {
     filesystem: Option<redox_installer::Config>,
     set_rule: Option<String>,
     unset: bool,
+    no_metadata: bool,
     with_rollback: bool,
     with_package_deps: bool,
     all: bool,
@@ -200,6 +202,7 @@ impl CliConfig {
             cook: get_config().cook.clone(),
             all: false,
             unset: false,
+            no_metadata: false,
             filesystem: None,
             with_rollback: false,
             set_rule: None,
@@ -474,6 +477,7 @@ fn parse_args(args: Vec<String>) -> Result<(CliConfig, CliCommand, Vec<CookRecip
                 match arg.as_str() {
                     "--repo-binary" => override_filesystem_repo_binary = true,
                     "--with-package-deps" => config.with_package_deps = true,
+                    "--no-metadata" => config.no_metadata = true,
                     "--rollback" => config.with_rollback = true,
                     "--unset" => config.unset = true,
                     "--all" => config.all = true,
@@ -855,7 +859,7 @@ fn handle_clean(recipe: &CookRecipe, _config: &CliConfig, command: &CliCommand) 
     Ok(cached)
 }
 
-static PUSH_SYSROOT_DIR: OnceLock<PathBuf> = OnceLock::new();
+static PUSH_CONFIG: OnceLock<CliConfig> = OnceLock::new();
 fn handle_push(recipes: &Vec<CookRecipe>, config: &CliConfig) -> Result<()> {
     let recipe_map: HashMap<&PackageName, &CookRecipe> =
         recipes.iter().map(|r| (&r.name, r)).collect();
@@ -863,7 +867,9 @@ fn handle_push(recipes: &Vec<CookRecipe>, config: &CliConfig) -> Result<()> {
     let mut total_count: u64 = 0;
     let mut visited: HashSet<PackageName> = HashSet::new();
     let num_recipes = recipes.len();
-    PUSH_SYSROOT_DIR.set(config.sysroot_dir.clone()).unwrap();
+    PUSH_CONFIG
+        .set(config.clone())
+        .unwrap_or_else(|_| panic!("PUSH_CONFIG is initialized"));
     let handle_push_inner = move |package_name: &PackageName,
                                   _prefix: &str,
                                   _is_last: bool,
@@ -874,11 +880,17 @@ fn handle_push(recipes: &Vec<CookRecipe>, config: &CliConfig) -> Result<()> {
         }
         let r = match entry {
             WalkTreeEntry::Built(archive_path, _) => {
-                let install_path = PUSH_SYSROOT_DIR.get().unwrap();
-                let mut state = PackageState::from_sysroot(install_path).map_err(Error::from)?;
-                let r = package_handle_push(&mut state, archive_path, &install_path, false);
-                if matches!(r, Ok(false)) {
+                let config = PUSH_CONFIG.get().unwrap();
+                let install_path = &config.sysroot_dir;
+                let mut state = if !config.no_metadata {
+                    Some(PackageState::from_sysroot(&install_path).map_err(Error::from)?)
+                } else {
+                    None
+                };
+                let r = package_handle_push(state.as_mut(), archive_path, &install_path);
+                if matches!(r, Ok(false)) && state.is_some() {
                     state
+                        .unwrap()
                         .to_sysroot(install_path)
                         .map_err(|e| Error::from_io_error(e, "Extracting package"))?;
                 }
