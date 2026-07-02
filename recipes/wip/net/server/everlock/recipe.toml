@@ -1,0 +1,6 @@
+#TODO compile and test
+[source]
+git = "https://codeberg.org/JensWalter/everlock"
+shallow_clone = true
+[build]
+template = "cargo"

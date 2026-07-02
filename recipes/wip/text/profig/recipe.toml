@@ -1,0 +1,7 @@
+#TODO compile and test
+[source]
+git = "https://codeberg.org/Paul_Proteus/profig"
+shallow_clone = true
+[build]
+template = "cargo"
+cargoflags = ["--no-default-features"]

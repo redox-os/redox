@@ -1,0 +1,10 @@
+#TODO compile and test
+[source]
+git = "https://github.com/rsyslog/libfastjson"
+rev = "v1.2304.0"
+shallow_clone = true
+script = """
+autotools_recursive_regenerate
+"""
+[build]
+template = "configure"

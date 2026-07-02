@@ -1,0 +1,12 @@
+#TODO compile and test
+# non-linux support sdl2, probably instead of alsa
+[source]
+git = "https://github.com/dividebysandwich/sparkplayer"
+shallow_clone = true
+[build]
+template = "cargo"
+cargopackages = ["sparkplayer-native"]
+#dependencies = [
+    #"sdl2",
+    #"ffmpeg6",
+#]

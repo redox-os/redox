@@ -1,0 +1,18 @@
+#TODO discover minimum dependencies from cmake log
+# build instructions: https://github.com/xournalpp/xournalpp/blob/master/readme/LinuxBuild.md
+[source]
+git = "https://github.com/xournalpp/xournalpp"
+rev = "v1.3.5"
+shallow_clone = true
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DENABLE_AUDIO=OFF",
+    "-DENABLE_QPDF=OFF",
+    "-DENABLE_PLUGINS=OFF",
+    "-DENABLE_GTK_SOURCEVIEW=OFF",
+]
+#dependencies = [
+    #"gtk3",
+    #"glib",
+#]

@@ -33,5 +33,5 @@ cmakeflags = [
 #     "libqrcodegenc",
 #     "librist",
 #     "libsrt",
-#     "libwebsocket++",
+#     "libwebsocketpp",
 # ]

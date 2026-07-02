@@ -2,7 +2,7 @@
 #TODO discover minimum dependencies from cmake log
 [source]
 git = "https://invent.kde.org/network/ktorrent"
-branch = "release/25.12"
+rev = "v26.04.2"
 shallow_clone = true
 [build]
 template = "cmake"

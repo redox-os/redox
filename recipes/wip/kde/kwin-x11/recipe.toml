@@ -2,7 +2,7 @@
 # openbsd patches: https://github.com/openbsd/ports/tree/master/x11/kde-plasma/kwin/patches
 [source]
 git = "https://invent.kde.org/plasma/kwin-x11"
-branch = "Plasma/6.6"
+rev = "v6.6.5"
 shallow_clone = true
 [build]
 template = "cmake"
