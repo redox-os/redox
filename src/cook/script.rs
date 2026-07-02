@@ -99,7 +99,7 @@ export CARGO_TARGET_DIR="${COOKBOOK_BUILD}/target"
 
 # This adds the sysroot includes for most C compilation
 #TODO: check paths for spaces!
-export CPPFLAGS="${CPPFLAGS:+$CPPFLAGS }-I${COOKBOOK_SYSROOT}/include"
+export CPPFLAGS="${CPPFLAGS:+$CPPFLAGS }-I${COOKBOOK_SYSROOT}/include -Wl,--no-undefined"
 
 # This adds the sysroot libraries and compiles binaries statically for most C compilation
 #TODO: check paths for spaces!
