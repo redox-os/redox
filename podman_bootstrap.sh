@@ -219,7 +219,7 @@ ubuntu()
             then riscv="qemu-system-riscv" # ubuntu 26 / debian 13
             else riscv="qemu-system-riscv64" # ubuntu 24 / debian 12
             fi
-            sudo $install_command qemu-system-x86 qemu-kvm \
+            sudo "$2" install qemu-system-x86 qemu-kvm \
                 qemu-system-arm qemu-efi-aarch64 $riscv
         else
             echo "QEMU already installed!"
