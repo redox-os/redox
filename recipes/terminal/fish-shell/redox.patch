@@ -1,7 +1,8 @@
-diff '--color=auto' -ruwN source/Cargo.toml source-new/Cargo.toml
---- source/Cargo.toml	2025-09-11 01:59:14.785564526 -0400
-+++ source-new/Cargo.toml	2025-09-11 01:59:45.885553436 -0400
-@@ -35,12 +35,12 @@
+diff --git a/Cargo.toml b/Cargo.toml
+index 0dafbd643..cff1c438f 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -35,12 +35,12 @@ pcre2 = { git = "https://github.com/fish-shell/rust-pcre2", tag = "0.2.9-utf32",
  
  bitflags = "2.5.0"
  errno = "0.3.0"
@@ -16,9 +17,23 @@ diff '--color=auto' -ruwN source/Cargo.toml source-new/Cargo.toml
      "event",
      "inotify",
      "resource",
-diff '--color=auto' -ruwN source/src/exec.rs source-new/src/exec.rs
---- source/src/exec.rs	2025-09-11 01:59:14.596625190 -0400
-+++ source-new/src/exec.rs	2025-09-11 02:00:00.315286369 -0400
+diff --git a/build.rs b/build.rs
+index 72e536f81..0fcb6ba91 100644
+--- a/build.rs
++++ b/build.rs
+@@ -130,7 +130,7 @@ fn detect_cfgs(target: &mut Target) {
+             Ok(target.has_symbol("localeconv_l"))
+         }),
+         ("FISH_USE_POSIX_SPAWN", &|target| {
+-            Ok(target.has_header("spawn.h"))
++            Ok(false) // FIXME: expose to redox libc spawn
+         }),
+         ("HAVE_PIPE2", &|target| {
+             Ok(target.has_symbol("pipe2"))
+diff --git a/src/exec.rs b/src/exec.rs
+index 40dea914e..42fba7ccb 100644
+--- a/src/exec.rs
++++ b/src/exec.rs
 @@ -33,7 +33,6 @@
  use crate::nix::{getpid, isatty};
  use crate::null_terminated_array::OwningNullTerminatedArray;
@@ -27,7 +42,7 @@ diff '--color=auto' -ruwN source/src/exec.rs source-new/src/exec.rs
  use crate::proc::Pid;
  use crate::proc::{
      hup_jobs, is_interactive_session, jobs_requiring_warning_on_exit, no_exec,
-@@ -390,7 +389,7 @@
+@@ -390,7 +389,7 @@ fn safe_launch_process(
  ) -> ! {
      // This function never returns, so we take certain liberties with constness.
  
@@ -36,7 +51,7 @@ diff '--color=auto' -ruwN source/src/exec.rs source-new/src/exec.rs
      let err = errno();
  
      // The shebang wasn't introduced until UNIX Seventh Edition, so if
-@@ -413,7 +412,11 @@
+@@ -413,7 +412,11 @@ fn safe_launch_process(
              // not what we would pass as argv0.
              argv2[1] = actual_cmd.as_ptr();
              unsafe {
@@ -49,10 +64,11 @@ diff '--color=auto' -ruwN source/src/exec.rs source-new/src/exec.rs
              }
          }
      }
-diff '--color=auto' -ruwN source/src/fork_exec/postfork.rs source-new/src/fork_exec/postfork.rs
---- source/src/fork_exec/postfork.rs	2025-09-11 01:59:14.828576001 -0400
-+++ source-new/src/fork_exec/postfork.rs	2025-09-11 02:00:00.319001235 -0400
-@@ -339,7 +339,9 @@
+diff --git a/src/fork_exec/postfork.rs b/src/fork_exec/postfork.rs
+index 32182e42f..494fa82dd 100644
+--- a/src/fork_exec/postfork.rs
++++ b/src/fork_exec/postfork.rs
+@@ -339,7 +339,9 @@ pub(crate) fn safe_report_exec_error(
                              "', which is not an executable command."
                          );
                      }
@@ -63,10 +79,11 @@ diff '--color=auto' -ruwN source/src/fork_exec/postfork.rs source-new/src/fork_e
                      FLOG_SAFE!(
                          exec,
                          "Failed to execute process '",
-diff '--color=auto' -ruwN source/src/input_common.rs source-new/src/input_common.rs
---- source/src/input_common.rs	2025-09-11 01:59:14.828576001 -0400
-+++ source-new/src/input_common.rs	2025-09-11 02:00:00.316042380 -0400
-@@ -589,7 +589,9 @@
+diff --git a/src/input_common.rs b/src/input_common.rs
+index 3f36b0209..e89709333 100644
+--- a/src/input_common.rs
++++ b/src/input_common.rs
+@@ -589,7 +589,9 @@ pub fn check_fd_readable(in_fd: RawFd, timeout: Duration) -> bool {
      // pselect expects timeouts in nanoseconds.
      const NSEC_PER_MSEC: u64 = 1000 * 1000;
      const NSEC_PER_SEC: u64 = NSEC_PER_MSEC * 1000;
@@ -76,7 +93,7 @@ diff '--color=auto' -ruwN source/src/input_common.rs source-new/src/input_common
      let timeout = libc::timespec {
          tv_sec: (wait_nsec / NSEC_PER_SEC).try_into().unwrap(),
          tv_nsec: (wait_nsec % NSEC_PER_SEC).try_into().unwrap(),
-@@ -605,6 +607,7 @@
+@@ -605,6 +607,7 @@ pub fn check_fd_readable(in_fd: RawFd, timeout: Duration) -> bool {
          libc::FD_SET(in_fd, &mut fdset);
      }
  
@@ -84,7 +101,7 @@ diff '--color=auto' -ruwN source/src/input_common.rs source-new/src/input_common
      let res = unsafe {
          libc::pselect(
              in_fd + 1,
-@@ -616,6 +619,31 @@
+@@ -616,6 +619,31 @@ pub fn check_fd_readable(in_fd: RawFd, timeout: Duration) -> bool {
          )
      };
  
@@ -116,9 +133,10 @@ diff '--color=auto' -ruwN source/src/input_common.rs source-new/src/input_common
      // Prevent signal starvation on WSL causing the `torn_escapes.py` test to fail
      if is_windows_subsystem_for_linux(WSL::V1) {
          // Merely querying the current thread's sigmask is sufficient to deliver a pending signal
-diff '--color=auto' -ruwN source/src/libc.c source-new/src/libc.c
---- source/src/libc.c	2025-09-11 01:59:14.599514890 -0400
-+++ source-new/src/libc.c	2025-09-11 02:00:00.304589636 -0400
+diff --git a/src/libc.c b/src/libc.c
+index 4eec100ab..c04ced9fe 100644
+--- a/src/libc.c
++++ b/src/libc.c
 @@ -4,7 +4,7 @@
  #include <stdint.h>
  #include <stdio.h>
@@ -128,10 +146,11 @@ diff '--color=auto' -ruwN source/src/libc.c source-new/src/libc.c
  #include <sys/resource.h>
  #include <sys/statvfs.h>  // ST_LOCAL
  #include <unistd.h>       // _CS_PATH, _PC_CASE_SENSITIVE
-diff '--color=auto' -ruwN source/src/path.rs source-new/src/path.rs
---- source/src/path.rs	2025-09-11 01:59:14.600515157 -0400
-+++ source-new/src/path.rs	2025-09-11 02:00:00.317047039 -0400
-@@ -738,7 +738,9 @@
+diff --git a/src/path.rs b/src/path.rs
+index 7d7339d37..4b1791ece 100644
+--- a/src/path.rs
++++ b/src/path.rs
+@@ -738,7 +738,9 @@ fn remoteness_via_statfs<StatFS, Flags>(
              crate::libc::ST_LOCAL(),
              &narrow,
          );
