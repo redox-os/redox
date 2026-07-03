@@ -256,13 +256,14 @@ diff -ruwN source/src/unix/redox.c source-new/src/unix/redox.c
 diff -ruwN source/src/unix/stream.c source-new/src/unix/stream.c
 --- source/src/unix/stream.c	2025-04-25 16:50:27.000000000 +0700
 +++ source-new/src/unix/stream.c	2025-10-10 11:18:29.028522718 +0700
-@@ -29,7 +29,14 @@
+@@ -29,7 +29,15 @@
  #include <errno.h>
  
  #include <sys/types.h>
 +#if defined(__redox__)
 +#define _GNU_SOURCE
 +#include <stdint.h>
++#include <sys/select.h>
  #include <sys/socket.h>
 +#include <netinet/in.h>
 +#else
