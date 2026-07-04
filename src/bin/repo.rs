@@ -64,6 +64,7 @@ const REPO_HELP_STR: &str = r#"
         --repo=<repo_dir>          the "repo" folder, default to $PWD/repo
         --with-package-deps        include package deps (always implied in push command)
         --all                      apply to all recipes in <cookbook_dir>
+        --all-binaries             apply to all recipes in <cookbook_dir> that is configured as "binary"
         --category=<category>      apply to all recipes in <cookbook_dir>/<category>
         --filesystem=<filesystem>  override recipes config using installer file
         --repo-binary              override recipes config to use repo_binary
@@ -102,6 +103,7 @@ struct CliConfig {
     with_rollback: bool,
     with_package_deps: bool,
     all: bool,
+    binaries_only: bool,
     cook: CookConfig,
 }
 
@@ -201,6 +203,7 @@ impl CliConfig {
             with_package_deps: false,
             cook: get_config().cook.clone(),
             all: false,
+            binaries_only: false,
             unset: false,
             no_metadata: false,
             filesystem: None,
@@ -481,6 +484,11 @@ fn parse_args(args: Vec<String>) -> Result<(CliConfig, CliCommand, Vec<CookRecip
                     "--rollback" => config.with_rollback = true,
                     "--unset" => config.unset = true,
                     "--all" => config.all = true,
+                    "--all-binaries" => {
+                        // TODO: an option to just set binaries_only?
+                        config.all = true;
+                        config.binaries_only = true;
+                    }
                     _ => bail_options_err!("Error: Unknown flag: {}", arg),
                 }
             }
@@ -519,8 +527,11 @@ fn parse_args(args: Vec<String>) -> Result<(CliConfig, CliCommand, Vec<CookRecip
 
     if recipe_names.is_empty() {
         if config.all || config.category.is_some() {
-            let all_recipes_path = match command.is_cleaning() || config.all {
-                true => staged_pkg::list(""),
+            let all_recipes_path = match command.is_cleaning() || config.category.is_some() {
+                true => {
+                    // some wip recipes have broken toml
+                    staged_pkg::list("")
+                }
                 false => {
                     // get the list from repo/TARGET/repo.toml
                     let repo_toml_path = config.repo_dir.join(redoxer::target()).join("repo.toml");
@@ -583,6 +594,7 @@ fn parse_args(args: Vec<String>) -> Result<(CliConfig, CliCommand, Vec<CookRecip
             preloaded_recipes.into_values().collect()
         };
 
+        // no need to load dependencies
         return Ok((config, command, recipes));
     }
 
@@ -663,7 +675,11 @@ fn parse_args(args: Vec<String>) -> Result<(CliConfig, CliCommand, Vec<CookRecip
                 CookRecipe::get_package_deps_recursive(&binary_recipe_names, true)?;
         }
 
-        let mut recipes = if command.is_building() || command.is_pushing() {
+        let mut recipes = if config.binaries_only {
+            // This codepath is only true if combined with `config.all`,
+            // otherwise it will be confusing for users because we don't warn
+            Vec::new()
+        } else if command.is_building() || command.is_pushing() {
             // Pushing do not need dev deps, so does binary recipes at building
             let include_dev = command.is_building();
             if include_dev && default_rule == "source" {
