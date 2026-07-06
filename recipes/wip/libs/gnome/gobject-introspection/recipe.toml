@@ -16,13 +16,16 @@ dev-dependencies = [
 ]
 script = """
 DYNAMIC_INIT
-cookbook_meson -Dpython="python3.12" \
+PYTHON_INIT
+cookbook_meson -Dpython="${COOKBOOK_PYTHON_V}" \
     -Dbuild_introspection_data=false
-sed -i "s|${COOKBOOK_TOOLCHAIN}||g" ${COOKBOOK_STAGE}/usr/bin/g-ir-annotation-tool
-sed -i "s|${COOKBOOK_TOOLCHAIN}||g" ${COOKBOOK_STAGE}/usr/bin/g-ir-scanner
+sed -i "s|${COOKBOOK_TOOLCHAIN}||g" "${COOKBOOK_STAGE}"/usr/bin/g-ir-annotation-tool
+sed -i "s|${COOKBOOK_TOOLCHAIN}||g" "${COOKBOOK_STAGE}"/usr/bin/g-ir-scanner
+mv "${COOKBOOK_STAGE}"/usr/lib/gobject-introspection "${COOKBOOK_STAGE}"/usr/lib/${COOKBOOK_PYTHON_V}
 """
 
 [package]
 dependencies = [
     "python312",
+    "python3-setuptools",
 ]

@@ -349,10 +349,17 @@ function cookbook_meson {
     DESTDIR="${COOKBOOK_STAGE}" "${COOKBOOK_NINJA}" install -j"${COOKBOOK_MAKE_JOBS}"
 }
 COOKBOOK_PYTHON="${COOKBOOK_TOOLCHAIN}/bin/python3"
-function cookbook_python {
+COOKBOOK_PYTHON_V="python3.12"
+function PYTHON_INIT {
     ARCH="${TARGET%%-*}"
     OS=$(echo "${TARGET}" | cut -d - -f3-4)
+    SYSTEM=$(echo "${TARGET}" | cut -d - -f3)
     export PYTHONPYCACHEPREFIX="${COOKBOOK_BUILD}" _PYTHON_HOST_PLATFORM="$OS-$ARCH"
+    export PYTHONPATH="${PYTHONPATH:+$PYTHONPATH:}${COOKBOOK_SYSROOT}/usr/lib/${COOKBOOK_PYTHON_V}"
+    export _PYTHON_SYSCONFIGDATA_NAME="_sysconfigdata__${SYSTEM}_${ARCH}-${OS}"
+}
+function cookbook_python {
+    PYTHON_INIT
     "${COOKBOOK_PYTHON}" -m pip install --prefix="${COOKBOOK_STAGE}/usr" "${COOKBOOK_SOURCE}" \
     --ignore-installed --no-index "$@"
     rsync -av "${COOKBOOK_BUILD}/${COOKBOOK_STAGE}/usr/" "${COOKBOOK_STAGE}/usr"
