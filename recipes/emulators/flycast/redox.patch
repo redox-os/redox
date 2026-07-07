@@ -1,7 +1,16 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 8340288..589d4b4 100644
+index 8340288f..c64fad9d 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
+@@ -260,7 +260,7 @@ if(WINDOWS_STORE)
+ 	set(USE_VULKAN OFF)
+ endif()
+ 
+-set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE -s)
++
+ if(MSVC)
+ 	target_compile_options(${PROJECT_NAME} PRIVATE /GR /GS-)
+ 	if(WINDOWS_STORE)
 @@ -466,7 +466,7 @@ if(NOT LIBRETRO)
  	endif()
  
@@ -56,7 +65,7 @@ index 61ee752..4b140b9 100644
  #if !defined(ASIO_HAS_PTHREADS)
  # if defined(ASIO_HAS_THREADS)
 diff --git a/core/hw/sh4/modules/serial.cpp b/core/hw/sh4/modules/serial.cpp
-index aca43a0..11991e9 100644
+index aca43a01..11991e9e 100644
 --- a/core/hw/sh4/modules/serial.cpp
 +++ b/core/hw/sh4/modules/serial.cpp
 @@ -475,7 +475,7 @@ struct PTYPipe : public SerialPort::Pipe
@@ -69,7 +78,7 @@ index aca43a0..11991e9 100644
  		{
  			tty = open("/dev/ptmx", O_RDWR | O_NDELAY | O_NOCTTY | O_NONBLOCK);
 diff --git a/core/linux/context.cpp b/core/linux/context.cpp
-index 7ab2d8e..8a2bb2c 100644
+index 7ab2d8e9..8a2bb2c7 100644
 --- a/core/linux/context.cpp
 +++ b/core/linux/context.cpp
 @@ -8,11 +8,11 @@
@@ -99,7 +108,7 @@ index 7ab2d8e..8a2bb2c 100644
  		bicopy<ToSegfault>(hostctx->pc, MCTX(.gregs[REG_RIP]));
  		bicopy<ToSegfault>(hostctx->rsp, MCTX(.gregs[REG_RSP]));
 diff --git a/core/network/dns.cpp b/core/network/dns.cpp
-index 4d45c4a..96752ef 100644
+index 4d45c4a2..96752ef4 100644
 --- a/core/network/dns.cpp
 +++ b/core/network/dns.cpp
 @@ -153,7 +153,7 @@ pico_ip4 parseDnsResponsePacket(const void *buf, size_t len)
@@ -121,7 +130,7 @@ index 4d45c4a..96752ef 100644
  #else // !_WIN32 && !__SWITCH__
  
 diff --git a/core/network/net_platform.h b/core/network/net_platform.h
-index 8b5ea48..1a20e0b 100644
+index 8b5ea488..1a20e0b7 100644
 --- a/core/network/net_platform.h
 +++ b/core/network/net_platform.h
 @@ -91,7 +91,7 @@ static inline void set_tcp_nodelay(sock_t fd)
@@ -134,7 +143,7 @@ index 8b5ea48..1a20e0b 100644
  #else
  	struct protoent *tcp_proto = getprotobyname("TCP");
 diff --git a/core/rend/TexCache.cpp b/core/rend/TexCache.cpp
-index 35b41b7..2782d5e 100644
+index 35b41b70..2782d5ea 100644
 --- a/core/rend/TexCache.cpp
 +++ b/core/rend/TexCache.cpp
 @@ -670,7 +670,10 @@ bool BaseTextureCacheData::Update()
