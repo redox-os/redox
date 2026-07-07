@@ -43,6 +43,19 @@ index 8340288f..c64fad9d 100644
  		target_compile_definitions(${PROJECT_NAME} PRIVATE FEAT_NO_MINIUPNPC)
  	else()
  		option(UPNPC_BUILD_SHARED "Build shared library" OFF)
+diff --git a/core/build.h b/core/build.h
+index 6ea53550..b7b0d1d5 100755
+--- a/core/build.h
++++ b/core/build.h
+@@ -110,7 +110,7 @@
+ #endif
+ 
+ #if !defined(__ANDROID__) && !defined(TARGET_IPHONE) && !defined(TARGET_UWP) \
+-	&& !defined(__SWITCH__) && !defined(LIBRETRO) && !defined(__NetBSD__) && !defined(__OpenBSD__)
++	&& !defined(__SWITCH__) && !defined(LIBRETRO) && !defined(__NetBSD__) && !defined(__OpenBSD__) && !defined(__redox__)
+ #define NAOMI_MULTIBOARD
+ #endif
+ 
 Submodule core/deps/asio contains modified content
 diff --git a/core/deps/asio/asio/include/asio/detail/config.hpp b/core/deps/asio/asio/include/asio/detail/config.hpp
 index 61ee752..4b140b9 100644
@@ -64,6 +77,27 @@ index 61ee752..4b140b9 100644
  // POSIX threads.
  #if !defined(ASIO_HAS_PTHREADS)
  # if defined(ASIO_HAS_THREADS)
+diff --git a/core/hw/sh4/modules/mmu.cpp b/core/hw/sh4/modules/mmu.cpp
+index af9de30e..6f839fc7 100644
+--- a/core/hw/sh4/modules/mmu.cpp
++++ b/core/hw/sh4/modules/mmu.cpp
+@@ -439,6 +439,7 @@ retry_ITLB_Match:
+ 
+ void mmu_set_state()
+ {
++	/* // TODO: crashing a thread in redox
+ 	if (CCN_MMUCR.AT == 1)
+ 	{
+ 		// Detect if we're running Windows CE
+@@ -450,7 +451,7 @@ void mmu_set_state()
+ 			NOTICE_LOG(SH4, "Enabling Full MMU support");
+ 		}
+ 	}
+-	else
++	else*/
+ 	{
+ 		mmuOn = false;
+ 	}
 diff --git a/core/hw/sh4/modules/serial.cpp b/core/hw/sh4/modules/serial.cpp
 index aca43a01..11991e9e 100644
 --- a/core/hw/sh4/modules/serial.cpp
@@ -107,6 +141,21 @@ index 7ab2d8e9..8a2bb2c7 100644
  	#elif defined(__unix__)
  		bicopy<ToSegfault>(hostctx->pc, MCTX(.gregs[REG_RIP]));
  		bicopy<ToSegfault>(hostctx->rsp, MCTX(.gregs[REG_RSP]));
+diff --git a/core/linux/posix_vmem.cpp b/core/linux/posix_vmem.cpp
+index 46105157..c2205c17 100644
+--- a/core/linux/posix_vmem.cpp
++++ b/core/linux/posix_vmem.cpp
+@@ -163,6 +163,10 @@ static size_t reserved_size;
+ // memory using a fallback (that is, regular mallocs and falling back to slow memory JIT).
+ bool init(void **vmem_base_addr, void **sh4rcb_addr, size_t ramSize)
+ {
++#ifdef __redox__
++	// shared memory is broken
++	return false;
++#endif
+ 	// Firt let's try to allocate the shm-backed memory
+ 	vmem_fd = allocate_shared_filemem(ramSize);
+ 	if (vmem_fd < 0)
 diff --git a/core/network/dns.cpp b/core/network/dns.cpp
 index 4d45c4a2..96752ef4 100644
 --- a/core/network/dns.cpp
@@ -143,17 +192,17 @@ index 8b5ea488..1a20e0b7 100644
  #else
  	struct protoent *tcp_proto = getprotobyname("TCP");
 diff --git a/core/rend/TexCache.cpp b/core/rend/TexCache.cpp
-index 35b41b70..2782d5ea 100644
+index 35b41b70..b62edfc2 100644
 --- a/core/rend/TexCache.cpp
 +++ b/core/rend/TexCache.cpp
-@@ -670,7 +670,10 @@ bool BaseTextureCacheData::Update()
- 		mipmapped = false;
- 	}
- 	//lock the texture to detect changes in it
-+// TODO: No SIGSEGV handler on redox
-+#if !defined(__redox__)
- 	protectVRam();
-+#endif
+@@ -242,6 +242,10 @@ bool BaseTextureCacheData::NeedsUpdate() {
  
- 	UploadToGPU(upscaled_w, upscaled_h, (const u8 *)temp_tex_buffer, IsMipmapped(), mipmapped);
- 	if (config::DumpTextures)
+ void BaseTextureCacheData::protectVRam()
+ {
++	// TODO: No SIGSEGV handler on redox
++	#ifdef __redox__
++		return;
++	#endif
+ 	u32 end = mmStartAddress + size - 1;
+ 	if (end >= VRAM_SIZE)
+ 	{
