@@ -8,6 +8,7 @@ template = "python"
 dev-dependencies = [
     "host:python312",
     "host:python3-setuptools",
+    "python312",
 ]
 
 [package]

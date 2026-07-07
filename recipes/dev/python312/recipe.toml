@@ -55,6 +55,12 @@ cookbook_configure
 # A same file to save 60MB
 (cd "${COOKBOOK_STAGE}/usr/lib/python3.12/config-3.12-$ARCH-$OS" && \
     rm -f libpython3.12.a && ln -s ../../libpython3.12.a)
+# monkey patching to make paths working in target system
+if [ "$TARGET" != "$COOKBOOK_HOST_TARGET" ]; then
+    PYTHON_INIT
+    sed -i "s/sccache //g" "$COOKBOOK_STAGE/usr/lib/$COOKBOOK_PYTHON_V/$_PYTHON_SYSCONFIGDATA_NAME.py"
+    sed -i "s|${COOKBOOK_SYSROOT}|/usr|g" "$COOKBOOK_STAGE/usr/lib/$COOKBOOK_PYTHON_V/$_PYTHON_SYSCONFIGDATA_NAME.py"
+fi
 """
 
 [[optional-packages]]

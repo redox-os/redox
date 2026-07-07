@@ -9,6 +9,7 @@ dev-dependencies = [
     "host:python312",
     "host:python3-setuptools",
     "host:python3-cython",
+    "python312",
 ]
 
 [package]
