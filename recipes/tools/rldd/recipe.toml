@@ -1,0 +1,15 @@
+[source]
+git = "https://github.com/zatrazz/rldd"
+rev = "v0.3.0"
+shallow_clone = true
+patches = [ "redox.patch" ]
+
+[build]
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_cargo
+
+cp ${COOKBOOK_RECIPE}/ldd.sh ${COOKBOOK_STAGE}/usr/bin/ldd
+chmod +x ${COOKBOOK_STAGE}/usr/bin/ldd
+"""

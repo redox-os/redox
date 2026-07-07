@@ -121,6 +121,8 @@ then
     export PKG_CONFIG_PATH=
     export PKG_CONFIG_LIBDIR="${COOKBOOK_SYSROOT}/lib/pkgconfig"
     export PKG_CONFIG_SYSROOT_DIR="${COOKBOOK_SYSROOT}"
+else
+    export PKG_CONFIG_PATH="${COOKBOOK_SYSROOT}/lib/pkgconfig:/usr/lib/pkgconfig"
 fi
 
 # To build the debug version of a Cargo program, add COOKBOOK_DEBUG=true, and
@@ -318,6 +320,9 @@ function cookbook_meson {
     echo "llvm-config = '${TARGET}-llvm-config'" >> cross_file.txt
     echo "glib-compile-resources = 'glib-compile-resources'" >> cross_file.txt
     echo "glib-compile-schemas = 'glib-compile-schemas'" >> cross_file.txt
+if [ -n "$COOKBOOK_MESON_NEED_EXEC" ]; then
+    echo "exe_wrapper = 'redoxer-wrapper'" >> cross_file.txt
+fi
 
     echo "[host_machine]" >> cross_file.txt
     echo "system = '$(echo "${TARGET}" | cut -d - -f3)'" >> cross_file.txt
@@ -334,7 +339,11 @@ function cookbook_meson {
     echo "c_link_args = [$(format_flags "$LDFLAGS")]" >> cross_file.txt
 
     echo "[properties]" >> cross_file.txt
+if [ "$TARGET" != "$COOKBOOK_HOST_TARGET" ]; then
     echo "needs_exe_wrapper = true" >> cross_file.txt
+else
+    echo "needs_exe_wrapper = false" >> cross_file.txt
+fi
     echo "sys_root = '${COOKBOOK_SYSROOT}'" >> cross_file.txt
 
     unset AR AS CC CXX LD NM OBJCOPY OBJDUMP PKG_CONFIG RANLIB READELF STRIP
