@@ -540,6 +540,27 @@ impl CookRecipe {
         }
         None
     }
+
+    /// Get the name for recipe that is used as the build source
+    pub fn canon_recipe_name(&self) -> PackageName {
+        // TODO: I hope nobody is nesting same_as...
+        if let Some(SourceRecipe::SameAs { same_as }) = &self.recipe.source {
+            if let Some(name) = Path::new(&same_as)
+                .file_name()
+                .and_then(|p| p.to_str())
+                .and_then(|p| PackageName::new(p).ok())
+            {
+                return name;
+            } else {
+                eprintln!(
+                    "canon_recipe_name(): the same_as path for recipe {} is not valid",
+                    self.name.as_str()
+                )
+            }
+        }
+
+        self.name.clone()
+    }
 }
 
 // TODO: Wrap these vectors in a struct
