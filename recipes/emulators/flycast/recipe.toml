@@ -17,16 +17,23 @@ dev-dependencies = [
 ]
 script = """
 DYNAMIC_INIT
-export CPPFLAGS+=" -D_GNU_SOURCE=1"
+COOKBOOK_NOSTRIP=1
+# TODO: remove DTARGET_NO_REC to enable JIT
+export CPPFLAGS+=" -D_GNU_SOURCE=1 -DTARGET_NO_REC"
 COOKBOOK_CMAKE_FLAGS+=(
     -DREDOX=1
     -DUNIX=1
     -DUSE_OPENMP=OFF
     -DUSE_VULKAN=OFF
     -DUSE_HOST_SDL=ON
+    -DUSE_GLES2=ON
     -DNOWIDE_INSTALL=ON
     -DWITH_SYSTEM_ZLIB=ON
     -DWITH_SYSTEM_ZSTD=ON
 )
 cookbook_cmake
+
+# for some reason flycast require local dir already set up
+mkdir -p ${COOKBOOK_STAGE}/home/user/.local/share/flycast
+touch ${COOKBOOK_STAGE}/home/user/.local/share/flycast/.tmp
 """
