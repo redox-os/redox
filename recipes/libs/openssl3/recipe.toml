@@ -21,6 +21,7 @@ COOKBOOK_CONFIGURE_FLAGS=(
     zlib
     enable-zstd
     "${OS}-${ARCH}"
+    --with-rand-seed=devrandom
     --prefix="/usr"
     --openssldir="/etc/ssl"
 )
