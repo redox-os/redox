@@ -720,7 +720,13 @@ fn parse_args(args: Vec<String>) -> Result<(CliConfig, CliCommand, Vec<CookRecip
         recipes = recipes_flatten_package_names(recipes);
 
         for recipe in recipes.iter_mut() {
-            if let Some(special_rule) = special_rules.get(&recipe.name) {
+            if let Some(special_rule) =
+                special_rules.get(recipe.canon_recipe_name().without_prefix())
+            {
+                if recipe.name.is_host() && special_rule == "binary" {
+                    // host recipe binaries is currently not supported
+                    continue;
+                }
                 recipe.apply_filesystem_config(&special_rule)?;
                 continue;
             }
@@ -1042,7 +1048,8 @@ fn handle_change_rule(
         if is_capture_rev && !matches!(recipe.recipe.source, Some(SourceRecipe::Git { .. })) {
             continue;
         }
-        let recipe_name = recipe.name.without_prefix();
+        let recipe_name = recipe.canon_recipe_name();
+        let recipe_name = recipe_name.without_prefix();
         let mut recipe_lock = lock.get(recipe_name).cloned().unwrap_or_default();
         let cached = if is_change_rule {
             if config.unset {
