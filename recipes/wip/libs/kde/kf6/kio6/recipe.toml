@@ -3,3 +3,16 @@
 tar = "https://download.kde.org/stable/frameworks/6.27/kio-6.27.0.tar.xz"
 [build]
 template = "cmake"
+cmakeflags = [
+    "-DKIOCORE_ONLY=ON",
+    "-DBUILD_DESIGNERPLUGIN=OFF",
+    "-DUSE_DBUS_DEFAULT=OFF",
+]
+dependencies = [
+    "qt6-base",
+    "kconfig6",
+    "kcoreaddons6",
+    "ki18n6",
+    "kservice6",
+    "solid6",
+]

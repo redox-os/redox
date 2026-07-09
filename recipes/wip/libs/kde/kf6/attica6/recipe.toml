@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+[source]
+tar = "https://download.kde.org/stable/frameworks/6.27/attica-6.27.0.tar.xz"
+[build]
+template = "cmake"
+dependencies = [
+    "qt6-base"
+]

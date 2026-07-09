@@ -3,3 +3,9 @@
 tar = "https://download.kde.org/stable/frameworks/6.27/kcolorscheme-6.27.0.tar.xz"
 [build]
 template = "cmake"
+dependencies = [
+    "qt6-base",
+    "kconfig6",
+    "kguiaddons6",
+    "ki18n6",
+]

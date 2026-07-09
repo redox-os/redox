@@ -3,3 +3,19 @@
 tar = "https://download.kde.org/stable/frameworks/6.27/purpose-6.27.0.tar.xz"
 [build]
 template = "cmake"
+cmakeflags = [
+    "-DUSE_DBUS_DEFAULT=OFF",
+]
+dependencies = [
+    "qt6-base",
+    "kcoreaddons6",
+    "ki18n6",
+    "kconfig6",
+    "kirigami6",
+    "knotifications6",
+    "kio6",
+    "kservice6",
+    "kprison6",
+    "kitemmodels6",
+    "kcmutils6",
+]

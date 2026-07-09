@@ -1,6 +1,6 @@
 #TODO not compiled or tested
 [source]
-tar = "https://download.kde.org/stable/frameworks/6.27/knotifyconfig-6.27.0.tar.xz"
+tar = "https://download.kde.org/stable/frameworks/6.27/kirigami-6.27.0.tar.xz"
 [build]
 template = "cmake"
 cmakeflags = [
@@ -8,8 +8,6 @@ cmakeflags = [
 ]
 dependencies = [
     "qt6-base",
-    "kcompletion6",
-    "kconfig6",
-    "ki18n6",
-    "kio6",
+    "qt6-svg",
+    "qt6-shadertools",
 ]

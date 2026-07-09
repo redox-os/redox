@@ -1,13 +1,14 @@
 #TODO not compiled or tested
 [source]
-tar = "https://download.kde.org/stable/frameworks/6.27/solid-6.27.0.tar.xz"
+tar = "https://download.kde.org/stable/frameworks/6.27/kpackage-6.27.0.tar.xz"
 [build]
 template = "cmake"
 cmakeflags = [
     "-DUSE_DBUS_DEFAULT=OFF",
-    "-DUDEV_DISABLED=ON",
 ]
 dependencies = [
     "qt6-base",
-    #"udisks",
+    "karchive6",
+    "ki18n6",
+    "kcoreaddons6",
 ]

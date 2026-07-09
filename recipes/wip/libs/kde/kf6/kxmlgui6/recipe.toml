@@ -3,3 +3,19 @@
 tar = "https://download.kde.org/stable/frameworks/6.27/kxmlgui-6.27.0.tar.xz"
 [build]
 template = "cmake"
+cmakeflags = [
+    "-DBUILD_DESIGNERPLUGIN=OFF"
+    "-DUSE_DBUS_DEFAULT=OFF",
+    "-DBUILD_PYTHON_BINDINGS=OFF",
+]
+dependencies = [
+    "qt6-base"
+    "kcoreaddons6",
+    "kitemviews6",
+    "kconfig6",
+    "kconfigwidgets6",
+    "kguiaddons6",
+    "ki18n6",
+    "kiconthemes6",
+    "kwidgetsaddons6",
+]

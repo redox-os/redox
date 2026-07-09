@@ -13,18 +13,18 @@ cmakeflags = [
     "-DBUILD_WITH_QT6=ON",
     "-DALLOW_UNSTABLE=QT6",
 ]
-# dependencies = [
-#     "qt6-qt5compat",
-#     "qt6-base",
-#     "qt6-declarative",
-#     "qt6-svg",
-#     "kcompletion6",
-#     "kconfig6",
-#     "kcoreaddons6",
-#     "kguiaddons6",
-#     "ki18n6",
-#     "kitemviews6",
-#     "kwidgetaddons6",
+dependencies = [
+     "qt6-qt5compat",
+     "qt6-base",
+     "qt6-declarative",
+     "qt6-svg",
+     "kcompletion6",
+     "kconfig6",
+     "kcoreaddons6",
+     "kguiaddons6",
+     "ki18n6",
+     "kitemviews6",
+     "kwidgetsaddons6",
 #     "gexiv2",
 #     "ffmpeg6",
 #     "fftw",
@@ -57,4 +57,4 @@ cmakeflags = [
 #     "libunibreak",
 #     "libxsimd",
 #     "libxtl",
-# ]
+]

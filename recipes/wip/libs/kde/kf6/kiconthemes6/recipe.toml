@@ -3,3 +3,15 @@
 tar = "https://download.kde.org/stable/frameworks/6.27/kiconthemes-6.27.0.tar.xz"
 [build]
 template = "cmake"
+cmakeflags = [
+    "-DBUILD_DESIGNERPLUGIN=OFF",
+    "-DUSE_DBUS_DEFAULT=OFF",
+    "-DUSE_BreezeIcons_DEFAULT=OFF",
+]
+dependencies = [
+    "qt6-base",
+    "karchive6",
+    "ki18n6",
+    "kwidgetsaddons6",
+    "kcolorscheme6",
+]

@@ -1,5 +1,9 @@
 #TODO not compiled or tested
 [source]
-tar = "https://download.kde.org/stable/frameworks/6.27/kwidgetaddons-6.27.0.tar.xz"
+tar = "https://download.kde.org/stable/frameworks/6.27/kwidgetsaddons-6.27.0.tar.xz"
 [build]
 template = "cmake"
+cmakeflags = [
+    "-DBUILD_PYTHON_BINDINGS=OFF",
+    "-DBUILD_DESIGNERPLUGIN=OFF",
+]

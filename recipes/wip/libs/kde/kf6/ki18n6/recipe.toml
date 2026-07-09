@@ -1,5 +1,9 @@
 #TODO not compiled or tested
 [source]
-tar = "https://download.kde.org/stable/frameworks/6.27/kcodecs-6.27.0.tar.xz"
+tar = "https://download.kde.org/stable/frameworks/6.27/ki18n-6.27.0.tar.xz"
 [build]
 template = "cmake"
+dependencies = [
+    "qt6-base",
+    "gettext" # does it have the libintl library?
+]

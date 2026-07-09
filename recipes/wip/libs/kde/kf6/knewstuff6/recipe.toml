@@ -3,3 +3,17 @@
 tar = "https://download.kde.org/stable/frameworks/6.27/knewstuff-6.27.0.tar.xz"
 [build]
 template = "cmake"
+cmakeflags = [
+    "-DBUILD_DESIGNERPLUGIN=OFF",
+]
+dependencies = [
+    "qt6-base",
+    "karchive6",
+    "kconfig6",
+    "kcoreaddons6",
+    "ki18n6",
+    "kpackage6",
+    "kwidgetsaddons6",
+    "attica6",
+    #"kirigami6",
+]
