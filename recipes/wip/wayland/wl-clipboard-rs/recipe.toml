@@ -1,0 +1,7 @@
+#TODO compile and test
+[source]
+git = "https://github.com/YaLTeR/wl-clipboard-rs"
+shallow_clone = true
+[build]
+template = "cargo"
+cargopackages = ["wl-clipboard-rs-tools"]

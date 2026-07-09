@@ -1,5 +1,13 @@
 #TODO not compiled or tested
 [source]
-tar = "https://download.kde.org/stable/frameworks/6.19/ktexteditor-6.19.0.tar.xz"
+tar = "https://download.kde.org/stable/frameworks/6.27/ktexteditor-6.27.0.tar.xz"
 [build]
 template = "cmake"
+cmakeflags = [
+    "-DENABLE_KAUTH_DEFAULT=OFF",
+]
+dependencies = [
+    "qt6-base",
+    "qt6-declarative",
+    "qt6-speech",
+]

@@ -2,5 +2,6 @@
 # required host dependencies - https://github.com/cloud-hypervisor/cloud-hypervisor/blob/main/docs/building.md#install-prerequisites
 [source]
 git = "https://github.com/cloud-hypervisor/cloud-hypervisor"
+shallow_clone = true
 [build]
 template = "cargo"

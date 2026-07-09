@@ -1,0 +1,5 @@
+#TODO not compiled or tested
+[source]
+tar = "https://download.kde.org/stable/frameworks/6.27/knewstuff-6.27.0.tar.xz"
+[build]
+template = "cmake"

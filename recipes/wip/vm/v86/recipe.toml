@@ -1,5 +1,6 @@
-#TODO missing script for "make", see https://github.com/copy/v86#how-to-build-run-and-embed
+#TODO missing script for gnu make: https://github.com/copy/v86#how-to-build-run-and-embed
 [source]
 git = "https://github.com/copy/v86"
+shallow_clone = true
 [build]
 template = "custom"

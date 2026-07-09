@@ -1,6 +1,13 @@
 #TODO not compiled or tested
 # build instructions: https://libvirt.org/compiling.html#configuring-the-project
 [source]
-tar = "https://download.libvirt.org/libvirt-10.7.0.tar.xz"
+tar = "https://download.libvirt.org/libvirt-12.5.0.tar.xz"
 [build]
 template = "meson"
+mesonflags = [
+    "-Dtests=disabled",
+    "-Ddocs=disabled",
+    "-Dapparmor=disabled",
+    "-Dselinux=disabled",
+    "-Dudev=disabled",
+]

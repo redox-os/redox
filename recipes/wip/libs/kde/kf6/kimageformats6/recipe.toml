@@ -1,0 +1,16 @@
+#TODO not compiled or tested
+[source]
+tar = "https://download.kde.org/stable/frameworks/6.27/kimageformats-6.27.0.tar.xz"
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DKIMAGEFORMATS_DDS=OFF",
+    "-DKIMAGEFORMATS_JXL=OFF",
+    "-DKIMAGEFORMATS_JP2=OFF",
+    "-DKIMAGEFORMATS_HEIF_TEST=OFF",
+    "-DKIMAGEFORMATS_HEJ2_TEST=OFF",
+    "-DKIMAGEFORMATS_AVCI_TEST=OFF",
+]
+dependencies = [
+    "qt6-base",
+]

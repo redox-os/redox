@@ -1,8 +1,7 @@
 #TODO not compiled or tested
 [source]
 git = "https://github.com/firecracker-microvm/firecracker"
+shallow_clone = true
 [build]
-template = "custom"
-script = """
-cookbook_cargo_packages firecracker
-"""
+template = "cargo"
+cargopackages = ["firecracker"]

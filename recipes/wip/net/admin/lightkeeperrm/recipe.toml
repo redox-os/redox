@@ -1,0 +1,13 @@
+#TODO missing script for build.sh : https://github.com/kalaksi/lightkeeper#building
+[source]
+git = "https://github.com/kalaksi/lightkeeper"
+shallow_clone = true
+[build]
+template = "custom"
+dependencies = [
+    "qt6-base",
+    "qt6-declarative",
+    "dbus",
+    "openssl3",
+    "liboping",
+]

@@ -1,0 +1,13 @@
+#TODO compile and test
+# build instructions: https://github.com/bugaevc/wl-clipboard/blob/master/BUILDING.md
+[source]
+git = "https://github.com/bugaevc/wl-clipboard"
+rev = "v2.3.0"
+shallow_clone = true
+[build]
+template = "meson"
+dependencies = [
+    "libwayland",
+    "wayland-scanner",
+    "wayland-protocols",
+]

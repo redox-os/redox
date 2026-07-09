@@ -6,13 +6,15 @@
 # examples - https://github.com/google/crosvm/tree/main/tools/examples
 [source]
 git = "https://chromium.googlesource.com/crosvm/crosvm"
+shallow_clone = true
 [build]
 template = "cargo"
-dependencies = [
-    "ffmpeg6",
-    "libcap",
-    "dbus",
-    "libepoxy",
-    "glib",
-    "libslirp",
-]
+cargoflags = "--no-default-features"
+#dependencies = [
+    #"ffmpeg6",
+    #"libcap",
+    #"dbus",
+    #"libepoxy",
+    #"glib",
+    #"libslirp",
+#]
