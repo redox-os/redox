@@ -155,6 +155,7 @@ lua-compat-53 = {}
 luajit = {}
 luarocks = {}
 lz4 = {}
+mednaffe = {}
 mednafen = {}
 mesa = {}
 mesa-glu = {}
