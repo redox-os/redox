@@ -137,6 +137,15 @@ pub fn fetch_offline(recipe: &CookRecipe, logger: &PtyOut) -> Result<FetchResult
 pub fn fetch(recipe: &CookRecipe, check_source: bool, logger: &PtyOut) -> Result<FetchResult> {
     let recipe_dir = &recipe.dir;
     let source_dir = recipe_dir.join("source");
+    let mut recipe = recipe;
+    let mut recipe_owned;
+    if recipe.rule == "local" && !source_dir.exists() {
+        // local source, but the source is missing
+        recipe_owned = recipe.clone();
+        recipe_owned.rule = "source".into();
+        recipe_owned.reload_recipe()?;
+        recipe = &recipe_owned;
+    }
     match recipe.recipe.build.kind {
         BuildKind::None => {
             // the build function doesn't need source dir exists
