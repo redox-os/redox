@@ -271,6 +271,7 @@ userutils = {}
 uutils = {}
 uutils-grep = {}
 uutils-procps = {}
+uutils-sed = {}
 vim = {}
 vttest = {}
 wasmtime = {}
