@@ -19,5 +19,5 @@ dependencies = [
     "uutils-grep",
     "gnu-make",
     "libarchive",
-    "sed",
+    "uutils-sed",
 ]
