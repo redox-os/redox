@@ -866,15 +866,21 @@ fn handle_nonstop_fail(recipe: &CookRecipe) -> cookbook::Result<()> {
 fn handle_clean(recipe: &CookRecipe, _config: &CliConfig, command: &CliCommand) -> Result<bool> {
     let mut dir = recipe.dir.join("target");
     let mut cached = true;
+    let unfetch = matches!(*command, CliCommand::Unfetch);
+    let mut clean_target = true;
     if matches!(*command, CliCommand::CleanTarget) {
         dir = dir.join(redoxer::target())
     }
-    if dir.exists() {
+    if unfetch && recipe.rule == "binary" {
+        // may contains downloaded binaries
+        clean_target = false;
+    }
+    if clean_target && dir.exists() {
         remove_all(&dir)?;
         cached = false;
     }
     let dir = recipe.dir.join("source");
-    if dir.exists() && matches!(*command, CliCommand::Unfetch) {
+    if dir.exists() && unfetch {
         remove_all(&dir)?;
         cached = false;
     }
@@ -1100,12 +1106,7 @@ fn handle_change_rule(
         let mut fetch_cached = true;
         if is_change_rule_local && !recipe.dir.join("source").exists() {
             // previously, this is "binary", then user wants to hack around with the source, so we do fetch here
-            let mut recipe = recipe.clone();
-            recipe.rule = "source".into();
-            recipe.reload_recipe()?;
-            if recipe.recipe.source.is_some() {
-                fetch_cached = handle_fetch(&recipe, config, false, &None)?.cached;
-            }
+            fetch_cached = handle_fetch(&recipe, config, false, &None)?.cached;
         }
         let clean_cached = if !cached && is_change_rule {
             handle_clean(recipe, config, &CliCommand::Clean)?

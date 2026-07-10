@@ -42,6 +42,7 @@ fetch: prefix $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
+	rm -f $(REPO_TAG)
 	export PATH="$(PREFIX_PATH):$$PATH" && \
 	export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
 	$(REPO_BIN) fetch $(COOKBOOK_OPTS) --with-package-deps
@@ -150,7 +151,7 @@ else
 endif
 
 # Push all recipes specified by the filesystem config
-push: $(FSTOOLS_TAG) FORCE
+push: $(REPO_TAG) $(FSTOOLS_TAG) FORCE
 ifeq ($(ALLOW_FSTOOLS),1)
 	@rm -f $(MOUNTED_TAG)
 	@if [ ! -d "$(MOUNT_DIR)" ]; then \
@@ -172,7 +173,6 @@ endif
 
 # Rebuild and push all recipes specified by the filesystem config
 rebuild-push: $(FSTOOLS_TAG) FORCE
-	rm -f $(REPO_TAG)
 	$(MAKE) repo
 	$(MAKE) push
 
@@ -244,7 +244,6 @@ install:
 
 # Rebuild and install all recipes specified by the filesystem config
 rebuild-install: $(FSTOOLS_TAG) FORCE
-	rm -f $(REPO_TAG)
 	$(MAKE) repo
 	$(MAKE) install
 
@@ -334,6 +333,11 @@ bcrp.%: $(FSTOOLS_TAG) FORCE
 # Set recipe rule to "source" then invoke clean, rebuild and push
 scrp.%: $(FSTOOLS_TAG) FORCE
 	$(MAKE) scr.$*
+	$(MAKE) p.$*
+
+# Set specific recipe rule to "local" then invoke clean, rebuild and push
+lcrp.%: $(FSTOOLS_TAG) FORCE
+	$(MAKE) lcr.$*
 	$(MAKE) p.$*
 
 # Save current git rev for next recipe fetch, locking git recipes frozen in time
