@@ -10,4 +10,13 @@ dependencies = [
     "qt6-base",
     "qt6-declarative",
     "qt6-speech",
+    "karchive6",
+    "kconfig6",
+    "kguiaddons6",
+    "ki18n6",
+    "kio6",
+    "kparts6",
+    "sonnet6",
+    "syntax-highlighting6",
+    "kcolorscheme6",
 ]

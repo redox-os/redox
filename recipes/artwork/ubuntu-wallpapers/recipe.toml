@@ -4,6 +4,6 @@ blake3 = "1e479d0aa48fe3f2961a2dac28c3ed397a29616cf6e7d73f5ceb6fabfd6449e1"
 [build]
 template = "custom"
 script = """
-mkdir -pv "${COOKBOOK_STAGE}"/usr/share/wallpapers
-cp -rv "${COOKBOOK_SOURCE}"/ubuntu-wallpapers-23.10.4/*.{jpg,png} "${COOKBOOK_STAGE}"/usr/share/wallpapers
+mkdir -pv "${COOKBOOK_STAGE}"/usr/share/backgrounds/ubuntu
+cp -rv "${COOKBOOK_SOURCE}"/ubuntu-wallpapers-23.10.4/*.{jpg,png} "${COOKBOOK_STAGE}"/usr/share/backgrounds/ubuntu
 """

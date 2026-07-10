@@ -1,0 +1,11 @@
+#TODO promote
+[source]
+tar = "https://download.gnome.org/sources/gnome-backgrounds/50/gnome-backgrounds-50.0.tar.xz"
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/backgrounds/gnome"
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/gnome-background-properties"
+cp -rv "${COOKBOOK_SOURCE}"/backgrounds/*.{jxl,svg,png} "${COOKBOOK_STAGE}/usr/share/backgrounds/gnome"
+cp -rv "${COOKBOOK_SOURCE}"/backgrounds/*.xml "${COOKBOOK_STAGE}/usr/share/gnome-background-properties"
+"""

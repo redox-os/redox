@@ -1,0 +1,16 @@
+#TODO not compiled or tested
+[source]
+tar = "https://download.kde.org/stable/frameworks/6.27/kparts-6.27.0.tar.xz"
+[build]
+template = "cmake"
+dependencies = [
+    "qt6-base",
+    "kconfig6",
+    "kcoreaddons6",
+    "ki18n6",
+    "kio6",
+    "kjobwidgets6",
+    "kservice6",
+    "kwidgetsaddons6",
+    "kxmlgui6",
+]

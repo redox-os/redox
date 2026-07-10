@@ -1,0 +1,7 @@
+#TODO compile and test
+# configuration: https://rayfish.xyz/docs/02-getting-started
+[source]
+git = "https://github.com/rayfish/rayfish"
+shallow_clone = true
+[build]
+template = "cargo"

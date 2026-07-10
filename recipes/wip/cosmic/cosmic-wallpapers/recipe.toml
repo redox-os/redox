@@ -1,0 +1,10 @@
+#TODO promote
+[source]
+git = "https://github.com/pop-os/cosmic-wallpapers"
+shallow_clone = true
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/backgrounds/cosmic"
+cp -rv "${COOKBOOK_SOURCE}"/original/* "${COOKBOOK_STAGE}/usr/share/backgrounds/cosmic"
+"""
