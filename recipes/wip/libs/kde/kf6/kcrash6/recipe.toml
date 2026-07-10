@@ -1,0 +1,12 @@
+#TODO not compiled or tested
+[source]
+tar = "https://download.kde.org/stable/frameworks/6.27/kcrash-6.27.0.tar.xz"
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DWITH_X11=OFF",
+]
+dependencies = [
+    "qt6-base",
+    "kcoreaddons6",
+]

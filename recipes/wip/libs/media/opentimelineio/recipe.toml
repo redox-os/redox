@@ -1,0 +1,11 @@
+#TODO compile and test
+[source]
+git = "https://github.com/AcademySoftwareFoundation/OpenTimelineIO"
+rev = "v0.18.1"
+shallow_clone = true
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DOTIO_INSTALL_PYTHON_MODULES=OFF",
+    "-DOTIO_INSTALL_COMMANDLINE_TOOLS=OFF",
+]

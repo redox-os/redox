@@ -1,15 +1,30 @@
-#TODO discover minimum dependencies from cmake log
+#TODO compile and test
 [source]
 git = "https://invent.kde.org/graphics/gwenview"
-branch = "release/26.04"
+rev = "v26.04.3"
 shallow_clone = true
 [build]
 template = "cmake"
 cmakeflags = [
-    "-DGWENVIEW_NO_WAYLAND_GESTURES=ON"
+    "-DGWENVIEW_NO_WAYLAND_GESTURES=ON",
+    "-DWITHOUT_X11=ON",
+    "-DGWENVIEW_IMAGEANNOTATOR=OFF",
 ]
-#dependencies = [
-    #"libjpeg",
-    #"libpng",
-    #"exiv2",
+dependencies = [
+    "qt6-base",
+    "qt6-multimedia",
+    "qt6-svg",
+    "kio6",
+    "kitemmodels6",
+    "ki18n6",
+    "kparts6",
+    #"kwindowsystem6",
+    "kiconthemes6",
+    "knotifications6",
+    "kguiaddons6",
+    "kwidgetsaddons6",
+    #"kcrash6",
+    "libjpeg",
+    "libpng",
+    "exiv2",
 #]

@@ -1,0 +1,13 @@
+#TODO compile and test
+[source]
+git = "https://github.com/fukuchi/libqrencode"
+rev = "v4.1.1"
+shallow_clone = true
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DWITH_TOOLS=NO",
+    "-DWITHOUT_PNG=YES",
+    "-DBUILD_SHARED_LIBS=YES",
+]
+#dependencies = ["libpng"]

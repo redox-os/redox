@@ -1,5 +1,4 @@
-#TODO not compiled or tested
-#TODO discover minimum dependencies from cmake log
+#TODO compile and test
 # build instructions: https://docs.krita.org/en/untranslatable_pages/building_krita.html#building-on-linux
 [source]
 git = "https://invent.kde.org/graphics/krita"

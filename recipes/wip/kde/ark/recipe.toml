@@ -1,11 +1,23 @@
-#TODO not compiled or tested
-#TODO discover minimum dependencies from cmake log
+#TODO compile and test
 [source]
 git = "https://invent.kde.org/utilities/ark"
-branch = "release/25.12"
+rev = "v26.04.3"
 shallow_clone = true
 [build]
 template = "cmake"
+cmakeflags = [
+    "-DBUILD_DOC=OFF"
+]
 dependencies = [
     "libarchive",
+    "qt6-base",
+    "kconfig6",
+    "kfilemetadata6",
+    "ki18n6",
+    "kio6",
+    "kservice6",
+    "kparts6",
+    "kwidgetsaddons6",
+    #"kwindowsystem6",
+    "kiconthemes6",
 ]

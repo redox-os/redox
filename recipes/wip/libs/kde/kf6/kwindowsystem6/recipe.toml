@@ -1,0 +1,13 @@
+#TODO not compiled or tested
+[source]
+tar = "https://download.kde.org/stable/frameworks/6.27/kwindowsystem-6.27.0.tar.xz"
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DKWINDOWSYSTEM_QML=OFF",
+    "-DKWINDOWSYSTEM_X11=OFF",
+    "-DKWINDOWSYSTEM_WAYLAND=OFF",
+]
+dependencies = [
+    "qt6-base"
+]
