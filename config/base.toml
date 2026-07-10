@@ -33,8 +33,6 @@ schemes = [
   "event",
   "memory",
   "pipe",
-  "serio",
-  "irq",
   "time",
   "sys",
   # Base schemes
@@ -55,7 +53,6 @@ schemes = [
   # File schemes
   "file",
   # Display schemes
-  "display.vesa",
   "display*",
   # Other schemes
   "proc",
