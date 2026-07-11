@@ -1,0 +1,17 @@
+# TODO figure out colorama dependency
+[source]
+git = "https://github.com/WebAssembly/wasi-testsuite"
+branch = "prod/testsuite-base"
+
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}/home/user/wasi-testsuite"
+cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}/home/user/wasi-testsuite"
+"""
+
+[package]
+dependencies = [
+  "python312",
+  "python3-colorama"
+]

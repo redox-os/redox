@@ -1,0 +1,18 @@
+# TODO currently fails on host:python3-cython
+[source]
+git = "https://github.com/tartley/colorama"
+rev = "0.4.6"
+shallow_clone = true
+
+[build]
+template = "python"
+dev-dependencies = [
+    "host:python312",
+    "host:python3-setuptools",
+    "host:python3-cython",
+]
+
+[package]
+dependencies = [
+    "python312"
+]
