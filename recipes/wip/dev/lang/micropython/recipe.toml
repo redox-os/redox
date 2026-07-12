@@ -1,0 +1,21 @@
+#TODO compile and test
+# probably wrong gnu make command
+# build instructions:
+# https://github.com/micropython/micropython#the-micropython-cross-compiler-mpy-cross
+# https://github.com/micropython/micropython/blob/master/ports/unix/README.md
+[source]
+tar = "https://micropython.org/resources/source/micropython-1.28.0.tar.xz"
+[build]
+template = "custom"
+#dependencies = [
+ #   "libffi",
+#]
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+cd ports/unix
+make -C ../../mpy-cross
+MAKEFLAGS=(
+    VARIANT=minimal
+)
+"${COOKBOOK_MAKE}" install -j"$COOKBOOK_MAKE_JOBS" "${MAKEFLAGS[@]}" DESTDIR="$COOKBOOK_STAGE/usr"
+"""
