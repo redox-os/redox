@@ -1,9 +1,14 @@
-#TODO async-io crate error
+#TODO terminal output works, windows not
+#TODO latest version require rustc 1.96 or newer
 [source]
 git = "https://github.com/bevyengine/bevy"
+rev = "v0.18.1"
 shallow_clone = true
 [build]
 template = "cargo"
 cargoexamples = [
-    "hello_world"
+    "hello_world",
+    "sprite",
+    "text2d",
+    "3d_scene",
 ]

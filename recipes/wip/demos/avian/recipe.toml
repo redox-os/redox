@@ -1,6 +1,8 @@
-#TODO not compiled or tested
+#TODO compiled (after nix crate update) but not tested
+#TODO latest version need rustc 1.94-95 or newer
 [source]
 git = "https://github.com/Jondolf/avian"
+rev = "v0.6.1"
 shallow_clone = true
 [build]
 template = "cargo"

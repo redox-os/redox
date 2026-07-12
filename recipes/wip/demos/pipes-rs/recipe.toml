@@ -1,4 +1,4 @@
-#TODO libmalloc-sys crate error
+#TODO compiled but not tested
 [source]
 git = "https://github.com/lhvy/pipes-rs"
 shallow_clone = true

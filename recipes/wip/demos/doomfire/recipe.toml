@@ -4,6 +4,6 @@ git = "https://github.com/r-marques/doomfire"
 shallow_clone = true
 [build]
 template = "cargo"
-cargoexamples = [
+cargopackages = [
     "doomfire-minifb",
 ]

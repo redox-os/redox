@@ -1,9 +1,10 @@
-#TODO compiled but not tested
+#TODO build error
 [source]
 git = "https://github.com/gdt050579/AppCUI-rs"
 shallow_clone = true
 [build]
 template = "cargo"
-cargopackages = [
-    "examples"
+cargopath = "examples"
+cargoflags = [
+    "--examples"
 ]

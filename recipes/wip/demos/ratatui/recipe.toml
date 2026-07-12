@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO compiled but not tested
 [source]
 git = "https://github.com/ratatui/ratatui"
 branch = "latest"
@@ -20,22 +20,21 @@ cargopackages = [
     "inline",
     "modifiers",
     "mouse-drawing",
-    "simple",
     "panic",
     "popup",
     "scrollbar",
     "table",
     "todo-list",
-    "tracing",
+    #"tracing", # multiple "tracing" in workspace, the path need to be specified
     "user-input",
 ]
-cargoexamples = [
-    "block",
-    "calendar",
-    "canvas",
-    "chart",
-    "logo",
-    "scrollbar",
-    "sparkline",
-    "tabs",
-]
+#cargoexamples = [ # mac_address and termios crate error
+    #"block",
+    #"calendar",
+    #"canvas",
+    #"chart",
+    #"logo",
+    #"scrollbar",
+    #"sparkline",
+    #"tabs",
+#]
