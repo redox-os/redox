@@ -8,7 +8,7 @@ script = """
 DYNAMIC_STATIC_INIT
 # TODO: fPIC is the default on linux but not on redox and
 #       required by llvm21 as zstd statically linked there
-export CPPFLAGS="$CPPFLAGS -fPIC"
+export CPPFLAGS="$CPPFLAGS -fPIC -DZSTD_TRACE=0"
 COOKBOOK_SOURCE="$COOKBOOK_SOURCE/build/cmake"
 if [ "${COOKBOOK_DYNAMIC}" != "1" ]; then
     COOKBOOK_CMAKE_FLAGS+=(
