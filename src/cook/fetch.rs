@@ -653,6 +653,10 @@ pub(crate) fn fetch_cargo(
     cargopath: Option<&String>,
     logger: &PtyOut,
 ) -> Result<()> {
+    if !check_toolchain_available() {
+        return Ok(());
+    }
+
     let mut source_dir = source_dir.clone();
     if let Some(cargopath) = cargopath {
         source_dir = source_dir.join(cargopath);
@@ -672,6 +676,14 @@ pub(crate) fn fetch_cargo(
     command.arg(source_dir.join("Cargo.toml").into_os_string());
     run_command(command, logger)?;
     Ok(())
+}
+
+/// Check if "REDOXER_TOOLCHAIN" is available.
+fn check_toolchain_available() -> bool {
+    let Ok(dir) = std::env::var("REDOXER_TOOLCHAIN") else {
+        return false;
+    };
+    PathBuf::from(dir).is_dir()
 }
 
 pub fn fetch_remote(
