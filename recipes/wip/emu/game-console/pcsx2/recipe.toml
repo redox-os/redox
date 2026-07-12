@@ -3,7 +3,7 @@
 # build instructions: https://pcsx2.net/docs/advanced/building#building-on-linux
 [source]
 git = "https://github.com/PCSX2/pcsx2"
-branch = "2.4.x"
+rev = "v2.6.3"
 shallow_clone = true
 [build]
 template = "cmake"
@@ -13,17 +13,21 @@ cmakeflags = [
     "-DENABLE_TESTS=OFF",
     "-DLTO_PCSX2_CORE=ON",
     "-DPACKAGE_MODE=ON",
+    "-DUSE_OPENGL=OFF",
     "-DUSE_VULKAN=OFF",
+    "-DX11_API=OFF",
     "-DWAYLAND_API=OFF",
     "-DUSE_BACKTRACE=OFF",
+    "-DENABLE_QT_UI=OFF",
+    "-DENABLE_GSRUNNER=ON",
 ]
 # dependencies = [
-#     "sdl2",
+#     "sdl3",
 #     "xz",
 #     "libpng",
 #     "qt6-base",
 #     "qt6-svg",
-#     "mesa-x11",
+#     "mesa",
 #     "libaio",
 #     "harfbuzz",
 #     "libpcap",
