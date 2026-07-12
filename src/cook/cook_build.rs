@@ -23,7 +23,9 @@ fn auto_deps_from_dynamic_linking(
 ) -> BTreeSet<PackageName> {
     let mut paths = BTreeSet::new();
     let mut visited = BTreeSet::new();
-    let verbose = crate::config::get_config().cook.verbose;
+    let verbose = crate::config::try_get_config()
+        .map(|s| s.cook.verbose)
+        .unwrap_or(true);
     // Base directories may need to be updated for packages that place binaries in odd locations.
     let mut walk = VecDeque::new();
 
