@@ -4,7 +4,7 @@ set -e
 
 git fetch origin master
 packages=""
-for toml in $(git diff --name-only origin/master | grep '/recipe.toml$' | sort | uniq)
+for toml in $(git diff --name-only origin/master... | grep '/recipe.toml$' | sort | uniq)
 do
     package="$(basename "$(dirname "${toml}")")"
     if [ -n "${packages}" ]
