@@ -209,6 +209,11 @@ pub fn get_config() -> &'static CookbookConfig {
     return CONFIG.get().expect("Configuration is not initialized");
 }
 
+/// Fallible version of get_config(), because it's not loaded when testing
+pub fn try_get_config() -> Option<&'static CookbookConfig> {
+    return CONFIG.get();
+}
+
 pub fn translate_mirror(original_url: &str) -> String {
     let config = CONFIG.get().expect("Configuration is not initialized");
 
