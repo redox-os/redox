@@ -91,7 +91,7 @@ else
 endif
 
 # Invoke fetch for one or more targets separated by comma
-f.%: prefix $(FSTOOLS_TAG) FORCE
+f.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
