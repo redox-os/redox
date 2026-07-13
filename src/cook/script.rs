@@ -356,12 +356,13 @@ function PYTHON_INIT {
     SYSTEM=$(echo "${TARGET}" | cut -d - -f3)
     export PYTHONPYCACHEPREFIX="${COOKBOOK_BUILD}" _PYTHON_HOST_PLATFORM="$OS-$ARCH"
     export PYTHONPATH="${PYTHONPATH:+$PYTHONPATH:}${COOKBOOK_SYSROOT}/usr/lib/${COOKBOOK_PYTHON_V}"
+    export PYTHONPATH="${PYTHONPATH:+$PYTHONPATH:}${COOKBOOK_SYSROOT}/usr/lib/${COOKBOOK_PYTHON_V}/site-packages"
     export _PYTHON_SYSCONFIGDATA_NAME="_sysconfigdata__${SYSTEM}_${ARCH}-${OS}"
 }
 function cookbook_python {
     PYTHON_INIT
     "${COOKBOOK_PYTHON}" -m pip install --prefix="${COOKBOOK_STAGE}/usr" "${COOKBOOK_SOURCE}" \
-    --ignore-installed --no-index "$@"
+    --ignore-installed --no-index --no-build-isolation "$@"
     rsync -av "${COOKBOOK_BUILD}/${COOKBOOK_STAGE}/usr/" "${COOKBOOK_STAGE}/usr"
 }
 "#;
