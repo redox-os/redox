@@ -1,0 +1,11 @@
+# TODO compiles fine but unsure what input it needs
+[source]
+git = "https://github.com/nasa/spacewasm"
+shallow_clone = true
+
+[build]
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_cargo_packages spacewasm_std
+"""
