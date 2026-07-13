@@ -431,6 +431,7 @@ impl CookRecipe {
         Ok(packages.into_iter().map(|p| p.name).collect())
     }
 
+    /// reload self back to the recipe.toml, with preserving effect from `self.rule`
     pub fn reload_recipe(&mut self) -> Result<(), PackageError> {
         if self.pinned {
             // TODO: print?
@@ -450,6 +451,7 @@ impl CookRecipe {
         cook_package::package_stage_paths(r.as_ref(), &self.target_dir())
     }
 
+    /// returns target dir which is depending on the "host:" prefix
     pub fn target_dir(&self) -> PathBuf {
         self.dir.join("target").join(self.target)
     }
@@ -474,7 +476,7 @@ impl CookRecipe {
             }
             rule => {
                 bail_other_err!(
-                    "Invalid pkg config {} = \"{}\"\nExpecting either 'source', 'local', 'binary' or 'ignore'",
+                    "Invalid pkg config {} = {:?}\nExpecting either 'source', 'local', 'binary' or 'ignore'",
                     self.name.as_str(),
                     rule
                 );

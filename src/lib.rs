@@ -170,12 +170,16 @@ impl From<pkg::PackageError> for Error {
 impl From<pkg::backend::Error> for Error {
     fn from(value: pkg::backend::Error) -> Self {
         match value {
-            pkg::backend::Error::IO(error)
-            | pkg::backend::Error::Download(pkg::net_backend::DownloadError::IO(error)) => {
+            pkg::backend::Error::IO(source, path, context) => Error::Io {
+                source,
+                path: Some(path),
+                context,
+            },
+            pkg::backend::Error::Download(pkg::net_backend::DownloadError::IO(error)) => {
                 Error::Io {
                     source: error,
                     path: None,
-                    context: "Package backend I/O",
+                    context: "Package network I/O",
                 }
             }
             error => Error::PackageBackend(error),
