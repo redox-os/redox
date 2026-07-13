@@ -5,7 +5,7 @@ blake3 = "e01a810629b11b2fa415ba47d2df3ba521286e9933f6c2b364e959c26401eb96"
 [build]
 template = "custom"
 dependencies = [
-    "target:glib",
+    "glib",
     "libffi",
 ]
 dev-dependencies = [
@@ -13,12 +13,14 @@ dev-dependencies = [
     "python312.dev",
     "host:python312",
     "host:python3-setuptools",
+    "host:redoxer"
 ]
 script = """
 DYNAMIC_INIT
 PYTHON_INIT
-cookbook_meson -Dpython="${COOKBOOK_PYTHON_V}" \
-    -Dbuild_introspection_data=false
+COOKBOOK_MESON_NEED_EXEC=1
+
+cookbook_meson -Dpython="${COOKBOOK_PYTHON_V}"
 sed -i "s|${COOKBOOK_TOOLCHAIN}||g" "${COOKBOOK_STAGE}"/usr/bin/g-ir-annotation-tool
 sed -i "s|${COOKBOOK_TOOLCHAIN}||g" "${COOKBOOK_STAGE}"/usr/bin/g-ir-scanner
 mv "${COOKBOOK_STAGE}"/usr/lib/gobject-introspection "${COOKBOOK_STAGE}"/usr/lib/${COOKBOOK_PYTHON_V}
