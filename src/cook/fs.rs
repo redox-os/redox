@@ -1,3 +1,4 @@
+use blake3::Hash;
 use serde::{Serialize, de::DeserializeOwned};
 use std::{
     collections::BTreeSet,
@@ -293,6 +294,61 @@ pub fn read_to_string(path: &Path) -> Result<String> {
     fs::read_to_string(path).map_err(wrap_io_err!(path, "Reading file"))
 }
 
+pub fn get_file_blake3(path: &PathBuf) -> Result<String> {
+    get_blake3(path).map(|s| s.to_hex().to_string())
+}
+
+fn get_blake3(path: &PathBuf) -> Result<Hash> {
+    let mut f = fs::File::open(&path).map_err(wrap_io_err!(path, "Opening file for blake3"))?;
+    let hash = blake3::Hasher::new()
+        .update_reader(&mut f)
+        .map_err(wrap_io_err!(path, "Reading file for blake3"))?
+        .finalize();
+    Ok(hash)
+}
+
+fn get_blake3_str(s: &str) -> Result<Hash> {
+    let mut f = s.as_bytes();
+    let hash = blake3::Hasher::new()
+        .update_reader(&mut f)
+        .map_err(wrap_io_err!("Reading string for blake3"))?
+        .finalize();
+    Ok(hash)
+}
+
+/// get combined hashes from files and scripts
+pub fn get_combined_blake3(
+    dir: &PathBuf,
+    files: &Vec<String>,
+    contents: &Vec<String>,
+) -> Result<String> {
+    if files.is_empty() && contents.is_empty() {
+        // pkgutils allow omiting the field with empty string
+        return Ok("".into());
+    }
+
+    let mut combined_bytes: [u8; _] = [0; blake3::OUT_LEN];
+
+    for file in files {
+        let hash = get_blake3(&dir.join(file))?;
+        let hash_bytes = hash.as_bytes();
+
+        for i in 0..hash_bytes.len() {
+            combined_bytes[i] = (combined_bytes[i].rotate_left(2)) ^ hash_bytes[i];
+        }
+    }
+    for s in contents {
+        let hash = get_blake3_str(s)?;
+        let hash_bytes = hash.as_bytes();
+
+        for i in 0..hash_bytes.len() {
+            combined_bytes[i] = (combined_bytes[i].rotate_left(2)) ^ hash_bytes[i];
+        }
+    }
+
+    Ok(Hash::from(combined_bytes).to_hex().to_string())
+}
+
 /// get commit rev and return if it's detached or not
 pub fn get_git_head_rev(dir: &PathBuf) -> Result<(String, bool)> {
     let git_head = dir.join(".git/HEAD");
@@ -312,11 +368,22 @@ pub fn get_git_head_rev(dir: &PathBuf) -> Result<(String, bool)> {
 }
 
 /// get commit from "rev" which either a full commit hash or a tag name
-pub fn get_git_tag_rev(dir: &PathBuf, tag: &str) -> Result<String> {
+pub fn get_git_tag_rev(dir: &PathBuf, tag: &str, logger: &PtyOut) -> Result<String> {
     if tag.len() == 40 && tag.chars().all(|f| f.is_ascii_hexdigit()) {
         return Ok(tag.to_string());
     }
-    get_git_ref_entry(dir, &format!("refs/tags/{tag}"))
+    let r = get_git_ref_entry(dir, &format!("refs/tags/{tag}"));
+    match r {
+        Ok(r) => Ok(r),
+        Err(_) => {
+            // probably need to run "git gc"
+            let mut command = Command::new("git");
+            command.arg("-C").arg(dir);
+            command.arg("gc");
+            run_command(command, logger)?;
+            get_git_ref_entry(dir, &format!("refs/tags/{tag}"))
+        }
+    }
 }
 
 pub fn get_git_ref_entry(dir: &PathBuf, entry: &str) -> Result<String> {

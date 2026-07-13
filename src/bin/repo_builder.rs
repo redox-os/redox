@@ -206,6 +206,7 @@ fn publish_packages(config: &CliConfig) -> Result<()> {
                     recipe.name().to_string(),
                     SourceIdentifier {
                         source_identifier: "missing_source".to_string(),
+                        patch_identifier: "".into(),
                         commit_identifier: ident.commit.clone(),
                         time_identifier: ident.time.clone(),
                     },
