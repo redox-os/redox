@@ -15,6 +15,7 @@ RUN apt-get update \
         build-essential \
         cmake \
         curl \
+        default-jre-headless \
         dos2unix \
         doxygen \
         expect \
