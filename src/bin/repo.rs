@@ -863,7 +863,7 @@ fn handle_nonstop_fail(recipe: &CookRecipe) -> cookbook::Result<()> {
     Ok(())
 }
 
-fn handle_clean(recipe: &CookRecipe, _config: &CliConfig, command: &CliCommand) -> Result<bool> {
+fn handle_clean(recipe: &CookRecipe, config: &CliConfig, command: &CliCommand) -> Result<bool> {
     let mut dir = recipe.dir.join("target");
     let mut cached = true;
     let unfetch = matches!(*command, CliCommand::Unfetch);
@@ -879,10 +879,25 @@ fn handle_clean(recipe: &CookRecipe, _config: &CliConfig, command: &CliCommand) 
         remove_all(&dir)?;
         cached = false;
     }
-    let dir = recipe.dir.join("source");
-    if dir.exists() && unfetch {
-        remove_all(&dir)?;
-        cached = false;
+    if unfetch {
+        let dir = recipe.dir.join("source");
+        if dir.exists() {
+            remove_all(&dir)?;
+            cached = false;
+        }
+        let tar = recipe.dir.join("source.tar");
+        // remove tar if there's no blake3 or `make distclean`
+        if tar.is_file() {
+            if let Some(SourceRecipe::Tar { blake3, .. }) = &recipe.recipe.source
+                && blake3.is_none()
+            {
+                remove_all(&tar)?;
+                cached = false;
+            } else if config.all {
+                remove_all(&tar)?;
+                cached = false;
+            }
+        }
     }
     Ok(cached)
 }
