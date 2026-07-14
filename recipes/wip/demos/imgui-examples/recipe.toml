@@ -1,10 +1,19 @@
-#TODO not compiled or tested
-#TODO discover minimum dependencies from cmake log
+#TODO compiled, ninja install error
 # pull request: https://github.com/ocornut/imgui/pull/3027
 [source]
 git = "https://github.com/Qix-/imgui"
 branch = "cmake"
 shallow_clone = true
 [build]
-template = "cmake"
-#dependencies = ["sdl2"]
+template = "custom"
+dependencies = ["sdl2"]
+script = """
+DYNAMIC_INIT
+export CPPFLAGS="${CPPFLAGS} -I${COOKBOOK_SYSROOT}/include/SDL2"
+COOKBOOK_CMAKE_FLAGS+=(
+    -DIMGUI_IMPL_GLFW=OFF
+    -DIMGUI_IMPL_GLUT=OFF
+    -DIMGUI_IMPL_OPENGL=OFF
+)
+cookbook_cmake
+"""

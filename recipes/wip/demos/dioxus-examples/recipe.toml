@@ -1,4 +1,4 @@
-#TODO wry crate error
+#TODO wry and tao crate error
 [source]
 git = "https://github.com/DioxusLabs/dioxus"
 shallow_clone = true
@@ -11,7 +11,11 @@ cargoexamples = [
     "file_explorer",
     "hello_world",
     "multiwindow",
-    "popup",
+    "window_popup",
     "window_event",
     "window_zoom",
 ]
+cargopackages = [
+    "file-explorer",
+]
+dependencies = ["openssl3"]

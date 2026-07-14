@@ -1,9 +1,11 @@
-#TODO discover how to build the "doomfire-minifb" example
+#TODO update doomfire-minifb package dependencies
+# to fix outdated redox_syscall, libc and minifb crates
+# or use doomfire-sdl2 package, which needs libc crate update and manual library linkage
 [source]
 git = "https://github.com/r-marques/doomfire"
 shallow_clone = true
 [build]
 template = "cargo"
-cargopackages = [
-    "doomfire-minifb",
-]
+cargopath = "examples/doomfire-minifb"
+#cargopath = "examples/doomfire-sdl2"
+#dependencies = ["sdl2"]

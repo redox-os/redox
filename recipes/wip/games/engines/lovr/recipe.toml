@@ -1,0 +1,25 @@
+#TODO compile and test
+# build instructions: https://lovr.org/docs/Compiling
+[source]
+git = "https://github.com/bjornbytes/lovr"
+rev = "v0.19.0"
+shallow_clone = true
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DLOVR_ENABLE_AUDIO=OFF",
+    "-DLOVR_ENABLE_HEADSET=OFF",
+    "-DLOVR_ENABLE_PHYSICS=OFF",
+    "-DLOVR_SYSTEM_GLFW=ON",
+    "-DLOVR_SYSTEM_LUA=ON",
+    #"-DLOVR_SYSTEM_OPENXR=ON",
+]
+dependencies = [
+    "glfw3",
+    #"openxr",
+]
+[package]
+dependencies = [
+    "luajit",
+    "lovr-demos",
+]

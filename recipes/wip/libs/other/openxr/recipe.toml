@@ -1,0 +1,8 @@
+#TODO compile and test
+[source]
+tar = "https://github.com/KhronosGroup/OpenXR-SDK-Source/releases/download/release-1.1.61/OpenXR-SDK-Source-release-1.1.61.tar.gz"
+[build]
+template = "cmake"
+dev-dependencies = [
+    "host:python312",
+]

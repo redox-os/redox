@@ -1,0 +1,28 @@
+#TODO compile and test
+[source]
+git = "https://github.com/jrouwe/JoltPhysics"
+rev = "v5.6.0"
+shallow_clone = true
+[build]
+template = "custom"
+dependencies = [
+    "libvulkan",
+]
+script = """
+DYNAMIC_INIT
+COOKBOOK_CMAKE_FLAGS+=(
+    -DJPH_BUILD_SHARED_LIBS=ON
+    -DTARGET_UNIT_TESTS=OFF
+    -DTARGET_VIEWER=OFF
+    -DGENERATE_DEBUG_SYMBOLS=OFF
+    -DOVERRIDE_CXX_FLAGS=OFF # used to force debug mode?
+    -DFLOATING_POINT_EXCEPTIONS_ENABLED=OFF
+    -DDEBUG_RENDERER_IN_DEBUG_AND_RELEASE=OFF
+    -DPROFILER_IN_DEBUG_AND_RELEASE=OFF
+    -DDISABLE_CUSTOM_ALLOCATOR=ON
+    -DJPH_USE_DX12=OFF
+    -DJPH_USE_VK=OFF
+    -DJPH_USE_MTL=OFF
+)
+cookbook_cmake "${COOKBOOK_SOURCE}"/Build
+"""

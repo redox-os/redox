@@ -3,9 +3,5 @@
 git = "https://github.com/adamsky/globe"
 shallow_clone = true
 [build]
-template = "custom"
-script = """
-DYNAMIC_INIT
-cookbook_cargo_packages globe-cli
-mv "${COOKBOOK_STAGE}/usr/bin/globe" "${COOKBOOK_STAGE}/usr/bin/globe-rs"
-"""
+template = "cargo"
+cargopackages = ["globe-cli"]

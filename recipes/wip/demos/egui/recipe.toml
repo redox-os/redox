@@ -1,9 +1,9 @@
-#TODO glutin crate error
+#TODO winit crate error
 [source]
 git = "https://github.com/emilk/egui"
 shallow_clone = true
 [build]
 template = "cargo"
-cargoexamples = [
-    "hello_world"
+cargopackages = [
+    "hello_world_simple"
 ]

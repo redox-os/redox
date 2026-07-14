@@ -1,0 +1,11 @@
+#TODO compile and test
+[source]
+git = "https://github.com/bjornbytes/lovr-docs"
+branch = "v0.19.0"
+shallow_clone = true
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/lovr"
+cp -rv "${COOKBOOK_SOURCE}"/examples/* "${COOKBOOK_STAGE}/usr/share/lovr"
+"""

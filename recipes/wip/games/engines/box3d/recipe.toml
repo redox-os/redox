@@ -1,0 +1,13 @@
+#TODO compile and test
+[source]
+git = "https://github.com/erincatto/box3d"
+rev = "v0.1.0"
+shallow_clone = true
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DBUILD_SHARED_LIBS=ON",
+    "-DBOX3D_BENCHMARKS=ON",
+    "-DBOX3D_UNIT_TESTS=OFF",
+    "-DBOX3D_VALIDATE=OFF",
+]

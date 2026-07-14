@@ -13,6 +13,7 @@ template = "custom"
 script = """
 rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 cd ports/unix
+DYNAMIC_INIT
 make -C ../../mpy-cross
 MAKEFLAGS=(
     VARIANT=minimal
