@@ -1,0 +1,18 @@
+# TODO compilation fails for setuptools
+[source]
+git = "https://github.com/di/calver"
+rev = "2025.10.20"
+shallow_clone = true
+
+[build]
+template = "python"
+dev-dependencies = [
+    "python3-setuptools",
+    "host:python312",
+    "python312",
+]
+
+[package]
+dependencies = [
+    "python312"
+]
