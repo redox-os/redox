@@ -361,7 +361,12 @@ function PYTHON_INIT {
 }
 function cookbook_python {
     PYTHON_INIT
-    "${COOKBOOK_PYTHON}" -m pip install --prefix="${COOKBOOK_STAGE}/usr" "${COOKBOOK_SOURCE}" \
+    # no way to do out-of-tree build: https://github.com/pypa/setuptools/issues/3237
+    rsync -a "${COOKBOOK_SOURCE}/" ./source
+    if [ -n "${COOKBOOK_PYTHON_LEGACY_SETUP}" ]; then
+        python3 ./source/setup.py install
+    fi
+    "${COOKBOOK_PYTHON}" -m pip install --prefix="${COOKBOOK_STAGE}/usr" "./source" \
     --ignore-installed --no-index --no-build-isolation "$@"
     rsync -av "${COOKBOOK_BUILD}/${COOKBOOK_STAGE}/usr/" "${COOKBOOK_STAGE}/usr"
 }
