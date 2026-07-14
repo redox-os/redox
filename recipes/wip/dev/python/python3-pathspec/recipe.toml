@@ -1,0 +1,18 @@
+# TODO compiles but requires testing
+[source]
+git = "https://github.com/cpburnz/python-pathspec"
+rev = "v1.1.1"
+shallow_clone = true
+
+[build]
+template = "python"
+dev-dependencies = [
+  "host:python312",
+  "python312",
+  "python3-flit_core",
+]
+
+[package]
+dependencies = [
+  "python312"
+]
