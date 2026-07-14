@@ -1,10 +1,11 @@
 [source]
 git = "https://github.com/pypa/setuptools"
-rev = "v82.0.1"
+rev = "v83.0.0"
 shallow_clone = true
 
 [build]
 template = "python"
+legacysetup = true
 dev-dependencies = [
     "host:python312",
     "python312",

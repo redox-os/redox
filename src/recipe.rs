@@ -105,7 +105,14 @@ pub enum BuildKind {
     },
     /// Will build and install using python pip
     #[serde(rename = "python")]
-    Python,
+    Python {
+        /// Some recipes need to run setup.py,
+        /// other does not allow running setup.py.
+        /// This defaults to not run setup.py, but if build result in error,
+        /// like "invalid command 'dist_info'", set this on.
+        #[serde(default)]
+        legacysetup: bool,
+    },
     /// Will build and install using custom commands
     #[serde(rename = "custom")]
     Custom { script: String },
