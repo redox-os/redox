@@ -657,7 +657,7 @@ pub(crate) fn fetch_cargo(
     cargopath: Option<&String>,
     logger: &PtyOut,
 ) -> Result<()> {
-    if !check_toolchain_available() {
+    if !check_cargo_available() {
         return Ok(());
     }
 
@@ -682,12 +682,12 @@ pub(crate) fn fetch_cargo(
     Ok(())
 }
 
-/// Check if "REDOXER_TOOLCHAIN" is available.
-fn check_toolchain_available() -> bool {
+/// Check if "$REDOXER_TOOLCHAIN/bin/cargo" is available.
+fn check_cargo_available() -> bool {
     let Ok(dir) = std::env::var("REDOXER_TOOLCHAIN") else {
         return false;
     };
-    PathBuf::from(dir).is_dir()
+    PathBuf::from(dir).join("bin/cargo").is_file()
 }
 
 pub fn fetch_remote(
