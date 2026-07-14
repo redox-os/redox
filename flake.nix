@@ -116,7 +116,7 @@
                   ];
 
                   LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath buildInputs;
-                  NIX_SHELL_BUILD = "1";
+                  SKIP_CHECK_TOOLS = "1";
                   FSTOOLS_IN_PODMAN = "1";
                   shellHook = ''
                     # Install required configuration

@@ -29,21 +29,25 @@ fetch-changed:
   image: "redoxos/redox-base-x86_64"
   stage: test
   script:
+    - echo 'progress = bar:force:noscroll' > /etc/wgetrc
+    - curl "https://sh.rustup.rs" -sSf | sh -s -- -y --default-toolchain stable --profile minimal
+    - export PATH="$HOME/.cargo/bin:$PATH" PODMAN_BUILD=0 SKIP_CHECK_TOOLS=1
+    - make prefix/x86_64-unknown-redox/gcc-install
+    - ln -s gcc-install prefix/x86_64-unknown-redox/sysroot
     - |
-      export PATH="$HOME/.cargo/bin:$PATH" &&
-      (curl "https://sh.rustup.rs" -sSf | sh -s -- -y --default-toolchain stable --profile minimal ) &&
-      cargo install cbindgen &&
-      env PODMAN_BUILD=0 SKIP_CHECK_TOOLS=1 ./scripts/fetch-changed.sh
+      (cd prefix/x86_64-unknown-redox/sysroot &&
+        sed "s|/usr/share|$(pwd)/share|g" "bin/libtoolize.orig" > "bin/libtoolize")
+    - ./scripts/fetch-changed.sh
 
 img:
   image: "redoxos/redox-base-x86_64"
   stage: test
   script:
-    - |
-      export PATH="$HOME/.cargo/bin:$PATH" &&
-      (curl "https://sh.rustup.rs" -sSf | sh -s -- -y --default-toolchain stable --profile minimal ) &&
-      cargo install cbindgen &&
-      PODMAN_BUILD=0 SKIP_CHECK_TOOLS=1 REPO_BINARY=1 FSTOOLS_NO_MOUNT=1 COOKBOOK_VERBOSE=false make ci-img IMG_TAG=$CI_COMMIT_REF_NAME
+    - echo 'progress = bar:force:noscroll' > /etc/wgetrc
+    - export PATH="$HOME/.cargo/bin:$PATH"
+    - export PODMAN_BUILD=0 SKIP_CHECK_TOOLS=1 REPO_BINARY=1 FSTOOLS_NO_MOUNT=1 COOKBOOK_VERBOSE=false
+    - ./podman/rustinstall.sh
+    - make ci-img IMG_TAG=$CI_COMMIT_REF_NAME
 
 pkg:
   image: "rust:trixie"
