@@ -1,18 +1,18 @@
 # TODO compiles but needs testing
 [source]
-git = "https://github.com/di/calver"
-rev = "2025.10.20"
+git = "https://github.com/pypa/trove-classifiers"
 shallow_clone = true
 
 [build]
 template = "python"
 dev-dependencies = [
-    "python3-setuptools",
-    "host:python312",
-    "python312",
+  "host:python312",
+  "python312",
+  "python3-setuptools",
+  "python3-calver",
 ]
 
 [package]
 dependencies = [
-    "python312"
+  "python312"
 ]
