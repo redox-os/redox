@@ -1,0 +1,21 @@
+[source]
+tar = "https://download.netsurf-browser.org/libs/releases/libnsgif-1.0.0-src.tar.gz"
+
+[build]
+template = "custom"
+dev-dependencies = [
+    "netsurf-buildsystem"
+]
+script = """
+DYNAMIC_INIT
+
+# Netsurf does not currently support out-of-tree builds :(
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+
+# netsurf mixes up CFLAGS for host and build
+export CC="${CC} ${CPPFLAGS}"
+export NSSHARED=${COOKBOOK_SYSROOT}/usr/share/netsurf-buildsystem
+export PREFIX=/usr
+"$COOKBOOK_MAKE" V=1 -j"$COOKBOOK_MAKE_JOBS"
+"$COOKBOOK_MAKE" DESTDIR="$COOKBOOK_STAGE" install -j"$COOKBOOK_MAKE_JOBS"
+"""
