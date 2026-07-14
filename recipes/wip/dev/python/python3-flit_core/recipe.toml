@@ -1,0 +1,22 @@
+# TODO successfully compiles but needs testing
+[source]
+git = "https://github.com/pypa/flit"
+rev = "3.12.0"
+shallow_clone = true
+
+[build]
+template = "custom"
+dev-dependencies = [
+  "host:python312",
+  "python312",
+]
+script = """
+DYNAMIC_INIT
+COOKBOOK_SOURCE+="/flit_core"
+cookbook_python
+"""
+
+[package]
+dependencies = [
+  "python312"
+]
