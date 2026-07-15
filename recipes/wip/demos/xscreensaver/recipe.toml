@@ -1,4 +1,4 @@
-#TODO discover minimum dependencies from configure log
+#TODO can't recognize --enable-shared and --disable-static flags
 [source]
 tar = "https://www.jwz.org/xscreensaver/xscreensaver-6.15.tar.gz"
 [build]

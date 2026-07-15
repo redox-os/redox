@@ -1,6 +1,7 @@
 [source]
 git = "https://github.com/pop-os/cosmic-player.git"
 branch = "master"
+shallow_clone = true
 
 [build]
 template = "custom"

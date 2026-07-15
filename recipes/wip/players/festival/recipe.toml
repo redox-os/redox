@@ -1,12 +1,8 @@
-#TODO not compiled or tested
+#TODO update ahash crate version
 [source]
 git = "https://github.com/hinto-janai/festival"
+shallow_clone = true
 [build]
-template = "custom"
-#dependencies = [
-#    "dbus",
-#]
-script = """
-#DYNAMIC_INIT # if dbus is needed
-cookbook_cargo_packages festival-gui
-"""
+template = "cargo"
+cargopackages = ["festival-gui"]
+#dependencies = ["dbus"]

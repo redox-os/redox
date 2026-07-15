@@ -4,4 +4,15 @@ git = "https://github.com/gold-silver-copper/soft_ratatui"
 shallow_clone = true
 [build]
 template = "cargo"
-cargopackages = ["egui_colors_example"]
+cargoexamples = [
+    "cosmic",
+    "embedded",
+    "ttf",
+]
+cargopackages = [
+    "soft-ratatui-egui-colors",
+    "soft-ratatui-bevy-cube",
+    "soft-ratatui-bevy-cube-colors",
+    "soft-ratatui-bevy-sprite",
+    "soft-ratatui-bevy-demo",
+]

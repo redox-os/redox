@@ -1,13 +1,10 @@
-#TODO can't detect the configure script
+#TODO try to open a configure script in a sub-directory but can't find
 [source]
 git = "https://github.com/cmus/cmus"
-rev = "ade6e2a7253d7a256e87fdac3da17c9158e6700e"
+rev = "v2.12.0"
+shallow_clone = true
 [build]
-template = "custom"
+template = "configure"
 dependencies = [
     "ncursesw",
 ]
-script = """
-export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include/ncurses"
-cookbook_configure
-"""

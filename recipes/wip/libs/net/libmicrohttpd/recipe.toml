@@ -1,4 +1,4 @@
-#TODO compile and test
+#TODO probably can't find timerfd header
 [source]
 tar = "https://ftp.gnu.org/gnu/libmicrohttpd/libmicrohttpd-1.0.5.tar.gz"
 [build]

@@ -6,4 +6,5 @@ tar = "https://lib.openmpt.org/files/libopenmpt/src/libopenmpt-0.8.7+release.aut
 template = "configure"
 dependencies = [
     "sdl2",
+    "mpg123",
 ]

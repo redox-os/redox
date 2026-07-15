@@ -4,6 +4,7 @@ git = "https://github.com/slint-ui/slint"
 shallow_clone = true
 [build]
 template = "cargo"
+cargopath = "examples"
 cargopackages = [
     "gallery",
     "energy-monitor",
@@ -17,3 +18,4 @@ cargopackages = [
     "virtual_keyboard",
     "7guis",
 ]
+dependencies = ["libwayland"]

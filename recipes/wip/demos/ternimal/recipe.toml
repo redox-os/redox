@@ -1,5 +1,4 @@
-#TODO not compiled or tested
-#TODO add condition script for multiarch compilation
+#TODO linking error
 # build instructions: https://github.com/p-e-w/ternimal#building
 [source]
 git = "https://github.com/p-e-w/ternimal"
@@ -9,7 +8,7 @@ template = "custom"
 script = """
 DYNAMIC_INIT
 cp -v "${COOKBOOK_SOURCE}"/ternimal.rs "${COOKBOOK_BUILD}"
-rustc -O "${COOKBOOK_BUILD}"/ternimal.rs --target x86_64-unknown-redox
+rustc -O "${COOKBOOK_BUILD}"/ternimal.rs --target ${TARGET}
 mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
 cp -v "${COOKBOOK_BUILD}"/ternimal "${COOKBOOK_STAGE}/usr/bin"
 """
