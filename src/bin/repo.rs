@@ -475,7 +475,9 @@ fn parse_args(args: Vec<String>) -> Result<(CliConfig, CliCommand, Vec<CookRecip
                 }
             } else if arg.starts_with("--category-") {
                 // to workaround make command limit we provide this option
-                config.category = Some(PathBuf::from(arg[("--category-").len()..].to_owned()));
+                config.category = Some(PathBuf::from(
+                    arg[("--category-").len()..].replace('.', "/").to_owned(),
+                ));
             } else {
                 match arg.as_str() {
                     "--repo-binary" => override_filesystem_repo_binary = true,
