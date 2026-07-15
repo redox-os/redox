@@ -11,4 +11,5 @@ then
     exit 1
 fi
 
-make "${1#-}"."--category-$2"
+# Cookbook accept "." as replacement to "/"
+make "${1#-}"."--category-${2//\//.}"
