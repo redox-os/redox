@@ -354,9 +354,9 @@ function PYTHON_INIT {
     ARCH="${TARGET%%-*}"
     OS=$(echo "${TARGET}" | cut -d - -f3-4)
     SYSTEM=$(echo "${TARGET}" | cut -d - -f3)
+    PYTHONLIB="${COOKBOOK_SYSROOT}/usr/lib/${COOKBOOK_PYTHON_V}"
     export PYTHONPYCACHEPREFIX="${COOKBOOK_BUILD}" _PYTHON_HOST_PLATFORM="$OS-$ARCH"
-    export PYTHONPATH="${PYTHONPATH:+$PYTHONPATH:}${COOKBOOK_SYSROOT}/usr/lib/${COOKBOOK_PYTHON_V}"
-    export PYTHONPATH="${PYTHONPATH:+$PYTHONPATH:}${COOKBOOK_SYSROOT}/usr/lib/${COOKBOOK_PYTHON_V}/site-packages"
+    export PYTHONPATH="${PYTHONPATH:+$PYTHONPATH:}${PYTHONLIB}:${PYTHONLIB}/site-packages"
     export _PYTHON_SYSCONFIGDATA_NAME="_sysconfigdata__${SYSTEM}_${ARCH}-${OS}"
 }
 function cookbook_python {
@@ -366,9 +366,9 @@ function cookbook_python {
     if [ -n "${COOKBOOK_PYTHON_LEGACY_SETUP}" ]; then
         python3 ./source/setup.py install
     fi
-    "${COOKBOOK_PYTHON}" -m pip install --prefix="${COOKBOOK_STAGE}/usr" "./source" \
-    --ignore-installed --no-index --no-build-isolation "$@"
-    rsync -av "${COOKBOOK_BUILD}/${COOKBOOK_STAGE}/usr/" "${COOKBOOK_STAGE}/usr"
+    "${COOKBOOK_PYTHON}" -m pip install --prefix="${COOKBOOK_SYSROOT}/usr" "./source" \
+     --root="${COOKBOOK_BUILD}" --ignore-installed --no-index --no-build-isolation "$@"
+    rsync -av "${COOKBOOK_BUILD}/${COOKBOOK_SYSROOT}/usr/" "${COOKBOOK_STAGE}/usr"
 }
 "#;
 
