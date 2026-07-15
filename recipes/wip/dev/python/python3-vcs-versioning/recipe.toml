@@ -1,0 +1,27 @@
+# TODO compiles but needs testing
+# TODO remove --no-deps hack when possible (PYTHONPATH is not read by pip; pip --find-links only works with wheel archives)
+[source]
+git = "https://github.com/pypa/setuptools-scm"
+rev = "vcs-versioning-v2.2.2"
+shallow_clone = true
+
+[build]
+template = "custom"
+dev-dependencies = [
+  "host:python312",
+  "python312",
+  "python3-setuptools",
+  "host:python3-setuptools",
+  "host:python3-packaging",
+]
+script = """
+DYNAMIC_INIT
+COOKBOOK_SOURCE+="/vcs-versioning"
+cookbook_python --no-deps
+"""
+
+[package]
+dependencies = [
+  "python312",
+  "python3-packaging",
+]
