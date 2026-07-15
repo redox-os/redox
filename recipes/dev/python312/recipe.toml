@@ -60,7 +60,7 @@ if [ "$TARGET" != "$COOKBOOK_HOST_TARGET" ]; then
     PYTHON_INIT
     CONF="$COOKBOOK_STAGE/usr/lib/$COOKBOOK_PYTHON_V/$_PYTHON_SYSCONFIGDATA_NAME.py"
     sed -i "s/sccache //g" "$CONF"
-    sed -i "s|${COOKBOOK_SYSROOT}|/usr|g" $CONF"
+    sed -i "s|${COOKBOOK_SYSROOT}|/usr|g" "$CONF"
 fi
 """
 
