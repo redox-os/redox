@@ -72,7 +72,7 @@ else
 endif
 	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
 	export CARGO="env -u CARGO cargo" $(PREFIX_CONFIG) && \
-	$(REPO_BIN) cook relibc
+	$(REPO_BIN) cook relibc $(COOKBOOK_OPTS)
 ifneq ($(HOSTED_REDOX),1)
 	cp -r "$(RELIBC_TARGET)/stage/usr/". "$@.partial/$(GNU_TARGET)"
 	mkdir -p "$@.partial/$(GNU_TARGET)/usr"
