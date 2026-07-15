@@ -1,0 +1,10 @@
+#TODO add script for gnu make: https://github.com/cli/cli/blob/trunk/docs/install_source.md
+[source]
+git = "https://github.com/cli/cli"
+rev = "v2.96.0"
+shallow_clone = true
+[build]
+template = "custom"
+dependencies = [
+    "host:go",
+]

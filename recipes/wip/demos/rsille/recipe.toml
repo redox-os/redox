@@ -4,10 +4,4 @@ git = "https://github.com/nidhoggfgg/rsille"
 shallow_clone = true
 [build]
 template = "cargo"
-cargoflags = ["--features=img"]
-cargoexamples = [
-    "anime-mix",
-    "obj-mix",
-    "cube",
-    "cube-colorful",
-]
+cargopath = "examples/rsille-showcase"
