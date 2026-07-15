@@ -1,0 +1,25 @@
+#TODO compile and test
+[source]
+tar = "https://sourceforge.net/projects/vice-emu/files/releases/vice-3.3.tar.gz/download"
+patches = ["01_redox.patch"]
+[build]
+template = "custom"
+dependencies = [
+    "sdl1",
+    "liborbital",
+]
+script = """
+DYNAMIC_INIT
+wget -O config.sub "https://gitlab.redox-os.org/redox-os/gnu-config/-/raw/master/config.sub?inline=false"
+#export sdl_config="{COOKBOOK_SYSROOT}/bin/sdl-config"
+export CFLAGS="-I{COOKBOOK_SYSROOT}/include -I{COOKBOOK_SYSROOT}/include/SDL"
+export CXXFLAGS="$CFLAGS"
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --enable-sdlui
+    --disable-sdlui2
+    --disable-rs232
+    --disable-realdevice
+    --disable-midi
+)
+cookbook_configure
+"""
