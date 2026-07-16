@@ -48,7 +48,7 @@ do
         recipe_path="recipes/$recipe"
     else
         recipe_name="$recipe"
-        recipe_path="$(target/release/find_recipe $recipe_name)"
+        recipe_path="$(target/release/repo find $recipe_name)"
     fi
     
     for command in $(find "$recipe_path/target/$target/stage/usr/bin" -type f 2> /dev/null) \

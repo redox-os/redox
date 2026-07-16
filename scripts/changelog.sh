@@ -24,14 +24,14 @@ fi
 
 for package in $(installer/target/release/redox_installer --list-packages -c config/$(uname -m)/desktop.toml)
 do
-    package_source="$(target/release/find_recipe ${package})"
+    package_source="$(target/release/repo find ${package})"
     REPOS+=("${package}=${package_source}/source")
 done
 
 # TODO: resolve dependencies instead of manually adding these initfs packages
 for package in init logd ramfs randd zerod
 do
-    package_source="$(target/release/find_recipe ${package})"
+    package_source="$(target/release/repo find ${package})"
     REPOS+=("${package}=${package_source}/source")
 done
 
