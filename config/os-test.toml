@@ -11,7 +11,7 @@ prompt = false
 
 # Package settings
 [packages]
-os-test-bins = {} # Provides source and cross-compiled binaries
+"os-test-bins.outputs" = {} # Provides source and cross-compiled binaries
 
 [[files]]
 path = "/usr/lib/init.d/30_console"
