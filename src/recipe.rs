@@ -106,6 +106,10 @@ pub enum BuildKind {
     /// Will build and install using python pip
     #[serde(rename = "python")]
     Python {
+        #[serde(default)]
+        pyprojectpath: Option<String>,
+        #[serde(default)]
+        pipflags: Vec<String>,
         /// Some recipes need to run setup.py,
         /// other does not allow running setup.py.
         /// This defaults to not run setup.py, but if build result in error,
