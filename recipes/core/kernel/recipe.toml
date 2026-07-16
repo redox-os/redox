@@ -4,7 +4,6 @@ git = "https://gitlab.redox-os.org/redox-os/kernel.git"
 [build]
 template = "custom"
 script = """
-make -f ${COOKBOOK_SOURCE}/Makefile
-mkdir -pv "${COOKBOOK_STAGE}/usr/lib/boot"
-cp -v kernel "${COOKBOOK_STAGE}/usr/lib/boot"
+cd "${COOKBOOK_SOURCE}"
+make install BUILD="${COOKBOOK_BUILD}" DESTDIR="${COOKBOOK_STAGE}"
 """
