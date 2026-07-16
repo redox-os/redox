@@ -2,4 +2,4 @@
 
 # This script print the recipe configuration
 
-cat $(target/release/find_recipe "$1")/recipe.*
+cat $(target/release/repo find "$1")/recipe.*

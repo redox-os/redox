@@ -54,7 +54,7 @@ then
 fi
 
 # if no command name is given, assume it's the same as the recipe name
-RECIPE_DIR="$(target/release/find_recipe $RECIPE_NAME)"
+RECIPE_DIR="$(target/release/repo find $RECIPE_NAME)"
 if [ -z "$COMMAND" ]
 then
     COMMAND="$RECIPE_NAME"
