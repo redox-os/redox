@@ -36,6 +36,7 @@ base = {}
 bash = {}
 bash-completion = {}
 binutils = {}
+boost = {}
 bootloader = {}
 boxedwine = {}
 bottom = {}
