@@ -359,6 +359,9 @@ function PYTHON_INIT {
     export PYTHONPATH="${PYTHONPATH:+$PYTHONPATH:}${COOKBOOK_SYSROOT}/usr/lib/${COOKBOOK_PYTHON_V}/site-packages"
     export _PYTHON_SYSCONFIGDATA_NAME="_sysconfigdata__${SYSTEM}_${ARCH}-${OS}"
 }
+COOKBOOK_PYTHON_PIP_FLAGS=(
+    --ignore-installed --no-index --no-build-isolation
+)
 function cookbook_python {
     PYTHON_INIT
     # no way to do out-of-tree build: https://github.com/pypa/setuptools/issues/3237
@@ -366,8 +369,9 @@ function cookbook_python {
     if [ -n "${COOKBOOK_PYTHON_LEGACY_SETUP}" ]; then
         python3 ./source/setup.py install
     fi
-    "${COOKBOOK_PYTHON}" -m pip install --prefix="${COOKBOOK_STAGE}/usr" "./source" \
-    --ignore-installed --no-index --no-build-isolation "$@"
+    "${COOKBOOK_PYTHON}" -m pip install --prefix="${COOKBOOK_STAGE}/usr" \
+    "./source${COOKBOOK_PYTHON_PYPROJECT_PATH:+/$COOKBOOK_PYTHON_PYPROJECT_PATH}" \
+    "${COOKBOOK_PYTHON_PIP_FLAGS[@]}" "$@"
     rsync -av "${COOKBOOK_BUILD}/${COOKBOOK_STAGE}/usr/" "${COOKBOOK_STAGE}/usr"
 }
 "#;
