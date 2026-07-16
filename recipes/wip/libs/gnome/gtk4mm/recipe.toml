@@ -9,6 +9,6 @@ dependencies = [
     "libsigcpp",
     "gtk4",
     "glibmm",
-    "cairomm116+",
+    "cairomm116",
     "pangomm",
 ]

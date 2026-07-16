@@ -1,8 +1,10 @@
-#TODO probably wrong template, see https://gitlab.gnome.org/GNOME/glibmm#building
+#TODO compiled but not tested
 [source]
 tar = "https://download.gnome.org/sources/glibmm/2.78/glibmm-2.78.0.tar.xz"
 [build]
-template = "configure"
+template = "meson"
+mesonflags = ["-Dbuild-examples=false"]
 dependencies = [
     "glib",
+    "libsigcpp",
 ]

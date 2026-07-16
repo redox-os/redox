@@ -2,7 +2,8 @@
 [source]
 tar = "https://download.gnome.org/sources/pangomm/2.50/pangomm-2.50.1.tar.xz"
 [build]
-template = "configure"
+template = "meson"
 dependencies = [
     "pango",
+    "cairomm116",
 ]

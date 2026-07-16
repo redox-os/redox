@@ -1,11 +1,12 @@
-#TODO not compiled or tested
+#TODO "Unknown arguments specified" error
 # build instructions: https://github.com/KhronosGroup/Vulkan-Loader/blob/main/BUILD.md
 [source]
 git = "https://github.com/KhronosGroup/Vulkan-Loader"
-rev = "v1.4.346"
+rev = "vulkan-sdk-1.4.350.1"
 shallow_clone = true
 [build]
 template = "cmake"
 dependencies = [
+    "vulkan-headers",
     "libxkbcommon",
 ]

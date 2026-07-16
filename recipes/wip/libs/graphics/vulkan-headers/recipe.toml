@@ -1,7 +1,7 @@
-#TODO not compiled or tested
+#TODO compiled but not tested
 [source]
 git = "https://github.com/KhronosGroup/Vulkan-Headers"
-rev = "v1.4.346"
+rev = "vulkan-sdk-1.4.350.1"
 shallow_clone = true
 [build]
 template = "cmake"

@@ -1,21 +1,24 @@
-#TODO not compiled or tested
-#TODO missing dependencies
+#TODO port sdl3 video
+#TODO disable bundlded dependency fetch
 #TODO verify if udev is optional
+# the qt frontend is standalone
 # build instructions - https://github.com/shadps4-emu/shadPS4/blob/main/documents/building-linux.md
 [source]
 git = "https://github.com/shadps4-emu/shadPS4"
 [build]
 template = "cmake"
-#cmakeflags = [
-    #"-DENABLE_QT_GUI=ON"
-#]
+cmakeflags = [
+    "-DENABLE_SYSTEM_LIBRARIES=ON",
+    "-DENABLE_DISCORD_RPC=OFF",
+    "-DENABLE_UPDATER=OFF",
+]
 dependencies = [
     #"libpulse",
     #"openal",
     "openssl3",
     "libedit",
     #"libevdev",
-    "sdl2",
+    "sdl3",
     "sndio",
     #"qt6-base",
     #"qt6-multimedia",

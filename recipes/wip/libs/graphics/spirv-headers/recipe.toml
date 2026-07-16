@@ -1,7 +1,7 @@
 #TODO compiled but not tested
 [source]
 git = "https://github.com/KhronosGroup/SPIRV-Headers"
-rev = "vulkan-sdk-1.4.350.0"
+rev = "vulkan-sdk-1.4.350.1"
 shallow_clone = true
 [build]
 template = "cmake"
