@@ -10,11 +10,6 @@ dependencies = [
 script = """
 DYNAMIC_INIT
 export GETTEXT_DIR="${COOKBOOK_SYSROOT}/usr"
-if [ "${COOKBOOK_DYNAMIC}" != "1" ]
-then
-    # Statically linked i586 and riscv64gc need libiconv manually linked
-    export RUSTFLAGS="${RUSTFLAGS} -liconv"
-fi
 cookbook_cargo --no-default-features
 
 mkdir -pv "${COOKBOOK_STAGE}/usr/share/ui/apps/"
