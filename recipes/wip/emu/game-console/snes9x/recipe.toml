@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO fix cairomm10 recipe
 # build instructions: https://github.com/snes9xgit/snes9x/wiki/Compiling
 [source]
 git = "https://github.com/snes9xgit/snes9x"

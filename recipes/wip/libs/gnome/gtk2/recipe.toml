@@ -10,5 +10,5 @@ dependencies = [
     "pango",
     "gdk-pixbuf",
     "cairo",
-    "gobject-introspection",
+    #"gobject-introspection", # optional?
 ]

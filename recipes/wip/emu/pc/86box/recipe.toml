@@ -13,6 +13,9 @@ cmakeflags = [
     "-DOPENAL=OFF",
     "-DRTMIDI=OFF",
     "-DFLUIDSYNTH=OFF",
+    "-DVNC=OFF",
+    "-DSOUNDCANVAS=OFF",
+    "-DMUNT=OFF",
 ]
 dependencies = [
     "freetype2",
@@ -23,4 +26,5 @@ dependencies = [
     #"rtmidi",
     #"openal",
     "sdl2",
+    "faudio",
 ]

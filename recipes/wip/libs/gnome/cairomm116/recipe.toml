@@ -1,14 +1,13 @@
-#TODO mm-common-prepare: not found
+#TODO compiled but not tested
 [source]
 tar = "https://www.cairographics.org/releases/cairomm-1.18.0.tar.xz"
-script = "./autogen.sh"
 [build]
-template = "custom"
+template = "meson"
+mesonflags = [
+    "-Dbuild-examples=false",
+    "-Dbuild-tests=false",
+]
 dependencies = [
     "cairo",
+    "libsigcpp",
 ]
-script = """
-rsync -av --delete "${COOKBOOK_SOURCE}/" ./
-COOKBOOK_CONFIGURE="./configure"
-cookbook_configure
-"""

@@ -1,4 +1,4 @@
-#TODO nix crate error
+#TODO serialport-rs crate error
 # build instructions: https://github.com/dbalsom/martypc/wiki/Building-MartyPC#building-for-linux
 [source]
 git = "https://github.com/dbalsom/martypc"
@@ -18,4 +18,3 @@ export CLANGFLAGS="-I $PREFIX_INCLUDE/c++/13.2.0 -I $PREFIX_INCLUDE/c++/13.2.0/$
 
 cookbook_cargo_packages martypc_eframe 
 """
-cargopackages = ["martypc_eframe"]

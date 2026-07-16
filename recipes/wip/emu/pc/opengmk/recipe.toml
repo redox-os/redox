@@ -1,10 +1,8 @@
-#TODO not compiled or tested
+#TODO ramen crate error
 [source]
 git = "https://github.com/OpenGMK/OpenGMK"
 shallow_clone = true
 [build]
 template = "cargo"
 cargopackages = ["gm8emulator"]
-dependencies = [
-    "libalsa",
-]
+#dependencies = ["libalsa"]

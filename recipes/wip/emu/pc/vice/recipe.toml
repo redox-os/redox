@@ -1,4 +1,4 @@
-#TODO compile and test
+#TODO invalid option: --enable-shared
 [source]
 tar = "https://sourceforge.net/projects/vice-emu/files/releases/vice-3.3.tar.gz/download"
 patches = ["01_redox.patch"]

@@ -1,4 +1,4 @@
-#TODO need wayland support, then patch rfd crate
+#TODO ruffle_core error due to missing java
 #TODO port host:jre (try not to use jdk recipe)
 # build instructions: https://github.com/ruffle-rs/ruffle#building-from-source
 [source]
@@ -9,4 +9,5 @@ template = "cargo"
 cargopackages = ["ruffle_desktop"]
 dependencies = [
 	"openssl3",
+	"fontconfig",
 ]

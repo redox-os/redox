@@ -1,4 +1,5 @@
-#TODO make boost work
+#TODO can't find boost
+#TODO make sdl2-sys crate use sdl2 recipe?
 [source]
 git = "https://github.com/hikari-no-yume/touchHLE"
 shallow_clone = true
@@ -6,4 +7,5 @@ shallow_clone = true
 template = "cargo"
 dependencies = [
     "boost"
+    "sdl2",
 ]

@@ -1,4 +1,5 @@
-#TODO not compiled or tested yet
+#TODO insufficient boost library config or can't find library
+# dependencies are compiled if not found, use recipes to save time and space
 # build instructions: https://github.com/Vita3K/Vita3K/blob/master/building.md#linux
 [source]
 git = "https://github.com/Vita3K/Vita3K"
@@ -12,4 +13,5 @@ dependencies = [
     "sdl2",
     "gtk3",
     "openssl3",
+    "boost",
 ]
