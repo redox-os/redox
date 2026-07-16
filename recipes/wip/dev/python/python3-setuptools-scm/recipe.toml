@@ -1,0 +1,25 @@
+# TODO needs testing
+# TODO figure out pip runtime deps to remove `--no-deps`
+[source]
+git = "https://github.com/pypa/setuptools-scm"
+rev = "setuptools-scm-v10.2.0"
+shallow_clone = true
+
+[build]
+template = "python"
+pyprojectpath = "setuptools-scm"
+pipflags = ["--no-deps"]
+dev-dependencies = [
+    "host:python312",
+    "python3-setuptools",
+    "python3-vcs-versioning",
+    "python312",
+]
+
+[package]
+dependencies = [
+    "python3-setuptools",
+    "python3-packaging",
+    "python3-vcs-versioning",
+    "python312",
+]
