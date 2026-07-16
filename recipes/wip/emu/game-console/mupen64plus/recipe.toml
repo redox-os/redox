@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO can't find projects/unix directory
 [source]
 tar = "https://github.com/mupen64plus/mupen64plus-core/releases/download/2.6.0/mupen64plus-bundle-src-2.6.0.tar.gz"
 [build]
@@ -15,6 +15,7 @@ dependencies = [
 script = """
 rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 #TODO: support Redox in UNAME
+DYNAMIC_INIT
 "${COOKBOOK_MAKE}" \
     CROSS_COMPILE="${TARGET}-" \
     GLES_LIB="" \

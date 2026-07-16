@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO "unsupported platform" error
 #TODO need to be built with clang for best performance
 # build instructions: https://pcsx2.net/docs/advanced/building#building-on-linux
 [source]
@@ -11,7 +11,7 @@ cmakeflags = [
     "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
     "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON",
     "-DENABLE_TESTS=OFF",
-    "-DLTO_PCSX2_CORE=ON",
+    #"-DLTO_PCSX2_CORE=ON", # disabled to speedup testing
     "-DPACKAGE_MODE=ON",
     "-DUSE_OPENGL=OFF",
     "-DUSE_VULKAN=OFF",

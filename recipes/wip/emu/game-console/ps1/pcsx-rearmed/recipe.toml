@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO "unknown option" errors
 #TODO discover the minimum dependencies from autotools log
 # build instructions: https://github.com/notaz/pcsx_rearmed/blob/master/readme.txt#L22
 [source]
@@ -7,3 +7,7 @@ rev = "r25"
 shallow_clone = true
 [build]
 template = "configure"
+configureflags = [
+    "--sound-drivers=sdl",
+    "--dynarec=lightrec",
+]

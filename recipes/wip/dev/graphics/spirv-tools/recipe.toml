@@ -1,4 +1,4 @@
-#TODO compile and test
+#TODO can't find spirv-headers
 # build instructions: https://github.com/KhronosGroup/SPIRV-Tools#build
 [source]
 git = "https://github.com/KhronosGroup/SPIRV-Tools"
@@ -8,4 +8,7 @@ shallow_clone = true
 template = "cmake"
 cmakeflags = [
     "-DSPIRV_SKIP_TESTS=ON"
+]
+dependencies = [
+    "spirv-headers",
 ]

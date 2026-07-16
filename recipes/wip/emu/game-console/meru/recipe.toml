@@ -1,4 +1,4 @@
-#TODO ahash crate error
+#TODO update winit crate after cargo update
 [source]
 git = "https://github.com/tanakh/meru"
 shallow_clone = true

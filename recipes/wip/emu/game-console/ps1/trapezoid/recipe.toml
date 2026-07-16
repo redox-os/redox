@@ -1,9 +1,9 @@
-#TODO not compiled or tested
+#TODO sccache error
 [source]
 git = "https://github.com/Amjad50/Trapezoid"
 shallow_clone = true
 [build]
 template = "cargo"
-dependencies = [
-    "shaderc",
-]
+#dependencies = [
+ #   "shaderc",
+#]

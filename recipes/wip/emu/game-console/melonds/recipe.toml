@@ -1,4 +1,4 @@
-#TODO not compiled or tested yet
+#TODO endianness error in compilation
 # build instructions: https://github.com/melonDS-emu/melonDS/blob/master/BUILD.md#linux
 [source]
 git = "https://github.com/melonDS-emu/melonDS"
@@ -11,7 +11,7 @@ cmakeflags = [
 ]
 dependencies = [
     "curl",
-    "libpcap",
+    #"libpcap", # optional?
     "libenet",
     "sdl2",
     #"qt6-base",

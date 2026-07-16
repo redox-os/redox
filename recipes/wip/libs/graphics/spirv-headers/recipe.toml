@@ -1,4 +1,4 @@
-#TODO compile and test
+#TODO compiled but not tested
 [source]
 git = "https://github.com/KhronosGroup/SPIRV-Headers"
 rev = "vulkan-sdk-1.4.350.0"

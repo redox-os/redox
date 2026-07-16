@@ -1,9 +1,8 @@
-#TODO Not compiled or tested
+#TODO make sdl2-sys crate use sdl2 recipe
+#TODO fix imgui-sys crate
 [source]
 git = "https://github.com/KieronJ/rpsx"
 shallow_clone = true
 [build]
 template = "cargo"
-dependencies = [
-    "sdl2",
-]
+dependencies = ["sdl2"]

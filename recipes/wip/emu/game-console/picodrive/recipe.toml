@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO "unknown option" errors
 #TODO discover the minimum dependencies from autotools log
 [source]
 git = "https://github.com/notaz/picodrive"
@@ -9,4 +9,7 @@ template = "configure"
 configureflags = [
     "--platform=generic",
     "--sound-drivers=sdl",
+    "--with-libavcodec=no",
+    "--with-sdl-gles=no",
+    "--with-zlib=no",
 ]
