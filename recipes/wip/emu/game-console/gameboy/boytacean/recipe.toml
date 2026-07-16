@@ -1,9 +1,7 @@
-#TODO Not compiled or tested
+#TODO compiled but not tested
 [source]
 git = "https://github.com/joamag/boytacean"
 shallow_clone = true
 [build]
 template = "cargo"
-dependencies = [
-    "sdl2",
-]
+dependencies = ["sdl2"]

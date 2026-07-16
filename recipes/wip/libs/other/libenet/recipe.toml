@@ -1,4 +1,4 @@
-#TODO compilation error
+#TODO compiled but not tested
 [source]
 tar = "http://enet.bespin.org/download/enet-1.3.17.tar.gz"
 [build]

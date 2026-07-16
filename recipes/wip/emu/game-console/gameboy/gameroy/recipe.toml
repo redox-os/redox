@@ -1,7 +1,0 @@
-#TODO not compiled or tested
-[source]
-git = "https://github.com/Rodrigodd/gameroy"
-shallow_clone = true
-[build]
-template = "cargo"
-cargopackages = ["gameroy-native"]

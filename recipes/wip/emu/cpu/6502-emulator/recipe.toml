@@ -1,4 +1,4 @@
-#TODO ahash crate error (probably outdated)
+#TODO quad-snd crate error after cargo update
 [source]
 git = "https://github.com/ArchUsr64/6502_emulator"
 shallow_clone = true

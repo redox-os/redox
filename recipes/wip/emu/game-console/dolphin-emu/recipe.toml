@@ -1,9 +1,9 @@
-#TODO not compiled or tested yet
-#TODO discover minimum dependencies from cmake log
+#TODO build configuration error
+#TODO some failling tests
 # build instructions: https://github.com/dolphin-emu/dolphin/wiki/Building-for-Linux
 [source]
 git = "https://github.com/dolphin-emu/dolphin"
-rev = "71e15c2875f36458c8f29ee160f01606967bcd13"
+rev = "2606"
 shallow_clone = true
 [build]
 template = "cmake"
@@ -24,16 +24,19 @@ cmakeflags = [
     "-DENABLE_LLVM=OFF",
     "-DENABLE_QT=OFF",
 ]
-#dependencies = [
-    #"ffmpeg6",
-    #"libevdev",
-    #"libusb",
-    #"pango",
-    #"cairo",
-    #"qt6-base",
-    #"qt6-svg",
-    #"mesa-x11",
-    #"curl",
-    #"libvulkan",
-    #"openal",
-#]
+dependencies = [
+    "libhidapi",
+    "mbedtls",
+    "sdl3",
+    "libusb",
+    "lz4",
+    "minizip-ng",
+    "zlib",
+    "zstd",
+    "xxhash",
+    "bzip2",
+    "libenet",
+    "pugixml",
+    "glslang",
+    "libfmt",
+]

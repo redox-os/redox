@@ -1,0 +1,17 @@
+#TODO compile and test
+# probably wrong gnu make command
+[source]
+git = "https://git.sr.ht/~sircmpwn/wev"
+rev = "1.1.0"
+shallow_clone = true
+[build]
+template = "custom"
+dependencies = [
+    "libwayland",
+    "libxkbcommon",
+]
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+DYNAMIC_INIT
+"${COOKBOOK_MAKE}" install -j"$COOKBOOK_MAKE_JOBS" "${MAKEFLAGS[@]}" DESTDIR="$COOKBOOK_STAGE/usr"
+"""

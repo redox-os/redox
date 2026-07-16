@@ -1,4 +1,4 @@
-#TODO compilation error
+#TODO undeclared SIOCGIFADDR and SIOCGIFNETMASK
 [source]
 tar = "https://www.tcpdump.org/release/libpcap-1.10.4.tar.gz"
 [build]

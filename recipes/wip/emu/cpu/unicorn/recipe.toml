@@ -1,4 +1,4 @@
-#TODO not compiled or tested 
+#TODO undeclared MAP_* and PROT_*
 # build instructions: https://github.com/unicorn-engine/unicorn/blob/master/docs/COMPILE.md
 [source]
 git = "https://github.com/unicorn-engine/unicorn"

@@ -14,7 +14,7 @@ script = """
 rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 cd ports/unix
 DYNAMIC_INIT
-make -C ../../mpy-cross
+make -C ../../mpy-cross # build cross-compiler
 MAKEFLAGS=(
     VARIANT=minimal
 )

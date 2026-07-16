@@ -1,5 +1,4 @@
-#TODO not compiled or tested
-#TODO determine minimum dependencies from cmake log
+#TODO assembly errors in bundled cryptopp-modern library
 # build instructions - https://github.com/azahar-emu/azahar/wiki/Building-From-Source#linux
 [source]
 git = "https://github.com/azahar-emu/azahar"
