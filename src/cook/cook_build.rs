@@ -390,13 +390,22 @@ pub fn build(
                 "DYNAMIC_INIT\n{}cookbook_meson",
                 flags_fn("COOKBOOK_MESON_FLAGS", mesonflags),
             ),
-            BuildKind::Python { legacysetup } => format!(
-                "DYNAMIC_INIT\n{}cookbook_python",
+            BuildKind::Python {
+                pyprojectpath,
+                legacysetup,
+                pipflags,
+            } => format!(
+                "DYNAMIC_INIT\n{}{}{}cookbook_python",
                 if *legacysetup {
                     "COOKBOOK_PYTHON_LEGACY_SETUP=1\n"
                 } else {
                     ""
-                }
+                },
+                pyprojectpath
+                    .as_ref()
+                    .map(|s| format!("COOKBOOK_PYTHON_PYPROJECT_PATH={s}\n"))
+                    .unwrap_or("".into()),
+                flags_fn("COOKBOOK_PYTHON_PIP_FLAGS", pipflags),
             ),
             BuildKind::Custom { script } => script.clone(),
             BuildKind::Remote => unreachable!(),
