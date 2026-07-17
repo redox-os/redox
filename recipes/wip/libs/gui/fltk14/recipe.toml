@@ -1,4 +1,5 @@
-#TODO probably wrong template, see https://github.com/fltk/fltk/blob/master/README.Unix.txt
+#TODO can't recognize redox target
+# build instructions: https://github.com/fltk/fltk/blob/master/README.Unix.txt
 # commented out dependencies are optional but recommended, needs to be determined
 [source]
 tar = "https://github.com/fltk/fltk/releases/download/release-1.4.4/fltk-1.4.4-source.tar.bz2"

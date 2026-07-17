@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO can't find boost
 # build instructions: https://github.com/bitcoin/bitcoin/blob/master/doc/build-unix.md
 [source]
 tar = "https://bitcoincore.org/bin/bitcoin-core-30.2/bitcoin-30.2.tar.gz"

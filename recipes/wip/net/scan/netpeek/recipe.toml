@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO missing update-desktop-database program
 #TODO determine minimum dependencies from meson log
 [source]
 git = "https://github.com/ZingyTomato/NetPeek"

@@ -1,4 +1,4 @@
-#TODO compile and test
+#TODO fix libpcap
 # build instructions: https://docs.zeek.org/en/v8.0.8/building-from-source.html
 [source]
 tar = "https://download.zeek.org/zeek-8.0.8.tar.gz"

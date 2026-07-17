@@ -1,11 +1,7 @@
-#TODO not compiled or tested
+#TODO update and fix iroh-quinn-udp crate
 [source]
-git = "https://github.com/ethersync/ethersync"
+git = "https://github.com/teamtype/teamtype"
 shallow_clone = true
 [build]
-template = "custom"
-script = """
-COOKBOOK_SOURCE="${COOKBOOK_SOURCE}/daemon"
-DYNAMIC_INIT
-cookbook_cargo
-"""
+template = "cargo"
+cargopackages = ["teamtype"]

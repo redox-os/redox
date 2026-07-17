@@ -1,10 +1,7 @@
-#TODO discover current status
+#TODO fix region crate
 [source]
 git = "https://github.com/theseus-rs/ristretto"
 shallow_clone = true
 [build]
-template = "custom"
-script = """
-DYNAMIC_INIT
-cookbook_cargo_packages ristretto_cli
-"""
+template = "cargo"
+cargopackages = ["ristretto_java"]

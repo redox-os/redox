@@ -1,7 +1,8 @@
-#TODO not compiled or tested
+#TODO compiled but not tested
 # build instructions: https://github.com/SpadesX/SpadesX#installation
 [source]
 git = "https://github.com/SpadesX/SpadesX"
+rev = "58d04ac585d76f5acc61fb5ac7d15097b1485d1e"
 shallow_clone = true
 [build]
 template = "cmake"
