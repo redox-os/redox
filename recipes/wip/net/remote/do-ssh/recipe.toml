@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO update and fix iroh-quinn-udp crate
 [source]
 git = "https://github.com/doEggi/do-ssh"
 shallow_clone = true
