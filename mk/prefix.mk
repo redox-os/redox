@@ -266,7 +266,7 @@ else
 	rm -rf "$@.partial" "$@"
 	mkdir -p "$@.partial"
 	export CARGO="env -u CARGO -u RUSTUP_TOOLCHAIN cargo" RUSTUP="env -u CARGO -u RUSTUP_TOOLCHAIN rustup" && \
-	export PATH="$(ROOT)/$(PREFIX)/gcc-freestanding-install/bin:$$PATH" && \
+	export PATH="$(ROOT)/$(PREFIX)/gcc-freestanding-install/bin:$$PATH" USE_RUST_LIBM=1 && \
 	export CC_$(subst -,_,$(TARGET))="$(GNU_TARGET)-gcc -isystem $(ROOT)/$@.partial/$(GNU_TARGET)/include" LINKFLAGS="" && \
 	export $(PREFIX_CONFIG) COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_TARGET=$(HOST_TARGET) && \
 	$(REPO_BIN) cook relibc
