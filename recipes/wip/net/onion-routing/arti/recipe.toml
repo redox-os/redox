@@ -1,13 +1,10 @@
-#TODO pwd-grp crate error
+#TODO fix secmem-proc crate
 [source]
 git = "https://gitlab.torproject.org/tpo/core/arti"
 shallow_clone = true
 [build]
-template = "custom"
+template = "cargo"
+cargopackages = ["arti"]
 dependencies = [
     "openssl3",
 ]
-script = """
-DYNAMIC_INIT
-cookbook_cargo_packages arti
-"""

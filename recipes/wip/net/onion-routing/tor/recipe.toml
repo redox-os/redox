@@ -1,8 +1,11 @@
-#TODO not compiled or tested
+#TODO compiled but not tested
 [source]
 tar = "https://dist.torproject.org/tor-0.4.8.9.tar.gz"
 [build]
 template = "configure"
+configureflags = [
+    "--disable-gcc-hardening"
+]
 dependencies = [
     "libevent",
     "openssl3",

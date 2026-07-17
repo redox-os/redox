@@ -1,10 +1,7 @@
-#TODO not compiled or tested
+#TODO fix pnet_sys crate
 [source]
 git = "https://github.com/EasyTier/EasyTier"
 shallow_clone = true
 [build]
-template = "custom"
-script = """
-DYNAMIC_INIT
-cookbook_cargo_packages easytier
-"""
+template = "cargo"
+cargopackages = ["easytier"]

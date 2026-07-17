@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO can't find boost
 # build instructions: https://i2pd.readthedocs.io/en/latest/devs/building/unix/
 [source]
 git = "https://github.com/PurpleI2P/i2pd"

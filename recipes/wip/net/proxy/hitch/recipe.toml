@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO disable test program
 [source]
 tar = "https://www.hitch-tls.org/source/hitch-1.8.0.tar.gz"
 [build]

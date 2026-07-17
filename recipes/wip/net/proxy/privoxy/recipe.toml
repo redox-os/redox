@@ -1,6 +1,9 @@
-#TODO compile and test
+#TODO run autoheader before configure script generation
 # build instructions: https://www.privoxy.org/user-manual/installation.html
 [source]
 tar = "https://www.privoxy.org/sf-download-mirror/Sources/4.1.0%20%28stable%29/privoxy-4.1.0-stable-src.tar.gz"
+script = """
+autotools_recursive_regenerate
+"""
 [build]
 template = "configure"
