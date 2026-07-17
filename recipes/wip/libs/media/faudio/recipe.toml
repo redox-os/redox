@@ -1,0 +1,10 @@
+#TODO compile and test
+[source]
+git = "https://github.com/FNA-XNA/FAudio"
+rev = "26.07"
+shallow_clone = true
+[build]
+template = "cmake"
+dependencies = [
+    "sdl3",
+]

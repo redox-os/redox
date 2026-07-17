@@ -1,10 +1,7 @@
-#TODO not compiled or tested
+#TODO update iroh-quinn-udp crate version
 [source]
 git = "https://github.com/maxomatic458/lantun"
 shallow_clone = true
 [build]
-template = "custom"
-script = """
-DYNAMIC_INIT
-cookbook_cargo_packages lantun-cli
-"""
+template = "cargo"
+cargopackages = ["lantun-cli"]

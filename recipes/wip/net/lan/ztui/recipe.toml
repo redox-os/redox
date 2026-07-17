@@ -1,6 +1,7 @@
-#TODO not compiled or tested
+#TODO make openssl-sys use openssl3 recipe
 [source]
 git = "https://github.com/erikh/ztui"
 shallow_clone = true
 [build]
 template = "cargo"
+dependencies = ["openssl3"]

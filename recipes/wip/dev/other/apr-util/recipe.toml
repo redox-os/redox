@@ -1,3 +1,4 @@
+#TODO sed: can't read build/rules.mk: No such file or directory
 [source]
 tar = "https://archive.apache.org/dist/apr/apr-util-1.6.0.tar.bz2"
 patches = [
@@ -10,6 +11,7 @@ dependencies = [
     "expat",
 ]
 script = """
+DYNAMIC_INIT
 COOKBOOK_CONFIGURE_FLAGS+=(
     --with-apr="${COOKBOOK_SYSROOT}"
 )

@@ -1,9 +1,12 @@
+#TODO promote
 [source]
-tar = "https://dlcdn.apache.org//apr/apr-1.7.4.tar.bz2"
+tar = "https://archive.apache.org/dist/apr/apr-1.7.6.tar.bz2"
+blake3 = "2f75581ecb1ae54a769262f8f73819dddbaed166e4451c3fddd6eb429bcad45b"
 patches = ["redox.patch"]
 [build]
 template = "custom"
 script = """
+DYNAMIC_INIT
 COOKBOOK_CONFIGURE_FLAGS+=(
 ac_cv_file__dev_zero=yes
 ac_cv_working_getaddrinfo=no

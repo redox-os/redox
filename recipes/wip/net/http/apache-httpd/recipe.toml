@@ -1,6 +1,7 @@
-#TODO compiles but requires setgroups syscall at startup
+#TODO fix apr-util
+#TODO require setgroups syscall at startup (outdated?)
 [source]
-tar= "https://archive.apache.org/dist/httpd/httpd-2.4.61.tar.bz2"
+tar = "https://archive.apache.org/dist/httpd/httpd-2.4.61.tar.bz2"
 patches = [
     "redox.patch",
 ]

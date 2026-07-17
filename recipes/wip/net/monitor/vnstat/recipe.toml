@@ -1,4 +1,4 @@
-#TODO compile and test
+#TODO can't recognize redox target
 # bsd build instructions: https://github.com/vergoh/vnstat/blob/master/INSTALL_BSD.md
 # linux build instructions: https://github.com/vergoh/vnstat/blob/master/INSTALL.md
 [source]

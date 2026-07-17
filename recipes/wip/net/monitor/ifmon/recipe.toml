@@ -1,4 +1,4 @@
-#TODO compile and test
+#TODO update and fix netdev crate
 [source]
 git = "https://github.com/coder3101/ifmon"
 shallow_clone = true

@@ -1,4 +1,4 @@
-#TODO compile and test
+#TODO fix netdev crate
 # configuration: https://rayfish.xyz/docs/02-getting-started
 [source]
 git = "https://github.com/rayfish/rayfish"

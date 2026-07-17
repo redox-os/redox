@@ -1,0 +1,21 @@
+#TODO determine minimum dependencies from meson log
+# non-flatpak package reference:
+# https://aur.archlinux.org/packages/bottles
+# https://aur.archlinux.org/cgit/aur.git/tree/PKGBUILD?h=bottles
+[source]
+git = "https://github.com/bottlesdevs/Bottles"
+rev = "64.1"
+shallow_clone = true
+[build]
+template = "meson"
+dev-dependencies = [
+    "host:python312",
+    "host:blueprint",
+]
+#dependencies = [
+ #   "gtk4",
+#]
+[package]
+#dependencies = [
+ #   "wine-stable",
+#]

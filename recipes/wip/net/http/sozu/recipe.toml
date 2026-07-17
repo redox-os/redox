@@ -1,10 +1,8 @@
-#TODO not compiled or tested
+#TODO jemalloc-sys crate don't support redox target
 [source]
 git = "https://github.com/sozu-proxy/sozu"
 shallow_clone = true
 [build]
-template = "custom"
-script = """
-DYNAMIC_INIT
-cookbook_cargo_packages sozu
-"""
+template = "cargo"
+cargopackages = ["sozu"]
+
