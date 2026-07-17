@@ -1,4 +1,4 @@
-#TODO fix region crate
+#TODO fix thread-priority crate (after region crate patch)
 [source]
 git = "https://github.com/theseus-rs/ristretto"
 shallow_clone = true

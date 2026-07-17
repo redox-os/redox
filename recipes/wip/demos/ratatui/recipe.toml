@@ -5,7 +5,6 @@ branch = "latest"
 shallow_clone = true
 [build]
 template = "cargo"
-cargoflags = ["--no-default-features --features termion"]
 cargopackages = [
     "async-github",
     "calendar-explorer",
