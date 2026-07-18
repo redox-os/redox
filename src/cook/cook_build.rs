@@ -338,6 +338,10 @@ pub fn build(
             )
         };
 
+        let bool_fn = |name, flag: &bool| {
+            if *flag { name } else { "" }
+        };
+
         let mut allow_cargo_offline = false;
         //TODO: better integration with redoxer (library instead of binary)
         //TODO: configurable target
@@ -348,10 +352,13 @@ pub fn build(
                 cargoflags,
                 cargopackages,
                 cargoexamples,
+                clearlocked,
+                cargopackagesprefixed,
             } => {
                 allow_cargo_offline = true;
                 let mut script = format!(
-                    "DYNAMIC_INIT\n{}\nCOOKBOOK_CARGO_PATH={} ",
+                    "DYNAMIC_INIT\n{}{}\nCOOKBOOK_CARGO_PATH={} ",
+                    bool_fn("COOKBOOK_CARGO_FLAGS=()\n", clearlocked),
                     flags_fn("COOKBOOK_CARGO_FLAGS", cargoflags),
                     cargopath.as_deref().unwrap_or(".")
                 );
@@ -359,7 +366,11 @@ pub fn build(
                     script += "cookbook_cargo\n"
                 } else {
                     if cargopackages.len() > 0 {
-                        script += "cookbook_cargo_packages";
+                        script += if *cargopackagesprefixed {
+                            "cookbook_cargo_packages_prefixed"
+                        } else {
+                            "cookbook_cargo_packages"
+                        };
                         for package in cargopackages {
                             script += " ";
                             script += package;
@@ -396,11 +407,7 @@ pub fn build(
                 pipflags,
             } => format!(
                 "DYNAMIC_INIT\n{}{}{}cookbook_python",
-                if *legacysetup {
-                    "COOKBOOK_PYTHON_LEGACY_SETUP=1\n"
-                } else {
-                    ""
-                },
+                bool_fn("COOKBOOK_PYTHON_LEGACY_SETUP=1\n", legacysetup),
                 pyprojectpath
                     .as_ref()
                     .map(|s| format!("COOKBOOK_PYTHON_PYPROJECT_PATH={s}\n"))

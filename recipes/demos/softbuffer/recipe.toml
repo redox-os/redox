@@ -1,0 +1,16 @@
+# NOTE: Switch to upstream once winit pump events have been upstreamed
+[source]
+git = "https://github.com/willnode/softbuffer.git"
+branch = "libredox-demo"
+
+[build]
+template = "cargo"
+cargoexamples = [
+    "animation",
+    "drm",
+    "fruit",
+    "raytracing",
+    "rectangle",
+    "transparency",
+    "winit",
+]

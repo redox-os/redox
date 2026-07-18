@@ -1,0 +1,413 @@
+diff --git a/Cargo.lock b/Cargo.lock
+index b309db1d6..f9553ab97 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -111,19 +111,6 @@ version = "2.0.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "320119579fcad9c21884f5c4861d16174d0e06250625266f50fe6898340abefa"
+ 
+-[[package]]
+-name = "ahash"
+-version = "0.8.12"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "5a15f179cd60c4584b8a8c596927aadc462e27f2ca70c04e0071964a73ba7a75"
+-dependencies = [
+- "cfg-if",
+- "getrandom 0.3.4",
+- "once_cell",
+- "version_check",
+- "zerocopy",
+-]
+-
+ [[package]]
+ name = "aho-corasick"
+ version = "1.1.4"
+@@ -1575,7 +1562,7 @@ dependencies = [
+  "libc",
+  "option-ext",
+  "redox_users 0.5.2",
+- "windows-sys 0.61.2",
++ "windows-sys 0.60.2",
+ ]
+ 
+ [[package]]
+@@ -1665,7 +1652,7 @@ dependencies = [
+ [[package]]
+ name = "dpi"
+ version = "0.1.2"
+-source = "git+https://github.com/pop-os/winit.git?tag=cosmic-0.14#261cda54017f98a12dc55569c864430fe6770366"
++source = "git+https://gitlab.redox-os.org/redox-os/winit.git?branch=redox-0.31.0-beta#7b64401dd16c4b486a8080dd6cb4d00470fbb3a7"
+ 
+ [[package]]
+ name = "drm"
+@@ -1803,7 +1790,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb"
+ dependencies = [
+  "libc",
+- "windows-sys 0.61.2",
++ "windows-sys 0.60.2",
+ ]
+ 
+ [[package]]
+@@ -3206,7 +3193,6 @@ dependencies = [
+  "resvg",
+  "rustc-hash 2.1.2",
+  "rustix 0.38.44",
+- "smithay-client-toolkit 0.20.0",
+  "thiserror 2.0.18",
+  "tiny-xlib",
+  "wayland-backend",
+@@ -3485,7 +3471,7 @@ checksum = "3640c1c38b8e4e43584d8df18be5fc6b0aa314ce6ebf51b53313d4306cca8e46"
+ dependencies = [
+  "hermit-abi",
+  "libc",
+- "windows-sys 0.61.2",
++ "windows-sys 0.60.2",
+ ]
+ 
+ [[package]]
+@@ -3543,7 +3529,7 @@ dependencies = [
+  "portable-atomic",
+  "portable-atomic-util",
+  "serde_core",
+- "windows-sys 0.61.2",
++ "windows-sys 0.60.2",
+ ]
+ 
+ [[package]]
+@@ -3800,14 +3786,14 @@ checksum = "b6d2cec3eae94f9f509c767b45932f1ada8350c4bdb85af2fcab4a3c14807981"
+ 
+ [[package]]
+ name = "libredox"
+-version = "0.1.16"
++version = "0.1.18"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "e02f3bb43d335493c96bf3fd3a321600bf6bd07ed34bc64118e9293bdffea46c"
++checksum = "c943259e342f1e06ff2da7a83eabdfe7f92ce10262688dbf1895ff0b3e6e4652"
+ dependencies = [
+  "bitflags 2.11.0",
+  "libc",
+  "plain",
+- "redox_syscall 0.7.4",
++ "redox_syscall 0.9.0",
+ ]
+ 
+ [[package]]
+@@ -4307,7 +4293,7 @@ version = "0.50.3"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "7957b9740744892f114936ab4a57b3f487491bbeafaf8083688b16841a4240e5"
+ dependencies = [
+- "windows-sys 0.61.2",
++ "windows-sys 0.60.2",
+ ]
+ 
+ [[package]]
+@@ -4761,9 +4747,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "orbclient"
+-version = "0.3.51"
++version = "0.4.3"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "59aed3b33578edcfa1bc96a321d590d31832b6ad55a26f0313362ce687e9abd6"
++checksum = "128496b2c763a99c4f4b95c48123e4b6c78a3d944e0273c253ac5d0819dad1a5"
+ dependencies = [
+  "libc",
+  "libredox",
+@@ -5494,6 +5480,16 @@ dependencies = [
+  "font-types",
+ ]
+ 
++[[package]]
++name = "redox_event"
++version = "0.4.8"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "c5018d583d6d2f5499352aea8d177e9067d1eb03ab17c78169d5ba7a30001b15"
++dependencies = [
++ "bitflags 2.11.0",
++ "libredox",
++]
++
+ [[package]]
+ name = "redox_syscall"
+ version = "0.5.18"
+@@ -5505,9 +5501,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "redox_syscall"
+-version = "0.7.4"
++version = "0.9.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "f450ad9c3b1da563fb6948a8e0fb0fb9269711c9c73d9ea1de5058c79c8d643a"
++checksum = "c5102a6aaa05aa011a238e178e6bca86d2cb56fc9f586d37cb80f5bca6e07759"
+ dependencies = [
+  "bitflags 2.11.0",
+ ]
+@@ -5726,7 +5722,7 @@ dependencies = [
+  "errno",
+  "libc",
+  "linux-raw-sys 0.12.1",
+- "windows-sys 0.61.2",
++ "windows-sys 0.60.2",
+ ]
+ 
+ [[package]]
+@@ -6341,7 +6337,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "3a766e1110788c36f4fa1c2b71b387a7815aa65f88ce0229841826633d93723e"
+ dependencies = [
+  "libc",
+- "windows-sys 0.61.2",
++ "windows-sys 0.60.2",
+ ]
+ 
+ [[package]]
+@@ -6635,7 +6631,7 @@ dependencies = [
+  "getrandom 0.4.2",
+  "once_cell",
+  "rustix 1.1.4",
+- "windows-sys 0.61.2",
++ "windows-sys 0.60.2",
+ ]
+ 
+ [[package]]
+@@ -7174,7 +7170,7 @@ checksum = "f2f6fb2847f6742cd76af783a2a2c49e9375d0a111c7bef6f71cd9e738c72d6e"
+ dependencies = [
+  "memoffset",
+  "tempfile",
+- "windows-sys 0.61.2",
++ "windows-sys 0.60.2",
+ ]
+ 
+ [[package]]
+@@ -8010,7 +8006,7 @@ version = "0.1.11"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
+ dependencies = [
+- "windows-sys 0.61.2",
++ "windows-sys 0.60.2",
+ ]
+ 
+ [[package]]
+@@ -8531,7 +8527,7 @@ checksum = "d6bbff5f0aada427a1e5a6da5f1f98158182f26556f345ac9e04d36d0ebed650"
+ [[package]]
+ name = "winit"
+ version = "0.31.0-beta.2"
+-source = "git+https://github.com/pop-os/winit.git?tag=cosmic-0.14#261cda54017f98a12dc55569c864430fe6770366"
++source = "git+https://gitlab.redox-os.org/redox-os/winit.git?branch=redox-0.31.0-beta#7b64401dd16c4b486a8080dd6cb4d00470fbb3a7"
+ dependencies = [
+  "bitflags 2.11.0",
+  "cfg_aliases",
+@@ -8557,7 +8553,7 @@ dependencies = [
+ [[package]]
+ name = "winit-android"
+ version = "0.31.0-beta.2"
+-source = "git+https://github.com/pop-os/winit.git?tag=cosmic-0.14#261cda54017f98a12dc55569c864430fe6770366"
++source = "git+https://gitlab.redox-os.org/redox-os/winit.git?branch=redox-0.31.0-beta#7b64401dd16c4b486a8080dd6cb4d00470fbb3a7"
+ dependencies = [
+  "android-activity",
+  "bitflags 2.11.0",
+@@ -8572,7 +8568,7 @@ dependencies = [
+ [[package]]
+ name = "winit-appkit"
+ version = "0.31.0-beta.2"
+-source = "git+https://github.com/pop-os/winit.git?tag=cosmic-0.14#261cda54017f98a12dc55569c864430fe6770366"
++source = "git+https://gitlab.redox-os.org/redox-os/winit.git?branch=redox-0.31.0-beta#7b64401dd16c4b486a8080dd6cb4d00470fbb3a7"
+ dependencies = [
+  "bitflags 2.11.0",
+  "block2 0.6.2",
+@@ -8594,11 +8590,13 @@ dependencies = [
+ [[package]]
+ name = "winit-common"
+ version = "0.31.0-beta.2"
+-source = "git+https://github.com/pop-os/winit.git?tag=cosmic-0.14#261cda54017f98a12dc55569c864430fe6770366"
++source = "git+https://gitlab.redox-os.org/redox-os/winit.git?branch=redox-0.31.0-beta#7b64401dd16c4b486a8080dd6cb4d00470fbb3a7"
+ dependencies = [
++ "block2 0.6.2",
+  "memmap2 0.9.10",
+  "objc2 0.6.4",
+  "objc2-core-foundation",
++ "objc2-foundation 0.3.2",
+  "smol_str",
+  "tracing",
+  "winit-core",
+@@ -8609,7 +8607,7 @@ dependencies = [
+ [[package]]
+ name = "winit-core"
+ version = "0.31.0-beta.2"
+-source = "git+https://github.com/pop-os/winit.git?tag=cosmic-0.14#261cda54017f98a12dc55569c864430fe6770366"
++source = "git+https://gitlab.redox-os.org/redox-os/winit.git?branch=redox-0.31.0-beta#7b64401dd16c4b486a8080dd6cb4d00470fbb3a7"
+ dependencies = [
+  "bitflags 2.11.0",
+  "cursor-icon",
+@@ -8623,14 +8621,14 @@ dependencies = [
+ [[package]]
+ name = "winit-orbital"
+ version = "0.31.0-beta.2"
+-source = "git+https://github.com/pop-os/winit.git?tag=cosmic-0.14#261cda54017f98a12dc55569c864430fe6770366"
++source = "git+https://gitlab.redox-os.org/redox-os/winit.git?branch=redox-0.31.0-beta#7b64401dd16c4b486a8080dd6cb4d00470fbb3a7"
+ dependencies = [
+  "bitflags 2.11.0",
+  "dpi",
+  "libredox",
+  "orbclient",
+  "raw-window-handle",
+- "redox_syscall 0.7.4",
++ "redox_event",
+  "smol_str",
+  "tracing",
+  "winit-core",
+@@ -8639,7 +8637,7 @@ dependencies = [
+ [[package]]
+ name = "winit-uikit"
+ version = "0.31.0-beta.2"
+-source = "git+https://github.com/pop-os/winit.git?tag=cosmic-0.14#261cda54017f98a12dc55569c864430fe6770366"
++source = "git+https://gitlab.redox-os.org/redox-os/winit.git?branch=redox-0.31.0-beta#7b64401dd16c4b486a8080dd6cb4d00470fbb3a7"
+ dependencies = [
+  "bitflags 2.11.0",
+  "block2 0.6.2",
+@@ -8659,13 +8657,13 @@ dependencies = [
+ [[package]]
+ name = "winit-wayland"
+ version = "0.31.0-beta.2"
+-source = "git+https://github.com/pop-os/winit.git?tag=cosmic-0.14#261cda54017f98a12dc55569c864430fe6770366"
++source = "git+https://gitlab.redox-os.org/redox-os/winit.git?branch=redox-0.31.0-beta#7b64401dd16c4b486a8080dd6cb4d00470fbb3a7"
+ dependencies = [
+- "ahash",
+  "bitflags 2.11.0",
+  "calloop 0.14.4",
+  "cursor-icon",
+  "dpi",
++ "foldhash 0.2.0",
+  "libc",
+  "memmap2 0.9.10",
+  "raw-window-handle",
+@@ -8685,7 +8683,7 @@ dependencies = [
+ [[package]]
+ name = "winit-web"
+ version = "0.31.0-beta.2"
+-source = "git+https://github.com/pop-os/winit.git?tag=cosmic-0.14#261cda54017f98a12dc55569c864430fe6770366"
++source = "git+https://gitlab.redox-os.org/redox-os/winit.git?branch=redox-0.31.0-beta#7b64401dd16c4b486a8080dd6cb4d00470fbb3a7"
+ dependencies = [
+  "atomic-waker",
+  "bitflags 2.11.0",
+@@ -8707,7 +8705,7 @@ dependencies = [
+ [[package]]
+ name = "winit-win32"
+ version = "0.31.0-beta.2"
+-source = "git+https://github.com/pop-os/winit.git?tag=cosmic-0.14#261cda54017f98a12dc55569c864430fe6770366"
++source = "git+https://gitlab.redox-os.org/redox-os/winit.git?branch=redox-0.31.0-beta#7b64401dd16c4b486a8080dd6cb4d00470fbb3a7"
+ dependencies = [
+  "bitflags 2.11.0",
+  "cursor-icon",
+@@ -8716,14 +8714,14 @@ dependencies = [
+  "smol_str",
+  "tracing",
+  "unicode-segmentation",
+- "windows-sys 0.59.0",
++ "windows-sys 0.61.2",
+  "winit-core",
+ ]
+ 
+ [[package]]
+ name = "winit-x11"
+ version = "0.31.0-beta.2"
+-source = "git+https://github.com/pop-os/winit.git?tag=cosmic-0.14#261cda54017f98a12dc55569c864430fe6770366"
++source = "git+https://gitlab.redox-os.org/redox-os/winit.git?branch=redox-0.31.0-beta#7b64401dd16c4b486a8080dd6cb4d00470fbb3a7"
+ dependencies = [
+  "bitflags 2.11.0",
+  "bytemuck",
+diff --git a/Cargo.toml b/Cargo.toml
+index 27ac2ca0d..7ae2385f2 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -28,7 +28,7 @@ wgpu-bare = ["iced_renderer/wgpu-bare", "iced_widget/wgpu"]
+ # Enables the `tiny-skia` software renderer
+ 
+ 
+-default = ["a11y", "tiny-skia", "tokio", "wayland", "x11"]
++default = ["a11y", "tiny-skia", "tokio", "orbital", "winit"]
+ # Enable the `tiny-skia` software renderer backend
+ tiny-skia = ["iced_renderer/tiny-skia"]
+ # Enables the `image` widget
+@@ -125,6 +125,9 @@ wayland = [
+     "iced_widget/wayland",
+     "iced_core/wayland",
+ ]
++orbital = [
++    
++]
+ 
+ [dependencies]
+ iced_devtools.workspace = true
+@@ -162,16 +165,6 @@ name = "wgpu"
+ harness = false
+ required-features = ["canvas"]
+ 
+-[profile.release-opt]
+-inherits = "release"
+-codegen-units = 1
+-debug = false
+-lto = true
+-incremental = false
+-opt-level = 3
+-overflow-checks = false
+-strip = "debuginfo"
+-
+ [workspace]
+ members = [
+     "beacon",
+@@ -339,3 +332,8 @@ broken_intra_doc_links = "forbid"
+ 
+ [build-dependencies]
+ build_helpers = { path = "./build_helpers" }
++
++[patch."https://github.com/pop-os/winit.git"]
++winit = { git = "https://gitlab.redox-os.org/redox-os/winit.git", branch = "redox-0.31.0-beta" }
++winit-core = { git = "https://gitlab.redox-os.org/redox-os/winit.git", branch = "redox-0.31.0-beta" }
++
+diff --git a/examples/stopwatch/src/main.rs b/examples/stopwatch/src/main.rs
+index 1fbec9a04..a4e31a09d 100644
+--- a/examples/stopwatch/src/main.rs
++++ b/examples/stopwatch/src/main.rs
+@@ -72,7 +72,7 @@ impl Stopwatch {
+             };
+ 
+             match modified_key.as_ref() {
+-                keyboard::Key::Named(key::Named::Space) => {
++                keyboard::Key::Named(key::Named::Enter) => {
+                     Some(Message::Toggle)
+                 }
+                 keyboard::Key::Character("r") => Some(Message::Reset),
+diff --git a/examples/styling/src/main.rs b/examples/styling/src/main.rs
+index fe10e4b7a..7ec655c72 100644
+--- a/examples/styling/src/main.rs
++++ b/examples/styling/src/main.rs
+@@ -207,7 +207,7 @@ impl Styling {
+                 }
+                 keyboard::key::Named::ArrowDown
+                 | keyboard::key::Named::ArrowRight => Some(Message::NextTheme),
+-                keyboard::key::Named::Space => Some(Message::ClearTheme),
++                keyboard::key::Named::Enter => Some(Message::ClearTheme),
+                 _ => None,
+             }
+         })
+diff --git a/winit/src/conversion.rs b/winit/src/conversion.rs
+index 8ce3ed66f..ed94b05d8 100644
+--- a/winit/src/conversion.rs
++++ b/winit/src/conversion.rs
+@@ -1577,7 +1577,6 @@ pub fn native_key_code(
+     use winit::keyboard::NativeKeyCode;
+ 
+     match native_key_code {
+-        NativeKeyCode::Unidentified => keyboard::key::NativeCode::Unidentified,
+         NativeKeyCode::Android(code) => {
+             keyboard::key::NativeCode::Android(code)
+         }
+@@ -1586,6 +1585,7 @@ pub fn native_key_code(
+             keyboard::key::NativeCode::Windows(code)
+         }
+         NativeKeyCode::Xkb(code) => keyboard::key::NativeCode::Xkb(code),
++        _ => keyboard::key::NativeCode::Unidentified,
+     }
+ }
+ 

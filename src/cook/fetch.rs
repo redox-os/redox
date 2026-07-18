@@ -457,13 +457,7 @@ pub fn fetch(recipe: &CookRecipe, check_source: bool, logger: &PtyOut) -> Result
         }
     };
 
-    if let BuildKind::Cargo {
-        cargopath,
-        cargoflags: _,
-        cargopackages: _,
-        cargoexamples: _,
-    } = &recipe.recipe.build.kind
-    {
+    if let BuildKind::Cargo { cargopath, .. } = &recipe.recipe.build.kind {
         if !result.cached {
             fetch_cargo(&result.source_dir, cargopath.as_ref(), logger)?;
         }

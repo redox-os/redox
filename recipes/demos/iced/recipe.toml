@@ -1,9 +1,74 @@
 [source]
-git = "https://gitlab.redox-os.org/redox-os/iced.git"
-branch = "redox"
+git = "https://github.com/pop-os/iced"
+rev = "300fa97" 
+patches = [
+    "redox.patch"
+]
 
 [build]
-template = "custom"
-script = """
-cookbook_cargo_packages styling
-"""
+template = "cargo"
+cargopackages = [
+    "arc",
+    "bezier_tool",
+    "changelog",
+    # "checkbox",
+    "clock",
+    "color_palette",
+    "combo_box",
+    "counter",
+    "custom_quad",
+    # "custom_shader",
+    "custom_widget",
+    # "delineate",
+    "download_progress",
+    # "editor", # rfd
+    "events",
+    "exit",
+    # "ferris",
+    "gallery",
+    "game_of_life",
+    "geometry",
+    # "gradient",
+    # "integration",
+    "layout",
+    "lazy",
+    "list",
+    "loading_spinners",
+    # "loupe",
+    "markdown",
+    "modal",
+    "multitouch",
+    # "multi_window",
+    "pane_grid",
+    "pick_list",
+    "pokedex",
+    "progress_bar",
+    "qr_code",
+    "screenshot",
+    # "scrollable",
+    # "sctk_drag",
+    # "sctk_lazy",
+    # "sctk_session_lock",
+    # "sctk_subsurface",
+    # "sctk_subsurface_gst",
+    # "sctk_subsurface_img",
+    # "sctk_todos",
+    "sierpinski_triangle",
+    "slider",
+    "solar_system",
+    "stopwatch",
+    "styling",
+    "svg",
+    "table",
+    "the_matrix",
+    # "toast",
+    "todos",
+    "tooltip",
+    "tour",
+    "vectorial_text",
+    "websocket",
+]
+cargopackagesprefixed = true
+dependencies = [
+    "openssl3",
+]

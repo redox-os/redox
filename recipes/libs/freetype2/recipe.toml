@@ -10,5 +10,5 @@ dependencies = [
 ]
 script = """
 DYNAMIC_STATIC_INIT
-cookbook_meson
+cookbook_meson -Dharfbuzz=disabled
 """
