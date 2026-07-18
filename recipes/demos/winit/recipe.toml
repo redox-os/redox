@@ -1,11 +1,18 @@
 [source]
-git = "https://github.com/pop-os/winit.git"
-branch = "winit-0.29"
+git = "https://gitlab.redox-os.org/redox-os/winit"
+branch = "redox-0.31.0-beta"
 
 [build]
-template = "custom"
-script = """
-DYNAMIC_INIT
-COOKBOOK_CARGO_FLAGS=() # remove --locked
-cookbook_cargo_examples cursor_grab drag_window window window_debug
-"""
+template = "cargo"
+cargopath = "winit"
+cargoexamples = [
+    "application",
+    "child_window",
+    "control_flow",
+    "dnd",
+    "ime",
+    "pump_events",
+    "run_on_demand",
+    "window",
+]
+clearlocked = true

@@ -194,6 +194,16 @@ function cookbook_cargo_packages {
     done
 }
 
+# helper for installing binaries that are cargo packages that are prefixed
+function cookbook_cargo_packages_prefixed {
+    recipe="$(basename "${COOKBOOK_RECIPE}")"
+    mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
+    for package in "$@"
+    do
+        bin_name="${package}" bin_flags="--package ${package}" cookbook_cargo_build
+    done
+}
+
 # configure template
 COOKBOOK_CONFIGURE="${COOKBOOK_SOURCE}/configure"
 COOKBOOK_CONFIGURE_FLAGS=(

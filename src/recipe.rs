@@ -76,14 +76,26 @@ pub enum BuildKind {
     /// Will build and install using cargo
     #[serde(rename = "cargo")]
     Cargo {
+        /// Path relative to source dir, where to run Cargo
         #[serde(default)]
         cargopath: Option<String>,
+        /// Additional flags to cargo
         #[serde(default)]
         cargoflags: Vec<String>,
+        /// List of packages to build, if Cargo.toml is a workspace.
+        /// Binary names will not be prefixed.
         #[serde(default)]
         cargopackages: Vec<String>,
+        /// List of examples to build, if there's an "examples" dir.
+        /// Binary names will be prefixed.
         #[serde(default)]
         cargoexamples: Vec<String>,
+        /// whether to remove --locked, common for libraries.
+        #[serde(default)]
+        clearlocked: bool,
+        /// whether to force prefix packages with recipe name
+        #[serde(default)]
+        cargopackagesprefixed: bool,
     },
     /// Will build and install using configure and make
     #[serde(rename = "configure")]
@@ -686,6 +698,8 @@ mod tests {
                     cargoflags: Vec::new(),
                     cargopackages: Vec::new(),
                     cargoexamples: Vec::new(),
+                    clearlocked: false,
+                    cargopackagesprefixed: false,
                 }),
                 ..Default::default()
             }

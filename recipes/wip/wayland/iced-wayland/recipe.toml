@@ -10,3 +10,4 @@ dependencies = [
 ]
 template = "cargo"
 cargopackages = ["sctk_lazy"]
+cargopackagesprefixed = true
