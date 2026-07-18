@@ -1,5 +1,10 @@
-#TODO compile and test
+#TODO compiled but not tested
 [source]
 tar = "https://ftp.gnu.org/gnu/cpio/cpio-2.15.tar.bz2"
+blake3 = "510b18d82d9ee4fd136ce285162a31808c9c87907c188e215cd21a8cc7cde992"
+script = """
+autotools_recursive_regenerate
+"""
+
 [build]
 template = "configure"

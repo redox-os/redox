@@ -1,5 +1,10 @@
-#TODO not compiled or tested
+#TODO compiled but not tested
 [source]
 tar = "https://ftp.gnu.org/gnu/bc/bc-1.08.2.tar.gz"
+blake3 = "3b1391fbcea440b4abd0c7296a97f6de9b564659320038ff4c3bc7cbc9f5dcee"
+script = """
+autotools_recursive_regenerate
+"""
+
 [build]
 template = "configure"

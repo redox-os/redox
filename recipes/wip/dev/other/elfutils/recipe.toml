@@ -14,4 +14,5 @@ dependencies = [
 configureflags = [
     "--disable-libdebuginfod",
     "--disable-debuginfod",
+    "--disable-demangler",
 ]

@@ -1,6 +1,19 @@
-#TODO missing script for GNU Make, see https://www.busybox.net/FAQ.html#configure
-#TODO cross-compilation - https://www.busybox.net/FAQ.html#build
+#TODO compiled but not tested
 [source]
 tar = "https://www.busybox.net/downloads/busybox-1.36.1.tar.bz2"
+blake3 = "dfdfc1b9aa41d5134e087d904c0a5f6958825f0e94db1d2cb5ea93088247c886"
 [build]
 template = "custom"
+script = """
+pushd $COOKBOOK_SOURCE
+make "O=$COOKBOOK_BUILD" defconfig
+popd
+
+sed -i \
+    -e 's/^CONFIG_SHA1_HWACCEL=y/# CONFIG_SHA1_HWACCEL is not set/' \
+    -e 's/^CONFIG_SHA256_HWACCEL=y/# CONFIG_SHA256_HWACCEL is not set/' \
+    -e 's/^CONFIG_TC=y/# CONFIG_TC is not set/' \
+    .config
+make
+make "CONFIG_PREFIX=$COOKBOOK_STAGE" install
+"""
