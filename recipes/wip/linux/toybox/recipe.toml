@@ -1,0 +1,14 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/landley/toybox.git"
+rev = "0.8.13"
+shallow_clone = true
+
+[build]
+template = "custom"
+script = """
+rsync -a --delete "${COOKBOOK_SOURCE}/" ./
+make defconfig < /dev/null
+make -j$COOKBOOK_MAKE_JOBS < /dev/null
+PREFIX="${COOKBOOK_STAGE}" make install
+"""

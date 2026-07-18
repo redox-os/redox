@@ -149,6 +149,13 @@ ifeq ($(QEMU_ON_WINDOWS),1)
 	QEMUFLAGS+=-device usb-tablet
 endif
 
+ifeq ($(OPERATING_SYSTEM),linux)
+	QEMU_KERNEL=$(BUILD)/boot/bzImage
+	QEMUFLAGS+=-initrd $(BUILD)/boot/init.cpio
+# kernel only support virtio
+	disk=virtio
+endif
+
 ifneq ($(FIRMWARE),)
 	QEMUFLAGS+=-bios $(FIRMWARE)
 endif
@@ -157,9 +164,11 @@ ifneq ($(QEMU_KERNEL),)
 	QEMUFLAGS+=-kernel $(QEMU_KERNEL)
 endif
 
-ifeq ($(live),yes)
+ifeq ($(disk),no)
+	DISK=
+else ifeq ($(live),yes)
 	DISK=$(BUILD)/redox-live.iso
-else
+else 
 	DISK=$(BUILD)/harddrive.img
 endif
 
@@ -382,3 +391,9 @@ else
 	$(MAKE) unmount
 	$(QEMU) $(QEMUFLAGS)
 endif
+
+$(BUILD)/boot/bzImage: $(BUILD)/boot/init.cpio repo FORCE
+	$(MAKE) i.linux-kernel DESTDIR=$(BUILD)
+
+$(BUILD)/boot/init.cpio: repo FORCE
+	$(MAKE) i.linux-base DESTDIR=$(BUILD)

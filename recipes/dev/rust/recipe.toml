@@ -1,6 +1,6 @@
 [source]
-git = "https://gitlab.redox-os.org/redox-os/rust.git"
-branch = "redox-2026-05-24"
+git = "https://gitlab.redox-os.org/willnode/rust.git"
+branch = "linux"
 shallow_clone = true
 
 [build]
@@ -23,6 +23,7 @@ if [ "${COOKBOOK_HOST_SYSROOT}" = "/usr" ]; then
 OS=$(echo "${TARGET}" | cut -d - -f3)
 cat ${COOKBOOK_RECIPE}/config-cross-$OS.toml > config.toml
 sed -i "s|COOKBOOK_TOOLCHAIN|${COOKBOOK_TOOLCHAIN}|g" config.toml
+sed -i "s|COOKBOOK_STAGE|${COOKBOOK_STAGE}|g" config.toml
 sed -i "s|COOKBOOK_TARGET|${COOKBOOK_CROSS_TARGET}|g" config.toml
 sed -i "s|COOKBOOK_GNU_TARGET|${COOKBOOK_CROSS_GNU_TARGET}|g" config.toml
 sed -i "s|TARGET|${TARGET}|g" config.toml
@@ -49,6 +50,7 @@ sed -i "s|COOKBOOK_SYSROOT|${COOKBOOK_SYSROOT}|g" config.toml
 sed -i "s|COOKBOOK_TOOLCHAIN|${COOKBOOK_HOST_SYSROOT}|g" config.toml
 sed -i "s|COOKBOOK_TARGET|${TARGET}|g" config.toml
 sed -i "s|COOKBOOK_GNU_TARGET|${GNU_TARGET}|g" config.toml
+sed -i "s|COOKBOOK_STAGE|${COOKBOOK_STAGE}|g" config.toml
 
 fi
 
@@ -59,9 +61,8 @@ python3 "${COOKBOOK_SOURCE}/x.py" install \
     --config config.toml \
     --jobs ${COOKBOOK_MAKE_JOBS}
 
-mkdir -p "${COOKBOOK_STAGE}"/usr
-rsync -av --delete "${COOKBOOK_BUILD}"/install/* "${COOKBOOK_STAGE}"/usr/
 rm -rf "${COOKBOOK_STAGE}"/usr/lib/rustlib/*.log
+rm -rf "${COOKBOOK_STAGE}"/usr/lib/rustlib/uninstall.sh
 
 # workaround for rust.lld, needed by e.g. compiling bootloader
 # https://github.com/rust-lang/rust/issues/143076#issuecomment-3011710678

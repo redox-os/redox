@@ -14,7 +14,7 @@ extended = true
 verbose = 1
 
 [install]
-prefix = "install"
+prefix = "COOKBOOK_STAGE/usr"
 sysconfdir = "etc"
 
 [rust]
