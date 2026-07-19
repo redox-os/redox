@@ -40,16 +40,18 @@ fn init_binary_repo() -> (RepoManager, Repository) {
     let download_backend = CurlBackend::new().expect("Curl not found");
     let mut repo = RepoManager::new(callback, Box::new(download_backend));
     let target = redoxer::target();
-    repo.add_remote(crate::REMOTE_PKG_SOURCE, target)
+    let remote_source = crate::config::translate_mirror(crate::REMOTE_PKG_SOURCE);
+    repo.add_remote(&remote_source, target)
         .expect("Unable to add remote");
 
     let repo_path = PathBuf::from("build/remotes");
     repo.set_download_path(repo_path.clone());
     repo.sync_keys().expect("Unable to sync keys");
 
-    let repo_toml = load_cached_repo(&repo_path.join(format!("{target}_repo.toml")))
-        .unwrap_or_else(|| {
-            let repo = download_repo(&repo, repo_path)
+    let repo_toml =
+        load_cached_repo(&repo_path.join(format!("repo_{}_{target}.toml", repo.remotes[0])))
+            .unwrap_or_else(|| {
+                let repo = download_repo(&repo, repo_path)
                 .map_err(|e| {
                     eprintln!(
                         "Unable to load server repo.toml, all recipes will build from source: {e}"
@@ -57,8 +59,8 @@ fn init_binary_repo() -> (RepoManager, Repository) {
                     e
                 })
                 .unwrap_or_default();
-            repo
-        });
+                repo
+            });
     // reset here to not clobber pty
     repo.callback = Rc::new(RefCell::new(PlainCallback::new()));
     (repo, repo_toml)
@@ -80,6 +82,17 @@ pub fn get_binary_repo() -> (RepoManager, Repository) {
         }
         let (repo, repo_toml) = opt.as_ref().unwrap();
         ((*repo).clone(), repo_toml.clone())
+    })
+}
+pub fn get_binary_pubkey() -> PathBuf {
+    BINARY_REPO.with(|cell| {
+        let mut opt = cell.borrow_mut();
+        if opt.is_none() {
+            *opt = Some(init_binary_repo());
+        }
+        let (repo, _) = opt.as_ref().unwrap();
+        let repo_path = PathBuf::from("build/remotes");
+        repo_path.join(format!("pub_key_{}.toml", repo.remotes[0]))
     })
 }
 
