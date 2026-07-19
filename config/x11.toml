@@ -127,6 +127,7 @@ EOF
 
 # Launch X11 and session on display 0
 export DISPLAY=":0"
+unset ORBITAL_DISPLAY
 X "${DISPLAY}" &
 sleep 1
 exec dbus-launch --exit-with-x11 xfce4-x11-session
