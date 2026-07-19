@@ -47,5 +47,7 @@ cookbook_meson \
     -Dudev_kms=false \
     -Dvgahw=false \
     -Dxres=false \
-    -Dxvfb=false
+    -Dxvfb=false \
+    -Dxkb_dir=/usr/share/X11/xkb \
+    -Dxkb_bin_dir=/usr/bin
 """
