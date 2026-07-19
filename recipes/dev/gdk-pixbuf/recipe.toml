@@ -21,3 +21,8 @@ mesonflags = [
     "-Dman=false",
     "-Dtests=false",
 ]
+
+[package]
+dependencies = [
+    "shared-mime-info",
+]
