@@ -4,9 +4,11 @@ use pkgar_core::PackageSrc;
 use pkgar_keys::PublicKeyFile;
 
 use crate::config::CookConfig;
+use crate::cook::fetch_repo;
 use crate::cook::package::{package_source_paths, package_target};
 use crate::cook::{fetch, fs, pty::PtyOut, script::*};
 use crate::recipe::{AutoDeps, BuildKind, CookRecipe, OptionalPackageRecipe, Recipe};
+use std::io::Read;
 use std::{
     collections::{BTreeSet, VecDeque},
     path::{Path, PathBuf},
@@ -740,8 +742,8 @@ pub fn build_remote(
     logger: &PtyOut,
 ) -> Result<BuildResult> {
     let source_toml = target_dir.join("source.toml");
-    let source_pubkey = "build/remotes/pub_key_static.redox-os.org.toml";
     let auto_deps_path = target_dir.join("auto_deps.toml");
+    let source_pubkey = fetch_repo::get_binary_pubkey();
 
     let packages = recipe.get_packages_list();
     let mut cached = auto_deps_path.is_file();
@@ -770,7 +772,12 @@ pub fn build_remote(
         let stage_dir = &stage_dirs[i];
         let (_, source_pkgar, _) = package_source_paths(package, &target_dir);
         fs::create_dir_clean(stage_dir)?;
-        pkgar::extract(&source_pubkey, &source_pkgar, &stage_dir)?;
+        pkgar::extract(&source_pubkey, &source_pkgar, &stage_dir).map_err(|e| {
+            if matches!(e, pkgar::Error::Core(pkgar_core::Error::Dryoc(_))) {
+                hint_incorrect_pkey(logger, &source_pubkey, &source_pkgar);
+            }
+            e
+        })?
     }
 
     if auto_deps_path.is_file() {
@@ -787,6 +794,27 @@ pub fn build_remote(
         wrapper.packages
     };
     Ok(BuildResult::new(stage_dirs, auto_deps))
+}
+
+fn hint_incorrect_pkey(logger: &PtyOut, source_pubkey: &Path, source_pkgar: &Path) -> Option<()> {
+    // TODO: Move to pkgar
+    let mut file = std::fs::File::open(source_pkgar).ok()?;
+    let mut buffer = vec![0u8; pkgar_core::HEADER_SIZE];
+    file.read_exact(&mut buffer).ok()?;
+    log_to_pty!(
+        logger,
+        "DEBUG: Pkgar key mismatch, hint:\n - expected: {:?}\n - current:  {:?}",
+        blake3::Hash::from_bytes(unsafe {
+            pkgar_core::Header::new_unchecked(&buffer).ok()?.public_key
+        })
+        .to_hex()
+        .to_string(),
+        blake3::Hash::from_bytes(PublicKeyFile::open(source_pubkey).ok()?.pkey)
+            .to_hex()
+            .to_string(),
+    );
+
+    Some(())
 }
 
 #[cfg(test)]
