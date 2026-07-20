@@ -70,6 +70,10 @@ pull:
 	git pull
 	rm -f $(FSTOOLS_TAG)
 
+cookbook:
+	rm -f $(FSTOOLS_TAG)
+	$(MAKE) $(FSTOOLS_TAG)
+
 repo: $(BUILD)/repo.tag
 
 repo_clean: c.--all
