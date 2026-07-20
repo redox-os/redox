@@ -40,13 +40,7 @@
 
               overlays = [ rust-overlay.overlays.default ];
             };
-            rust-bin = pkgs.rust-bin.nightly."2026-05-24".default.override {
-              extensions = [
-                "rust-analyzer"
-                "rust-src"
-              ];
-              targets = [ "x86_64-unknown-redox" ];
-            };
+            rust-bin = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
           in
           {
             formatter = pkgs.nixfmt-rfc-style;
