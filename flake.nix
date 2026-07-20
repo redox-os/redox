@@ -148,8 +148,8 @@
                     nasm
                     ninja
                     perl
-                    perl540Packages.HTMLParser
-                    perl540Packages.Po4a
+                    perlPackages.HTMLParser
+                    perlPackages.Po4a
                     pkg-config
                     pkgconf
                     (python3.withPackages (ps: with ps; [ mako ]))
@@ -173,8 +173,8 @@
                   libpng # netsurf
                   fontconfig # orbutils
                   SDL # prboom
-                  xorg.utilmacros # libX11
-                  xorg.xtrans # libX11
+                  utilmacros # libX11
+                  xtrans # libX11
                 ];
 
                 LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath buildInputs;
