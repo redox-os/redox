@@ -5,16 +5,12 @@ rev = "3.12.0"
 shallow_clone = true
 
 [build]
-template = "custom"
+template = "python"
+pyprojectpath = "flit_core"
 dev-dependencies = [
   "host:python312",
   "python312",
 ]
-script = """
-DYNAMIC_INIT
-COOKBOOK_SOURCE+="/flit_core"
-cookbook_python
-"""
 
 [package]
 dependencies = [

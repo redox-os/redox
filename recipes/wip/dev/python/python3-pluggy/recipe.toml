@@ -1,0 +1,23 @@
+# TODO requires testing
+# FIXME 1.6.0 has removed setup.py
+# FIXME vcs-versioning not stated as dependency in upstream pyproject.toml
+[source]
+git = "https://github.com/pytest-dev/pluggy"
+rev = "1.5.0"
+shallow_clone = true
+
+[build]
+template = "python"
+legacysetup = true
+dev-dependencies = [
+    "host:python312",
+    "python312",
+    "python3-setuptools",
+    "python3-setuptools-scm",
+    "python3-vcs-versioning",
+]
+
+[package]
+dependencies = [
+    "python312"
+]
