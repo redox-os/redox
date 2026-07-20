@@ -1,6 +1,6 @@
 # TODO requires testing
 [source]
-git = "https://github.com/pypa/hatch/tree/master/backend"
+git = "https://github.com/pypa/hatch"
 rev = "hatchling-v1.31.0"
 shallow_clone = true
 
