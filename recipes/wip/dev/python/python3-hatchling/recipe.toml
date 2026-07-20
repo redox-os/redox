@@ -1,0 +1,22 @@
+# TODO requires testing
+[source]
+git = "https://github.com/pypa/hatch"
+rev = "hatchling-v1.31.0"
+shallow_clone = true
+
+[build]
+template = "python"
+dev-dependencies = [
+  "host:python312",
+  "python312",
+]
+
+[package]
+dependencies = [
+  "python312",
+  "python3-packaging",
+  "python3-pathspec",
+  "python3-pluggy",
+  "python3-trove-classifiers",
+]
+
