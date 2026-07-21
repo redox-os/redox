@@ -1,4 +1,5 @@
 # TODO requires testing
+# FIXME remove --no-deps when pip dependency handling works properly (pip thinks python3-packaging isn't high enough version but it is)
 [source]
 git = "https://github.com/pypa/hatch"
 rev = "hatchling-v1.31.0"
@@ -6,9 +7,15 @@ shallow_clone = true
 
 [build]
 template = "python"
+pyprojectpath = "backend"
+pipflags = ["--no-deps"]
 dev-dependencies = [
   "host:python312",
   "python312",
+  "host:python3-packaging",
+  "host:python3-pathspec",
+  "host:python3-pluggy",
+  "host:python3-trove-classifiers",
 ]
 
 [package]
@@ -19,4 +26,3 @@ dependencies = [
   "python3-pluggy",
   "python3-trove-classifiers",
 ]
-

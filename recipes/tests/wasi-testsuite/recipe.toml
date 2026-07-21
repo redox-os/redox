@@ -1,4 +1,4 @@
-# TODO figure out colorama dependency
+# TODO compiles but fails to find request module when running tests
 [source]
 git = "https://github.com/WebAssembly/wasi-testsuite"
 branch = "prod/testsuite-base"
