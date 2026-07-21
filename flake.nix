@@ -189,7 +189,7 @@
 
                 LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath buildInputs;
                 PERL_PATH = "${pkgs.perl}/bin/perl";
-                NIX_SHELL_BUILD = "1";
+                SKIP_CHECK_TOOLS = "1";
                 PODMAN_BUILD = "0";
                 shellHook = with pkgs; ''
                   export PKG_CONFIG_PATH="${fuse.dev}/lib/pkgconfig\
