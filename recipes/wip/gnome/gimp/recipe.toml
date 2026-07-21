@@ -12,6 +12,12 @@ mesonflags = [
     "-Dlibunwind=false",
     "-Dprint=false",
 ]
+dependencies = [
+    "atk",
+    "babl",
+    "gtk3",
+    "gegl",
+]
 # dependencies = [
 #     "gtk3",
 #     "gobject-introspection",

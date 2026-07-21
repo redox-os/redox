@@ -1,16 +1,28 @@
 #TODO not compiled or tested
 # build instructions: https://gitlab.gnome.org/GNOME/gegl/-/blob/master/docs/development.adoc?ref_type=heads#user-content-debugging
 [source]
-tar = "https://download.gimp.org/pub/gegl/0.4/gegl-0.4.46.tar.xz"
+tar = "https://download.gimp.org/pub/gegl/0.4/gegl-0.4.70.tar.xz"
 [build]
-template = "meson"
+template = "custom"
 mesonflags = [
     "-Ddocs=false",
-    "-Dgi-docgen=false",
+    "-Dgtk-doc=false",
     "-Dintrospection=false",
     "-Dparallel-tests=false",
 ]
 dependencies = [
+    "cairo",
     "libpng",
     "glib",
+    "pango",
+    "babl",
+    "json-glib",
+    "libjpeg",
+    "libnsgif",
+    "poly2tri-c",
 ]
+script = """
+DYNAMIC_INIT
+CFLAGS="-std=c11"
+cookbook_meson
+"""

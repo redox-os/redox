@@ -8,5 +8,5 @@ mesonflags = [
     "-Dwith-docs=false",
     "-Denable-gir=false",
     "-Denable-vapi=false",
-    "-Dgi-docgen=false",
+    "-Dgi-docgen=disabled",
 ]
