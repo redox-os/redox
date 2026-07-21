@@ -1,0 +1,18 @@
+# TODO compiles but needs testing
+[source]
+git = "https://github.com/jawah/charset_normalizer"
+rev = "3.4.9"
+shallow_clone = true
+
+[build]
+template = "python"
+dev-dependencies = [
+  "host:python312",
+  "python312",
+  "python3-setuptools",
+]
+
+[package]
+dependencies = [
+  "python312"
+]
