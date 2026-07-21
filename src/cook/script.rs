@@ -377,7 +377,9 @@ function cookbook_python {
     # no way to do out-of-tree build: https://github.com/pypa/setuptools/issues/3237
     rsync -a "${COOKBOOK_SOURCE}/" ./source
     if [ -n "${COOKBOOK_PYTHON_LEGACY_SETUP}" ]; then
-        python3 ./source/setup.py install
+        pushd ./source
+        python3 ./setup.py install
+        popd
     fi
     "${COOKBOOK_PYTHON}" -m pip install --prefix="${COOKBOOK_STAGE}/usr" \
     "./source${COOKBOOK_PYTHON_PYPROJECT_PATH:+/$COOKBOOK_PYTHON_PYPROJECT_PATH}" \
