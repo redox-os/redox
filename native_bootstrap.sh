@@ -922,7 +922,6 @@ usage()
     echo "   -h,--help      Show this prompt"
     echo "   -u [branch]    Update git repo and update rust"
     echo "                  If blank defaults to master"
-    echo "   -s             Check the status of the current travis build"
     echo "   -e [emulator]  Install specific emulator, virtualbox or qemu"
     echo "   -p [package    Choose an Ubuntu package manager, apt-fast or"
     echo "       manager]   aptitude"
@@ -1018,39 +1017,6 @@ rustInstall()
     fi
 }
 
-####################################################################
-# This function gets the current build status from travis and prints
-# a message to the user
-####################################################################
-statusCheck()
-{
-    for i in $(echo "$(curl -sf https://api.travis-ci.org/repositories/redox-os/redox.json)" | tr "," "\n")
-    do
-        if echo "$i" | grep -iq "last_build_status" ;then
-            if echo "$i" | grep -iq "0" ;then
-                echo
-                echo "********************************************"
-                echo "Travis reports that the last build succeeded!"
-                echo "Looks like you are good to go!"
-                echo "********************************************"
-            elif echo "$i" | grep -iq "null" ;then
-                echo
-                echo "******************************************************************"
-                echo "The Travis build did not finish, this is an error with its config."
-                echo "I cannot reliably determine whether the build is succeeding or not."
-                echo "Consider checking for and maybe opening an issue on gitlab"
-                echo "******************************************************************"
-            else
-                echo
-                echo "**************************************************"
-                echo "Travis reports that the last build *FAILED* :("
-                echo "Might want to check out the issues before building"
-                echo "**************************************************"
-            fi
-        fi
-    done
-}
-
 ###########################################################################
 # This function is the main logic for the bootstrap; it clones the git repo
 # then it installs the rust version manager and the latest version of rustc
@@ -1067,7 +1033,6 @@ boot()
     echo "---------------------------------------"
     echo "Well it looks like you are ready to go!"
     echo "---------------------------------------"
-    statusCheck
     echo
     echo "** Be sure to update your path to include Rust - run the following command: **"
     echo 'source $HOME/.cargo/env'
@@ -1092,9 +1057,6 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 elif [ "$1" == "-u" ]; then
     git pull upstream master
     exit
-elif [ "$1" == "-s" ]; then
-    statusCheck
-    exit
 fi
 
 host_arch=$(uname -m)
@@ -1104,7 +1066,7 @@ dependenciesonly=false
 update=false
 noninteractive=false
 
-while getopts ":e:p:udhys" opt
+while getopts ":e:p:udhy" opt
 do
     case "$opt" in
         e) emulator="$OPTARG";;
@@ -1113,7 +1075,6 @@ do
         u) update=true;;
         h) usage;;
         y) noninteractive=true;;
-        s) statusCheck && exit;;
         \?) echo "I don't know what to do with that option, try -h for help"; exit 1;;
     esac
 done
