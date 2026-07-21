@@ -1,0 +1,26 @@
+# TODO needs testing
+# FIXME remove --no-deps when pip dependency handling works properly
+[source]
+git = "https://github.com/ofek/hatch-vcs"
+rev = "v0.5.0"
+shallow_clone = true
+
+[build]
+template = "python"
+pipflags = ["--no-deps"]
+dev-dependencies = [
+    "host:python312",
+    "python312",
+    "python3-hatchling",
+    "python3-pathspec",
+    "python3-pluggy",
+    "python3-packaging",
+    "python3-trove-classifiers",
+]
+
+[package]
+dependencies = [
+    "python312",
+    "python3-hatchling",
+    "python3-setuptools-scm",
+]
