@@ -1,0 +1,25 @@
+# TODO compiles but requires testing
+[source]
+git = "https://github.com/urllib3/urllib3"
+rev = "2.7.0"
+shallow_clone = true
+
+[build]
+template = "python"
+dev-dependencies = [
+  "host:python312",
+  "python312",
+  "python3-hatchling",
+  "python3-hatch-vcs",
+  "python3-setuptools-scm",
+  "python3-pathspec",
+  "python3-pluggy",
+  "python3-vcs-versioning",
+  "python3-packaging",
+  "python3-trove-classifiers",
+]
+
+[package]
+dependencies = [
+  "python312"
+]

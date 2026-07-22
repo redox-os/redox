@@ -1,4 +1,3 @@
-# TODO compiles but fails to find request module when running tests
 [source]
 git = "https://github.com/WebAssembly/wasi-testsuite"
 branch = "prod/testsuite-base"
@@ -13,5 +12,6 @@ cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}/home/user/wasi-testsuite"
 [package]
 dependencies = [
   "python312",
-  "python3-colorama"
+  "python3-colorama",
+  "python3-requests",
 ]
