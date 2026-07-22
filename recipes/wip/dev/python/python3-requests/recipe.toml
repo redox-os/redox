@@ -1,0 +1,24 @@
+# TODO compiles but requires testing
+# FIXME remove --no-deps when pip dependency handling works properly
+[source]
+git = "https://github.com/psf/requests"
+rev = "v2.34.2"
+shallow_clone = true
+
+[build]
+template = "python"
+pipflags = ["--no-deps"]
+dev-dependencies = [
+  "host:python312",
+  "python312",
+  "python3-setuptools",
+]
+
+[package]
+dependencies = [
+  "python312",
+  "python3-charset_normalizer",
+  "python3-idna",
+  "python3-urllib3",
+  "python-certifi",
+]
