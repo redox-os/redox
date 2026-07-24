@@ -18,10 +18,7 @@
       ...
     }:
     flake-parts.lib.mkFlake { inherit inputs; } (
-      top@{
-        config,
-        withSystem,
-        moduleWithSystem,
+      {
         ...
       }:
       {
@@ -35,8 +32,6 @@
         perSystem =
           {
             system,
-            lib,
-            inputs',
             ...
           }:
           let
@@ -64,11 +59,6 @@
               # Provides a script that copies required files to ~/
               default =
                 let
-                  rustPlatform = pkgs.makeRustPlatform {
-                    cargo = rust-bin;
-                    rustc = rust-bin;
-                  };
-
                   podmanSetupScript =
                     let
                       registriesConf = pkgs.writeText "registries.conf" ''
