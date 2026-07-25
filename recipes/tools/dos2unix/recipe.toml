@@ -1,0 +1,19 @@
+[source]
+tar = "https://waterlander.net/dos2unix/files/dos2unix-7.5.6.tar.gz"
+blake3 = "1c12a3c6e9f2d0da41534411d4e71a6d107cba968321244be3718f3a705932b1"
+
+[build]
+template = "custom"
+dependencies = ["gettext"]
+script = """
+DYNAMIC_INIT
+rsync -av --delete "${COOKBOOK_SOURCE}/" "${COOKBOOK_BUILD}/"
+
+make AR="${AR}" \
+    CC="${CC}" \
+    RANLIB="${RANLIB}" \
+    LDFLAGS="${LDFLAGS} -lintl" \
+    prefix="${COOKBOOK_STAGE}" install
+
+"""
+
