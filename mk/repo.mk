@@ -240,7 +240,11 @@ DESTDIR?=/
 
 # Install all recipes specified by the filesystem config
 install:
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
 	$(REPO_BIN) push $(COOKBOOK_OPTS) --no-metadata --with-package-deps "--sysroot=$(DESTDIR)"
+endif
 
 # Rebuild and install all recipes specified by the filesystem config
 rebuild-install: $(FSTOOLS_TAG) FORCE
@@ -248,7 +252,11 @@ rebuild-install: $(FSTOOLS_TAG) FORCE
 	$(MAKE) install
 
 i.%: $(FSTOOLS_TAG) FORCE
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
 	$(REPO_BIN) push $* $(COOKBOOK_OPTS) --no-metadata --with-package-deps "--sysroot=$(DESTDIR)"
+endif
 
 # Invoke rebuild and install for one of more targets separated by comma
 ri.%: $(FSTOOLS_TAG) FORCE

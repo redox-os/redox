@@ -1,0 +1,10 @@
+# NOTE: This is only used to compile into wasi
+[source]
+git = "https://github.com/WebAssembly/wasi-libc"
+shallow_clone = true
+
+[build]
+template = "custom"
+script = """
+cookbook_cmake
+"""

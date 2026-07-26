@@ -14,6 +14,7 @@ LLVM_TARGET=recipes/dev/llvm21/target/$(HOST_TARGET)/$(TARGET)
 RUST_TARGET=recipes/dev/rust/target/$(HOST_TARGET)/$(TARGET)
 CLANG_TARGET=recipes/dev/clang21/target/$(HOST_TARGET)/$(TARGET)
 LLD_TARGET=recipes/dev/lld21/target/$(HOST_TARGET)/$(TARGET)
+WASIP1_LIBC_TARGET=recipes/dev/wasi-libc/target/$(HOST_TARGET)/wasm32-wasip1
 # dependencies of GCC and Rust
 LIBGMP_TARGET=recipes/libs/libgmp/target/$(HOST_TARGET)/$(TARGET)
 LIBMPFR_TARGET=recipes/libs/libmpfr/target/$(HOST_TARGET)/$(TARGET)
@@ -31,7 +32,7 @@ UPSTREAM_RUSTC_VERSION=2026-05-24
 export PREFIX_RUSTFLAGS=-L $(ROOT)/$(PREFIX_INSTALL)/$(TARGET)/lib
 export RUSTUP_TOOLCHAIN=$(ROOT)/$(PREFIX_INSTALL)
 export REDOXER_TOOLCHAIN=$(RUSTUP_TOOLCHAIN)
-PREFIX_CONFIG=CI=1 COOKBOOK_CLEAN_BUILD=true COOKBOOK_CLEAN_TARGET=false COOKBOOK_VERBOSE=true COOKBOOK_NONSTOP=false
+PREFIX_CONFIG=CI=1 COOKBOOK_CLEAN_TARGET=false COOKBOOK_VERBOSE=true COOKBOOK_NONSTOP=false
 
 prefix: $(PREFIX)/sysroot
 
@@ -42,7 +43,7 @@ ifeq ($(PREFIX_BINARY),0)
 	rm -rf $(BINUTILS_TARGET) $(LIBTOOL_TARGET) $(GCC_TARGET) $(LIBSTDCXX_TARGET) $(RELIBC_FREESTANDING_TARGET)
 	rm -rf $(RELIBC_TARGET) $(LLVM_TARGET) $(RUST_TARGET) $(CLANG_TARGET) $(LLD_TARGET) $(LIBGMP_TARGET) $(LIBMPFR_TARGET)
 	rm -rf $(LIBMPC_TARGET) $(LIBZLIB_TARGET) $(LIBZSTD_TARGET) $(LIBSSL_TARGET) $(LIBHTTP2_TARGET) $(LIBCURL_TARGET)
-	rm -rf $(LIBGCC_TARGET) $(LIBCPP_TARGET)
+	rm -rf $(LIBGCC_TARGET) $(LIBCPP_TARGET) $(WASIP1_LIBC_TARGET)
 endif
 
 # Remove relibc in sysroot and all statically linked recipes
@@ -391,19 +392,35 @@ endif
 # BUILD RUST ---------------------------------------------------
 else
 
-$(PREFIX)/rust-install: | $(PREFIX)/gcc-install $(PREFIX)/libtool-install $(FSTOOLS_TAG) $(CONTAINER_TAG)
+$(PREFIX)/wasip1-libc-install: $(PREFIX)/clang-install $(FSTOOLS_TAG) $(CONTAINER_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
+	@echo "\033[1;36;49mBuilding wasip1-libc-install\033[0m"
+	rm -rf "$@.partial" "$@"
+	export REDOXER_TOOLCHAIN=$(ROOT)/$(PREFIX)/clang-install REDOXER_USE_CLANG=1 PATH="$(ROOT)/$(PREFIX)/clang-install/bin:$$PATH" \
+		$(PREFIX_CONFIG) COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_TARGET=wasm32-wasip1 COOKBOOK_CROSS_GNU_TARGET=wasm32-wasip1 && \
+		$(REPO_BIN) cook host:wasi-libc
+	cp -r "$(WASIP1_LIBC_TARGET)/stage/usr/". "$@.partial"
+	mkdir -p "$@.partial/share/wasi-sysroot"
+	ln -s "../../lib" "$@.partial/share/wasi-sysroot/lib"
+	ln -s "../../include" "$@.partial/share/wasi-sysroot/include"
+	mv "$@.partial" "$@"
+# TODO: Cache from WASIP1_LIBC_TARGET is currently not cleared.
+endif
+
+$(PREFIX)/rust-install: | $(PREFIX)/wasip1-libc-install $(PREFIX)/gcc-install $(PREFIX)/libtool-install $(FSTOOLS_TAG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
 	@echo "\033[1;36;49mBuilding rust-install\033[0m"
 	rm -rf "$@.partial" "$@"
-	export PATH="$(ROOT)/$(PREFIX)/libtool-install/bin:$(ROOT)/$(PREFIX)/gcc-install/bin:$$PATH" \
+	export PATH="$(ROOT)/$(PREFIX)/libtool-install/bin:$(ROOT)/$(PREFIX)/gcc-install/bin:$$PATH" WASI_SDK_PATH=$(ROOT)/$(PREFIX)/wasip1-libc-install \
 		$(PREFIX_CONFIG) COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_TARGET=$(TARGET) COOKBOOK_CROSS_GNU_TARGET=$(GNU_TARGET) && \
-		$(REPO_BIN) cook host:llvm21 host:rust
+		$(REPO_BIN) cook host:rust
 	cp -r "$(RUST_TARGET)/stage/usr/". "$@.partial"
-	cp -r "$(LLVM_TARGET)/stage/usr/". "$@.partial"
 	mv "$@.partial" "$@"
-# TODO: Cache from RUST_TARGET is currently not cleared.
+# TODO: Cache from RUST_TARGET and LLVM_TARGET is currently not cleared.
 # TIP: If you're developing std for rust, remove COOKBOOK_CLEAN_BUILD=true
 #      at the top of this file so your next rust build reuses the build cache
 endif
@@ -411,7 +428,7 @@ endif
 endif
 
 # BUILD CLANG ---------------------------------------------------
-$(PREFIX)/clang-install: | $(PREFIX)/rust-install $(PREFIX)/libtool-install $(FSTOOLS_TAG) $(CONTAINER_TAG)
+$(PREFIX)/clang-install: | $(PREFIX)/libtool-install $(FSTOOLS_TAG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
@@ -420,10 +437,7 @@ else
 	export PATH="$(ROOT)/$(PREFIX)/libtool-install/bin:$$PATH" \
 		$(PREFIX_CONFIG) COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_TARGET=$(TARGET) && \
 		$(REPO_BIN) cook host:llvm21 host:clang21 host:lld21
-# llvm libraries is already in rust if building
-ifeq ($(PREFIX_USE_UPSTREAM_RUST_COMPILER),1)
 	cp -r "$(LLVM_TARGET)/stage/usr/". "$@.partial"
-endif
 	cp -r "$(LLVM_TARGET)/stage.runtime/usr/". "$@.partial"
 	cp -r "$(LLVM_TARGET)/stage.dev/usr/". "$@.partial"
 	cp -r "$(CLANG_TARGET)/stage/usr/". "$@.partial"
@@ -431,7 +445,7 @@ endif
 	rm -rf "$@.partial/lib/"*.a
 	mv "$@.partial" "$@"
 # no longer needed, delete build files to save disk space
-	rm -rf $(LLVM_TARGET) $(CLANG_TARGET) $(LLD_TARGET)
+	rm -rf $(CLANG_TARGET) $(LLD_TARGET)
 endif
 
 endif
