@@ -19,6 +19,10 @@ path = "src/bin/repo.rs"
 name = "repo_builder"
 path = "src/bin/repo_builder.rs"
 
+[[bin]]
+name = "repo_editor"
+path = "src/bin/repo_editor/main.rs"
+
 [lib]
 name = "cookbook"
 path = "src/lib.rs"

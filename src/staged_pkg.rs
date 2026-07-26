@@ -6,6 +6,9 @@ use std::sync::LazyLock;
 
 use pkg::{Package, PackageError, PackageName};
 
+use crate::bail_other_err;
+use crate::cook::fs;
+
 // This file contains code that caches recipe paths.
 
 // TODO: This file is previously resides in `pkg` crate,
@@ -45,12 +48,22 @@ pub fn find(recipe: &str) -> Option<&'static Path> {
     RECIPE_PATHS.get(recipe).map(PathBuf::as_path)
 }
 
-pub fn list(prefix: impl AsRef<Path>) -> BTreeSet<PathBuf> {
-    let prefix = prefix.as_ref();
-    RECIPE_PATHS
-        .values()
-        .map(|path| prefix.join(path))
-        .collect()
+pub fn list() -> BTreeSet<PathBuf> {
+    RECIPE_PATHS.values().map(|p| p.to_path_buf()).collect()
+}
+
+pub fn list_repo(repo_dir: impl AsRef<Path>) -> crate::Result<BTreeSet<PathBuf>> {
+    let repo_dir = repo_dir.as_ref();
+    let repo_toml_path = repo_dir.join(redoxer::target()).join("repo.toml");
+    if !repo_toml_path.is_file() {
+        bail_other_err!("The repository is not found: {}", repo_toml_path.display());
+    };
+    let repos: pkg::Repository = fs::read_toml(&repo_toml_path)?;
+    Ok(repos
+        .packages
+        .keys()
+        .filter_map(|n| find(n).map(|s| s.to_path_buf()))
+        .collect::<BTreeSet<_>>())
 }
 
 pub fn new(name: &PackageName) -> Result<Package, PackageError> {
