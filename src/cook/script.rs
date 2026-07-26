@@ -212,11 +212,12 @@ COOKBOOK_CONFIGURE_FLAGS=(
     --disable-shared
     --enable-static
 )
+COOKBOOK_MAKE_FLAGS=()
 COOKBOOK_MAKE="make"
 
 function cookbook_configure {
     "${COOKBOOK_CONFIGURE}" "${COOKBOOK_CONFIGURE_FLAGS[@]}" "$@"
-    "${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}"
+    "${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}" "${COOKBOOK_MAKE_FLAGS[@]}"
     "${COOKBOOK_MAKE}" install DESTDIR="${COOKBOOK_STAGE}"
 }
 
@@ -242,17 +243,28 @@ function generate_cookbook_cmake_file {
         SYSTEM_NAME="UnixPaths"
     fi
 
-    cat > $file <<EOF
+if [ -z "${REDOXER_USE_CLANG}" ]; then
+cat > $file <<EOF
 set(CMAKE_AR ${gcc_prefix}ar)
 set(CMAKE_CXX_COMPILER ${gcc_prefix}g++)
 set(CMAKE_C_COMPILER ${gcc_prefix}gcc)
+set(CMAKE_RANLIB ${gcc_prefix}ranlib)
+EOF
+else
+cat > $file <<EOF
+set(CMAKE_AR llvm-ar)
+set(CMAKE_CXX_COMPILER clang++)
+set(CMAKE_C_COMPILER clang)
+set(CMAKE_RANLIB llvm-ranlib)
+EOF
+fi
+    cat >> $file <<EOF
 set(CMAKE_FIND_ROOT_PATH ${sysroot})
 set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
 set(CMAKE_PLATFORM_USES_PATH_WHEN_NO_SONAME 1)
 set(CMAKE_PREFIX_PATH, ${sysroot})
-set(CMAKE_RANLIB ${gcc_prefix}ranlib)
 set(CMAKE_SHARED_LIBRARY_SONAME_C_FLAG "-Wl,-soname,")
 set(CMAKE_SYSTEM_NAME ${SYSTEM_NAME})
 set(CMAKE_SYSTEM_PROCESSOR ${arch})
