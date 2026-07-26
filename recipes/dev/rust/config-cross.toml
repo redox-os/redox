@@ -5,11 +5,11 @@ link-shared = true
 
 [build]
 host = ["TARGET"]
-target = ["TARGET", "COOKBOOK_TARGET"]
+target = ["TARGET", "COOKBOOK_TARGET", "wasm32-wasip1"]
 cargo-native-static = true
 submodules = false
 docs = false
-tools = ["cargo", "clippy", "rustdoc", "rustfmt", "src"]
+tools = ["cargo", "cargo-miri", "clippy", "miri", "rustdoc", "rustfmt", "src"]
 extended = true
 verbose = 1
 

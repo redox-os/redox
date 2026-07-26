@@ -22,7 +22,7 @@ case "${ARCH}" in
 esac
 
 if [ "${COOKBOOK_HOST_SYSROOT}" = "/usr" ]; then
-    LLVM_TARGETS_TO_BUILD="X86;AArch64;RISCV"
+    LLVM_TARGETS_TO_BUILD="X86;AArch64;RISCV;WebAssembly"
 fi
 
 # This just build the LLVM library and tools just enough for Rust, to build the rest of LLVM see
