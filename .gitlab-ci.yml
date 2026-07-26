@@ -23,6 +23,8 @@ cargo-test:
   image: "rust:trixie"
   stage: lint
   script:
+    # warnings are annoying for user
+    - export RUSTFLAGS="-Dwarnings" 
     - cargo test --locked
 
 fetch-changed:
