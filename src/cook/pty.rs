@@ -24,6 +24,8 @@ pub(crate) use log_to_pty;
 
 pub type PtyOut<'a> = Option<(&'a mut UnixSlavePty, &'a mut PipeWriter)>;
 
+/// Setup pty without stdin.
+/// Returns (pty stdout, log out, pty+log writer)
 pub fn setup_pty() -> (
     Box<dyn Read + Send>,
     PipeReader,
@@ -38,7 +40,6 @@ pub fn setup_pty() -> (
         })
         .expect("Unable to open pty");
 
-    // TODO: There's no way to handle stdin
     let pty_reader = pair
         .master
         .try_clone_reader()
@@ -47,6 +48,41 @@ pub fn setup_pty() -> (
     let (log_reader, log_writer) = std::io::pipe().expect("Failed to create log pipe");
     let pipes = (pair.slave, log_writer);
     (pty_reader, log_reader, pipes)
+}
+
+/// Setup pty with stdin.
+/// Returns (pty stdout, log out, pty stdin, pty+log writer)
+pub fn setup_pty_with_stdin() -> (
+    Box<dyn Read + Send>,
+    PipeReader,
+    Box<dyn Write + Send>,
+    (UnixSlavePty, PipeWriter),
+) {
+    let pty_system = UnixPtySystem::default();
+    let pair = pty_system
+        .openpty(PtySize {
+            rows: 24,
+            cols: 80,
+            pixel_width: 0,
+            pixel_height: 0,
+        })
+        .expect("Unable to open pty");
+
+    let pty_reader = pair
+        .master
+        .try_clone_reader()
+        .expect("Unable to clone pty reader");
+
+    let pty_writer = pair
+        .master
+        .try_clone_writer()
+        .expect("Unable to clone pty writer");
+
+    let (log_reader, log_writer) = std::io::pipe().expect("Failed to create log pipe");
+
+    let pipes = (pair.slave, log_writer);
+
+    (pty_reader, log_reader, pty_writer, pipes)
 }
 
 pub fn flush_pty(logger: &mut PtyOut) {
@@ -62,6 +98,13 @@ pub fn flush_pty(logger: &mut PtyOut) {
 pub fn spawn_to_pipe(command: &mut Command, stdout_pipe: &PtyOut) -> Result<Child> {
     match stdout_pipe {
         Some(stdout) => stdout.0.spawn_command(command.into()),
+        None => Ok(command.spawn().map_err(wrap_io_err!("Spawning"))?),
+    }
+}
+
+pub fn spawn_to_pipe_with_stdin(command: &mut Command, stdout_pipe: &PtyOut) -> Result<Child> {
+    match stdout_pipe {
+        Some(stdout) => stdout.0.spawn_command_stdin(command.into()),
         None => Ok(command.spawn().map_err(wrap_io_err!("Spawning"))?),
     }
 }
@@ -188,6 +231,16 @@ impl Read for PtyFd {
     }
 }
 
+impl Write for PtyFd {
+    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+        self.0.write(buf)
+    }
+
+    fn flush(&mut self) -> io::Result<()> {
+        self.0.flush()
+    }
+}
+
 impl PtyFd {
     fn resize(&self, size: PtySize) -> Result<()> {
         let ws_size = winsize {
@@ -231,37 +284,40 @@ impl PtyFd {
         })
     }
 
-    fn spawn_command(&self, cmd: &mut Command) -> Result<std::process::Child> {
+    fn spawn_command(&self, cmd: &mut Command, stdin: bool) -> Result<std::process::Child> {
+        cmd.stdout(self.try_clone().map_err(wrap_io_err!("Cloning pty"))?)
+            .stderr(self.try_clone().map_err(wrap_io_err!("Cloning pty"))?);
+
+        if stdin {
+            cmd.stdin(self.try_clone().map_err(wrap_io_err!("Cloning pty"))?);
+        }
+
         unsafe {
-            cmd
-                // .stdin(self.as_stdio()?)
-                .stdout(self.try_clone().map_err(wrap_io_err!("Cloning pty"))?)
-                .stderr(self.try_clone().map_err(wrap_io_err!("Cloning pty"))?)
-                .pre_exec(move || {
-                    // Clean up a few things before we exec the program
-                    // Clear out any potentially problematic signal
-                    // dispositions that we might have inherited
-                    for signo in &[
-                        libc::SIGCHLD,
-                        libc::SIGHUP,
-                        libc::SIGINT,
-                        libc::SIGQUIT,
-                        libc::SIGTERM,
-                        libc::SIGALRM,
-                    ] {
-                        libc::signal(*signo, libc::SIG_DFL);
-                    }
+            cmd.pre_exec(move || {
+                // Clean up a few things before we exec the program
+                // Clear out any potentially problematic signal
+                // dispositions that we might have inherited
+                for signo in &[
+                    libc::SIGCHLD,
+                    libc::SIGHUP,
+                    libc::SIGINT,
+                    libc::SIGQUIT,
+                    libc::SIGTERM,
+                    libc::SIGALRM,
+                ] {
+                    libc::signal(*signo, libc::SIG_DFL);
+                }
 
-                    let empty_set: libc::sigset_t = std::mem::zeroed();
-                    libc::sigprocmask(libc::SIG_SETMASK, &empty_set, std::ptr::null_mut());
+                let empty_set: libc::sigset_t = std::mem::zeroed();
+                libc::sigprocmask(libc::SIG_SETMASK, &empty_set, std::ptr::null_mut());
 
-                    // Establish ourselves as a session leader.
-                    if libc::setsid() == -1 {
-                        return Err(io::Error::last_os_error());
-                    }
+                // Establish ourselves as a session leader.
+                if libc::setsid() == -1 {
+                    return Err(io::Error::last_os_error());
+                }
 
-                    Ok(())
-                })
+                Ok(())
+            })
         };
 
         let mut child = cmd.spawn().map_err(wrap_io_err!("Spawning cmd"))?;
@@ -271,7 +327,9 @@ impl PtyFd {
         // them) and won't work in the usual way anyway.
         // In practice these are None, but it seems best to be move them
         // out in case the behavior of Command changes in the future.
-        // child.stdin.take();
+        if stdin {
+            child.stdin.take();
+        }
         child.stdout.take();
         child.stderr.take();
 
@@ -310,7 +368,10 @@ fn cloexec(fd: RawFd) -> Result<()> {
 
 impl UnixSlavePty {
     fn spawn_command(&self, builder: &mut Command) -> Result<std::process::Child> {
-        Ok(self.fd.spawn_command(builder)?)
+        Ok(self.fd.spawn_command(builder, false)?)
+    }
+    fn spawn_command_stdin(&self, builder: &mut Command) -> Result<std::process::Child> {
+        Ok(self.fd.spawn_command(builder, true)?)
     }
     fn flush(&mut self) -> Result<()> {
         self.fd.flush()
@@ -329,6 +390,15 @@ impl UnixMasterPty {
     }
 
     fn try_clone_reader(&self) -> Result<Box<dyn Read + Send>> {
+        let fd = PtyFd(
+            self.fd
+                .try_clone()
+                .map_err(wrap_io_err!("Cloning pty fd"))?,
+        );
+        Ok(Box::new(fd))
+    }
+
+    pub fn try_clone_writer(&self) -> Result<Box<dyn Write + Send>> {
         let fd = PtyFd(
             self.fd
                 .try_clone()

@@ -1,15 +1,14 @@
-use ansi_to_tui::IntoText;
 use cookbook::config::{CookConfig, CookLockOpt, get_config, init_config};
 use cookbook::cook::cook_build::{build, get_stage_dirs, remove_stage_dir};
 use cookbook::cook::fetch::{FetchResult, fetch, fetch_offline};
 use cookbook::cook::fs::{
     create_dir, create_target_dir, get_git_commit_date, get_git_head_rev, get_git_rev_before_date,
-    read_toml, remove_all, run_command,
+    remove_all, run_command,
 };
 use cookbook::cook::package::{package, package_handle_push};
 use cookbook::cook::pty::{PtyOut, UnixSlavePty, flush_pty, setup_pty, write_to_pty};
-use cookbook::cook::script::KILL_ALL_PID;
 use cookbook::cook::tree::{self, WalkTreeEntry};
+use cookbook::cook::tui::{drain_buffer_to_lines, join_logs, kill_everything, render_build_log};
 use cookbook::cook::{fetch_repo, ident};
 use cookbook::recipe::{
     CookRecipe, SourceRecipe, recipes_flatten_package_names, recipes_mark_as_deps,
@@ -20,11 +19,11 @@ use ratatui::Terminal;
 use ratatui::layout::{Constraint, Direction, Layout, Rect};
 use ratatui::prelude::TermionBackend;
 use ratatui::style::{Color, Style};
-use ratatui::text::{Line, Span, Text};
+use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, Borders, Clear, List, ListItem, ListState, Paragraph, Wrap};
 use redox_installer::PackageConfig;
 use std::borrow::Cow;
-use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
+use std::collections::{BTreeMap, HashMap, HashSet};
 use std::io::{Read, Write, stderr, stdin, stdout};
 use std::path::PathBuf;
 use std::process::Command;
@@ -32,7 +31,7 @@ use std::str::FromStr;
 use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use std::sync::{Arc, OnceLock, mpsc};
 use std::time::{Duration, Instant};
-use std::{cmp, env, fs};
+use std::{env, fs};
 use std::{process, thread};
 use termion::event::{Event, Key};
 use termion::input::TermRead;
@@ -151,6 +150,8 @@ impl FromStr for CliCommand {
         match s {
             "fetch" => Ok(CliCommand::Fetch),
             "cook" => Ok(CliCommand::Cook),
+            // alias for repo_editor
+            "rebuild" => Ok(CliCommand::Cook),
             "unfetch" => Ok(CliCommand::Unfetch),
             "clean" => Ok(CliCommand::Clean),
             "clean-target" => Ok(CliCommand::CleanTarget),
@@ -519,7 +520,16 @@ fn parse_args(args: Vec<String>) -> Result<(CliConfig, CliCommand, Vec<CookRecip
     let Some(command) = command else {
         bail_options_err!("Error: No command specified");
     };
-    let command: CliCommand = str::parse(&command)?;
+    let command =
+        if command.starts_with("change-rule ") || command.starts_with("change-rule-local ") {
+            // repo_editor hack
+            let mut split = command.split(' ');
+            let cmd: CliCommand = str::parse(split.next().unwrap())?;
+            config.set_rule = split.next().map(|s| s.to_string());
+            cmd
+        } else {
+            str::parse(&command)?
+        };
     if command.is_informational() {
         // avoid extra data that clobber stdout
         config.cook.verbose = false;
@@ -532,23 +542,11 @@ fn parse_args(args: Vec<String>) -> Result<(CliConfig, CliCommand, Vec<CookRecip
             let all_recipes_path = match command.is_cleaning() || config.category.is_some() {
                 true => {
                     // some wip recipes have broken toml
-                    staged_pkg::list("")
+                    staged_pkg::list()
                 }
                 false => {
                     // get the list from repo/TARGET/repo.toml
-                    let repo_toml_path = config.repo_dir.join(redoxer::target()).join("repo.toml");
-                    if !repo_toml_path.is_file() {
-                        bail_options_err!(
-                            "The repository is not found: {}",
-                            repo_toml_path.display()
-                        );
-                    };
-                    let repos: pkg::Repository = read_toml(&repo_toml_path)?;
-                    repos
-                        .packages
-                        .keys()
-                        .filter_map(|n| staged_pkg::find(n).map(|s| s.to_path_buf()))
-                        .collect::<BTreeSet<_>>()
+                    staged_pkg::list_repo(&config.repo_dir)?
                 }
             };
 
@@ -906,6 +904,12 @@ fn handle_clean(recipe: &CookRecipe, config: &CliConfig, command: &CliCommand) -
 
 static PUSH_CONFIG: OnceLock<CliConfig> = OnceLock::new();
 fn handle_push(recipes: &Vec<CookRecipe>, config: &CliConfig) -> Result<()> {
+    if !config.sysroot_dir.is_dir() {
+        return Err(Error::Other(format!(
+            "{} is not exist. Please run `make mount` first.",
+            config.sysroot_dir.display()
+        )));
+    }
     let recipe_map: HashMap<&PackageName, &CookRecipe> =
         recipes.iter().map(|r| (&r.name, r)).collect();
     let mut total_size: u64 = 0;
@@ -1366,14 +1370,7 @@ impl TuiApp {
                     let _ = std::io::stdout().write_all(&chunk);
                 }
                 let log_list = self.logs.entry(name.clone()).or_default();
-                // TODO: multibyte-aware line split?
-                while let Some(newline_pos) = buffer.iter().position(|&b| b == b'\n') {
-                    let line_bytes = buffer.drain(..=newline_pos);
-                    let line_str = String::from_utf8_lossy(&line_bytes.as_slice());
-                    let line_str_pos = line_str.trim_end();
-                    let line_str = line_str_pos.rsplit('\r').next().unwrap_or(&line_str_pos);
-                    log_list.push(line_str.to_owned());
-                }
+                drain_buffer_to_lines(buffer, log_list);
                 return;
             }
             StatusUpdate::FlushLog(name, path) => {
@@ -1734,84 +1731,24 @@ fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> Result<TuiApp> {
                 format!(" {} Log ", app.log_view_job.to_string())
             };
 
-            let mut enable_auto_scroll = false;
-            let mut intended_scroll_pos = 0usize;
+            let mut enable_auto_scroll = app.auto_scroll;
+            let mut intended_scroll_pos = app.log_scroll;
 
-            let mut log_lines: Vec<Line> = if let Some(log_text) = log_text
-                && !log_text.is_empty()
-            {
-                let total_log_lines = log_text.len() as usize;
-
-                let start = if app.auto_scroll {
-                    if total_log_lines > panel_height {
-                        intended_scroll_pos = total_log_lines - panel_height;
-                        total_log_lines - panel_height
-                    } else {
-                        0
-                    }
+            let log_lines = render_build_log(
+                panel_height,
+                log_text,
+                log_line,
+                app.prompt.is_none() || config.cook.nonstop,
+                &mut enable_auto_scroll,
+                &mut intended_scroll_pos,
+                if let Some(search_results) = app.search_results.as_ref()
+                    && app.is_inspecting
+                {
+                    Some((app.search_idx, search_results))
                 } else {
-                    if total_log_lines > panel_height {
-                        let limit = 2; // arbitrary number
-                        if app.log_scroll >= total_log_lines - limit {
-                            if app.prompt.is_none() || config.cook.nonstop {
-                                enable_auto_scroll = true;
-                            }
-                            intended_scroll_pos = total_log_lines - limit;
-                            total_log_lines - limit
-                        } else {
-                            app.log_scroll
-                        }
-                    } else {
-                        0
-                    }
-                };
-
-                let end = cmp::min(panel_height + start, total_log_lines - 1);
-
-                log_text[start..end]
-                    .iter()
-                    .enumerate()
-                    .map(|(i, s)| {
-                        if app.is_inspecting {
-                            if let Some(search_results) = app.search_results.as_ref() {
-                                let absolute_i = start + i;
-                                if absolute_i == search_results[app.search_idx] {
-                                    let s = strip_ansi_escapes::strip_str(s);
-                                    return Line::from(s).style(
-                                        Style::default().bg(Color::Yellow).fg(Color::Black),
-                                    );
-                                } else if search_results.binary_search(&absolute_i).is_ok() {
-                                    let s = strip_ansi_escapes::strip_str(s);
-                                    return Line::from(s)
-                                        .style(Style::default().bg(Color::Black).fg(Color::White));
-                                }
-                            }
-                        }
-                        let text_with_colors = s
-                            .into_text()
-                            .unwrap_or_else(|_| Text::raw("--unrenderable line--"));
-                        text_with_colors
-                            .lines
-                            .into_iter()
-                            .next()
-                            .unwrap_or_else(|| Line::raw("--unrenderable line--"))
-                    })
-                    .collect()
-            } else {
-                vec![Line::from("No logs yet")]
-            };
-
-            if let Some(buffer) = log_line
-                && !buffer.is_empty()
-            {
-                let text_with_colors = handle_cr(&buffer)
-                    .into_text()
-                    .unwrap_or_else(|_| Text::raw("--unrenderable line--"));
-
-                if let Some(line) = text_with_colors.lines.into_iter().next() {
-                    log_lines.push(line);
-                }
-            }
+                    None
+                },
+            );
 
             let instruct = if app.is_inspecting {
                 let line_info = if let Some(search_results) = app.search_results.as_ref() {
@@ -1876,10 +1813,10 @@ fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> Result<TuiApp> {
                     draw_prompt(f, prompt, config.cook.nonstop);
                 }
             }
-            if enable_auto_scroll {
+            if !app.auto_scroll && enable_auto_scroll {
                 app.auto_scroll = true;
             }
-            if intended_scroll_pos > 0 {
+            if intended_scroll_pos != app.log_scroll {
                 app.log_scroll = intended_scroll_pos;
             }
 
@@ -1928,27 +1865,13 @@ fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> Result<TuiApp> {
     let _ = stdout().flush();
 
     if config.cook.nonstop && app.dump_logs_on_exit.is_some() {
-        kill_everything();
+        kill_everything(None);
     }
 
     let _ = fetcher_handle.join();
     let _ = cooker_handle.join();
 
     Ok(app)
-}
-
-fn join_logs(log: &Vec<String>, line: Option<Cow<'_, str>>) -> String {
-    let mut logs = log.join("\n");
-    if let Some(line) = line {
-        logs.push_str("\n");
-        logs.push_str(handle_cr(&line));
-    }
-    logs
-}
-
-fn handle_cr<'a>(buffer: &'a Cow<'_, str>) -> &'a str {
-    let st = buffer.trim_end();
-    st.rsplit('\r').next().unwrap_or(&st)
 }
 
 fn handle_main_event(app: &mut TuiApp, event: &Event) {
@@ -1962,7 +1885,7 @@ fn handle_main_event(app: &mut TuiApp, event: &Event) {
             }
             Key::Char('c') => {
                 // as compilers still running, we use this way to stop it
-                kill_everything();
+                kill_everything(None);
             }
             Key::Up => {
                 app.auto_scroll = false;
@@ -2116,17 +2039,6 @@ fn handle_inspect_event(event: &Event, app: &mut TuiApp) -> bool {
         }
     }
     false
-}
-
-fn kill_everything() {
-    let pid = std::process::id();
-    Command::new("bash")
-        .arg("-c")
-        .arg(KILL_ALL_PID.replace("$PID", &pid.to_string()))
-        .stdout(process::Stdio::null())
-        .stderr(process::Stdio::null())
-        .spawn()
-        .expect("unable to spawn kill");
 }
 
 fn handle_prompt_input<'a>(

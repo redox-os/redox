@@ -49,6 +49,13 @@ else
 	touch $@
 endif
 
+repo_editor: $(FSTOOLS_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
+	CONFIG=$(FILESYSTEM_CONFIG) $(REPO_BIN)_editor
+endif
+
 fstools_clean: FORCE
 	rm -rf target
 	rm -rf $(FSTOOLS)
