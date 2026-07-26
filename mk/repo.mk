@@ -270,7 +270,12 @@ bc.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
+ifeq ($(REPO_BINARY),0)
+# if explicitly set REPO_BINARY=0 (as opposed to leave it empty), this prevent dependencies to update
+	$(REPO_BIN) change-rule-local --set-rule=binary $(foreach f,$(subst $(comma), ,$*),$(f))
+else
 	$(REPO_BIN) change-rule --set-rule=binary $(foreach f,$(subst $(comma), ,$*),$(f)) --with-package-deps
+endif
 endif
 
 # Set recipe rule to "source" then invoke clean
@@ -278,7 +283,12 @@ sc.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
+ifeq ($(REPO_BINARY),1)
+# if explicitly set REPO_BINARY=1, this prevent dependencies to update
+	$(REPO_BIN) change-rule-local --set-rule=source $(foreach f,$(subst $(comma), ,$*),$(f))
+else
 	$(REPO_BIN) change-rule --set-rule=source $(foreach f,$(subst $(comma), ,$*),$(f)) --with-package-deps
+endif
 endif
 
 # Set specific recipe rule to "local" then invoke clean
