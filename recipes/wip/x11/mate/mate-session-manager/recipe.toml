@@ -12,6 +12,7 @@ dependencies = [
     "gtk3",
     "libsm",
     "libxcomposite",
+    "mesa-x11",
 ]
 template = "custom"
 script = """
