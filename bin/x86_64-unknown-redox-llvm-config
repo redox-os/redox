@@ -19,8 +19,8 @@ ARCH_MAP = {
     "riscv64gc": ("RISCV", "riscv", "RISCV"),
 }
 
-ALL_ARCH_COMPS = ["x86", "aarch64", "riscv"]
-ALL_ARCH_LIBS = ["X86", "AArch64", "RISCV"]
+ALL_ARCH_COMPS = ["x86", "aarch64", "riscv", "webassembly"]
+ALL_ARCH_LIBS = ["X86", "AArch64", "RISCV", "WebAssembly"]
 
 def is_unwanted_arch(item, allowed_prefix, all_prefixes, is_lib=False):
     matched_arch = None
