@@ -166,6 +166,7 @@
           PERL_PATH = "${pkgs.perl}/bin/perl";
           SKIP_CHECK_TOOLS = "1";
           PODMAN_BUILD = "0";
+          PREFIX_BINARY = "0";
           shellHook = with pkgs; ''
             export PKG_CONFIG_PATH="${fuse.dev}/lib/pkgconfig\
             :${libpng.dev}/lib/pkgconfig"
