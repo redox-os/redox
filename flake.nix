@@ -101,7 +101,7 @@
           };
 
         #TODO: This isn't tested yet, use at your own risk
-        native = pkgs.mkShell rec {
+        native = (pkgs.mkShell.override { stdenv = pkgs.gcc14Stdenv; }) rec {
           nativeBuildInputs =
             let
               autoreconf269 = pkgs.writeShellScriptBin "autoreconf2.69" "${pkgs.autoconf269}/bin/autoreconf";
