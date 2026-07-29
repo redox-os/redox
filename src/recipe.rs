@@ -276,6 +276,18 @@ impl CookRecipe {
         })
     }
 
+    pub fn dummy(name: &PackageName) -> Self {
+        Self {
+            dir: PathBuf::new(),
+            is_deps: false,
+            name: name.clone(),
+            recipe: Recipe::default(),
+            target: redoxer::target(),
+            pinned: false,
+            rule: "".into(),
+        }
+    }
+
     pub fn from_name(name: PackageName) -> Result<Self, PackageError> {
         let dir = staged_pkg::find(name.name())
             .ok_or_else(|| PackageError::PackageNotFound(name.clone()))?;

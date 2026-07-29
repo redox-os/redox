@@ -18,7 +18,7 @@ repo-tree: $(FSTOOLS_TAG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
-	@$(REPO_BIN) cook-tree $(COOKBOOK_OPTS) --with-package-deps
+	@$(REPO_BIN) cook-list $(COOKBOOK_OPTS) --with-package-deps
 endif
 
 # List all recipes in a push-tree fashion specified by the filesystem config
@@ -26,7 +26,7 @@ image-tree: $(FSTOOLS_TAG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
-	@$(REPO_BIN) push-tree $(COOKBOOK_OPTS)
+	@$(REPO_BIN) push-list $(COOKBOOK_OPTS)
 endif
 
 # Clean specific target to all recipes, similar to repo_clean but more specific
@@ -115,7 +115,7 @@ rt.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
-	$(REPO_BIN) cook-tree $(foreach f,$(subst $(comma), ,$*),$(f)) $(COOKBOOK_OPTS)
+	$(REPO_BIN) cook-list $(foreach f,$(subst $(comma), ,$*),$(f)) $(COOKBOOK_OPTS)
 endif
 
 MOUNTED_TAG=$(MOUNT_DIR)~
@@ -147,7 +147,7 @@ pt.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
-	$(REPO_BIN) push-tree $(foreach f,$(subst $(comma), ,$*),$(f)) $(COOKBOOK_OPTS)
+	$(REPO_BIN) push-list $(foreach f,$(subst $(comma), ,$*),$(f)) $(COOKBOOK_OPTS)
 endif
 
 # Push all recipes specified by the filesystem config
