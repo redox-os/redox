@@ -17,7 +17,7 @@ dependencies = [
     "gtk3",
     "pango",
     "sqlite3",
-    "nss-nspr",
+    # "nss-nspr",
     "startup-notification",
     "zlib",
     "ffmpeg6",

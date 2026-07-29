@@ -8,7 +8,7 @@ rev = "116f1d16f6dc33ab8b0f6010a44e7b23eadeb8ca"
 template = "cmake"
 dependencies = [
     "fontconfig",
-    "freetyoe2",
+    "freetype2",
     "harfbuzz",
     "libssh2",
     "ncursesw",

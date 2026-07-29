@@ -2,4 +2,4 @@
 [source]
 tar = "http://miniupnp.free.fr/files/miniupnpc-2.2.4.tar.gz"
 [build]
-template = "custom"
+template = "cmake"

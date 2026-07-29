@@ -34,7 +34,7 @@ dependencies = [
      "kxmlgui6",
      "knotifications6",
      "kguiaddons6",
-     "ktextwidgets6",
+    #  "ktextwidgets6",
      "kiconthemes6",
      "solid6",
      "kfilemetadata6",

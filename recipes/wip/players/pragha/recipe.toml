@@ -10,5 +10,5 @@ dependencies = [
     "taglib",
     "sqlite3",
     "libpeas",
-    "totem-plparser",
+    "totem-pl-parser",
 ]

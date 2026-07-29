@@ -6,7 +6,7 @@ template = "configure"
 dependencies = [
     "libfuse3",
     "zlib",
-    "liblzma",
+    # "liblzma",
     "lz4",
     "zstd",
 ]

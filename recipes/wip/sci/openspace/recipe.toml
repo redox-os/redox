@@ -12,5 +12,5 @@ cmakeflags = [
 ]
 dependencies = [
     "qt6-base",
-    "libgdal",
+    "gdal",
 ]

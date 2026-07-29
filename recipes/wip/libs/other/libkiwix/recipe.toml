@@ -6,10 +6,10 @@ template = "meson"
 dependencies = [
     "libzim",
     "libicu",
-    "pugixml",
+    # "pugixml",
     "mustache",
     "curl",
-    "microhttpd",
+    "libmicrohttpd",
     "zlib",
 ]
 [package]

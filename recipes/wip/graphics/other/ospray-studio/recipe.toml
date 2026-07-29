@@ -10,6 +10,6 @@ dependencies = [
     "onetbb",
     "librkcommon",
     "mesa",
-    "glfw",
-    "open-image-denoise",
+    "glfw3",
+    # "open-image-denoise",
 ]

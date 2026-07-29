@@ -11,5 +11,5 @@ dependencies = [
     "ispc",
     "onetbb",
     "openvkl",
-    "open-image-denoise",
+    # "open-image-denoise",
 ]

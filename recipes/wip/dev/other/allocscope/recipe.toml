@@ -9,7 +9,7 @@ cargopackages = [
     "allocscope-view",
 ]
 dependencies = [
-    "libiberty",
+    # "libiberty",
     "ncursesw",
     "sqlite3",
     "libunwind",

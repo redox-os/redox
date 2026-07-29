@@ -13,7 +13,7 @@ dependencies = [
     "glew",
     "zlib",
     "freeglut",
-    "glm",
+    # "glm",
     "curl",
     "ngspice",
 ]

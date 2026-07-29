@@ -2,4 +2,4 @@
 [source]
 tar = "https://7-zip.org/a/7z2301-src.tar.xz"
 [build]
-template = "custom"
+template = "cmake"

@@ -4,7 +4,7 @@ git = "https://github.com/probe-rs/probe-rs"
 [build]
 template = "custom"
 dependencies = [
-    "libudev",
+    # "libudev",
 ]
 script = """
 cookbook_cargo --features cli

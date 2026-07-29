@@ -18,8 +18,8 @@ dependencies = [
     "bzip2",
     "libogg",
     "libvorbis",
-    "pulseaudio",
-    "libiberty",
+    # "pulseaudio",
+    # "libiberty",
     "gtk3",
     "libmad",
 ]

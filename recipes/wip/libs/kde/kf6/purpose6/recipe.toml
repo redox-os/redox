@@ -15,7 +15,7 @@ dependencies = [
     "knotifications6",
     "kio6",
     "kservice6",
-    "kprison6",
+    # "kprison6",
     "kitemmodels6",
     "kcmutils6",
 ]
