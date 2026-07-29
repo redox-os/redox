@@ -1,30 +1,13 @@
 #!/usr/bin/env bash
 
-# This script show the package size of the recipes ("stage.pkgar" and "stage.tar.gz")
+# This script show all or some package size of the recipes ("stage.pkgar")
 # It must be used by package maintainers to enforce the library linking size policy
 
-if [ $# = 0 ]
-then
-    find recipes \( -name stage.pkgar -o -name stage.tar.gz \) -exec ls -hs {} \;
-    exit 0
-fi
+# This script must be inside podman `make env`
 
-for recipe in $@
+RECIPES=$(target/release/repo cook-list ${*:---all-compiled} --display=csv |  grep ",Built" | sort -t ',' -k 3 -V | cut -d ',' -f2)
+TARGET=$(target/release/cookbook_redoxer --target)
+for recipe in $RECIPES
 do
-    if [ "$recipe" = "-h" ] || [ "$recipe" = "--help" ]
-    then
-        echo "Usage: $0 [recipe] ..."
-        echo "       For the recipe(s), prints the size of 'stage.pkgar' and 'stage.tar.gz'."
-        echo "       If no recipe is given, then all packages are listed."
-        exit 0
-    fi
-
-    recipe_paths=$(find recipes -name $recipe)
-    for recipe_path in $recipe_paths
-    do
-        if [ -f "$recipe_path/recipe.toml" ] || [ -f "$recipe_path/recipe.sh" ]
-        then
-            find "$recipe_path" \( -name stage.pkgar -o -name stage.tar.gz \) -exec ls -hs {} \;
-        fi
-    done
+    ls -hs "$recipe/target/$TARGET/stage.pkgar"
 done

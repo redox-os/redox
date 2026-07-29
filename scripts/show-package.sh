@@ -11,7 +11,7 @@ then
     exit 1
 fi
 
-find_recipe="target/release/find_recipe"
+find_recipe="target/release/repo"
 if [ ! -x "$find_recipe" ]
 then
     echo "$find_recipe not found."
@@ -21,6 +21,6 @@ fi
 
 for recipe in $*
 do
-    recipe_dir="$("$find_recipe" "$recipe")"
+    recipe_dir="$("$find_recipe" find "$recipe")"
     ls -1 "$recipe_dir/target"/*/{stage,sysroot}
 done

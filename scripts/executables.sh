@@ -37,7 +37,7 @@ done
 
 if [ -z "$recipes" ]
 then
-    recipes="$(target/release/list_recipes)"
+    recipes="$(target/release/repo repo-list --all-compiled --display=path)"
 fi
 
 for recipe in $recipes
@@ -45,7 +45,7 @@ do
     if [[ "$recipe" == *\/* ]]
     then
         recipe_name="$(basename $recipe)"
-        recipe_path="recipes/$recipe"
+        recipe_path="$recipe"
     else
         recipe_name="$recipe"
         recipe_path="$(target/release/repo find $recipe_name)"

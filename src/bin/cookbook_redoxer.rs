@@ -14,5 +14,10 @@ fn main() {
             }
         }
     }
-    redoxer::main(&args);
+    match args[1].as_str() {
+        "--target" => println!("{}", redoxer::target()),
+        "--gnu-target" => println!("{}", redoxer::gnu_target()),
+        "--host-target" => println!("{}", redoxer::host_target()),
+        _ => redoxer::main(&args),
+    }
 }

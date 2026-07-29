@@ -197,6 +197,11 @@ pub fn walk_tree_entry(
     data: &mut TreeData,
     op: fn(TreeItem) -> Result<bool>,
 ) -> Result<()> {
+    // To avoid confusion
+    if package_name.is_host() {
+        return Ok(());
+    }
+
     let cook_recipe = match recipe_map.get(package_name) {
         Some(r) => r,
         None => {

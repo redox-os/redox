@@ -67,7 +67,7 @@ endif
 # Find recipe for one or more targets separated by comma
 find.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) make $@
+	@$(PODMAN_RUN) make $@
 else
 	@$(REPO_BIN) find $(foreach f,$(subst $(comma), ,$*),$(f))
 endif
