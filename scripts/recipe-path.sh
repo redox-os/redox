@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 
-FIND_RECIPE="find recipes -maxdepth 4 -name"
+# Return list of paths from recipes
 
-for recipe in $*
-do
-    ${FIND_RECIPE} "${recipe}"
-done
+IFS=","
+make "find.$*"

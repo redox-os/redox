@@ -2,4 +2,4 @@
 
 # This script print the recipe configuration
 
-cat $(target/release/repo find "$1")/recipe.*
+cat $(make find.$1)/recipe.toml
