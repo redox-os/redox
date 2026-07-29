@@ -15,7 +15,7 @@ dependencies = [
     "gtk3",
     "libgcrypt",
     "libssh",
-    "libvte",
+    # "libvte",
     "libjpeg",
     "gnutls3",
     "libsodium",

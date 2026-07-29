@@ -14,7 +14,7 @@ dependencies = [
     "sdl3",
     "physicsfs",
     "libpng",
-    "libjpeg-turbo",
+    # "libjpeg-turbo",
     "libtheora",
     "libvorbis",
     "libogg",

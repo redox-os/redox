@@ -13,7 +13,7 @@ dependencies = [
 #   "gck2",
 #   "gcr4",
   "gdk-pixbuf",
-  "gio2",
+#   "gio2",
 #   "gio-unix2",
 #   "glib2",
 #   "granite7",

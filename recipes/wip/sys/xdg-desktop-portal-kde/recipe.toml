@@ -10,5 +10,5 @@ dependencies = [
     "qt6-base",
     "kcoreaddons6",
     "knotifications6",
-    "kl18n6",
+    # "kl18n6",
 ]

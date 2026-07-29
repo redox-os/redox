@@ -12,7 +12,7 @@ dependencies = [
     "libfmt",
     "freetype2",
     "glew",
-    "imath",
+    "libimath",
     "lz4",
     "libffi",
     "libjpeg",

@@ -2,4 +2,4 @@
 [source]
 tar = "https://www.slicot.org/objects/software/shared/slicot45.tar.gz"
 [build]
-template = "custom"
+template = "cmake"

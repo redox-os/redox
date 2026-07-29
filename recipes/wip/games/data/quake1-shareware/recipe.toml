@@ -3,7 +3,7 @@
 [build]
 template = "custom"
 dev-dependencies = [
-    "host:lhasa",
+    # "host:lhasa",
     "host:unzip-rs",
     "host:7zip",
 ]

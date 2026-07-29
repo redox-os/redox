@@ -3,4 +3,4 @@
 git = "https://github.com/P-H-C/phc-winner-argon2"
 shallow_clone = true
 [build]
-template = "custom"
+template = "cmake"

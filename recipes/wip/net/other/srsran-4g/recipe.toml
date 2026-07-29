@@ -7,5 +7,5 @@ rev = "eea87b1d893ae58e0b08bc381730c502024ae71f"
 template = "cmake"
 dependencies = [
     "fftw",
-    "mbedtls",
+    # "mbedtls",
 ]

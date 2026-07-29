@@ -5,7 +5,7 @@ tar = "http://lttng.org/files/lttng-ust/lttng-ust-2.13.6.tar.bz2"
 template = "configure"
 dependencies = [
     "libxml2",
-    "lttng",
+    # "lttng",
     "liburcu",
     "libuuid",
     "popt",

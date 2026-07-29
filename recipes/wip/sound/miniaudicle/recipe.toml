@@ -5,7 +5,7 @@ rev = "3ef25e881cec9ee823d9cf93346c2d6feb089007"
 [build]
 template = "custom"
 dependencies = [
-    "pulseaudio",
+    # "pulseaudio",
     "libsndfile",
     "qt6-base",
 ]

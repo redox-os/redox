@@ -2,7 +2,7 @@
 [source]
 tar = "https://mirrors.edge.kernel.org/pub/software/utils/pciutils/pciutils-3.9.0.tar.xz"
 [build]
-template = "custom"
+template = "cmake"
 dependencies = [
     "zlib",
 ]

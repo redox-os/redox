@@ -10,7 +10,7 @@ cmakeflags = [
     "-DOIIO_BUILD_TESTS=OFF",
 ]
 dependencies = [
-    "imath",
+    "libimath",
     "libtiff",
     "libjpeg",
     "openexr",
