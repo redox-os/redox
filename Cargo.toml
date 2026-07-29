@@ -13,7 +13,7 @@ path = "src/bin/cookbook_redoxer.rs"
 
 [[bin]]
 name = "repo"
-path = "src/bin/repo.rs"
+path = "src/bin/repo/main.rs"
 
 [[bin]]
 name = "repo_builder"
