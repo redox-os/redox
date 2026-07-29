@@ -5,7 +5,7 @@ git = "https://github.com/facebook/rocksdb"
 rev = "v10.7.5"
 shallow_clone = true
 [build]
-template = "custom"
+template = "cmake"
 dependencies = [
     "zlib",
     "lz4",

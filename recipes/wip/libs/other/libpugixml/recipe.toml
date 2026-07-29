@@ -5,4 +5,4 @@
 [source]
 tar = "https://github.com/zeux/pugixml/releases/download/v1.15/pugixml-1.15.tar.gz"
 [build]
-template = "custom"
+template = "cmake"

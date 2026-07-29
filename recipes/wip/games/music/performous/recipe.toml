@@ -18,7 +18,7 @@ dependencies = [
     "libxml2",
     "ffmpeg6",
     "libjpeg",
-    "portaudio",
+    # "portaudio",
     "boost",
     "nlohmann-json",
     "aubio",

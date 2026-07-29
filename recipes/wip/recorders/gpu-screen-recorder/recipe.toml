@@ -13,7 +13,7 @@ dependencies = [
     "libxrandr",
     "libxfixes",
     "libxdamage",
-    "pulseaudio",
+    # "pulseaudio",
     "libva",
     "libcap",
     "libwayland",

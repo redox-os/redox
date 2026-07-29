@@ -10,7 +10,7 @@ cmakeflags = [
 ]
 dependencies = [
     "expat",
-    "imath",
+    "libimath",
     "zlib",
     "yaml-cpp",
     "minizip-ng",

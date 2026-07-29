@@ -16,7 +16,7 @@ dependencies = [
     "libpng",
     "freetype2",
     "libfmt",
-    "libcurl",
+    "curl",
     "openal",
     "libogg",
     "libvorbis",

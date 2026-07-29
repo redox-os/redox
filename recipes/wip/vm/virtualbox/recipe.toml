@@ -12,7 +12,7 @@ dependencies = [
     "libcap",
     "curl",
     "libopus",
-    "pulseaudio",
+    # "pulseaudio",
     "qt5-3d",
     "qt5-x11extras",
     "qt5-tools",

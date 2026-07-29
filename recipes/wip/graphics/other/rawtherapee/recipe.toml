@@ -16,7 +16,7 @@ dependencies = [
     "liblcms",
     "libpng",
     "librsvg",
-    "libsigc++",
+    # "libsigc++",
     "libtiff",
     "zlib",
 ]

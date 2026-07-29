@@ -8,6 +8,6 @@ shallow_clone = true
 template = "meson"
 dependencies = [
     "libwayland",
-    "wayland-scanner",
+    # "wayland-scanner",
     "wayland-protocols",
 ]

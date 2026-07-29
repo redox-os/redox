@@ -8,10 +8,10 @@ git = "https://github.com/movableink/webkit"
 template = "cmake"
 dependencies = [
     "qt5-base",
-    "qt5-guiaddons",
+    # "qt5-guiaddons",
     "qt5-connectivity",
     "qt5-networkauth",
-    "qt5-positioning",
+    # "qt5-positioning",
     "qt5-sensors",
     "qt5-declarative",
     "qt5-webchannel",

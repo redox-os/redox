@@ -2,4 +2,4 @@
 [source]
 tar = "https://aubio.org/pub/aubio-0.4.7.tar.bz2"
 [build]
-template = "custom"
+template = "cmake"

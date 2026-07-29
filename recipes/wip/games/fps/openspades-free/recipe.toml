@@ -12,7 +12,7 @@ dependencies = [
 	"sdl2-image",
 	"freealut",
 	"freetype2",
-	"opus",
+	# "opus",
 	"opusfile",
 	"libjpeg",
 	"openal",

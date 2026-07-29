@@ -15,11 +15,11 @@ dependencies = [
     "libpng",
     "libjpeg",
     "libwebp",
-    "freetype",
+    "freetype2",
     "openal",
     "libogg",
     "libvorbis",
-    "opus",
+    # "opus",
     "opusfile",
 ]
 script = """
