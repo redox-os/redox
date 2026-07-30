@@ -11,7 +11,7 @@ dependencies = [
     "curl",
     "openssl3",
 ]
-dev-dependencies = [ 
+dev-dependencies = [
     "llvm21.dev",
     "llvm21.runtime",
     "lld21",
