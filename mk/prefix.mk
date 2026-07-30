@@ -249,6 +249,7 @@ else
 	mkdir -p "$@.partial" $(PREFIX)/relibc-freestanding-install/$(GNU_TARGET)/include
 	export $(PREFIX_CONFIG) PATH="$(ROOT)/$(PREFIX)/libtool-install/bin:$(ROOT)/$(PREFIX)/binutils-install/bin:$$PATH" \
 		COOKBOOK_LIBTOOL_DIR=$(ROOT)/$(PREFIX)/libtool-install COOKBOOK_CROSS_TARGET=$(TARGET) COOKBOOK_CROSS_GNU_TARGET=$(GNU_TARGET) \
+		ACLOCAL_PATH=$(ROOT)/$(PREFIX)/libtool-install/share/aclocal:$$ACLOCAL_PATH \
 		COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_SYSROOT=$(ROOT)/$(PREFIX)/relibc-freestanding-install/$(GNU_TARGET) && \
 	$(REPO_BIN) cook host:gcc13
 	cp -r "$(GCC_TARGET)/stage/usr/". "$@.partial"
@@ -304,7 +305,8 @@ else
 	rm -f "$@.partial"/$(GNU_TARGET)/lib/libstdc++.la
 	rm -f "$@.partial"/$(GNU_TARGET)/lib/libsupc++.la
 # hosted libstdcxx
-	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
+	export PATH="$(ROOT)/$@.partial/bin:$$PATH" \
+		ACLOCAL_PATH="$(ROOT)/$(PREFIX)/libtool-install/share/aclocal:$$ACLOCAL_PATH" && \
 	export $(PREFIX_CONFIG) "COOKBOOK_HOST_SYSROOT=$(ROOT)/$@.partial" COOKBOOK_CROSS_TARGET=$(HOST_TARGET) && \
 	rm -rf "$(LIBSTDCXX_TARGET)/stage" && $(REPO_BIN) cook libstdcxx-v3
 	cp -r "$(LIBSTDCXX_TARGET)/stage/usr/". "$@.partial/$(GNU_TARGET)"

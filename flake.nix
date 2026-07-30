@@ -101,7 +101,7 @@
           };
 
         #TODO: This isn't tested yet, use at your own risk
-        native = pkgs.mkShell rec {
+        native = (pkgs.mkShell.override { stdenv = pkgs.gcc14Stdenv; }) rec {
           nativeBuildInputs =
             let
               autoreconf269 = pkgs.writeShellScriptBin "autoreconf2.69" "${pkgs.autoconf269}/bin/autoreconf";
@@ -154,6 +154,9 @@
 
           buildInputs = with pkgs; [
             (pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml)
+            gmp # relibc
+            mpfr # relibc
+            libmpc # relibc
             fuse # fuser
             libpng # netsurf
             fontconfig # orbutils
@@ -161,6 +164,8 @@
             utilmacros # libX11
             xtrans # libX11
           ];
+
+          hardeningDisable = [ "format" ];
 
           LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath buildInputs;
           PERL_PATH = "${pkgs.perl}/bin/perl";
