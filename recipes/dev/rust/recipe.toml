@@ -11,7 +11,7 @@ dependencies = [
     "curl",
     "openssl3",
 ]
-dev-dependencies = [ 
+dev-dependencies = [
     "llvm21.dev",
     "llvm21.runtime",
     "lld21",
@@ -54,6 +54,7 @@ fi
 # Don't poison the stage1 compiler (host -> host)
 unset AR AS CC CXX LD LDFLAGS NM OBJCOPY OBJDUMP RANLIB READELF RUSTFLAGS CARGO_ENCODED_RUSTFLAGS STRIP
 
+SSL_CERT_FILE="/etc/ssl/certs/ca-certificates.crt" \
 python3 "${COOKBOOK_SOURCE}/x.py" install \
     --config config.toml \
     --jobs ${COOKBOOK_MAKE_JOBS}

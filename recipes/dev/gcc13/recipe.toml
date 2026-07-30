@@ -7,6 +7,7 @@ DYNAMIC_INIT
 COOKBOOK_AUTORECONF=autoreconf2.69 autotools_recursive_regenerate -I"$(realpath ./config)"
 LIBTOOL_BUILD_AUX="${COOKBOOK_LIBTOOL_DIR:-$COOKBOOK_HOST_SYSROOT}"/share/libtool/build-aux
 cp -fpv "$LIBTOOL_BUILD_AUX"/{config.sub,config.guess,install-sh} libiberty/
+cp -fpv "$LIBTOOL_BUILD_AUX"/{config.sub,config.guess,install-sh} zlib/contrib/minizip/
 """
 
 [build]
