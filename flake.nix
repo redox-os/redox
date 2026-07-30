@@ -162,6 +162,8 @@
             xtrans # libX11
           ];
 
+          hardeningDisable = [ "format" ];
+
           LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath buildInputs;
           PERL_PATH = "${pkgs.perl}/bin/perl";
           SKIP_CHECK_TOOLS = "1";
