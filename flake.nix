@@ -154,6 +154,9 @@
 
           buildInputs = with pkgs; [
             (pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml)
+            gmp # relibc
+            mpfr # relibc
+            libmpc # relibc
             fuse # fuser
             libpng # netsurf
             fontconfig # orbutils
