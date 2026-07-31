@@ -40,12 +40,7 @@ make OS=Redox \
 
 skips=(
     # These tests hang https://gitlab.redox-os.org/redox-os/redox/-/issues/1752
-    basic/poll/poll
-    basic/pthread/pthread_barrierattr_setpshared
-    basic/pthread/pthread_condattr_setpshared
     basic/pthread/pthread_testcancel
-    basic/sys_select/select
-    basic/sys_time/select
     basic/sys_wait/waitpid
     signal/ppoll-block-sleep-raise-write
     signal/ppoll-block-sleep-write-raise
