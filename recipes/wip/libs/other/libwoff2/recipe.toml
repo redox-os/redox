@@ -1,0 +1,11 @@
+#TODO not compiled or tested
+[source]
+tar = "https://github.com/google/woff2/archive/refs/tags/v1.0.2.tar.gz"
+[build]
+template = "cmake"
+dependencies = [
+    "libbrotli",
+]
+dev-dependencies = [
+    "libstdcxx"
+]
