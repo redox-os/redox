@@ -8,6 +8,11 @@ shallow_clone = true
 template = "cmake"
 cmakeflags = [
     "-DBUILD_TESTING=OFF",
+    "-DJPEGXL_ENABLE_EXAMPLES=OFF",
+    "-DJPEGXL_ENABLE_FUZZERS=OFF",
+    "-DJPEGXL_BUNDLE_LIBPNG=OFF",
+    "-DJPEGXL_FORCE_SYSTEM_BROTLI=ON",
+    "-DJPEGXL_ENABLE_BENCHMARK=OFF",
     "-DJPEGXL_ENABLE_DOXYGEN=OFF",
     "-DJPEGXL_ENABLE_MANPAGES=OFF",
 ]
@@ -16,6 +21,5 @@ dependencies = [
     "libjpeg",
     "libgif",
     "libpng",
-    "libwebp",
     "openexr",
 ]
