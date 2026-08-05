@@ -11,6 +11,7 @@ template = "configure"
 configureflags = [
     "--with-included-libtasn1",
     "--with-included-unistring",
+    "--with-default-trust-store-file=/etc/ssl/certs/ca-certificates.crt",
     "--without-p11-kit",
     "gl_cv_func_malloc_posix=no",
     "gl_cv_socket_ipv6=no",
