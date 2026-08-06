@@ -9,12 +9,12 @@ patches = [
 script = """
 DYNAMIC_INIT
 GNU_CONFIG_GET build-aux/config.sub
-( cd gettext-runtime/libasprintf && autoreconf -fvi -I${COOKBOOK_HOST_SYSROOT}/share/aclocal )
-( cd gettext-runtime/intl && autoreconf -fvi -I${COOKBOOK_HOST_SYSROOT}/share/aclocal )
-( cd gettext-runtime && autoreconf -fvi -I${COOKBOOK_HOST_SYSROOT}/share/aclocal )
-( cd gettext-tools && autoreconf -fvi -I${COOKBOOK_HOST_SYSROOT}/share/aclocal )
+( cd gettext-runtime/libasprintf && AUTOPOINT=true autoreconf -fvi -I${COOKBOOK_HOST_SYSROOT}/share/aclocal )
+( cd gettext-runtime/intl && AUTOPOINT=true autoreconf -fvi -I${COOKBOOK_HOST_SYSROOT}/share/aclocal )
+( cd gettext-runtime && AUTOPOINT=true autoreconf -fvi -I${COOKBOOK_HOST_SYSROOT}/share/aclocal )
+( cd gettext-tools && AUTOPOINT=true autoreconf -fvi -I${COOKBOOK_HOST_SYSROOT}/share/aclocal )
 ( cd libtextstyle && autoreconf -fvi -I${COOKBOOK_HOST_SYSROOT}/share/aclocal )
-autoreconf -fvi -I${COOKBOOK_HOST_SYSROOT}/share/aclocal
+AUTOPOINT=true autoreconf -fvi -I${COOKBOOK_HOST_SYSROOT}/share/aclocal
 """
 
 [build]
