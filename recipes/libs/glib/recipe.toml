@@ -27,6 +27,7 @@ cookbook_meson \
     -Ddefault_library=$LIBRARY \
     -Dxattr=false \
     -Dtests=false \
+    -Dlibmount=disabled \
     -Dfile_monitor_backend=inotify
 
 if [ "${COOKBOOK_DYNAMIC}" != "1" ]; then

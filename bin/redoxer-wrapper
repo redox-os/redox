@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+if [ $# -eq 0 ]; then
+    echo "Error: No target executable provided to the wrapper." >&2
+    exit 1
+fi
+
+TARGET_EXE="$1"
+shift
+
+export REDOXER_SYSROOT="${COOKBOOK_SYSROOT}"
+REDOXER="${COOKBOOK_TOOLCHAIN}/usr/bin/redoxer"
+RUNTIME_CMD=("$REDOXER" exec "$TARGET_EXE" $@)
+"${RUNTIME_CMD[@]}"
+exit $?
