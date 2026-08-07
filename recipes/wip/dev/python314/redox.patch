@@ -1,0 +1,139 @@
+diff --git a/Include/internal/pycore_time.h b/Include/internal/pycore_time.h
+index 2331247..cad7f80 100644
+--- a/Include/internal/pycore_time.h
++++ b/Include/internal/pycore_time.h
+@@ -49,6 +49,9 @@
+ 
+ #ifndef Py_INTERNAL_TIME_H
+ #define Py_INTERNAL_TIME_H
++
++struct timeval;
++
+ #ifdef __cplusplus
+ extern "C" {
+ #endif
+diff --git a/Modules/posixmodule.c b/Modules/posixmodule.c
+index 69e28a1..15cb4be 100644
+--- a/Modules/posixmodule.c
++++ b/Modules/posixmodule.c
+@@ -10,6 +10,7 @@
+ // --- Python includes ------------------------------------------------------
+ 
+ #include "Python.h"
++#include <errno.h>
+ 
+ #ifdef __VXWORKS__
+ #  include "pycore_bitutils.h"    // _Py_popcount32()
+@@ -10788,8 +10789,9 @@ os_times_impl(PyObject *module)
+ 
+     struct tms process;
+     clock_t elapsed;
+-    errno = 0;
+-    elapsed = times(&process);
++    // relibc but does not implement times()
++    errno = ENOSYS;
++    elapsed = (clock_t)-1;
+     if (elapsed == (clock_t) -1) {
+         return posix_error();
+     }
+diff --git a/Modules/resource.c b/Modules/resource.c
+index 2353bc6..4146e80 100644
+--- a/Modules/resource.c
++++ b/Modules/resource.c
+@@ -40,6 +40,12 @@ class pid_t_converter(CConverter):
+ 
+ #include "clinic/resource.c.h"
+ 
++#ifndef RLIM_NLIMITS
++#  ifdef RLIMIT_NLIMITS
++#    define RLIM_NLIMITS RLIMIT_NLIMITS
++#  endif
++#endif
++
+ PyDoc_STRVAR(struct_rusage__doc__,
+ "struct_rusage: Result from getrusage.\n\n"
+ "This object may be accessed either as a tuple of\n"
+diff --git a/Modules/selectmodule.c b/Modules/selectmodule.c
+index 42bf115..f602fb8 100644
+--- a/Modules/selectmodule.c
++++ b/Modules/selectmodule.c
+@@ -13,6 +13,12 @@
+ #endif
+ 
+ #include "Python.h"
++
++#ifdef __redox__
++// Required for fd_set and FD_*
++#  include <sys/time.h>
++#endif
++
+ #include "pycore_fileutils.h"     // _Py_set_inheritable()
+ #include "pycore_time.h"          // _PyTime_FromSecondsObject()
+ 
+diff --git a/configure b/configure
+index 2088290..6c2ccd7 100755
+--- a/configure
++++ b/configure
+@@ -4130,6 +4130,9 @@ then
+ 	*-*-wasi*)
+ 	    ac_sys_system=WASI
+ 	    ;;
++	*-*-redox*)
++	    ac_sys_system=Redox
++		;;
+ 	*)
+ 		# for now, limit cross builds to known configurations
+ 		MACHDEP="unknown"
+@@ -4158,6 +4161,7 @@ then
+ 	linux*) MACHDEP="linux";;
+ 	cygwin*) MACHDEP="cygwin";;
+ 	darwin*) MACHDEP="darwin";;
++	redox*) MACHDEP="redox";;
+ 	'')	MACHDEP="unknown";;
+     esac
+ 
+@@ -4582,7 +4586,7 @@ fi
+ 
+ if test "$cross_compiling" = yes; then
+ 	case "$host" in
+-	*-*-linux*)
++	*-*-linux*|*-*-redox*)
+ 		case "$host_cpu" in
+ 		arm*)
+ 			_host_ident=arm
+@@ -7735,7 +7739,7 @@ printf "%s\n" "#define Py_ENABLE_SHARED 1" >>confdefs.h
+         PY3LIBRARY=libpython3.so
+       fi
+       ;;
+-    Linux*|GNU*|NetBSD*|FreeBSD*|DragonFly*|OpenBSD*|VxWorks*)
++    Linux*|GNU*|NetBSD*|FreeBSD*|DragonFly*|OpenBSD*|VxWorks*|Redox*)
+       LDLIBRARY='libpython$(LDVERSION).so'
+       BLDLIBRARY='-L. -lpython$(LDVERSION)'
+       RUNSHARED=LD_LIBRARY_PATH=`pwd`${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+@@ -13685,7 +13689,7 @@ then
+ 	Emscripten*|WASI*)
+ 		LDSHARED='$(CC) -shared'
+ 		LDCXXSHARED='$(CXX) -shared';;
+-	Linux*|GNU*|QNX*|VxWorks*|Haiku*)
++	Linux*|GNU*|QNX*|VxWorks*|Haiku*|Redox*)
+ 		LDSHARED='$(CC) -shared'
+ 		LDCXXSHARED='$(CXX) -shared';;
+ 	FreeBSD*)
+@@ -13770,7 +13774,7 @@ then
+ 		 then CCSHARED="-fPIC";
+ 		 else CCSHARED="+z";
+ 		 fi;;
+-	Linux*|GNU*) CCSHARED="-fPIC";;
++	Linux*|GNU*|Redox*) CCSHARED="-fPIC";;
+ 	Emscripten*|WASI*)
+ 		if test "x$enable_wasm_dynamic_linking" = xyes
+ then :
+@@ -13808,7 +13812,7 @@ then
+ 	    LINKFORSHARED="-Wl,-E -Wl,+s";;
+ #	    LINKFORSHARED="-Wl,-E -Wl,+s -Wl,+b\$(BINLIBDEST)/lib-dynload";;
+ 	Linux-android*) LINKFORSHARED="-pie -Xlinker -export-dynamic";;
+-	Linux*|GNU*) LINKFORSHARED="-Xlinker -export-dynamic";;
++	Linux*|GNU*|Redox*) LINKFORSHARED="-Xlinker -export-dynamic";;
+ 	# -u libsys_s pulls in all symbols in libsys
+ 	Darwin/*|iOS/*)
+ 		LINKFORSHARED="$extra_undefs -framework CoreFoundation"
