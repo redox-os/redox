@@ -245,16 +245,18 @@ function generate_cookbook_cmake_file {
 
 if [ -z "${REDOXER_USE_CLANG}" ]; then
 cat > $file <<EOF
-set(CMAKE_AR ${gcc_prefix}ar)
+set(CMAKE_AR ${gcc_prefix}gcc-ar)
 set(CMAKE_CXX_COMPILER ${gcc_prefix}g++)
 set(CMAKE_C_COMPILER ${gcc_prefix}gcc)
-set(CMAKE_RANLIB ${gcc_prefix}ranlib)
+set(CMAKE_NM ${gcc_prefix}gcc-nm)
+set(CMAKE_RANLIB ${gcc_prefix}gcc-ranlib)
 EOF
 else
 cat > $file <<EOF
 set(CMAKE_AR llvm-ar)
 set(CMAKE_CXX_COMPILER clang++)
 set(CMAKE_C_COMPILER clang)
+set(CMAKE_NM llvm-nm)
 set(CMAKE_RANLIB llvm-ranlib)
 EOF
 fi
