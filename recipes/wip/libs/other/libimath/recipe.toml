@@ -4,3 +4,6 @@
 tar = "https://github.com/AcademySoftwareFoundation/Imath/releases/download/v3.2.2/Imath-3.2.2.tar.gz"
 [build]
 template = "cmake"
+dev-dependencies = [
+    "libstdcxx"
+]
