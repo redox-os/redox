@@ -5,3 +5,4 @@ rev = "v6.6.5"
 shallow_clone = true
 [build]
 template = "cmake"
+dev-dependencies = ["host:ecm"]

@@ -6,3 +6,4 @@ branch = "Plasma/6.6"
 shallow_clone = true
 [build]
 template = "cmake"
+dev-dependencies = ["host:ecm"]

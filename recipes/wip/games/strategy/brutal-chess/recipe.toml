@@ -1,0 +1,12 @@
+#TODO compile and test
+[source]
+tar = "https://sourceforge.net/projects/brutalchess/files/brutalchess-alpha/brutalchess-alpha-0.5.2/brutalchess-alpha-0.5.2-src.tar.gz/download"
+[build]
+template = "configure"
+dependencies = [
+    "sdl1",
+    "sdl1-image",
+    "freetype2",
+    #"libxmu",
+    #"libxi",
+]

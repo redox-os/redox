@@ -10,6 +10,7 @@ cmakeflags = [
     "-DHEAPTRACK_BUILD_ANALYZE_DEFAULT=OFF",
     "-DHEAPTRACK_BUILD_GUI=OFF",
 ]
+dev-dependencies = ["host:ecm"]
 dependencies = [
     "zlib",
     "boost",

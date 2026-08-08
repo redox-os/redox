@@ -1,0 +1,12 @@
+#TODO add minimum kf6 dependencies: https://invent.kde.org/games/knights/-/blob/master/CMakeLists.txt?ref_type=heads#L57
+[source]
+git = "https://invent.kde.org/games/knights"
+rev = "v26.04.3"
+shallow_clone = true
+[build]
+template = "cmake"
+dev-dependencies = ["host:ecm"]
+dependencies = [
+    "qt6-base",
+    "libkdegames",
+]

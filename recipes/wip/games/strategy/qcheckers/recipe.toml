@@ -1,0 +1,10 @@
+#TODO add script for qmake: https://github.com/portnov/qcheckers/blob/master/INSTALL.md
+[source]
+git = "https://github.com/portnov/qcheckers"
+rev = "8b8a3e64520e8e074e6035e3a12ff3f7075c7463"
+shallow_clone = true
+[build]
+template = "custom"
+dependencies = [
+    "qt5-base",
+]

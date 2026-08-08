@@ -1,0 +1,14 @@
+#TODO add kf6 dependencies: https://invent.kde.org/games/kigo/-/blob/master/CMakeLists.txt?ref_type=heads#L39
+[source]
+git = "https://invent.kde.org/games/kigo"
+rev = "v26.04.3"
+shallow_clone = true
+[build]
+template = "cmake"
+dev-dependencies = ["host:ecm"]
+dependencies = [
+    "qt6-base",
+    "libkdegames",
+]
+[package]
+dependencies = ["gnugo"]

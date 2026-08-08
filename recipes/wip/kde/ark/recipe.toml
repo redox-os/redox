@@ -8,6 +8,7 @@ template = "cmake"
 cmakeflags = [
     "-DBUILD_DOC=OFF"
 ]
+dev-dependencies = ["host:ecm"]
 dependencies = [
     "libarchive",
     "qt6-base",

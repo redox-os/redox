@@ -12,6 +12,7 @@ cmakeflags = [
     "-DBUILD_WITH_QT6=ON",
     "-DALLOW_UNSTABLE=QT6",
 ]
+dev-dependencies = ["host:ecm"]
 dependencies = [
      "qt6-qt5compat",
      "qt6-base",

@@ -10,6 +10,7 @@ cmakeflags = [
     "-DBUILD_TESTING=OFF",
     "-DUSE_DBUS=OFF",
 ]
+dev-dependencies = ["host:ecm"]
 dependencies = [
      "mlt",
      "opentimelineio",

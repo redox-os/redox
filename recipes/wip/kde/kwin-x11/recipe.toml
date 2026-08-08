@@ -12,3 +12,4 @@ cmakeflags = [
     "-DKWIN_BUILD_TABBOX=OFF",
     "-DKWIN_BUILD_RUNNERS=OFF",
 ]
+dev-dependencies = ["host:ecm"]

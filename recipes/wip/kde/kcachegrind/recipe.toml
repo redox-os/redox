@@ -6,3 +6,4 @@ branch = "release/25.12"
 shallow_clone = true
 [build]
 template = "cmake"
+dev-dependencies = ["host:ecm"]

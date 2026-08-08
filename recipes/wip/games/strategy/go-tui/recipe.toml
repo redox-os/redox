@@ -1,0 +1,6 @@
+#TODO compile and test
+[source]
+git = "https://github.com/rs-jensen/go-game-tui"
+shallow_clone = true
+[build]
+template = "cargo"
