@@ -1,0 +1,30 @@
+#TODO verify possible patch conflict
+[source]
+git = "https://github.com/andrewnakas/Boxedwine64"
+rev = "dee2ff3f08d9b5bdfe78c15bdefbf8f89b4f1639"
+shallow_clone = true
+patches = [
+    "redox.patch"
+]
+[build]
+template = "custom"
+dependencies = [
+    "curl",
+    "mesa",
+    "minizip-ng",
+    "openssl3",
+    "sdl2",
+]
+dev-dependencies = [
+    "mesa-glu",
+]
+script = """
+DYNAMIC_INIT
+export CPPFLAGS+=" -DUSE_FILE32API=1 -DBOXEDWINE_64=1 -D_GNU_SOURCE=1 -DGLEW_OSMESA=1 -DBOXEDWINE_ES=1"
+rsync -a "${COOKBOOK_SOURCE}/" ./
+cd "./project/linux"
+make release
+
+mkdir -p "${COOKBOOK_STAGE}/usr/bin"
+cp -v "./Build/Release/boxedwine" "${COOKBOOK_STAGE}/usr/bin/boxedwine"
+"""

@@ -1,0 +1,16 @@
+#TODO compile and test
+[source]
+git = "https://github.com/abakh/nbsdgames"
+rev = "v6.0.2"
+shallow_clone = true
+[build]
+template = "custom"
+dependencies = [
+    "ncursesw",
+]
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+cd src
+DYNAMIC_INIT
+"${COOKBOOK_MAKE}" install -j"$COOKBOOK_MAKE_JOBS" "${MAKEFLAGS[@]}" DESTDIR="$COOKBOOK_STAGE/usr"
+"""

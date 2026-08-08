@@ -1,0 +1,6 @@
+#TODO compile and test
+[source]
+git = "https://github.com/dboone/rusty-checkers"
+shallow_clone = true
+[build]
+template = "cargo"

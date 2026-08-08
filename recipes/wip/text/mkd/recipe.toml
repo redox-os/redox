@@ -1,0 +1,6 @@
+#TODO compile and test
+[source]
+git = "https://codeberg.org/badbee/mkd"
+shallow_clone = true
+[build]
+template = "cargo"
