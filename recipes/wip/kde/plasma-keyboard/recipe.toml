@@ -1,0 +1,24 @@
+#TODO compile and test
+[source]
+git = "https://invent.kde.org/plasma/plasma-keyboard"
+rev = "v6.6.5"
+shallow_clone = true
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DPLASMA_KEYBOARD_SOUNDS_ENABLED=OFF",
+    "-DPLASMA_KEYBOARD_VIBRATION_ENABLED=OFF",
+]
+dev-dependencies = ["host:ecm"]
+dependencies = [
+    "qt6-base",
+    "qt6-wayland",
+    "qt6-virtualkeyboard",
+    "kcoreaddons6",
+    "ki18n6",
+    "kcmutils6",
+    "kconfig6",
+    "libxkbcommon",
+    "wayland-protocols",
+    "libwayland",
+]

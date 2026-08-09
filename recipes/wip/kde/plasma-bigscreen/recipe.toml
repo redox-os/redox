@@ -1,0 +1,16 @@
+#TODO add kf6 dependencies: https://invent.kde.org/plasma/plasma-bigscreen/-/blob/master/CMakeLists.txt?ref_type=heads#L41
+[source]
+git = "https://invent.kde.org/plasma/plasma-bigscreen"
+rev = "v6.6.91"
+shallow_clone = true
+[build]
+template = "cmake"
+dev-dependencies = ["host:ecm"]
+dependencies = [
+    "qt6-base",
+    "qt6-multimedia",
+    #"qt6-declarative",
+    #"qt6-webengine",
+    "libplasma",
+    #"libkscreen",
+]
