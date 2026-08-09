@@ -1,0 +1,12 @@
+#TODO compile and test
+[source]
+tar = "https://github.com/libsdl-org/sdl2-compat/releases/download/release-2.32.70/sdl2-compat-2.32.70.tar.gz"
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DSDL2COMPAT_TESTS=OFF",
+    "-DSDL2COMPAT_X11=OFF", # needed?
+]
+dependencies = [
+    "sdl3",
+]

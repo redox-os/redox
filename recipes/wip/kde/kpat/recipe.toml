@@ -2,10 +2,15 @@
 #TODO discover minimum dependencies from cmake log
 [source]
 git = "https://invent.kde.org/games/kpat"
-branch = "release/25.12"
+rev = "v26.04.3"
 shallow_clone = true
 [build]
 template = "cmake"
 cmakeflags = [
     "-DBUILD_DOC=OFF",
+]
+dev-dependencies = ["host:ecm"]
+dependencies = [
+    "qt6-base",
+    "libkdegames",
 ]

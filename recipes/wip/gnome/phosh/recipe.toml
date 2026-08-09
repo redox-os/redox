@@ -1,0 +1,19 @@
+#TODO determine minimum dependencies from meson log
+[source]
+tar = "https://sources.phosh.mobi/releases/phosh/phosh-0.56.0.tar.xz"
+[build]
+template = "meson"
+mesonflags = [
+    "-Dtests=false",
+    "-Dlockscreen-plugins=false",
+    "-Dquick-setting-plugins=false",
+    "-Dstatus-icon-plugins=false",
+]
+#dependencies = [
+ #   "glib",
+ #   "gtk3",
+ #   "fribidi",
+ #   "gcr",
+#]
+[package]
+dependencies = ["phoc"]

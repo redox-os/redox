@@ -1,5 +1,5 @@
-#TODO missing script for bbv2: https://libtorrent.org/building.html
+#TODO not compiled or tested
 [source]
-tar = "https://github.com/arvidn/libtorrent/releases/download/v2.0.11/libtorrent-rasterbar-2.0.11.tar.gz"
+tar = "https://github.com/arvidn/libtorrent/releases/download/v2.1.0/libtorrent-rasterbar-2.1.0.tar.gz"
 [build]
 template = "cmake"

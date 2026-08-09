@@ -1,0 +1,11 @@
+#TODO add kf6 dependencies: https://invent.kde.org/plasma/plasma-mobile/-/blob/master/CMakeLists.txt?ref_type=heads#L63
+[source]
+git = "https://invent.kde.org/plasma/plasma-mobile"
+rev = "v6.6.5"
+shallow_clone = true
+[build]
+template = "cmake"
+dev-dependencies = ["host:ecm"]
+dependencies = [
+    "qt6-base",
+]

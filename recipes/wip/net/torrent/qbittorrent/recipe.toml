@@ -1,0 +1,24 @@
+#TODO compile and test
+[source]
+tar = "https://sourceforge.net/projects/qbittorrent/files/qbittorrent/qbittorrent-5.2.3/qbittorrent-5.2.3.tar.xz/download"
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DWEBUI=OFF",
+    "-DPLUGINS=OFF",
+    "-DSTACKTRACE=OFF",
+    "-DDBUS=OFF",
+    "-DSYSTEMD=OFF",
+]
+#dev-dependencies = [
+    #"host:qt6-tools",
+    #"host:qt6-svg",
+#]
+dependencies = [
+    "libtorrent",
+    "qt6-base",
+    #"qt6-svg",
+    "boost",
+    "openssl3",
+    "zlib",
+]

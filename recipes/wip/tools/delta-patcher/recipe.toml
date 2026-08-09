@@ -1,0 +1,11 @@
+#TODO compile and test
+[source]
+git = "https://github.com/marco-calautti/DeltaPatcher"
+rev = "v3.1.6"
+shallow_clone = true
+[build]
+template = "cmake"
+cmakeflags = ["-DwxBUILD_SHARED=OFF"]
+dependencies = [
+    "gtk3",
+]
