@@ -1,0 +1,22 @@
+#TODO determine minimum dependencies
+[source]
+tar = "https://download.gnome.org/sources/gnome-settings-daemon/49/gnome-settings-daemon-49.1.tar.xz"
+[build]
+template = "meson"
+mesonflags = [
+    "-Dsystemd=false",
+    "-Dalsa=false",
+    "-Dgudev=false",
+    "-Dcups=false",
+    "-Dnetwork_manager=false",
+    "-Drfkill=false",
+    "-Dsmartcard=false",
+    "-Dusb-protection",
+    "-Dwwan=false",
+    "-Dcolord=false",
+    "-Dxwayland=false",
+    "-Dx11=true",
+]
+#dependencies = [
+ #   "library1",
+#]

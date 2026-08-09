@@ -1,0 +1,16 @@
+#TODO compile and test
+[source]
+git = "https://github.com/qcoro/qcoro/releases"
+rev = "v0.13.0"
+shallow_clone = true
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DQCORO_BUILD_EXAMPLES=OFF",
+    "-DQCORO_BUILD_TESTING=OFF",
+    "-DQCORO_WITH_QTDBUS=OFF",
+    "-DQCORO_WITH_QTTEST=OFF",
+]
+dependencies = [
+    "qt6-base",
+]

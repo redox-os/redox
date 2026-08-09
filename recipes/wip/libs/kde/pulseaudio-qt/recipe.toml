@@ -1,0 +1,12 @@
+#TODO compile and test
+[source]
+git = "https://invent.kde.org/libraries/pulseaudio-qt"
+rev = "v1.8.1"
+shallow_clone = true
+[build]
+template = "cmake"
+dev-dependencies = ["host:ecm"]
+dependencies = [
+    "qt6-base",
+    "libpulse",
+]

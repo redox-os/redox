@@ -1,0 +1,20 @@
+#TODO add kf6 dependencies: https://invent.kde.org/plasma/plasma-nm/-/blob/Plasma/6.6/CMakeLists.txt?ref_type=heads#L58
+[source]
+git = "https://invent.kde.org/plasma/plasma-nm"
+rev = "v6.6.5"
+shallow_clone = true
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DBUILD_OPENCONNECT=OFF",
+]
+dependencies = [
+    "qt6-base",
+    "libplasma",
+    "kirigami6",
+    "qca",
+    "prison6",
+    "networkmanager",
+]
+#[package]
+#dependencies = ["qcoro"]

@@ -1,0 +1,16 @@
+#TODO compile and test
+[source]
+git = "https://invent.kde.org/plasma/libkscreen"
+rev = "v6.6.5"
+shallow_clone = true
+[build]
+template = "cmake"
+dev-dependencies = ["host:ecm"]
+dependencies = [
+    "qt6-base",
+    "libxcb",
+    "libxrandr",
+    #"wayland-scanner",
+    #"libwayland",
+    #"plasma-wayland-protocols",
+]

@@ -6,3 +6,6 @@ shallow_clone = true
 [build]
 template = "cmake"
 dev-dependencies = ["host:ecm"]
+dependencies = [
+    "libplasma",
+]

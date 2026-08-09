@@ -1,0 +1,16 @@
+#TODO determine minimum dependencies
+[source]
+tar = "https://download.gnome.org/sources/gnome-control-center/49/gnome-control-center-49.9.tar.xz"
+shallow_clone = true
+[build]
+template = "meson"
+mesonflags = [
+    "-Dlocation-services=disabled",
+    "-Dibus=false",
+    "-Dsnap=false",
+    "-Dtests=false",
+    "-Dx11=true",
+]
+#dependencies = [
+ #   "library1",
+#]

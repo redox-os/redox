@@ -1,0 +1,11 @@
+#TODO compile and test
+[source]
+tar = "https://download.kde.org/stable/frameworks/6.27/networkmanager-qt-6.27.0.tar.xz"
+shallow_clone = true
+[build]
+template = "cmake"
+dev-dependencies = ["host:ecm"]
+dependencies = [
+    "qt6-base",
+    "networkmanager",
+]

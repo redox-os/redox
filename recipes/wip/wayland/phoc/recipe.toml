@@ -1,0 +1,21 @@
+#TODO compile and test
+[source]
+tar = "https://sources.phosh.mobi/releases/phoc/phoc-0.56.0.tar.xz"
+[build]
+template = "meson"
+mesonflags = [
+    "-Dxwayland=disabled",
+    "-Dtests=false",
+]
+dependencies = [
+    "wlroots",
+    "libwayland",
+    "wayland-protocols",
+    #"glib",
+    #"gnome-desktop",
+    #"gnome-desktop-schemas",
+    #"libinput",
+    #"libdrm",
+    #"pixman",
+    #"libxkbcommon",
+]

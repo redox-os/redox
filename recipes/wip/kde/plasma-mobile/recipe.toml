@@ -8,7 +8,6 @@ template = "cmake"
 dev-dependencies = ["host:ecm"]
 dependencies = [
     "qt6-base",
-    "qt6-wayland",
     "libplasma",
     "kwayland",
     "kpipewire",

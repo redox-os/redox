@@ -1,0 +1,37 @@
+#TODO add kf6 dependencies: https://invent.kde.org/plasma/libplasma/-/blob/Plasma/6.6/CMakeLists.txt?ref_type=heads#L53
+[source]
+git = "https://invent.kde.org/plasma/libplasma"
+rev = "v6.6.5"
+shallow_clone = true
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DENABLE_ACTIVITIES=OFF",
+]
+dev-dependencies = ["host:ecm"]
+dependencies = [
+    "qt6-base",
+    "libx11",
+    "libxcb",
+    "libxcomposite",
+    "libxdamage",
+    "libxfixes",
+    "libxrender",
+    "kconfig6",
+    "kcoreaddons6",
+    "kguiaddons6",
+    "ki18n6",
+    "kiconthemes6",
+    "kio6",
+    "kwindowsystem6",
+    "knotifications6",
+    "kpackage6",
+    "kirigami6",
+    "ksvg6",
+    "kcolorscheme6",
+    "kglobalaccel6",
+    #"mesa",
+    #"libwayland",
+    #"wayland-protocols",
+    #"plasma-wayland-protocols",
+]

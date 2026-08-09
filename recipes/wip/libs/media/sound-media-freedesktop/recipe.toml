@@ -1,0 +1,5 @@
+#TODO compile and test
+[source]
+tar = "http://people.freedesktop.org/~mccann/dist/sound-theme-freedesktop-0.8.tar.bz2"
+[build]
+template = "configure"

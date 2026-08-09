@@ -1,0 +1,15 @@
+#TODO compile and test
+[source]
+tar = "https://download.gnome.org/sources/gcr/4.4/gcr-4.4.0.1.tar.xz"
+[build]
+template = "meson"
+mesonflags = [
+    "-Dintrospection=false",
+    "-Dvapi=false",
+    "-Dgtk_doc=false",
+    "-Dssh_agent=false",
+    "-Dsystemd=disabled",
+]
+dependencies = [
+    "libgcrypt",
+]

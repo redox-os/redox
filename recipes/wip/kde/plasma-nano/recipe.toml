@@ -1,0 +1,17 @@
+#TODO compile and test
+[source]
+git = "https://invent.kde.org/plasma/plasma-nano"
+rev = "v6.6.5"
+shallow_clone = true
+[build]
+template = "cmake"
+dev-dependencies = ["host:ecm"]
+dependencies = [
+    "qt6-base",
+    "libplasma",
+    #"kwayland",
+    "kwindowsystem6",
+    "ki18n6",
+    "kservice6",
+    "kitemmodels6",
+]
