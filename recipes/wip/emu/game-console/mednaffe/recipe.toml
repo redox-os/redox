@@ -9,4 +9,4 @@ dependencies = [
 ]
 template = "configure"
 [package]
-dependencies = ["mendafen"]
+dependencies = ["mednafen"]
