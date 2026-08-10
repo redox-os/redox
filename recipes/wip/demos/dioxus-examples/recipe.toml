@@ -4,6 +4,7 @@ git = "https://github.com/DioxusLabs/dioxus"
 shallow_clone = true
 [build]
 template = "cargo"
+cargopackageprefixed = true
 cargoexamples = [
     "calculator",
     "clock",

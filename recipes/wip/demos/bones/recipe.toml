@@ -4,6 +4,7 @@ git = "https://github.com/fishfolk/bones"
 shallow_clone = true
 [build]
 template = "cargo"
+cargopackageprefixed = true
 cargopackages = [
     "demo_hello_world",
 ]

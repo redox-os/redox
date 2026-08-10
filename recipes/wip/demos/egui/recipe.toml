@@ -4,6 +4,7 @@ git = "https://github.com/emilk/egui"
 shallow_clone = true
 [build]
 template = "cargo"
+cargopackageprefixed = true
 cargopackages = [
     "hello_world_simple"
 ]

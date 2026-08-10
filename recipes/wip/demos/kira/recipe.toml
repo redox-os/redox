@@ -4,6 +4,7 @@ git = "https://github.com/tesselode/kira-examples"
 shallow_clone = true
 [build]
 template = "cargo"
+cargopackageprefixed = true
 cargopackages = [
     "dynamic-music",
     "ghost-noise",

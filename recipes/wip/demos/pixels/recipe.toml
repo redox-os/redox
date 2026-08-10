@@ -4,6 +4,7 @@ git = "https://github.com/parasyte/pixels"
 shallow_clone = true
 [build]
 template = "cargo"
+cargopackageprefixed = true
 cargopackages = [
     "conway",
     "invaders",

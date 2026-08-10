@@ -4,6 +4,7 @@ git = "https://github.com/broccolingual/rustui"
 shallow_clone = true
 [build]
 template = "cargo"
+cargopackageprefixed = true
 cargopackages = ["tetris"]
 cargoexamples = [
     "hello_world",

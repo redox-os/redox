@@ -4,5 +4,6 @@ git = "https://github.com/FyroxEngine/Fyrox-demo-projects"
 shallow_clone = true
 [build]
 template = "cargo"
+cargopackageprefixed = true
 cargopath = "ui"
 cargopackages = ["executor"]

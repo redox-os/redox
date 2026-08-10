@@ -60,7 +60,3 @@ dependencies = [
     "openssl3",
     "gtk3",
 ]
-script = """
-DYNAMIC_INIT
-cookbook_cargo_examples 
-"""

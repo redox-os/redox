@@ -9,4 +9,4 @@ cargoexamples = [
     "tcp_client",
     "kaonic_client",
 ]
-dev-dependencies = ["protobuf"]
+dev-dependencies = ["host:protobuf"]

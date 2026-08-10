@@ -4,4 +4,5 @@ git = "https://github.com/schell/renderling"
 shallow_clone = true
 [build]
 template = "cargo"
+cargopackageprefixed = true
 cargopackages = ["example"]
