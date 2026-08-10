@@ -19,6 +19,9 @@ DYNAMIC_INIT
 export BUILDTIME_RUSTPYTHONPATH=/usr/lib/rustpython
 export OPENSSL_DIR="${COOKBOOK_SYSROOT}"
 export ZLIB_STATIC=1
+if [ "${COOKBOOK_DYNAMIC}" != "1" ]; then
+  export OPENSSL_STATIC=1
+fi
 cookbook_cargo --features ssl
 mkdir -p "${COOKBOOK_STAGE}/usr/lib"
 rsync -aE \
