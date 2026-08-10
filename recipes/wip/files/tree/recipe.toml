@@ -1,0 +1,11 @@
+#TODO compile and test
+[source]
+tar = "https://gitlab.com/OldManProgrammer/unix-tree/-/archive/2.3.2/unix-tree-2.3.2.tar.bz2"
+[build]
+template = "custom"
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+DYNAMIC_INIT
+"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}" \
+"${COOKBOOK_MAKE}" install DESTDIR="${COOKBOOK_STAGE}"
+"""
