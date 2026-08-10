@@ -2,7 +2,7 @@
 #TODO missing dependencies: https://invent.kde.org/multimedia/kamoso/-/blob/master/CMakeLists.txt?ref_type=heads#L29
 [source]
 git = "https://invent.kde.org/multimedia/kamoso"
-branch = "release/25.12"
+rev = "v26.04.3"
 [build]
 template = "cmake"
 cmakeflags = [

@@ -3,7 +3,7 @@
 # build instructions: https://invent.kde.org/multimedia/k3b/-/blob/master/INSTALL.txt?ref_type=heads
 [source]
 git = "https://invent.kde.org/multimedia/k3b"
-branch = "release/25.12"
+rev = "v26.04.3"
 shallow_clone = true
 [build]
 template = "cmake"

@@ -2,7 +2,7 @@
 #TODO determine minimum dependencies from cmake log
 [source]
 git = "https://invent.kde.org/education/marble"
-branch = "release/25.12"
+rev = "v26.04.3"
 shallow_clone = true
 [build]
 template = "cmake"

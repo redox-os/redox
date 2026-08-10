@@ -3,6 +3,6 @@
 #TODO missing dependencies
 [source]
 git = "https://invent.kde.org/utilities/okteta"
-rev = "fb6150f2dce791c96b95a12ee0c74942c1774c05"
+rev = "v0.26.27"
 [build]
 template = "cmake"

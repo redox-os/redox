@@ -2,7 +2,7 @@
 #TODO discover minimum dependencies from cmake log
 [source]
 git = "https://invent.kde.org/education/labplot"
-branch = "release/2.12"
+rev = "2.12.1"
 shallow_clone = true
 [build]
 template = "cmake"
