@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 
-# This script show all or some package size of the recipes ("stage.pkgar")
-# It must be used by package maintainers to enforce the library linking size policy
-
+# This script show the size of some recipe package size ("stage.pkgar")
 # This script must be inside podman `make env`
 
 RECIPES=$(target/release/repo cook-list ${*:---all-compiled} --display=csv |  grep ",Built" | sort -t ',' -k 3 -V | cut -d ',' -f2)
