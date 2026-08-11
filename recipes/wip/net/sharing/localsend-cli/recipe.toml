@@ -1,0 +1,7 @@
+#TODO compile and test
+[source]
+git = "https://github.com/localsend/localsend"
+shallow_clone = true
+[build]
+template = "cargo"
+cargopackages = ["localsend-cli"]
