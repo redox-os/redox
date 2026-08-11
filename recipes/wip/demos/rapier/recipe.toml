@@ -4,7 +4,7 @@ git = "https://github.com/dimforge/rapier"
 shallow_clone = true
 [build]
 template = "cargo"
-cargopackageprefixed = true
+cargopackagesprefixed = true
 cargopackages = [
     "rapier-examples-2d",
     "rapier-examples-3d",

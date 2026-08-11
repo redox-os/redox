@@ -12,5 +12,6 @@ script = """
 rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 cd src
 DYNAMIC_INIT
-"${COOKBOOK_MAKE}" install -j"$COOKBOOK_MAKE_JOBS" "${MAKEFLAGS[@]}" DESTDIR="$COOKBOOK_STAGE/usr"
+"${COOKBOOK_MAKE}" install -j"$COOKBOOK_MAKE_JOBS" \
+"${MAKEFLAGS[@]}" DESTDIR="$COOKBOOK_STAGE/usr"
 """

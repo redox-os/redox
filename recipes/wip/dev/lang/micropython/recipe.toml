@@ -18,5 +18,6 @@ make -C ../../mpy-cross # build cross-compiler
 MAKEFLAGS=(
     VARIANT=minimal
 )
-"${COOKBOOK_MAKE}" install -j"$COOKBOOK_MAKE_JOBS" "${MAKEFLAGS[@]}" DESTDIR="$COOKBOOK_STAGE/usr"
+"${COOKBOOK_MAKE}" install -j"$COOKBOOK_MAKE_JOBS" \
+"${MAKEFLAGS[@]}" DESTDIR="$COOKBOOK_STAGE/usr"
 """

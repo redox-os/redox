@@ -4,5 +4,5 @@ git = "https://github.com/BVE-Reborn/rend3"
 shallow_clone = true
 [build]
 template = "cargo"
-cargopackageprefixed = true
+cargopackagesprefixed = true
 cargopackages = ["rend3-examples-package"]

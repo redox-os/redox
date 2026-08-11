@@ -4,6 +4,6 @@ git = "https://github.com/j-g00da/mousefood"
 shallow_clone = true
 [build]
 template = "cargo"
-cargopackageprefixed = true
+cargopackagesprefixed = true
 cargopackages = ["simulator"]
 dependencies = ["sdl2"]
