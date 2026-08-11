@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
-# This script show the contents of the "stage" and "sysroot" folders in some recipe
+# This script show the contents of the "stage" and "sysroot" directories in some recipe
 
 if [ -z "$*" ]
 then
-    echo "Show the contents of the stage and sysroot folders in recipe(s)"
+    echo "Show the contents of the "stage" and 'sysroot' directories in recipe(s)"
     echo "Usage: $0 recipe1 ..."
     echo "Must be run from the 'redox' directory"
     echo "e.g. $0 kernel"
@@ -22,5 +22,5 @@ fi
 for recipe in $*
 do
     recipe_dir="$("$find_recipe" find "$recipe")"
-    ls -1 "$recipe_dir/target"/*/{stage,sysroot}
+    tree "$recipe_dir/target"/*/{stage,sysroot}
 done
