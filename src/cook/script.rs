@@ -54,6 +54,12 @@ autotools_recursive_regenerate() {
 # Build both dynamically and statically
 function DYNAMIC_STATIC_INIT {
     DYNAMIC_INIT
+
+    export CPPFLAGS="${CPPFLAGS} -ffat-lto-objects"
+    if [ function = $(type -t reexport_flags) ]; then
+        reexport_flags
+    fi
+
     if [ "${COOKBOOK_DYNAMIC}" == "1" ]
     then
         COOKBOOK_CONFIGURE_FLAGS=(
