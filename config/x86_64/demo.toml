@@ -5,18 +5,21 @@ include = ["../desktop.toml"]
 # General settings
 [general]
 # Filesystem size in MiB
-filesystem_size = 1536
+filesystem_size = 3000
 
 # Package settings
 [packages]
+
 # GUI Apps
 cosmic-reader = {}
 periodictable = {}
+servo = {}
+webkitgtk3 = {}
 
 # GUI Data
 intel-one-mono = {}
 
-# Shell Apps
+# Terminal Apps
 gawk = {}
 gnu-grep = {}
 htop = {}
@@ -25,8 +28,14 @@ terminfo = {}
 vim = {}
 wget = {}
 
-# Games
+# Emulators
+
 dosbox = {}
+mednafen = {}
+flycast = {}
+
+# Games
+
 freedoom = {}
 neverball = {}
 prboom = {}
@@ -40,6 +49,10 @@ orbclient = {}
 pixelcannon = {}
 rodioplay = {}
 gears = {}
+sdl2-gears = {}
+iced = {}
+ratatui = {}
+softbuffer = {}
 
 # MIDI
 freepats = {}
