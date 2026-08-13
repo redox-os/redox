@@ -1,4 +1,4 @@
-#TODO zbus crate error
+#TODO app source error
 [source]
 git = "https://github.com/Kartonrealista/cosmic-ext-2048"
 [build]

@@ -1,4 +1,4 @@
-#TODO compile and test
+#TODO x11rb and rustic crate errors
 [source]
 git = "https://github.com/HactarCE/Hyperspeedcube"
 branch = "v1"

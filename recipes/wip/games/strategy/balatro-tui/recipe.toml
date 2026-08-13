@@ -1,8 +1,8 @@
 #TODO compiled but not tested
 [source]
 git = "https://github.com/Passeriform/BalatroTUI"
+rev = "01bbb9a"
+shallow_clone = true
 [build]
-template = "custom"
-script = """
-cookbook_cargo_packages balatro_tui
-"""
+template = "cargo"
+cargopackages = ["balatro_tui"]

@@ -1,6 +1,7 @@
-#TODO compile and test
+#TODO compiled but not tested
 [source]
 git = "https://github.com/dboone/rusty-checkers"
+rev = "4f5347f"
 shallow_clone = true
 [build]
 template = "cargo"

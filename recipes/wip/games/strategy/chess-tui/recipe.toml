@@ -1,5 +1,8 @@
-#TODO promote
+#TODO test
+# newer versions have a error in aws-lc-sys crate
 [source]
 git = "https://github.com/thomas-mauran/chess-tui"
+rev = "1.6.2"
+shallow_clone = true
 [build]
 template = "cargo"
