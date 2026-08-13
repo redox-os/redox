@@ -4,7 +4,7 @@
 [source]
 git = "https://github.com/greyshaman/helix.git"
 branch = "port-to-redoxos"
-
+shallow_clone = true
 [build]
 template = "custom"
 script = """

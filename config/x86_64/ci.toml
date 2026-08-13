@@ -35,7 +35,10 @@ automake = {}
 base = {}
 bash = {}
 bash-completion = {}
+benchmarks = {}
 binutils = {}
+binutils-gdb = {}
+book = {}
 boost = {}
 bootloader = {}
 boxedwine = {}
@@ -52,6 +55,7 @@ cmake = {}
 cmatrix = {}
 composer = {}
 contain = {}
+cookbook = {}
 coreutils = {}
 cosmic-edit = {}
 cosmic-files = {}
@@ -305,10 +309,8 @@ zlib = {}
 zola = {}
 zstd = {}
 
-#benchmarks = {}
-#binutils-gdb = {}
-#book = {}
-#cookbook = {}
+
+
 #cosmic-settings = {}
 #cosmic-store = {}
 #dynamic-example = {}

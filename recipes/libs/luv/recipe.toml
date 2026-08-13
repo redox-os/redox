@@ -1,5 +1,6 @@
 [source]
 git = "https://github.com/luvit/luv.git"
+shallow_clone = true
 [build]
 template = "custom"
 dependencies = [

@@ -1,7 +1,7 @@
 [source]
 git = "https://github.com/ilai-deutel/kibi"
 rev = "v0.3.2"
-
+shallow_clone = true
 [build]
 template = "custom"
 script = """

@@ -1,7 +1,7 @@
 [source]
 git = "https://github.com/jackpot51/OpenJK"
-upstream = "https://github.com/JACoders/OpenJK.git"
-
+#upstream = "https://github.com/JACoders/OpenJK.git"
+shallow_clone = true
 [build]
 template = "custom"
 dependencies = [
