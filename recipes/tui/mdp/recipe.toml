@@ -1,6 +1,6 @@
 [source]
 git = "https://github.com/visit1985/mdp.git"
-
+shallow_clone = true
 [build]
 template = "custom"
 dependencies = [

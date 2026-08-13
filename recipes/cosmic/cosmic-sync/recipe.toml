@@ -1,7 +1,7 @@
 [source]
 git = "https://github.com/pop-os/cosmic-sync.git"
 branch = "master"
-
+shallow_clone = true
 [build]
 template = "custom"
 dependencies = [

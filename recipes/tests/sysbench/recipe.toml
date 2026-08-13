@@ -1,5 +1,6 @@
 [source]
 git = "https://github.com/akopytov/sysbench.git"
+shallow_clone = true
 patches = ["redox.patch"]
 script = """
 DYNAMIC_INIT

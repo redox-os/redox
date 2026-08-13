@@ -1,7 +1,7 @@
 [source]
 git = "https://github.com/WebAssembly/wasi-testsuite"
 branch = "prod/testsuite-base"
-
+shallow_clone = true
 [build]
 template = "custom"
 script = """

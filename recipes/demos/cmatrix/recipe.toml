@@ -1,5 +1,6 @@
 [source]
 git = "https://github.com/abishekvashok/cmatrix"
+shallow_clone = true
 script = """
 autoreconf -i
 """

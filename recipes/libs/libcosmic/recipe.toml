@@ -1,9 +1,7 @@
 [source]
 git = "https://gitlab.redox-os.org/redox-os/libcosmic.git"
 branch = "redox"
-
+shallow_clone = true
 [build]
-template = "custom"
-script = """
-cookbook_cargo_packages cosmic
-"""
+template = "cargo"
+cargopackages = ["cosmic"]

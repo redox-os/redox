@@ -1,6 +1,7 @@
 [source]
 git = "https://luajit.org/git/luajit.git"
 rev = "a4f56a459a588ae768801074b46ba0adcfb49eb1"
+shallow_clone = true
 patches = ["redox.patch"]
 [build]
 template = "custom"
