@@ -1,6 +1,6 @@
 [source]
 git = "https://github.com/jD91mZM2/powerline-rs"
-
+shallow_clone = true
 [build]
 template = "custom"
 script = """

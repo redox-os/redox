@@ -1,6 +1,6 @@
 [source]
-tar="https://github.com/intel/intel-one-mono/archive/refs/tags/V1.3.0.tar.gz"
-blake3="9caff71b0a9fe8627253c55889964612ea4ae144584a283cd2fe88b7a14a4140"
+tar = "https://github.com/intel/intel-one-mono/archive/refs/tags/V1.3.0.tar.gz"
+blake3 = "9caff71b0a9fe8627253c55889964612ea4ae144584a283cd2fe88b7a14a4140"
 
 [build]
 template = "custom"

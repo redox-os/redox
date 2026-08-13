@@ -1,6 +1,7 @@
 [source]
 git = "https://github.com/fish-shell/fish-shell"
 rev = "54e8ad7e90a8213c01ba58de0640223bee6846d6"
+shallow_clone = true
 patches = ["redox.patch"]
 
 [build]

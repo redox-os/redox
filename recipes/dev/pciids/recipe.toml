@@ -1,6 +1,6 @@
 [source]
 git = "https://github.com/pciutils/pciids.git"
-
+shallow_clone = true
 [build]
 template = "custom"
 script = """

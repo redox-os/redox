@@ -2,7 +2,7 @@
 [source]
 git = "https://github.com/willnode/softbuffer.git"
 branch = "libredox-demo"
-
+shallow_clone = true
 [build]
 template = "cargo"
 cargoexamples = [
