@@ -1,0 +1,20 @@
+#TODO compile and test
+[source]
+git = "https://github.com/sysprog21/libx11-compat"
+shallow_clone = true
+[build]
+template = "custom"
+dependencies = [
+    "sdl2",
+    "sdl2-ttf",
+    "pixman",
+]
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+DYNAMIC_INIT
+MAKEFLAGS=(
+    SDL_BACKEND=sdl2
+)
+"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}" "${MAKEFLAGS[@]}" \
+"${COOKBOOK_MAKE}" install examples DESTDIR="${COOKBOOK_STAGE}/usr"
+"""

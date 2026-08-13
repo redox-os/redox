@@ -1,9 +1,5 @@
 [source]
 git = "https://gitlab.redox-os.org/redox-os/dynamic-example.git"
-
+shallow_clone = true
 [build]
-template = "custom"
-script = """
-DYNAMIC_INIT
-cookbook_cargo
-"""
+template = "cargo"

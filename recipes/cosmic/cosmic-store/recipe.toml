@@ -1,6 +1,6 @@
 [source]
 git = "https://github.com/pop-os/cosmic-store.git"
-
+shallow_clone = true
 [build]
 template = "custom"
 dependencies = [

@@ -1,3 +1,4 @@
+#TODO: fix rustc-serialize crate error, update?
 [source]
 git = "https://gitlab.redox-os.org/redox-os/2048-rs.git"
 #git_upstream = "https://github.com/pierrechevalier83/2048-rs.git"

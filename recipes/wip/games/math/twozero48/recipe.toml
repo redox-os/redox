@@ -1,4 +1,4 @@
-#TODO compile and test
+#TODO compiled but not tested
 [source]
 git = "https://github.com/de-sh/twozero48"
 shallow_clone = true

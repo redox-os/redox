@@ -1,5 +1,7 @@
+#TODO: fix linking error
 [source]
 git = "https://github.com/jackpot51/retroarch.git"
+shallow_clone = true
 script = """
 ./fetch-submodules.sh
 """
@@ -18,24 +20,24 @@ script = """
 rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 
 # For now, we will statically link with the snes9x libretro
-mkdir -pv "${COOKBOOK_SYSROOT}/lib"
-cp -v "${COOKBOOK_SYSROOT}/share/libretro/snes9x_libretro.a" "${COOKBOOK_SYSROOT}/lib/libretro.a"
+#mkdir -pv "${COOKBOOK_SYSROOT}/lib"
+#cp -v "${COOKBOOK_SYSROOT}/share/libretro/snes9x_libretro.a" "${COOKBOOK_SYSROOT}/lib/libretro.a"
 
 COOKBOOK_CONFIGURE_FLAGS=(
     --host="${TARGET}"
     --prefix="/"
     --disable-builtinzlib # conflicts with zlib
     --disable-discord # does not link
-    --disable-dylib
-    --disable-dynamic
+    #--disable-dylib
+    #--disable-dynamic
     --disable-netplaydiscovery # missing ifaddrs.h
     --disable-thread_storage # crash in pthread_setspecific called by sthread_tls_set
     --disable-threads # prevents hang
-    --enable-opengl
+    #--enable-opengl # can't find header
     --enable-sdl2
     --enable-ssl
     --enable-zlib
-    --with-libretro="-lretro -lstdc++ -lz"
+    #--with-libretro="-lretro -lstdc++ -lz"
 )
 cookbook_configure
 """

@@ -10,5 +10,6 @@ mkdir -pv "${COOKBOOK_STAGE}"/usr/share/icons
 cp -rv "${COOKBOOK_SOURCE}"/res/io.github.Kartonrealista.cosmic-ext-2048.desktop "${COOKBOOK_STAGE}"/usr/share/applications
 cp -rv "${COOKBOOK_SOURCE}"/res/io.github.Kartonrealista.cosmic-ext-2048.metainfo.xml "${COOKBOOK_STAGE}"/usr/share/metainfo
 cp -rv "${COOKBOOK_SOURCE}"/res/icons/hicolor "${COOKBOOK_STAGE}"/usr/share/icons
+DYNAMIC_INIT
 cookbook_cargo
 """

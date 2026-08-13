@@ -1,12 +1,13 @@
 [source]
 git = "https://github.com/jackpot51/libretro-super.git"
-
+shallow_clone = true
 [build]
 template = "custom"
 dependencies = [
     "zlib",
 ]
 script = """
+DYNAMIC_INIT
 CORES=(
     snes9x
 )
@@ -18,7 +19,6 @@ popd
 rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 
 export platform=Redox
-export STATIC_LINKING=1
 ./libretro-build.sh "${CORES[@]}"
 ./libretro-install.sh "${COOKBOOK_STAGE}/share/libretro"
 """

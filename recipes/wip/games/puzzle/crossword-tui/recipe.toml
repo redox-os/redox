@@ -2,10 +2,8 @@
 [source]
 git = "https://github.com/matrixfrog/crossword"
 [build]
-template = "custom"
-script = """
-cookbook_cargo_packages crosstui
-"""
+template = "cargo"
+cargopackages = ["crosstui"]
 [package]
 dependencies = [
     "crosshare-data"
