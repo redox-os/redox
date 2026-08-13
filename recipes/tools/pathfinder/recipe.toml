@@ -1,8 +1,8 @@
 [source]
 git = "https://gitlab.redox-os.org/redox-os/pathfinder.git"
 branch = "redox"
-upstream = "https://github.com/servo/pathfinder.git"
-
+#upstream = "https://github.com/servo/pathfinder.git"
+shallow_clone = true
 [build]
 template = "custom"
 dependencies = [
