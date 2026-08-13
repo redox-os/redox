@@ -1,6 +1,6 @@
 [source]
 git = "https://github.com/lukas-kirschner/procedural-wallpapers-rs.git"
-
+shallow_clone = true
 [build]
 template = "cargo"
 cargopath = "procedural_wallpapers"

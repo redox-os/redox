@@ -1,7 +1,7 @@
 [source]
 git = "https://github.com/pop-os/cosmic-monitor.git"
 rev = "epoch-1.2.0"
-
+shallow_clone = true
 [build]
 template = "custom"
 dependencies = [

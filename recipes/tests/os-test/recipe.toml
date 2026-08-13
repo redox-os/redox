@@ -4,7 +4,7 @@
 # TODO remove uutils-grep when extrautils grep supports grep -E (or just remove grep from extrautils)
 [source]
 git = "https://gitlab.com/sortix/os-test"
-
+shallow_clone = true
 [build]
 template = "custom"
 script = """
