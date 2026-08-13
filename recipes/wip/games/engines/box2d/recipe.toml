@@ -1,4 +1,4 @@
-#TODO compile and test
+#TODO glfw dependency can't find timerfd function
 [source]
 git = "https://github.com/erincatto/box2d"
 rev = "v3.1.1"
@@ -10,4 +10,13 @@ cmakeflags = [
     "-DBOX2D_BENCHMARKS=ON",
     "-DBOX2D_VALIDATE=OFF",
     "-DBOX2D_UNIT_TESTS=OFF",
+]
+dependencies = [
+    "libwayland",
+    "libxkbcommon",
+    "libx11",
+    "libxrandr",
+    "libxinerama",
+    "libxcursor",
+    "libxi",
 ]

@@ -1,13 +1,13 @@
-#TODO compile and test
+#TODO "unknown platform" error
 [source]
 git = "https://github.com/jrouwe/JoltPhysics"
 rev = "v5.6.0"
 shallow_clone = true
 [build]
 template = "custom"
-dependencies = [
-    "libvulkan",
-]
+#dependencies = [
+ #   "libvulkan",
+#]
 script = """
 DYNAMIC_INIT
 COOKBOOK_CMAKE_FLAGS+=(

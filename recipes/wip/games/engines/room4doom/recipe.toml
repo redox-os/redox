@@ -1,12 +1,11 @@
-#TODO not compiled or tested
+#TODO compiled but not tested
 [source]
 git = "https://github.com/flukejones/room4doom"
+shallow_clone = true
 [build]
-template = "custom"
+template = "cargo"
+cargopackages = ["room4doom"]
 dependencies = [
     "sdl2",
     "sdl2-mixer"
 ]
-script = """
-cookbook_cargo_packages room4doom
-"""

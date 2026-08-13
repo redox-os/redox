@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO fix zmusic
 #TODO determine minumum dependencies from cmake log
 # build instructions: https://github.com/UZDoom/UZDoom/wiki/Compilation#linux
 [source]
@@ -17,8 +17,8 @@ dependencies = [
     #"mesa-glu",
     "openal",
     "bzip2",
-    "openmp",
+    #"openmp",
     #"libvpx",
     #"libwebp",
-    #"zmusic",
+    "zmusic",
 ]

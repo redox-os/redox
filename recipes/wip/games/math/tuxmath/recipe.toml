@@ -10,11 +10,6 @@ autotools_recursive_regenerate
 template = "configure"
 dependencies = [
     "t4kcommon",
-    "sdl1",
-    "sdl1-image",
-    "sdl1-mixer",
     "sdl1-ttf",
-    "sdl2-net",
-    "sdl-pango",
     "librsvg",
 ]

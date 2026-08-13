@@ -1,10 +1,16 @@
-#TODO Not compiled or tested yet
+#TODO linking errors
 [source]
-tar = "https://www.chocolate-doom.org/downloads/3.0.1/chocolate-doom-3.0.1.tar.gz"
+git = "https://github.com/chocolate-doom/chocolate-doom"
+rev = "chocolate-doom-3.1.1"
+shallow_clone = true
 [build]
-template = "configure"
+template = "cmake"
+cmakeflags = [
+    "-DENABLE_SDL2_NET=OFF",
+    "-DENABLE_SDL2_MIXER=OFF",
+]
 dependencies = [
     "sdl2",
-    "sdl2-mixer",
-    "sdl2-net",
+    #"sdl2-mixer",
+    #"sdl2-net",
 ]

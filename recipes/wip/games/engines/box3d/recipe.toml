@@ -1,13 +1,24 @@
-#TODO compile and test
+#TODO build error
 [source]
 git = "https://github.com/erincatto/box3d"
 rev = "v0.1.0"
 shallow_clone = true
 [build]
-template = "cmake"
-cmakeflags = [
-    "-DBUILD_SHARED_LIBS=ON",
-    "-DBOX3D_BENCHMARKS=ON",
-    "-DBOX3D_UNIT_TESTS=OFF",
-    "-DBOX3D_VALIDATE=OFF",
+template = "custom"
+dependencies = [
+    "gtk3",
+    "libxi",
+    "libxcursor",
 ]
+script = """
+DYNAMIC_INIT
+COOKBOOK_CMAKE_FLAGS+=(
+    -DBUILD_SHARED_LIBS=ON
+    -DBOX3D_BENCHMARKS=ON
+    -DBOX3D_UNIT_TESTS=OFF
+    -DBOX3D_VALIDATE=OFF
+    -DOPENGL_opengl_LIBRARY="/dev/null"
+    -DOPENGL_glx_LIBRARY="/dev/null"
+)
+cookbook_cmake
+"""

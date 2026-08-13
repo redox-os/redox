@@ -2,12 +2,18 @@
 # build instructions: https://github.com/opentomb/OpenTomb#compiling
 [source]
 git = "https://github.com/opentomb/OpenTomb"
+rev = "ae7e07a"
+shallow_clone = true
 [build]
 template = "cmake"
+cmakeflags = [
+    "-DFORCE_SYSTEM_FREETYPE=ON"
+]
 dependencies = [
     "sdl2",
     "libpng",
     "zlib",
     "openal",
     "mesa",
+    "freetype2",
 ]

@@ -1,9 +1,10 @@
-#TODO not compiled or tested
+#TODO linking error
 # build instructions: https://github.com/minetest/minetest/blob/master/doc/compiling/linux.md
 # customization - https://github.com/minetest/minetest/tree/master/doc/compiling#cmake-options
 [source]
 git = "https://github.com/minetest/minetest"
-branch = "stable-5"
+rev = "5.14.0"
+shallow_clone = true
 patches = ["redox.patch"]
 
 [build]
@@ -18,7 +19,6 @@ dependencies = [
     "libvorbis",
     "luajit",
     "openal",
-    #TODO: openssl not detected by cmake
     "openssl3",
     "sdl2",
     "sqlite3",

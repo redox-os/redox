@@ -1,0 +1,10 @@
+#TODO compile and test
+[source]
+git = "https://github.com/libsdl-org/SDL_net"
+rev = "release-1.2.8"
+shallow_clone = true
+[build]
+template = "configure"
+dependencies = [
+    "sdl1",
+]

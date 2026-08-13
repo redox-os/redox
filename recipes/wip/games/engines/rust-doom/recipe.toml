@@ -1,9 +1,6 @@
 #TODO compiled but not tested
 [source]
 git = "https://github.com/hovinen/rust-doom"
+shallow_clone = true
 [build]
-template = "custom"
-script = """
-cookbook_cargo
-mv "${COOKBOOK_STAGE}/usr/bin/rs_doom" "${COOKBOOK_STAGE}/usr/bin/doom-rs"
-"""
+template = "cargo"

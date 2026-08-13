@@ -1,8 +1,7 @@
-#TODO not compiled or tested
+#TODO compiled but not tested
 [source]
 tar = "https://github.com/libsdl-org/SDL_net/releases/download/release-2.2.0/SDL2_net-2.2.0.tar.gz"
 [build]
 template = "cmake"
-dependencies = [
-    "sdl2",
-]
+cmakeflags = ["-DSDL2NET_SAMPLES=OFF"]
+dependencies = ["sdl2"]

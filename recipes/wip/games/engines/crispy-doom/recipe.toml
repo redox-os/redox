@@ -1,11 +1,16 @@
-#TODO Not compiled/tested yet
+#TODO linking errors
 [source]
 git = "https://github.com/fabiangreffrath/crispy-doom"
 rev = "crispy-doom-7.1"
+shallow_clone = true
 [build]
-template = "configure"
+template = "cmake"
+cmakeflags = [
+    "-DENABLE_SDL2_NET=OFF",
+    "-DENABLE_SDL2_MIXER=OFF",
+]
 dependencies = [
     "sdl2",
-    "sdl2-mixer",
-    "sdl2-net",
+    #"sdl2-mixer",
+    #"sdl2-net",
 ]
