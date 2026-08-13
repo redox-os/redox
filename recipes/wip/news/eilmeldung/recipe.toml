@@ -1,0 +1,11 @@
+#TODO compile and test
+[source]
+git = "https://github.com/christo-auer/eilmeldung"
+shallow_clone = true
+[build]
+template = "cargo"
+dependencies = [
+    "openssl3",
+    "libxml2",
+    "sqlite3",
+]
