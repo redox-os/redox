@@ -8,6 +8,7 @@ template = "custom"
 dependencies = [
   "libgmp",
   "libmpfr",
+  "readline",
 # TODO: this zlib get linked when boostrapping binutils
 #    "zlib"
 ]
@@ -25,6 +26,7 @@ COOKBOOK_CONFIGURE_FLAGS+=(
     --enable-deterministic-archives
     --disable-werror
 #   --with-system-zlib
+    --with-system-readline
 )
 
 cookbook_configure
