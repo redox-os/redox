@@ -1,0 +1,19 @@
+[source]
+tar = "https://github.com/KyleLink/poly2tri-c/archive/refs/tags/p2tc-0.1.0.tar.gz"
+blake3 = "149c87f0c7fc17d0790f73fa118149eafe2bfd614ce00cb4a52d454364447927"
+script = """
+autotools_recursive_regenerate
+"""
+
+[build]
+template = "custom"
+dependencies = [
+    "glib",
+]
+script = """
+DYNAMIC_INIT
+
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+COOKBOOK_CONFIGURE="./configure"
+cookbook_configure
+"""
