@@ -1,6 +1,6 @@
 use std::{
     collections::{BTreeMap, HashMap},
-    env, fs,
+    fs,
     str::FromStr,
     sync::OnceLock,
 };
@@ -23,6 +23,8 @@ pub struct CookConfigOpt {
     pub nonstop: Option<bool>,
     /// whether to archive packages with compressed format
     pub compressed: Option<bool>,
+    /// whether to clone as treeless clone by default
+    pub git_treeless: Option<bool>,
     /// whether to print everything in progress,
     /// will always hide cached build logs,
     /// build failure will be printed anyway
@@ -47,6 +49,7 @@ pub struct CookConfig {
     pub logs: bool,
     pub nonstop: bool,
     pub compressed: bool,
+    pub git_treeless: bool,
     pub verbose: bool,
     pub verbose_cmd: bool,
     pub clean_build: bool,
@@ -63,6 +66,7 @@ impl From<CookConfigOpt> for CookConfig {
             logs: value.logs.unwrap(),
             nonstop: value.nonstop.unwrap(),
             compressed: value.compressed.unwrap(),
+            git_treeless: value.git_treeless.unwrap(),
             verbose: value.verbose.unwrap(),
             verbose_cmd: value.verbose_cmd.unwrap(),
             clean_build: value.clean_build.unwrap(),
@@ -116,6 +120,7 @@ pub struct CookbookConfig {
 static CONFIG: OnceLock<CookbookConfig> = OnceLock::new();
 
 pub fn init_config() {
+    #[cfg(not(test))]
     let mut config: CookbookConfig = if fs::exists("cookbook.toml").unwrap_or(false) {
         let toml_content = fs::read_to_string("cookbook.toml")
             .map_err(|e| format!("Unable to read config: {:?}", e))
@@ -126,9 +131,22 @@ pub fn init_config() {
     } else {
         CookbookConfig::default()
     };
+    #[cfg(test)]
+    let mut config: CookbookConfig = toml::from_str(
+        "[mirrors]\n\
+            \"ftp.gnu.org/gnu\" = \"example.com/gnu\"\n\
+            \"github.com/foo/bar\" = \"github.com/baz/bar\"\n\
+            \"github.com/a\" = \"github.com/b\"\n",
+    )
+    .expect("Unable to parse test config");
 
+    #[cfg(not(test))]
     if config.cook_opt.tui.is_none() {
-        config.cook_opt.tui = Some(!env::var("CI").is_ok_and(|s| !s.is_empty()));
+        config.cook_opt.tui = Some(!std::env::var("CI").is_ok_and(|s| !s.is_empty()));
+    }
+    #[cfg(test)]
+    if config.cook_opt.tui.is_none() {
+        config.cook_opt.tui = Some(true);
     }
     if config.cook_opt.jobs.is_none() {
         config.cook_opt.jobs = Some(extract_env(
@@ -147,6 +165,9 @@ pub fn init_config() {
     }
     if config.cook_opt.compressed.is_none() {
         config.cook_opt.compressed = Some(extract_env("COOKBOOK_COMPRESSED", false));
+    }
+    if config.cook_opt.git_treeless.is_none() {
+        config.cook_opt.git_treeless = Some(extract_env("COOKBOOK_GIT_TREELESS", false));
     }
     if config.cook_opt.verbose.is_none() {
         let default = config.cook_opt.logs.unwrap();
@@ -193,14 +214,22 @@ pub fn init_config() {
     };
 
     config.recipe_lock = lock.recipes;
-
+    #[cfg(not(test))]
     CONFIG.set(config).expect("config is initialized twice");
+    #[cfg(test)]
+    let _ = CONFIG.set(config);
 }
 
+#[allow(unused_variables)]
 fn extract_env<T: FromStr>(key: &str, default: T) -> T {
-    if let Ok(e) = env::var(&key) {
+    #[cfg(not(test))]
+    if let Ok(e) = std::env::var(&key) {
         str::parse(&e).unwrap_or(default)
     } else {
+        default
+    }
+    #[cfg(test)]
+    {
         default
     }
 }
@@ -253,16 +282,9 @@ mod tests {
     use super::*;
 
     fn setup_test_config() {
-        let app_config = toml::from_str(
-            "[mirrors]\n\
-            \"ftp.gnu.org/gnu\" = \"example.com/gnu\"\n\
-            \"github.com/foo/bar\" = \"github.com/baz/bar\"\n\
-            \"github.com/a\" = \"github.com/b\"\n",
-        )
-        .expect("Unable to parse test config");
         // This will be called for each test. If the config is already set,
         // it will do nothing, which is fine as all tests use the same config.
-        let _ = CONFIG.set(app_config);
+        init_config();
     }
 
     #[test]
@@ -274,6 +296,30 @@ mod tests {
         .expect("Unable to parse test config");
         assert_eq!(app_config.cook_opt.offline, Some(true));
         assert_eq!(app_config.cook_opt.jobs, None);
+    }
+
+    #[test]
+    fn test_default_cook() {
+        setup_test_config();
+        assert_eq!(
+            get_config().cook,
+            CookConfig {
+                offline: false,
+                jobs: std::thread::available_parallelism()
+                    .map(|f| usize::from(f))
+                    .unwrap_or(1),
+                tui: true,
+                logs: true,
+                nonstop: false,
+                compressed: false,
+                git_treeless: false,
+                verbose: true,
+                verbose_cmd: true,
+                clean_build: false,
+                clean_target: false,
+                write_filetree: false
+            }
+        );
     }
 
     #[test]
