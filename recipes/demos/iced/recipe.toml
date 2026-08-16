@@ -1,7 +1,6 @@
 [source]
 git = "https://github.com/pop-os/iced"
-rev = "300fa97"
-shallow_clone = true
+rev = "300fa97" 
 patches = [
     "redox.patch"
 ]

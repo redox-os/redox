@@ -1,7 +1,7 @@
 # XXX: Do not distribute https://github.com/sm64pc/sm64ex/issues/89
 [source]
 git = "https://github.com/jackpot51/sm64ex.git"
-shallow_clone = true
+
 [build]
 template = "custom"
 dependencies = [

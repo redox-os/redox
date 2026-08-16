@@ -1,6 +1,6 @@
 [source]
 git = "https://github.com/jackpot51/pixelcannon.git"
-shallow_clone = true
+
 [build]
 template = "custom"
 script = """

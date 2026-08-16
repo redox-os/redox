@@ -1,6 +1,6 @@
 [source]
 git = "https://gitlab.redox-os.org/redox-os/liborbital.git"
-shallow_clone = true
+
 [build]
 template = "custom"
 script = """
