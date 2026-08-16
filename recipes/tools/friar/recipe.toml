@@ -1,5 +1,4 @@
 [source]
 git = "https://github.com/jackpot51/friar.git"
-shallow_clone = true
 [build]
 template = "cargo"

@@ -3,7 +3,7 @@
 [source]
 git = "https://gitlab.redox-os.org/redox-os/openposixtestsuite.git"
 branch = "redox"
-shallow_clone = true
+
 [build]
 template = "custom"
 script = """

@@ -1,5 +1,4 @@
 [source]
 git = "https://github.com/o2sh/onefetch"
-shallow_clone = true
 [build]
 template = "cargo"

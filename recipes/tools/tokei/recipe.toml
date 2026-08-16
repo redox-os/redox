@@ -1,5 +1,4 @@
 [source]
 git = "https://github.com/XAMPPRocky/tokei.git"
-shallow_clone = true
 [build]
 template = "cargo"
