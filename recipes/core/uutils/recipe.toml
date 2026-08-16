@@ -4,7 +4,6 @@
 [source]
 git = "https://github.com/uutils/coreutils"
 rev = "1f7c81f5d2d3e56c518349c0392158871a1ea9ec"
-shallow_clone = true
 patches = [
   "redox.patch"
 ]

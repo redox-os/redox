@@ -1,7 +1,7 @@
 [source]
 git = "https://github.com/pop-os/cosmic-text.git"
 branch = "main"
-shallow_clone = true
+
 [build]
 template = "custom"
 script = """

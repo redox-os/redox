@@ -1,7 +1,7 @@
 [source]
 git = "https://gitlab.redox-os.org/redox-os/gigalomania.git"
 branch = "master"
-shallow_clone = true
+
 [build]
 template = "custom"
 dependencies = [

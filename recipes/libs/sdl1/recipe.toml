@@ -1,6 +1,6 @@
 [source]
 git = "https://gitlab.redox-os.org/redox-os/sdl1.2.git"
-shallow_clone = true
+
 [build]
 template = "configure"
 dependencies = [

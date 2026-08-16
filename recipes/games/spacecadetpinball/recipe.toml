@@ -2,7 +2,6 @@
 [source]
 git = "https://github.com/k4zmu2a/SpaceCadetPinball.git"
 rev = "f760f34e5eb49c69d584921c0f3e251a59c62078"
-shallow_clone = true
 patches = [ "redox.patch" ]
 
 [build]

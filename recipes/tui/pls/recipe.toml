@@ -1,5 +1,4 @@
 [source]
 git = "https://github.com/pls-rs/pls"
-shallow_clone = true
 [build]
 template = "cargo"
