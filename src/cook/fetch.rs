@@ -207,7 +207,8 @@ pub fn fetch(recipe: &CookRecipe, check_source: bool, logger: &PtyOut) -> Result
             shallow_clone,
         }) => {
             //TODO: use libgit?
-            let shallow_clone = *shallow_clone == Some(true);
+            let shallow_clone =
+                shallow_clone.unwrap_or_else(|| crate::config::get_config().cook.git_treeless);
             let mut fetch_is_ran = false;
             let patches_ident = get_patches_blake3(&recipe_dir, patches, script)?;
             let cached = if !source_dir.is_dir() {

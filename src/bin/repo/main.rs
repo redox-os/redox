@@ -72,7 +72,9 @@ const REPO_HELP_STR: &str = r#"
                                         ignored when command "fetch" is used
         COOKBOOK_NONSTOP=false       keep running even a recipe build failed
         COOKBOOK_COMPRESSED=false    build packages in compressed format
+        COOKBOOK_GIT_TREELESS=false  clone sources as treeless by default
         COOKBOOK_VERBOSE=true        print success/error on each recipe
+        COOKBOOK_VERBOSE_CMD=true    add -x to bash build script
         COOKBOOK_CLEAN_BUILD=false   remove build directory before building
         COOKBOOK_CLEAN_TARGET=false  remove target directory after building
         COOKBOOK_WRITE_FILETREE=false whether to write stage files tree
