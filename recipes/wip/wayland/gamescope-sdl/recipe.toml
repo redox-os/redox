@@ -1,0 +1,22 @@
+#TODO determine sdl2 backend dependencies from meson log
+[source]
+git = "https://github.com/ValveSoftware/gamescope/releases/tag/"
+rev = "3.16.23.5"
+shallow_clone = true
+[build]
+template = "meson"
+mesonflags = [
+    "-Dpipewire=disabled",
+    "-Drt_cap=disabled",
+    "-Ddrm_backend=disabled",
+    "-Dsdl2_backend=enabled",
+    "-Davif_screenshots=disabled",
+    "-Dinput_emulation=disabled",
+    "-Dbenchmark=disabled",
+    "-Denable_gamescope_wsi_layer=false",
+    "-Denable_openvr_support=false",
+    "-Denable_tests=false",
+]
+dependencies = [
+    "sdl2",
+]
