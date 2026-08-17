@@ -1,4 +1,7 @@
 # limitations: no opengl hardware acceleration, xrandr and text input is hacky
+# the meson config don't have xsdl config
+#TODO verify if some part of the xserver-xorg patch is needed
+#TODO verify if feature flags are correct
 #TODO compile and test
 # execution script: https://github.com/pelya/xserver-xsdl/blob/xsdl-1.20/start-linux.sh
 # linux build script: https://github.com/pelya/xserver-xsdl/blob/xsdl-1.20/build-xsdl-for-linux.sh
