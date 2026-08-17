@@ -1,0 +1,7 @@
+#TODO compile and test
+[source]
+git = "https://github.com/SaschaWillems/Vulkan"
+rev = "15782bf998d90d296d4731d79e00aad49fd2375e"
+shallow_clone = true
+[build]
+template = "cmake"

@@ -2,7 +2,7 @@
 # build instructions: https://github.com/raysan5/raylib/wiki/Working-on-GNU-Linux
 [source]
 git = "https://github.com/raysan5/raylib"
-rev = "5.5"
+rev = "6.0"
 shallow_clone = true
 [build]
 template = "cmake"

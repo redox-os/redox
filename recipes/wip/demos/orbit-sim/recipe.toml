@@ -1,0 +1,10 @@
+#TODO make it use raylib recipe
+[source]
+git = "https://github.com/IceWizard7/simulation-orbit"
+rev = "e772641909df7a0876093b9ffea0377e5bea82bf"
+shallow_clone = true
+[build]
+template = "cmake"
+dependencies = [
+    "raylib"
+]

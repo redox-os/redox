@@ -1,0 +1,12 @@
+#TODO compile and test
+[source]
+git = "https://codeberg.org/wmahfoudh/oryx"
+shallow_clone = true
+[build]
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_cargo
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/oryx"
+cp -rv "${COOKBOOK_SOURCE}"/{examples,themes} "${COOKBOOK_STAGE}/usr/share/oryx"
+"""

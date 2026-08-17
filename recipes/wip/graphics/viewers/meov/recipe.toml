@@ -1,0 +1,15 @@
+#TODO make it use sdl2 recipe
+#TODO determine if/what bundled dependencies need to be patched
+# dependencies: https://github.com/seigtm/meov/tree/Baranov_0.3.0_Linux_Builds/dependencies
+[source]
+git = "https://github.com/seigtm/meov"
+branch = "Baranov_0.3.0_Linux_Builds"
+shallow_clone = true
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DMEOV_USING_OPENGL=false"
+]
+dependencies = [
+    "sdl2",
+]

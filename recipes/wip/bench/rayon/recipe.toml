@@ -1,0 +1,7 @@
+#TODO compile and test
+[source]
+git = "https://github.com/rayon-rs/rayon"
+shallow_clone = true
+[build]
+template = "cargo"
+cargopackages = ["rayon-demo"]

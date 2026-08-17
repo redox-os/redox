@@ -1,0 +1,15 @@
+#TODO compile and test
+[source]
+git = "https://github.com/adrien-ben/vulkan-examples-rs"
+shallow_clone = true
+[build]
+template = "cargo"
+cargopackages = [
+    "gpu_particles",
+    "hdr_skybox",
+    "rt_reflections",
+    "rt_shadows",
+    "rt_triangle",
+    "triangle",
+    "wboit",
+]

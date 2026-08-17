@@ -1,0 +1,45 @@
+#TODO compile and test
+#TODO linux build script for debug build, determine release build flags
+# execution script: https://github.com/pelya/xserver-xsdl/blob/xsdl-1.20/start.sh
+# linux build script: https://github.com/pelya/xserver-xsdl/blob/xsdl2/configure-xsdl.sh
+[source]
+git = "https://github.com/pelya/xserver-xsdl"
+rev = "c9abcead5516b422ce99eb89d81e22a665b8bcb9"
+shallow_clone = true
+script = """
+autotools_recursive_regenerate
+"""
+[build]
+template = "custom"
+dependencies = [
+    "sdl1",
+]
+script = """
+env SDL=yes #CFLAGS="-O0 -g"
+DYNAMIC_INIT
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --disable-xorg
+    --disable-dmx
+    --disable-xvfb
+    --disable-xnest
+    --disable-xquartz
+    --disable-xwin
+    --disable-xephyr
+    --disable-xfake
+    --disable-xfbdev
+    --disable-unit-tests
+    --disable-shm
+    --disable-mitshm
+    --disable-dri
+    --disable-dri2
+    --disable-glx
+    --disable-xf86vidmode
+    --disable-libdrm
+    --enable-xsdl
+    --enable-kdrive
+    --enable-kdrive-kbd
+    --enable-kdrive-mouse
+    #--enable-kdrive-evdev
+)
+cookbook_configure
+"""
