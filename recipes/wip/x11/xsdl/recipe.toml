@@ -1,10 +1,10 @@
+# limitations: no opengl hardware acceleration, xrandr and text input is hacky
 #TODO compile and test
-#TODO linux build script for debug build, determine release build flags
-# execution script: https://github.com/pelya/xserver-xsdl/blob/xsdl-1.20/start.sh
-# linux build script: https://github.com/pelya/xserver-xsdl/blob/xsdl2/configure-xsdl.sh
+# execution script: https://github.com/pelya/xserver-xsdl/blob/xsdl-1.20/start-linux.sh
+# linux build script: https://github.com/pelya/xserver-xsdl/blob/xsdl-1.20/build-xsdl-for-linux.sh
 [source]
 git = "https://github.com/pelya/xserver-xsdl"
-rev = "c9abcead5516b422ce99eb89d81e22a665b8bcb9"
+rev = "6696d69"
 shallow_clone = true
 script = """
 autotools_recursive_regenerate
@@ -13,33 +13,56 @@ autotools_recursive_regenerate
 template = "custom"
 dependencies = [
     "sdl1",
+    "font-util",
+    "freetype2",
+    "libfontenc",
+    "libpng",
+    "libpthread-stubs",
+    #TODO: used for secure-rpc, needs syslog: "libtirpc",
+    "libx11",
+    "libxau",
+    "libxcb",
+    "libxcvt",
+    "libxdmcp",
+    "libxext",
+    "libxfixes",
+    "libxfont2",
+    "libxkbfile",
+    "libxxf86vm",
+    "mesa-x11",
+    "openssl3",
+    "pixman",
+    "xkbcomp",
+    "x11proto",
+    "xtrans",
+    "zlib",
 ]
+
 script = """
-env SDL=yes #CFLAGS="-O0 -g"
+env SDL=yes # CFLAGS="-g" # needed?
 DYNAMIC_INIT
 COOKBOOK_CONFIGURE_FLAGS+=(
+    #--prefix="${COOKBOOK_STAGE}/usr" # previous path: `pwd`/data/usr
+    #--with-xkb-path=/usr/share/X11/xkb # previous path: `pwd`/data/xkb
     --disable-xorg
     --disable-dmx
     --disable-xvfb
     --disable-xnest
     --disable-xquartz
     --disable-xwin
+    --disable-xwayland
     --disable-xephyr
-    --disable-xfake
-    --disable-xfbdev
     --disable-unit-tests
-    --disable-shm
-    --disable-mitshm
     --disable-dri
     --disable-dri2
     --disable-glx
     --disable-xf86vidmode
+    --disable-config-udev
     --disable-libdrm
+    --with-systemd-daemon=no
     --enable-xsdl
     --enable-kdrive
-    --enable-kdrive-kbd
-    --enable-kdrive-mouse
-    #--enable-kdrive-evdev
+    --enable-mitshm
 )
 cookbook_configure
 """
