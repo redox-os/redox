@@ -68,4 +68,5 @@ COOKBOOK_CONFIGURE_FLAGS+=(
     --enable-mitshm
 )
 cookbook_configure
+# ln -sf /usr/bin/xkbcomp data/usr/bin/xkbcomp # needed?
 """
