@@ -1,0 +1,14 @@
+#TODO compile and test
+[source]
+git = "https://github.com/Henrique194/chocolate-quake"
+rev = "chocolate-quake-2.1.0"
+shallow_clone = true
+[build]
+template = "cmake"
+dependencies = [
+    "sdl2",
+    "sdl2-net",
+    "libvorbis",
+    "libflac",
+    "libmad",
+]

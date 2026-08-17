@@ -1,0 +1,7 @@
+#TODO compile and test
+[source]
+git = "https://github.com/KaminariOS/rustracer"
+shallow_clone = true
+[build]
+template = "cargo"
+cargoexamples = ["gltf-renderer"]

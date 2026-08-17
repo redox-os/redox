@@ -1,0 +1,16 @@
+#TODO compile and test
+#TODO add manual installation on script
+[source]
+git = "https://github.com/gustavopezzi/voxelspace-sdl"
+rev = "e95d3ac813ab357d2c3d4bdee3d387fbca8d7097"
+shallow_clone = true
+[build]
+template = "custom"
+dependencies = [
+    "sdl2",
+]
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+DYNAMIC_INIT
+"${COOKBOOK_MAKE}" build -j "${COOKBOOK_MAKE_JOBS}"
+"""

@@ -1,0 +1,12 @@
+#TODO compile and test
+[source]
+git = "https://github.com/Dalamar42/rayt"
+shallow_clone = true
+[build]
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_cargo
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/rayt"
+cp -rv "${COOKBOOK_SOURCE}"/config/* "${COOKBOOK_STAGE}/usr/share/rayt"
+"""

@@ -1,0 +1,17 @@
+#TODO compile and test
+[source]
+git = "https://github.com/gue-ni/OpenGL_Flightsim"
+rev = "7b865b085e18fc3b9e242651f3bd12073e3071dd"
+shallow_clone = true
+[build]
+template = "custom"
+dependencies = [
+    "sdl2",
+    "sdl2-image",
+    "glew",
+    "glm",
+]
+script = """
+DYNAMIC_INIT
+cookbook_cmake "${COOKBOOK_SOURCE}"/OpenGL_Flightsim
+"""

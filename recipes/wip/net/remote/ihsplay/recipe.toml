@@ -1,0 +1,16 @@
+#TODO compile and test
+[source]
+git = "https://github.com/mariotaku/ihsplay"
+rev = "v0.2.12"
+shallow_clone = true
+[build]
+template = "cmake"
+dependencies = [
+    "freetype2",
+    "fontconfig",
+    "mbedtls",
+    "sdl2",
+    #"sdl2-image",
+    #"opus",
+    #"protobuf",
+]
