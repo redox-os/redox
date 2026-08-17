@@ -1,6 +1,6 @@
 #TODO determine sdl2 backend dependencies from meson log
 [source]
-git = "https://github.com/ValveSoftware/gamescope/releases/tag/"
+git = "https://github.com/ValveSoftware/gamescope"
 rev = "3.16.23.5"
 shallow_clone = true
 [build]
