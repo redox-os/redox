@@ -97,14 +97,14 @@ pub fn flush_pty(logger: &mut PtyOut) {
 
 pub fn spawn_to_pipe(command: &mut Command, stdout_pipe: &PtyOut) -> Result<Child> {
     match stdout_pipe {
-        Some(stdout) => stdout.0.spawn_command(command.into()),
+        Some(stdout) => stdout.0.spawn_command(command),
         None => Ok(command.spawn().map_err(wrap_io_err!("Spawning"))?),
     }
 }
 
 pub fn spawn_to_pipe_with_stdin(command: &mut Command, stdout_pipe: &PtyOut) -> Result<Child> {
     match stdout_pipe {
-        Some(stdout) => stdout.0.spawn_command_stdin(command.into()),
+        Some(stdout) => stdout.0.spawn_command_stdin(command),
         None => Ok(command.spawn().map_err(wrap_io_err!("Spawning"))?),
     }
 }
@@ -201,10 +201,7 @@ pub struct PtyPair {
 impl UnixPtySystem {
     fn openpty(&self, size: PtySize) -> Result<PtyPair> {
         let (master, slave) = openpty(size)?;
-        Ok(PtyPair {
-            master: master,
-            slave: slave,
-        })
+        Ok(PtyPair { master, slave })
     }
 }
 
@@ -368,10 +365,10 @@ fn cloexec(fd: RawFd) -> Result<()> {
 
 impl UnixSlavePty {
     fn spawn_command(&self, builder: &mut Command) -> Result<std::process::Child> {
-        Ok(self.fd.spawn_command(builder, false)?)
+        self.fd.spawn_command(builder, false)
     }
     fn spawn_command_stdin(&self, builder: &mut Command) -> Result<std::process::Child> {
-        Ok(self.fd.spawn_command(builder, true)?)
+        self.fd.spawn_command(builder, true)
     }
     fn flush(&mut self) -> Result<()> {
         self.fd.flush()

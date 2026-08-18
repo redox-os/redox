@@ -19,7 +19,7 @@ pub enum WalkTreeEntry {
 
 impl WalkTreeEntry {
     pub fn is_valid(&self) -> bool {
-        return matches!(self, WalkTreeEntry::Built(_) | WalkTreeEntry::NotBuilt);
+        matches!(self, WalkTreeEntry::Built(_) | WalkTreeEntry::NotBuilt)
     }
 }
 
@@ -53,6 +53,12 @@ pub struct TreeItem<'a> {
     pub dependents: Option<&'a HashSet<PackageName>>,
 }
 
+impl Default for TreeData {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl TreeData {
     pub fn new() -> Self {
         Self {
@@ -66,18 +72,13 @@ impl TreeData {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Default)]
 pub enum DisplayOptions {
     Name,
     Path,
     Csv,
+    #[default]
     Tree,
-}
-
-impl Default for DisplayOptions {
-    fn default() -> Self {
-        Self::Tree
-    }
 }
 
 impl FromStr for DisplayOptions {
@@ -271,10 +272,10 @@ pub fn walk_tree_entry(
 
     data.visited.insert(package_name.clone());
     if !cached {
-        if matches!(tree_opt, TreeOptions::Push) {
-            if let WalkTreeEntry::Built(pkg_size) = &entry {
-                data.total_size += pkg_size;
-            }
+        if matches!(tree_opt, TreeOptions::Push)
+            && let WalkTreeEntry::Built(pkg_size) = &entry
+        {
+            data.total_size += pkg_size;
         }
         if matches!(entry, WalkTreeEntry::NotBuilt) {
             data.total_notbuilt += 1;
@@ -292,7 +293,7 @@ pub fn walk_tree_entry(
     for (i, dep_name) in dependencies.iter().enumerate() {
         data.dependents
             .entry((*dep_name).clone())
-            .or_insert_with(|| HashSet::new())
+            .or_insert_with(HashSet::new)
             .insert(package_name.clone());
         walk_tree_entry(
             dep_name,
@@ -380,7 +381,7 @@ pub fn walk_file_tree(
         return Ok(0);
     }
     let mut entries: Vec<_> = std::fs::read_dir(dir)?.filter_map(|e| e.ok()).collect();
-    entries.sort_by(|a, b| a.file_name().cmp(&b.file_name()));
+    entries.sort_by_key(|a| a.file_name());
     let mut total_size = 0;
     for (index, entry) in entries.iter().enumerate() {
         let path = entry.path();

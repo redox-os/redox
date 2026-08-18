@@ -92,11 +92,11 @@ pub fn new_recursive(
     nonstop: bool,
     recursion: usize,
 ) -> Result<Vec<Package>, PackageError> {
-    if names.len() == 0 {
+    if names.is_empty() {
         return Ok(vec![]);
     }
     let (list, map) = new_recursive_nonstop(names, recursion);
-    if nonstop && list.len() > 0 {
+    if nonstop && !list.is_empty() {
         Ok(list)
     } else if !nonstop && map.len() == list.len() {
         Ok(list)
@@ -141,10 +141,10 @@ pub fn new_recursive_nonstop(
                 }
                 for (dep_name, result) in dependencies_map {
                     if let Err(mut e) = result {
-                        if !packages_map.contains_key(&dep_name) {
+                        packages_map.entry(dep_name).or_insert_with(|| {
                             e.append_recursion(name);
-                            packages_map.insert(dep_name, Err(e));
-                        }
+                            Err(e)
+                        });
                         has_invalid_dependency = true;
                     }
                 }

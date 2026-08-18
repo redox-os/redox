@@ -18,13 +18,7 @@ pub fn generate_html_pkg(
     let version = &package.version;
     let target = &package.target;
     let category = &get_category(&recipe.dir);
-    let description = recipe
-        .recipe
-        .package
-        .description
-        .as_ref()
-        .map(|p| p.as_str())
-        .unwrap_or("-");
+    let description = recipe.recipe.package.description.as_deref().unwrap_or("-");
 
     let desc_html = recipe
         .recipe
@@ -124,7 +118,7 @@ pub fn generate_html_pkg(
         let target_split: Vec<&str> = package.target.split('-').collect();
         (
             target_split
-                .get(0)
+                .first()
                 .map(|s| s.to_string())
                 .unwrap_or("-".into()),
             target_split
@@ -196,7 +190,7 @@ pub fn generate_html_pkg(
 </html>"#,
         network_size = format_size(package.network_size),
         storage_size = format_size(package.storage_size),
-        published_short = &package.time_identifier.get(0..10).unwrap_or("-"),
+        published_short = package.time_identifier.get(0..10).unwrap_or("-"),
         published = package.time_identifier,
         blake3 = package.blake3,
     );
@@ -275,7 +269,7 @@ pub fn generate_html_index(
 </html>"#,
         target = redoxer::target(),
         category_sections = categories_html.join("\n\n"),
-        commit_time = &ident::get_ident().time,
+        commit_time = ident::get_ident().time,
         commit_hash = get_short_commit(&ident::get_ident().commit),
         commit_tree = get_tree_url(
             &config.this_repo,

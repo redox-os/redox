@@ -91,10 +91,10 @@ fn auto_deps_from_dynamic_linking(
                 let Ok(name) = str::from_utf8(val) else {
                     continue;
                 };
-                if let Ok(relative_path) = path.strip_prefix(rel_path) {
-                    if verbose {
-                        log_to_pty!(logger, "DEBUG: {} needs {}", relative_path.display(), name);
-                    }
+                if let Ok(relative_path) = path.strip_prefix(rel_path)
+                    && verbose
+                {
+                    log_to_pty!(logger, "DEBUG: {} needs {}", relative_path.display(), name);
                 }
                 needed.insert(name.to_string());
             } else {
@@ -270,7 +270,7 @@ pub fn build(
     } else {
         &dep_pkgars
     };
-    let have_toolchain = !name.is_host() && dep_host_pkgars.len() > 0;
+    let have_toolchain = !name.is_host() && !dep_host_pkgars.is_empty();
     let (sysroot_cached, toolchain_cached) = (
         build_deps_dir(logger, &sysroot_dir, deps_sysroot)?,
         if have_toolchain {
@@ -364,10 +364,10 @@ pub fn build(
                     flags_fn("COOKBOOK_CARGO_FLAGS", cargoflags),
                     cargopath.as_deref().unwrap_or(".")
                 );
-                if cargopackages.len() == 0 && cargoexamples.len() == 0 {
+                if cargopackages.is_empty() && cargoexamples.is_empty() {
                     script += "cookbook_cargo\n"
                 } else {
-                    if cargopackages.len() > 0 {
+                    if !cargopackages.is_empty() {
                         script += if *cargopackagesprefixed {
                             "cookbook_cargo_packages_prefixed"
                         } else {
@@ -379,7 +379,7 @@ pub fn build(
                         }
                         script += "\n";
                     }
-                    if cargoexamples.len() > 0 {
+                    if !cargoexamples.is_empty() {
                         script += "cookbook_cargo_examples";
                         for example in cargoexamples {
                             script += " ";
@@ -469,7 +469,7 @@ pub fn build(
             } else {
                 command.env_remove("COOKBOOK_OFFLINE");
             }
-            if let Ok(ident_source) = fetch::fetch_get_source_info(&cook_recipe) {
+            if let Ok(ident_source) = fetch::fetch_get_source_info(cook_recipe) {
                 command.env("COOKBOOK_SOURCE_IDENT", ident_source.source_identifier);
                 command.env("COOKBOOK_COMMIT_IDENT", ident_source.commit_identifier);
             }
@@ -486,9 +486,9 @@ pub fn build(
         let mut globs = Vec::new();
         for (i, feat) in recipe.optional_packages.iter().enumerate() {
             let stage_dir = &stage_dirs[i];
-            fs::create_dir_clean(&stage_dir)?;
+            fs::create_dir_clean(stage_dir)?;
             for path in &feat.files {
-                let glob = globset::Glob::new(&path).map_err(|e| format!("{}", e))?;
+                let glob = globset::Glob::new(path).map_err(|e| format!("{}", e))?;
                 globs.push((glob.compile_matcher(), stage_dir.clone()));
             }
         }
@@ -506,7 +506,7 @@ pub fn build(
         .map_err(wrap_io_err!("Moving to stages dir"))?;
 
         // Move stage.tmp to stage atomically
-        fs::rename(&stage_dir_tmp, &stage_dir)?;
+        fs::rename(&stage_dir_tmp, stage_dir)?;
     }
 
     if cook_config.clean_target {
@@ -539,11 +539,11 @@ fn build_is_source_newer(
         return false;
     };
     let mut recipe_is_newest = false;
-    if let Ok(recipe_modified) = fs::modified(&recipe_dir.join("recipe.toml")) {
-        if recipe_modified > source_modified {
-            source_modified = recipe_modified;
-            recipe_is_newest = true;
-        }
+    if let Ok(recipe_modified) = fs::modified(&recipe_dir.join("recipe.toml"))
+        && recipe_modified > source_modified
+    {
+        source_modified = recipe_modified;
+        recipe_is_newest = true;
     }
     let newer = source_modified > stage_modified;
     if newer {
@@ -558,7 +558,7 @@ fn build_is_source_newer(
 
 pub fn remove_stage_dir(stage_dir: &PathBuf) -> crate::Result<()> {
     if stage_dir.is_dir() {
-        fs::remove_all(&stage_dir)?;
+        fs::remove_all(stage_dir)?;
     }
     let stage_file = stage_dir.with_added_extension("pkgar");
     if stage_file.is_file() {
@@ -605,10 +605,10 @@ fn build_deps_dir(
     dep_pkgars: &BTreeSet<(PackageName, PathBuf)>,
 ) -> Result<bool> {
     let pkey_path = "build/id_ed25519.pub.toml";
-    let pkey_file = match PublicKeyFile::open(&pkey_path) {
+    let pkey_file = match PublicKeyFile::open(pkey_path) {
         Ok(k) => k.pkey,
         Err(e) => {
-            if dep_pkgars.len() > 0 {
+            if !dep_pkgars.is_empty() {
                 return Err(Error::from(e));
             } else {
                 // should never be accessed
@@ -670,7 +670,7 @@ fn build_deps_dir(
         fs::create_dir(&usr_dir.join(folder))?;
 
         // Link sysroot/$folder sysroot/usr/$folder
-        fs::symlink(Path::new("usr").join(folder), &deps_dir_tmp.join(folder))?;
+        fs::symlink(Path::new("usr").join(folder), deps_dir_tmp.join(folder))?;
     }
 
     for (name, archive_path) in dep_pkgars {
@@ -678,7 +678,7 @@ fn build_deps_dir(
         let mut package = PackageFile::new(archive_path, &pkey_file)?;
         Transaction::install(&mut package, &deps_dir_tmp)?.commit()?;
         let hash = blake3::Hash::from_bytes(package.header().blake3).to_hex();
-        std::fs::write(&tag_file, &hash.as_bytes()).map_err(wrap_io_err!("Writing tag"))?;
+        std::fs::write(&tag_file, hash.as_bytes()).map_err(wrap_io_err!("Writing tag"))?;
     }
 
     // Move sysroot.tmp to sysroot atomically
@@ -692,8 +692,8 @@ fn clean_deps_dir(deps_dir: &PathBuf) -> Result<bool> {
     let tags_dir = deps_dir.join(".tags");
     let tags_dir_tmp = deps_dir.with_added_extension("tags");
     fs::rename(&tags_dir, &tags_dir_tmp)?;
-    fs::remove_all(&deps_dir)?;
-    fs::create_dir(&deps_dir)?;
+    fs::remove_all(deps_dir)?;
+    fs::create_dir(deps_dir)?;
     fs::rename(&tags_dir_tmp, &tags_dir)?;
     Ok(false)
 }
@@ -712,11 +712,11 @@ fn build_auto_deps(
         if cook_config.verbose {
             log_to_pty!(logger, "DEBUG: updating {}", auto_deps_path.display());
         }
-        fs::remove_all(&auto_deps_path)?;
+        fs::remove_all(auto_deps_path)?;
     }
 
     let auto_deps = if auto_deps_path.exists() {
-        let wrapper: AutoDeps = fs::read_toml(&auto_deps_path)?;
+        let wrapper: AutoDeps = fs::read_toml(auto_deps_path)?;
         wrapper.packages
     } else {
         let mut dynamic_deps = auto_deps_from_dynamic_linking(stage_dirs, &dep_pkgars, logger);
@@ -728,7 +728,7 @@ fn build_auto_deps(
         let wrapper = AutoDeps {
             packages: dynamic_deps,
         };
-        fs::serialize_and_write(&auto_deps_path, &wrapper)?;
+        fs::serialize_and_write(auto_deps_path, &wrapper)?;
         wrapper.packages
     };
     Ok(auto_deps)
@@ -755,8 +755,8 @@ pub fn build_remote(
             break;
         }
 
-        let (_, source_pkgar, _) = package_source_paths(*package, &target_dir);
-        if fs::modified(&source_pkgar)? > fs::modified(&stage_pkgar)? {
+        let (_, source_pkgar, _) = package_source_paths(*package, target_dir);
+        if fs::modified(&source_pkgar)? > fs::modified(stage_pkgar)? {
             cached = false;
             break;
         }
@@ -770,9 +770,9 @@ pub fn build_remote(
 
     for (i, package) in packages.into_iter().enumerate() {
         let stage_dir = &stage_dirs[i];
-        let (_, source_pkgar, _) = package_source_paths(package, &target_dir);
+        let (_, source_pkgar, _) = package_source_paths(package, target_dir);
         fs::create_dir_clean(stage_dir)?;
-        pkgar::extract(&source_pubkey, &source_pkgar, &stage_dir).map_err(|e| {
+        pkgar::extract(&source_pubkey, &source_pkgar, stage_dir).map_err(|e| {
             if matches!(e, pkgar::Error::Core(pkgar_core::Error::Dryoc(_))) {
                 hint_incorrect_pkey(logger, &source_pubkey, &source_pkgar);
             }

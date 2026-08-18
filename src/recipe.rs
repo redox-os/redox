@@ -66,9 +66,11 @@ pub enum SourceRecipe {
 /// Specifies how to build a recipe
 #[derive(Debug, Clone, Deserialize, PartialEq, Serialize)]
 #[serde(tag = "template")]
+#[derive(Default)]
 pub enum BuildKind {
     /// Will not build (for meta packages)
     #[serde(rename = "none")]
+    #[default]
     None,
     /// Will download compiled package from remote
     #[serde(rename = "remote")]
@@ -132,12 +134,6 @@ pub enum BuildKind {
     /// Will build and install using custom commands
     #[serde(rename = "custom")]
     Custom { script: String },
-}
-
-impl Default for BuildKind {
-    fn default() -> Self {
-        BuildKind::None
-    }
 }
 
 #[derive(Debug, Clone, Default, Deserialize, PartialEq, Serialize)]
@@ -222,7 +218,7 @@ impl Recipe {
         if !file.is_file() {
             return Err(PackageError::FileMissing(file.clone()));
         }
-        let toml = fs::read_to_string(&file)
+        let toml = fs::read_to_string(file)
             .map_err(|err| PackageError::FileError(err.raw_os_error(), file.clone()))?;
         let recipe: Recipe =
             toml::from_str(&toml).map_err(|err| PackageError::Parse(err, Some(file.clone())))?;
@@ -231,7 +227,7 @@ impl Recipe {
 
     pub fn get_packages_list(&self) -> Vec<Option<&OptionalPackageRecipe>> {
         let mut packages: Vec<Option<&OptionalPackageRecipe>> =
-            self.optional_packages.iter().map(|p| Some(p)).collect();
+            self.optional_packages.iter().map(Some).collect();
         // the mandatory package, put last because of cook_build
         packages.push(None);
         packages
@@ -540,7 +536,7 @@ impl CookRecipe {
                     patches: _,
                     script: _,
                 } => {
-                    if let Some(ver) = re.extract_ver(&tar) {
+                    if let Some(ver) = re.extract_ver(tar) {
                         return Some(ver);
                     }
                 }
@@ -553,15 +549,15 @@ impl CookRecipe {
                     patches: _,
                     script: _,
                 } => {
-                    if let Some(rev) = rev {
-                        if let Some(ver) = re.extract_ver(&rev) {
-                            return Some(ver);
-                        }
+                    if let Some(rev) = rev
+                        && let Some(ver) = re.extract_ver(rev)
+                    {
+                        return Some(ver);
                     }
-                    if let Some(branch) = branch {
-                        if let Some(ver) = re.extract_ver(&branch) {
-                            return Some(ver);
-                        }
+                    if let Some(branch) = branch
+                        && let Some(ver) = re.extract_ver(branch)
+                    {
+                        return Some(ver);
                     }
                 }
                 SourceRecipe::SameAs { same_as } => {
@@ -635,6 +631,12 @@ pub struct VersionExtractor {
     regex: Regex,
 }
 
+impl Default for VersionExtractor {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl VersionExtractor {
     pub fn new() -> Self {
         Self {
@@ -642,7 +644,7 @@ impl VersionExtractor {
         }
     }
     pub fn extract_ver(&self, text: &str) -> Option<String> {
-        if let Some(arm) = self.regex.captures(&text) {
+        if let Some(arm) = self.regex.captures(text) {
             return Some(arm.get(0)?.as_str().to_string());
         }
         None

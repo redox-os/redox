@@ -16,6 +16,12 @@ enum FsNode {
 pub struct FileIndexBuilder {
     inner: BTreeMap<String, FsNode>,
 }
+impl Default for FileIndexBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl FileIndexBuilder {
     pub const fn new() -> Self {
         Self {

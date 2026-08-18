@@ -34,7 +34,7 @@ pub fn package(
             None,
             None,
             recipe.recipe.package.dependencies.clone(),
-            &auto_deps,
+            auto_deps,
         )?;
         return Ok(());
     }
@@ -188,7 +188,7 @@ pub fn package_toml(
     };
 
     serialize_and_write(&toml_path, &package)?;
-    return Ok(());
+    Ok(())
 }
 
 pub fn package_target(name: &PackageName) -> &'static str {
