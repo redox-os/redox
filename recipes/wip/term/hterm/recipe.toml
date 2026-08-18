@@ -1,0 +1,17 @@
+#TODO patch makefile to make it use recipe dependencies
+[source]
+git = "https://github.com/new299/hackterm"
+rev = "d940f19cbdc46f14e557d30bdcfbcfdad4d18553"
+shallow_clone = true
+[build]
+template = "custom"
+dependencies = [
+    "sdl1",
+    "libvterm",
+]
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+DYNAMIC_INIT
+"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}"
+"${COOKBOOK_MAKE}" install DESTDIR="${COOKBOOK_STAGE}/usr"
+"""

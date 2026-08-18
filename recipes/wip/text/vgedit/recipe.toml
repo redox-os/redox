@@ -1,0 +1,22 @@
+#TODO compile and test
+#TODO add comand to install
+[source]
+git = "https://github.com/vgmoose/vgedit"
+rev = "v2.2.1"
+shallow_clone = true
+[build]
+template = "custom"
+dependencies = [
+    "sdl2",
+    "sdl2-mixer",
+    "sdl2-ttf",
+    "sdl2-image",
+    "sdl2-gfx",
+    "zlib",
+    "curl",
+]
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+DYNAMIC_INIT
+"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}"
+"""

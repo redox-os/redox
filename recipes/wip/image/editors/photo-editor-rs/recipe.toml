@@ -1,0 +1,6 @@
+#TODO compile and test
+[source]
+git = "https://codeberg.org/oscfri/photo-editor"
+shallow_clone = true
+[build]
+template = "cargo"

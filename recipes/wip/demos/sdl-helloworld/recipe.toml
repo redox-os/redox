@@ -1,0 +1,9 @@
+#TODO compile and test
+[source]
+git = "https://github.com/libsdl-org/SDL_helloworld"
+rev = "a7bbaf2e7b2b956257425fb6eb60e17e24d15bbf"
+shallow_clone = true
+[build]
+template = "cmake"
+cmakeflags = ["DOWNLOAD_DEPENDENCIES=FALSE"]
+dependencies = ["sdl3"]

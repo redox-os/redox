@@ -1,0 +1,19 @@
+#TODO compile and test
+#TODO add command to install
+[source]
+git = "https://github.com/ffbsoffa/TapeXPlayer"
+rev = "build1866"
+shallow_clone = true
+[build]
+template = "custom"
+dependencies = [
+    "sdl2",
+    "sdl2-ttf",
+    "ffmpeg6",
+    "portaudio",
+]
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/source" ./
+DYNAMIC_INIT
+"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}"
+"""

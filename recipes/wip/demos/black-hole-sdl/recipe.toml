@@ -1,0 +1,9 @@
+#TODO compile and test
+[source]
+git = "https://github.com/jsoulier/black_hole_simulation"
+rev = "6205903db7f22d86d2dbc328831bfc2f68108b7a"
+shallow_clone = true
+[build]
+template = "cmake"
+dev-dependencies = ["host:sdl-shadercross"]
+dependencies = ["sdl3"]

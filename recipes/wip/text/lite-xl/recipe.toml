@@ -1,0 +1,20 @@
+#TODO compile and test
+# build instructions: https://lite-xl.com/setup/building-from-source/
+[source]
+git = "https://github.com/lite-xl/lite-xl"
+rev = "v2.1.7"
+shallow_clone = true
+[build]
+template = "meson"
+mesonflags = [
+    "-Drenderer=true",
+    "-Ddirmonitor_backend=dummy", #TODO: change to inotify when implemented
+    "-Duse_system_lua=true",
+]
+#dev-dependencies = ["host:python312"] # needed?
+dependencies = [
+    "sdl2",
+    "pcre2",
+    "freetype2",
+    "lua54",
+]

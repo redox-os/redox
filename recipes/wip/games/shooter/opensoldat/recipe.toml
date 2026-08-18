@@ -1,0 +1,19 @@
+#TODO compile and test
+[source]
+git = "https://github.com/opensoldat/opensoldat"
+rev = "c7596cdca32416cb66339b339105eb1e07e7fbbf"
+shallow_clone = true
+[build]
+template = "cmake"
+cmakeflags = [
+    #"-DBUILD_SERVER=False", # use if needed
+    "-DBUILD_GNS=False",
+]
+dev-dependencies = ["host:fpc"]
+dependencies = [
+    "sdl2",
+    "openal",
+    "freetype2",
+    "physicsfs",
+    "gns",
+]

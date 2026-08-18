@@ -1,0 +1,8 @@
+#TODO compile and test
+[source]
+git = "https://github.com/MurphyMc/lilt"
+rev = "6b91c90e521315e427c243cfb689138c3cd7c376"
+shallow_clone = true
+[build]
+template = "cmake"
+dependencies = ["sdl1"]

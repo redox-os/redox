@@ -1,0 +1,13 @@
+#TODO compile and test
+[source]
+git = "https://github.com/kavan010/black_hole"
+rev = "dc263bb5a1b72f5a24190d2e38b84b5c8fe9a317"
+shallow_clone = true
+[build]
+template = "cmake"
+dependencies = [
+    "glew",
+    "glfw3",
+    "glm",
+    "mesa-x11",
+]

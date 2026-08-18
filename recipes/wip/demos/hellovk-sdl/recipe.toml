@@ -1,0 +1,16 @@
+#TODO add vulkan dependencies from cmake log
+[source]
+git = "https://github.com/electromaggot/HelloVulkanSDL"
+rev = "7c1b50c5d5d60b3545b7f735753b9beb170e5a79"
+shallow_clone = true
+[build]
+template = "custom"
+dependencies = [
+    "sdl2",
+    "sdl2-image",
+    "glm",
+]
+script = """
+DYNAMIC_INIT
+cookbook_cmake "${COOKBOOK_SOURCE}"/CMakeLinux
+"""

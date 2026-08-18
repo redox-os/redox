@@ -1,0 +1,18 @@
+#TODO compile and test
+[source]
+git = "https://github.com/pixop/video-compare"
+rev = "20260708"
+shallow_clone = true
+[build]
+template = "custom"
+dependencies = [
+    "ffmpeg6",
+    "sdl2",
+    "sdl2-ttf",
+]
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+DYNAMIC_INIT
+"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}"
+"${COOKBOOK_MAKE}" install BINDIR="${COOKBOOK_STAGE}/usr/bin"
+"""

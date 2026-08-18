@@ -1,0 +1,9 @@
+#TODO compile and test
+[source]
+git = "https://github.com/jsoulier/ray_tracing_in_one_weekend"
+rev = "131191e9ea472763107c349cac4b8e3a0337b775"
+shallow_clone = true
+[build]
+template = "cmake"
+dev-dependencies = ["host:sdl-shadercross"]
+dependencies = ["sdl3"]

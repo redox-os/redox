@@ -1,0 +1,19 @@
+#TODO remove x11 dependency from makefile, can be handled by sdl on windows target:https://github.com/djbozkosz/Light-Propagation-Volumes/blob/master/Makefile#L15
+#TODO force geometry shader implementation for better performance on cpu rendering
+#TODO add command to install
+[source]
+git = "https://github.com/djbozkosz/Light-Propagation-Volumes"
+rev = "74020d5e5fcaaf0e22ba3cd9314baee0a9a7757a"
+shallow_clone = true
+[build]
+template = "custom"
+dependencies = [
+    "sdl2",
+    "sdl2-image",
+    "mesa",
+]
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+DYNAMIC_INIT
+"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}"
+"""

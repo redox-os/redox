@@ -1,0 +1,14 @@
+#TODO compile and test
+#TODO add a command to install
+[source]
+git = "https://github.com/Patater/demokit"
+rev = "5304bab243573c5aa09fb5c98fe34dff98f59675"
+shallow_clone = true
+[build]
+template = "custom"
+dependencies = ["sdl2"]
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/stars" ./
+DYNAMIC_INIT
+"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}"
+"""
