@@ -152,7 +152,7 @@ pub fn init_config() {
         config.cook_opt.jobs = Some(extract_env(
             "COOKBOOK_MAKE_JOBS",
             std::thread::available_parallelism()
-                .map(|f| usize::from(f))
+                .map(usize::from)
                 .unwrap_or(1),
         ));
     }
@@ -191,7 +191,7 @@ pub fn init_config() {
             config.cook_opt.clean_target.unwrap_or(false) || extract_env("COOKBOOK_WEB", false),
         ));
     }
-    if config.mirrors.len() == 0 {
+    if config.mirrors.is_empty() {
         // The GNU FTP mirror below is automatically inserted for convenience
         // You can choose other mirrors by setting it on cookbook.toml
         config.mirrors.insert(
@@ -223,7 +223,7 @@ pub fn init_config() {
 #[allow(unused_variables)]
 fn extract_env<T: FromStr>(key: &str, default: T) -> T {
     #[cfg(not(test))]
-    if let Ok(e) = std::env::var(&key) {
+    if let Ok(e) = std::env::var(key) {
         str::parse(&e).unwrap_or(default)
     } else {
         default
@@ -235,12 +235,12 @@ fn extract_env<T: FromStr>(key: &str, default: T) -> T {
 }
 
 pub fn get_config() -> &'static CookbookConfig {
-    return CONFIG.get().expect("Configuration is not initialized");
+    CONFIG.get().expect("Configuration is not initialized")
 }
 
 /// Fallible version of get_config(), because it's not loaded when testing
 pub fn try_get_config() -> Option<&'static CookbookConfig> {
-    return CONFIG.get();
+    CONFIG.get()
 }
 
 pub fn translate_mirror(original_url: &str) -> String {

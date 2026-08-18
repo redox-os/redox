@@ -71,7 +71,7 @@ pub fn fetch_offline(recipe: &CookRecipe, logger: &PtyOut) -> Result<FetchResult
         BuildKind::None => {
             // the build function doesn't need source dir exists
             let (source, patch) = ("".to_string(), "".to_string());
-            return FetchResult::cached(source_dir, source, patch).apply_info(&recipe);
+            return FetchResult::cached(source_dir, source, patch).apply_info(recipe);
         }
         BuildKind::Remote => {
             return fetch_remote(recipe_dir, recipe, true, source_dir, logger);
@@ -82,10 +82,10 @@ pub fn fetch_offline(recipe: &CookRecipe, logger: &PtyOut) -> Result<FetchResult
     let result = match &recipe.recipe.source {
         Some(SourceRecipe::Path { path: _ }) | None => fetch(recipe, true, logger)?,
         Some(SourceRecipe::SameAs { same_as }) => {
-            let recipe = fetch_resolve_canon(&same_as, &recipe)?;
+            let recipe = fetch_resolve_canon(same_as, recipe)?;
             // recursively fetch
             let r = fetch_offline(&recipe, logger)?;
-            fetch_make_symlink(&source_dir, &same_as)?;
+            fetch_make_symlink(&source_dir, same_as)?;
             r
         }
         Some(SourceRecipe::Git {
@@ -99,7 +99,7 @@ pub fn fetch_offline(recipe: &CookRecipe, logger: &PtyOut) -> Result<FetchResult
         }) => {
             offline_check_exists(&source_dir)?;
             let (head_rev, _) = get_git_head_rev(&source_dir)?;
-            let patches_blake3 = get_patches_blake3(&recipe_dir, patches, script)?;
+            let patches_blake3 = get_patches_blake3(recipe_dir, patches, script)?;
             FetchResult::cached(source_dir, head_rev, patches_blake3)
         }
         Some(SourceRecipe::Tar {
@@ -109,7 +109,7 @@ pub fn fetch_offline(recipe: &CookRecipe, logger: &PtyOut) -> Result<FetchResult
             script,
         }) => {
             let ident = blake3.clone().unwrap_or("no_tar_blake3_hash_info".into());
-            let patches_blake3 = get_patches_blake3(&recipe_dir, patches, script)?;
+            let patches_blake3 = get_patches_blake3(recipe_dir, patches, script)?;
             let cached = source_dir.is_dir();
             if !cached {
                 let source_tar = recipe_dir.join("source.tar");
@@ -138,7 +138,7 @@ pub fn fetch_offline(recipe: &CookRecipe, logger: &PtyOut) -> Result<FetchResult
         }
     };
 
-    result.apply_info(&recipe)
+    result.apply_info(recipe)
 }
 
 pub fn fetch(recipe: &CookRecipe, check_source: bool, logger: &PtyOut) -> Result<FetchResult> {
@@ -157,7 +157,7 @@ pub fn fetch(recipe: &CookRecipe, check_source: bool, logger: &PtyOut) -> Result
         BuildKind::None => {
             // the build function doesn't need source dir exists
             let (source, patch) = ("".to_string(), "".to_string());
-            return FetchResult::cached(source_dir, source, patch).apply_info(&recipe);
+            return FetchResult::cached(source_dir, source, patch).apply_info(recipe);
         }
         BuildKind::Remote => {
             return fetch_remote(recipe_dir, recipe, false, source_dir, logger);
@@ -168,10 +168,10 @@ pub fn fetch(recipe: &CookRecipe, check_source: bool, logger: &PtyOut) -> Result
     let cached_info = fetch_get_source_info(recipe).ok();
     let result = match &recipe.recipe.source {
         Some(SourceRecipe::SameAs { same_as }) => {
-            let recipe = fetch_resolve_canon(&same_as, &recipe)?;
+            let recipe = fetch_resolve_canon(same_as, recipe)?;
             // recursively fetch
             let r = fetch(&recipe, check_source, logger)?;
-            fetch_make_symlink(&source_dir, &same_as)?;
+            fetch_make_symlink(&source_dir, same_as)?;
             r
         }
         Some(SourceRecipe::Path { path }) => {
@@ -210,7 +210,7 @@ pub fn fetch(recipe: &CookRecipe, check_source: bool, logger: &PtyOut) -> Result
             let shallow_clone =
                 shallow_clone.unwrap_or_else(|| crate::config::get_config().cook.git_treeless);
             let mut fetch_is_ran = false;
-            let patches_ident = get_patches_blake3(&recipe_dir, patches, script)?;
+            let patches_ident = get_patches_blake3(recipe_dir, patches, script)?;
             let cached = if !source_dir.is_dir() {
                 // Create source.tmp
                 let source_dir_tmp = recipe_dir.join("source.tmp");
@@ -221,7 +221,7 @@ pub fn fetch(recipe: &CookRecipe, check_source: bool, logger: &PtyOut) -> Result
                 command
                     .arg("clone")
                     .arg("--recursive")
-                    .arg(translate_mirror(&git));
+                    .arg(translate_mirror(git));
                 if let Some(branch) = branch {
                     command.arg("--branch").arg(branch);
                 }
@@ -263,7 +263,7 @@ pub fn fetch(recipe: &CookRecipe, check_source: bool, logger: &PtyOut) -> Result
                 match (cached_info, rev, detached_rev) {
                     (None, _, _) => false,
                     (Some(s), _, _) if !s.is_updated(&head_rev, &patches_ident) => false,
-                    (_, Some(rev), true) => get_git_tag_rev(&source_dir, &rev, logger)
+                    (_, Some(rev), true) => get_git_tag_rev(&source_dir, rev, logger)
                         .is_ok_and(|exp_rev| exp_rev == head_rev),
                     (_, None, false) => match get_git_remote_tracking(&source_dir) {
                         Ok(remote) if !remote.check_updated(git, branch) => false,
@@ -382,12 +382,12 @@ pub fn fetch(recipe: &CookRecipe, check_source: bool, logger: &PtyOut) -> Result
         }) => {
             let source_tar = recipe_dir.join("source.tar");
             let source_ident = blake3.clone().unwrap_or("no_tar_blake3_hash_info".into());
-            let patches_ident = get_patches_blake3(&recipe_dir, patches, script)?;
+            let patches_ident = get_patches_blake3(recipe_dir, patches, script)?;
             let mut tar_updated = false;
             loop {
                 if !source_tar.is_file() {
                     tar_updated = true;
-                    download_wget(&tar, &source_tar, logger)?;
+                    download_wget(tar, &source_tar, logger)?;
                 }
                 if !check_source {
                     break;
@@ -420,16 +420,15 @@ pub fn fetch(recipe: &CookRecipe, check_source: bool, logger: &PtyOut) -> Result
                 }
             }
             let mut cached = true;
-            if source_dir.is_dir() {
-                if tar_updated
-                    || cached_info.is_none_or(|s| !s.is_updated(&source_ident, &patches_ident))
-                {
-                    log_to_pty!(
-                        logger,
-                        "DEBUG: source tar or patches is newer than the source directory"
-                    );
-                    remove_all(&source_dir)?
-                }
+            if source_dir.is_dir()
+                && (tar_updated
+                    || cached_info.is_none_or(|s| !s.is_updated(&source_ident, &patches_ident)))
+            {
+                log_to_pty!(
+                    logger,
+                    "DEBUG: source tar or patches is newer than the source directory"
+                );
+                remove_all(&source_dir)?
             }
             if !source_dir.is_dir() {
                 // Create source.tmp
@@ -458,13 +457,13 @@ pub fn fetch(recipe: &CookRecipe, check_source: bool, logger: &PtyOut) -> Result
         }
     };
 
-    if let BuildKind::Cargo { cargopath, .. } = &recipe.recipe.build.kind {
-        if !result.cached {
-            fetch_cargo(&result.source_dir, cargopath.as_ref(), logger)?;
-        }
+    if let BuildKind::Cargo { cargopath, .. } = &recipe.recipe.build.kind
+        && !result.cached
+    {
+        fetch_cargo(&result.source_dir, cargopath.as_ref(), logger)?;
     }
 
-    result.apply_info(&recipe)
+    result.apply_info(recipe)
 }
 
 fn git_run_fetch(logger: &PtyOut, source_dir: &PathBuf, git: &String) -> Result<()> {
@@ -496,8 +495,8 @@ fn manual_git_recursive_submodule(
         let mut dirty_git = false;
 
         let output = Command::new("find")
-            .args(&[".", "-name", ".git"])
-            .current_dir(&source_dir)
+            .args([".", "-name", ".git"])
+            .current_dir(source_dir)
             .output()
             .map_err(wrap_io_err!("Failed to execute find"))?;
 
@@ -534,7 +533,7 @@ fn manual_git_recursive_submodule(
             println!("==> Processing: {:?}", repo);
 
             let mut command = Command::new("git");
-            command.arg("-C").arg(&repo).current_dir(&source_dir);
+            command.arg("-C").arg(&repo).current_dir(source_dir);
             command.arg("submodule");
 
             for cmd in &cmd {
@@ -612,13 +611,11 @@ pub(crate) fn fetch_resolve_canon(
     if let Some(gitrev) = crate::config::get_config()
         .recipe_lock
         .get(recipe.name.without_prefix())
-        .map(|r| r.gitrev.clone())
-        .flatten()
+        .and_then(|r| r.gitrev.clone())
+        && let Some(SourceRecipe::Git { rev, branch, .. }) = &mut recipe.recipe.source
     {
-        if let Some(SourceRecipe::Git { rev, branch, .. }) = &mut recipe.recipe.source {
-            *rev = Some(gitrev.clone());
-            *branch = None;
-        }
+        *rev = Some(gitrev.clone());
+        *branch = None;
     }
     Ok(recipe)
 }
@@ -740,7 +737,7 @@ pub fn fetch_remote(
                     let toml_file =
                         File::create(&tmp_toml).map_err(wrap_io_err!(tmp_toml, "Creating file"))?;
                     let mut writer = DownloadBackendWriter::ToFile(toml_file);
-                    manager.download(&format!("{}.toml", &source_name), None, &mut writer)?;
+                    manager.download(&format!("{}.toml", source_name), None, &mut writer)?;
                     read_source_toml(&tmp_toml)?
                 };
 
@@ -751,7 +748,7 @@ pub fn fetch_remote(
                     File::create(&tmp_pkgar).map_err(wrap_io_err!(tmp_pkgar, "Creating file"))?;
                 let mut writer = DownloadBackendWriter::ToFile(pkgar_file);
                 manager.download(
-                    &format!("{}.pkgar", &source_name),
+                    &format!("{}.pkgar", source_name),
                     Some(pkg_toml.network_size),
                     &mut writer,
                 )?;
@@ -820,7 +817,7 @@ pub(crate) fn fetch_apply_patches(
         command.arg("--strip=1");
         run_command_stdin(command, patch.as_bytes(), logger)?;
     }
-    Ok(if let Some(script) = script {
+    let _: () = if let Some(script) = script {
         let mut command = Command::new("bash");
         command.arg("-ex");
         command.current_dir(source_dir_tmp);
@@ -829,7 +826,8 @@ pub(crate) fn fetch_apply_patches(
             format!("{SHARED_PRESCRIPT}\n{script}").as_bytes(),
             logger,
         )?;
-    })
+    };
+    Ok(())
 }
 
 pub(crate) fn fetch_apply_source_info(
@@ -841,11 +839,11 @@ pub(crate) fn fetch_apply_source_info(
     let info = SourceIdentifier {
         commit_identifier: ident.commit.to_string(),
         time_identifier: ident.time.to_string(),
-        source_identifier: source_identifier,
-        patch_identifier: patch_identifier,
+        source_identifier,
+        patch_identifier,
     };
 
-    fetch_apply_source_info_from_remote(&recipe, &info)?;
+    fetch_apply_source_info_from_remote(recipe, &info)?;
 
     Ok((info.source_identifier, info.patch_identifier))
 }

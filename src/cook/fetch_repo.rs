@@ -16,7 +16,7 @@ use pkg::{
 // TODO: This is a workaround, but as long as whole
 // fetch operation is in single thread, this is ok
 thread_local! {
-static BINARY_REPO: RefCell<Option<(RepoManager, Repository)>> = RefCell::new(None);
+static BINARY_REPO: RefCell<Option<(RepoManager, Repository)>> = const { RefCell::new(None) };
 }
 
 fn load_cached_repo(path: &Path) -> Option<Repository> {
@@ -51,15 +51,14 @@ fn init_binary_repo() -> (RepoManager, Repository) {
     let repo_toml =
         load_cached_repo(&repo_path.join(format!("repo_{}_{target}.toml", repo.remotes[0])))
             .unwrap_or_else(|| {
-                let repo = download_repo(&repo, repo_path)
+                download_repo(&repo, repo_path)
                 .map_err(|e| {
                     eprintln!(
                         "Unable to load server repo.toml, all recipes will build from source: {e}"
                     );
                     e
                 })
-                .unwrap_or_default();
-                repo
+                .unwrap_or_default()
             });
     // reset here to not clobber pty
     repo.callback = Rc::new(RefCell::new(PlainCallback::new()));
@@ -203,11 +202,7 @@ impl Callback for PlainPtyCallback {
         // keep using MB for consistency
         let pos_mb = self.pos as f64 / 1_048_576.0;
         let size_mb = self.size as f64 / 1_048_576.0;
-        let file_name = self
-            .download_file
-            .as_ref()
-            .map(|s| s.as_str())
-            .unwrap_or("");
+        let file_name = self.download_file.as_deref().unwrap_or("");
         let _ = write!(
             &self.pty,
             "{RESET_LINE}{} {} [{:.2} MB / {:.2} MB]",
@@ -221,7 +216,7 @@ impl Callback for PlainPtyCallback {
 
     fn download_end(&mut self) {
         if !self.unknown_size {
-            let _ = writeln!(&self.pty, "");
+            let _ = writeln!(&self.pty);
             self.download_file = None;
         }
     }

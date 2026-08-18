@@ -17,9 +17,9 @@ pub fn drain_buffer_to_lines(buffer: &mut Vec<u8>, lines: &mut Vec<String>) -> u
     // TODO: multibyte-aware line split?
     while let Some(newline_pos) = buffer.iter().position(|&b| b == b'\n') {
         let line_bytes = buffer.drain(..=newline_pos);
-        let line_str = String::from_utf8_lossy(&line_bytes.as_slice());
+        let line_str = String::from_utf8_lossy(line_bytes.as_slice());
         let line_str_pos = line_str.trim_end();
-        let line_str = line_str_pos.rsplit('\r').next().unwrap_or(&line_str_pos);
+        let line_str = line_str_pos.rsplit('\r').next().unwrap_or(line_str_pos);
         lines.push(line_str.to_owned());
         addition += 1;
     }
@@ -39,7 +39,7 @@ pub fn render_build_log<'a>(
     let mut log_lines: Vec<Line> = if let Some(log_text) = log_text
         && !log_text.is_empty()
     {
-        let total_log_lines = log_text.len() as usize;
+        let total_log_lines = log_text.len();
 
         let start = if *enable_auto_scroll {
             if total_log_lines > panel_height {
@@ -119,7 +119,7 @@ pub fn render_build_log<'a>(
 pub fn join_logs(log: &Vec<String>, line: Option<Cow<'_, str>>) -> String {
     let mut logs = log.join("\n");
     if let Some(line) = line {
-        logs.push_str("\n");
+        logs.push('\n');
         logs.push_str(handle_cr(&line));
     }
     logs
@@ -127,7 +127,7 @@ pub fn join_logs(log: &Vec<String>, line: Option<Cow<'_, str>>) -> String {
 
 fn handle_cr<'a>(buffer: &'a Cow<'_, str>) -> &'a str {
     let st = buffer.trim_end();
-    st.rsplit('\r').next().unwrap_or(&st)
+    st.rsplit('\r').next().unwrap_or(st)
 }
 
 /// Check if point is in rect
@@ -166,7 +166,7 @@ pub fn get_clicked_tab_index(
 pub fn kill_everything(pid: Option<u32>) {
     process::Command::new("bash")
         .arg("-c")
-        .arg(KILL_ALL_PID.replace("$PID", &pid.unwrap_or_else(|| process::id()).to_string()))
+        .arg(KILL_ALL_PID.replace("$PID", &pid.unwrap_or_else(process::id).to_string()))
         .stdout(process::Stdio::null())
         .stderr(process::Stdio::null())
         .spawn()

@@ -18,7 +18,7 @@ pub fn is_redox() -> bool {
 pub fn cross_target() -> Option<String> {
     std::env::var("COOKBOOK_CROSS_TARGET")
         .ok()
-        .and_then(|s| if s.is_empty() { None } else { Some(s) })
+        .filter(|s| !s.is_empty())
 }
 
 // Errors
@@ -217,7 +217,7 @@ impl From<walkdir::Error> for Error {
             let path = value.path().map(|s| s.to_path_buf());
             Error::Io {
                 source: value.into_io_error().unwrap(),
-                path: path,
+                path,
                 context: "Walkdir error",
             }
         } else {

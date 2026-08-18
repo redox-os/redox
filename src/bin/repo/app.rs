@@ -199,11 +199,10 @@ impl TuiApp {
         recipe_name: &PackageName,
     ) -> (Option<&Vec<String>>, Option<Cow<'_, str>>) {
         let log_text = self.logs.get(recipe_name);
-        let log_line = if let Some(b) = self.log_byte_buffer.get(recipe_name) {
-            Some(String::from_utf8_lossy(b))
-        } else {
-            None
-        };
+        let log_line = self
+            .log_byte_buffer
+            .get(recipe_name)
+            .map(|b| String::from_utf8_lossy(b));
         (log_text, log_line)
     }
 
@@ -215,7 +214,7 @@ impl TuiApp {
         if !str.trim_end().is_empty() {
             std::fs::write(log_path, str).map_err(|e| Error::from_io_error(e, "Writing log"))?;
         }
-        return Ok(());
+        Ok(())
     }
 
     // Update the state based on a message from a worker thread
@@ -400,10 +399,10 @@ pub fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> Result<TuiAp
     let (input_tx, input_rx) = mpsc::channel::<Event>();
     let _input_handle = thread::spawn(move || {
         for evt in mstdin.events() {
-            if let Ok(evt) = evt {
-                if input_tx.send(evt).is_err() {
-                    return;
-                }
+            if let Ok(evt) = evt
+                && input_tx.send(evt).is_err()
+            {
+                return;
             }
         }
     });
@@ -569,7 +568,7 @@ pub fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> Result<TuiAp
                         app.cook_list_state.select(Some(index));
                         let index_u16 = index;
                         let center_offset = panel_height / 2;
-                        let new_offset = index_u16.saturating_sub(center_offset) as usize;
+                        let new_offset = index_u16.saturating_sub(center_offset);
 
                         *app.cook_list_state.offset_mut() = new_offset;
                     }
@@ -597,8 +596,7 @@ pub fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> Result<TuiAp
                     app.log_view_job.to_string(),
                     if app.is_inspecting {
                         staged_pkg::find(active_name.as_str())
-                            .map(|s| s.to_str())
-                            .flatten()
+                            .and_then(|s| s.to_str())
                             .unwrap_or(active_name.as_str())
                     } else {
                         active_name.as_str()
@@ -752,8 +750,8 @@ pub fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> Result<TuiAp
 }
 
 fn handle_main_event(app: &mut TuiApp, event: &Event) {
-    match event {
-        Event::Key(key) => match key {
+    if let Event::Key(key) = event {
+        match key {
             Key::Char('1') => {
                 app.log_view_job = JobType::Fetch;
             }
@@ -788,8 +786,7 @@ fn handle_main_event(app: &mut TuiApp, event: &Event) {
                 app.log_scroll = 0;
             }
             _ => {}
-        },
-        _ => {}
+        }
     }
 }
 
@@ -854,7 +851,7 @@ fn handle_inspect_event(event: &Event, app: &mut TuiApp) -> bool {
             }
             Key::Backspace if app.search_results.is_some() => {
                 app.search_query.pop();
-                if app.search_query.len() == 0 {
+                if app.search_query.is_empty() {
                     app.search_results.take();
                 } else {
                     perform_search(app);
