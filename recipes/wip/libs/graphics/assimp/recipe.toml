@@ -1,0 +1,11 @@
+#TODO determine minimum dependencies from cmake log
+[source]
+git = "https://github.com/assimp/assimp"
+rev = "v6.0.5"
+shallow_clone = true
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DASSIMP_BUILD_TESTS=OFF",
+    "-DASSIMP_INJECT_DEBUG_POSTFIX=OFF",
+]

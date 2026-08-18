@@ -1,0 +1,10 @@
+#TODO make it use sdl3 recipe
+# does bundled glm and njson need to be patched?
+[source]
+git = "https://github.com/jsoulier/fluid_simulation"
+rev = "7a9ba84f990fe2e5cc6c60eec5cf756a340de54c"
+shallow_clone = true
+[build]
+template = "cmake"
+dev-dependencies = ["host:sdl-shadercross"]
+dependencies = ["sdl3"]

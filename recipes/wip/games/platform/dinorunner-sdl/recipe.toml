@@ -1,0 +1,16 @@
+#TODO compile and test
+[source]
+git = "https://github.com/AKJ7/dinorunner"
+rev = "v1.3.2"
+shallow_clone = true
+[build]
+template = "custom"
+dependencies = [
+    "sdl2",
+    "sdl2-image",
+    "sdl2-gfx",
+]
+script = """
+DYNAMIC_INIT
+cookbook_cmake "${COOKBOOK_SOURCE}"/demo/sdl
+"""

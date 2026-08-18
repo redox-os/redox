@@ -1,0 +1,14 @@
+#TODO compile and test
+[source]
+git = "https://github.com/libsdl-org/SDL_shadercross"
+rev = "e55cf5e31ced6f3d1be5cc6d0c50e99384f9f4ba"
+shallow_clone = true
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DSDLSHADERCROSS_DXC=OFF",
+]
+dependencies = [
+    "sdl3",
+    #"spirv-cross", # needed for llvmpipe?
+]

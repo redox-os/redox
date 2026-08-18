@@ -1,0 +1,14 @@
+#TODO compile and test
+#TODO add command to install
+[source]
+git = "https://github.com/t3nma/sdl2-TicTacToe"
+rev = "c4a48774df3b75aa234df2b60696dbe12673ebbd"
+shallow_clone = true
+[build]
+template = "custom"
+dependencies = ["sdl2"]
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+DYNAMIC_INIT
+"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}"
+"""
