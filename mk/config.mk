@@ -125,6 +125,8 @@ else ifeq ($(UNAME),Redox)
 	export CARGO_NET_GIT_FETCH_WITH_CLI=true
 # TODO: allow overriding to cross compiler toolchain when build server have one prebuilt
 	HOSTED_REDOX=1
+# Don't check for dependencies if you will be using Hosted Redox
+	SKIP_CHECK_TOOLS=1
 ifneq ($(shell which repo),)
 	REPO_BIN=repo
 endif
@@ -146,6 +148,8 @@ export RUST_COMPILER_RT_ROOT=$(ROOT)/rust/src/llvm-project/compiler-rt
 export TESTBIN?=
 RUNNING_IN_PODMAN=$(shell [ -f /run/.containerenv ] && echo 1 || echo 0)
 ifeq ($(PODMAN_BUILD),1)
+# Don't check for dependencies if you will be using Podman
+SKIP_CHECK_TOOLS=1
 ifeq ($(RUNNING_IN_PODMAN),1)
 $(info Please unset PODMAN_BUILD=1 in .config!)
 endif
