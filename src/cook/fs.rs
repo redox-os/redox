@@ -92,7 +92,7 @@ fn move_dir_all_inner_fn<'a>(
     }
     for (src, srcrel, dst) in files {
         let path = dst.join(&srcrel);
-        fs::create_dir_all(&path.parent().unwrap())?;
+        fs::create_dir_all(path.parent().unwrap())?;
         std::fs::rename(&src, &path)?;
     }
     Ok(())
@@ -285,7 +285,7 @@ pub fn download_wget(url: &str, dest: &PathBuf, logger: &PtyOut) -> Result<()> {
         command.arg(translate_mirror(url));
         command.arg("--continue").arg("-O").arg(&dest_tmp);
         run_command(command, logger)?;
-        rename(&dest_tmp, &dest)?;
+        rename(&dest_tmp, dest)?;
     }
     Ok(())
 }
@@ -299,7 +299,7 @@ pub fn get_file_blake3(path: &PathBuf) -> Result<String> {
 }
 
 fn get_blake3(path: &PathBuf) -> Result<Hash> {
-    let mut f = fs::File::open(&path).map_err(wrap_io_err!(path, "Opening file for blake3"))?;
+    let mut f = fs::File::open(path).map_err(wrap_io_err!(path, "Opening file for blake3"))?;
     let hash = blake3::Hasher::new()
         .update_reader(&mut f)
         .map_err(wrap_io_err!(path, "Reading file for blake3"))?
@@ -397,10 +397,10 @@ pub fn get_git_ref_entry(dir: &PathBuf, entry: &str) -> Result<String> {
                 .split_whitespace()
                 .next()
                 .ok_or_else(wrap_other_err!("Packed-refs line is malformed"))?;
-            if let Some(next_line) = lines.next() {
-                if next_line.starts_with('^') {
-                    sha = &next_line[1..];
-                }
+            if let Some(next_line) = lines.next()
+                && next_line.starts_with('^')
+            {
+                sha = &next_line[1..];
             }
             return Ok(sha.to_string());
         }
@@ -467,7 +467,7 @@ impl GitRemoteTracking {
         if branch.is_none() && self.remote_branch != self.tracking_branch {
             return false;
         }
-        if self.remote_name != "origin" || &self.remote_url != chop_dot_git(url) {
+        if self.remote_name != "origin" || self.remote_url != chop_dot_git(url) {
             return false;
         }
         true
@@ -591,7 +591,7 @@ fn get_git_branch_name(branch_path: &str) -> Result<String> {
     // TODO: incorrectly handle branch with slashes
     Ok(branch_path
         .split('/')
-        .last()
+        .next_back()
         .ok_or_else(wrap_other_err!(
             "Failed to parse branch name of {:?}",
             branch_path

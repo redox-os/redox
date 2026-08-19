@@ -266,7 +266,7 @@ fn main_inner() -> Result<()> {
                 let _ = stderr().write(err.as_bytes());
                 let _ = stderr().write(b"\n\n");
                 print_failed(&command, &name);
-                return Err(Error::from(format!("Execution has failed")));
+                return Err(Error::from("Execution has failed".to_string()));
             }
             Ok(app) => {
                 for (recipe, status) in app.recipes {
@@ -705,12 +705,10 @@ fn parse_args(args: Vec<String>) -> Result<(CliConfig, CliCommand, Vec<CookRecip
                 while i < source_recipe_names.len() {
                     let name = &source_recipe_names[i];
                     match special_rules.get(name) {
-                        Some(s) if s.as_str() == "source" => {
-                            if binary_names.contains(name) {
-                                let bin = source_recipe_names.remove(i);
-                                binary_recipe_names.push(bin);
-                                continue;
-                            }
+                        Some(s) if s.as_str() == "source" && binary_names.contains(name) => {
+                            let bin = source_recipe_names.remove(i);
+                            binary_recipe_names.push(bin);
+                            continue;
                         }
                         _ => {}
                     }
@@ -742,7 +740,7 @@ fn parse_args(args: Vec<String>) -> Result<(CliConfig, CliCommand, Vec<CookRecip
                     // host recipe binaries is currently not supported
                     continue;
                 }
-                recipe.apply_filesystem_config(&special_rule)?;
+                recipe.apply_filesystem_config(special_rule)?;
                 continue;
             }
             let rule = match (
@@ -772,8 +770,7 @@ fn parse_args(args: Vec<String>) -> Result<(CliConfig, CliCommand, Vec<CookRecip
         for recipe in recipes.iter_mut() {
             if let Some(gitrev) = lock
                 .get(recipe.name.as_str())
-                .map(|r| r.gitrev.clone())
-                .flatten()
+                .and_then(|r| r.gitrev.clone())
             {
                 if let Some(SourceRecipe::Git { rev, branch, .. }) = &mut recipe.recipe.source {
                     *rev = Some(gitrev.clone());
@@ -821,8 +818,8 @@ fn handle_fetch(
     logger: &PtyOut,
 ) -> Result<FetchResult> {
     match config.cook.offline && allow_offline {
-        true => fetch_offline(&recipe, logger),
-        false => fetch(&recipe, !recipe.is_deps, logger),
+        true => fetch_offline(recipe, logger),
+        false => fetch(recipe, !recipe.is_deps, logger),
     }
 }
 
@@ -838,19 +835,19 @@ fn handle_cook(
         recipe_dir,
         &source_dir,
         &target_dir,
-        &recipe,
+        recipe,
         &config.cook,
         logger,
     )?;
 
-    package(&recipe, &build_result, &config.cook, logger)?;
+    package(recipe, &build_result, &config.cook, logger)?;
 
     if config.cook.clean_target || config.cook.write_filetree {
         for stage_dir in &build_result.stage_dirs {
             if stage_dir.is_dir() {
                 if config.cook.write_filetree {
                     let mut stage_files_buf = Vec::new();
-                    tree::walk_file_tree(&stage_dir, "", &mut stage_files_buf)
+                    tree::walk_file_tree(stage_dir, "", &mut stage_files_buf)
                         .map_err(|e| Error::from_io_error(e, "Walking files tree"))?;
                     stage_files_buf.push("".into()); // trailing eol
                     fs::write(
@@ -860,7 +857,7 @@ fn handle_cook(
                     .map_err(|e| Error::from_io_error(e, "Writing files tree"))?;
                 }
                 if config.cook.clean_target {
-                    remove_all(&stage_dir)?;
+                    remove_all(stage_dir)?;
                 }
             }
         }
@@ -941,11 +938,11 @@ fn handle_push(recipes: &Vec<CookRecipe>, config: &CliConfig) -> Result<()> {
                 let install_path = &config.sysroot_dir;
                 let archive_path = item.recipe.stage_paths().1;
                 let mut state = if !config.no_metadata {
-                    Some(PackageState::from_sysroot(&install_path).map_err(Error::from)?)
+                    Some(PackageState::from_sysroot(install_path).map_err(Error::from)?)
                 } else {
                     None
                 };
-                let r = package_handle_push(state.as_mut(), &archive_path, &install_path);
+                let r = package_handle_push(state.as_mut(), &archive_path, install_path);
                 if matches!(r, Ok(false)) && state.is_some() {
                     state
                         .unwrap()
@@ -998,7 +995,7 @@ fn handle_push(recipes: &Vec<CookRecipe>, config: &CliConfig) -> Result<()> {
     }
 
     if config.cook.verbose {
-        println!("");
+        println!();
         println!(
             "Pushed {} of {} {}",
             tree::format_size(data.total_size),
@@ -1021,7 +1018,7 @@ fn handle_tree(recipes: &Vec<CookRecipe>, cmd: TreeOptions, config: &CliConfig) 
     let data = tree::display_tree_entry(&roots[..], &recipe_map, cmd, config.display)?;
 
     if matches!(config.display, DisplayOptions::Tree) {
-        println!("");
+        println!();
         match cmd {
             TreeOptions::Repo => {}
             TreeOptions::Cook => println!(
@@ -1123,7 +1120,7 @@ fn handle_change_rule(
         let mut fetch_cached = true;
         if is_change_rule_local && !recipe.dir.join("source").exists() {
             // previously, this is "binary", then user wants to hack around with the source, so we do fetch here
-            fetch_cached = handle_fetch(&recipe, config, false, &None)?.cached;
+            fetch_cached = handle_fetch(recipe, config, false, &None)?.cached;
         }
         let clean_cached = if !cached && is_change_rule {
             handle_clean(recipe, config, &CliCommand::Clean)?

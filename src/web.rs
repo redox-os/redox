@@ -69,11 +69,11 @@ pub fn generate_web(all_packages: &Vec<String>, config: &CliWebConfig) {
         let Some(recipe_path) = staged_pkg::find(package_name.name()) else {
             continue;
         };
-        let Ok(mut package) = staged_pkg::from_path(&recipe_path, package_name.suffix()) else {
+        let Ok(mut package) = staged_pkg::from_path(recipe_path, package_name.suffix()) else {
             // TODO: report failed build
             continue;
         };
-        let Ok(mut recipe) = CookRecipe::from_path(&recipe_path, true, false) else {
+        let Ok(mut recipe) = CookRecipe::from_path(recipe_path, true, false) else {
             continue;
         };
 
@@ -104,12 +104,12 @@ pub fn generate_web(all_packages: &Vec<String>, config: &CliWebConfig) {
         let html_path = repo_path.join(format!("{}.html", package.name.as_str()));
 
         generate_html_pkg(
-            &package,
-            &recipe,
+            package,
+            recipe,
             &dependents.into_iter().collect(),
             &stage_files,
             &html_path,
-            &config,
+            config,
         );
 
         if let Some(file_map) = stage_files {
@@ -126,7 +126,7 @@ pub fn generate_web(all_packages: &Vec<String>, config: &CliWebConfig) {
 
     let index_path = repo_path.join("index.html");
     let style_path = repo_path.join("style.css");
-    generate_html_index(grouped_packages, &index_path, &config);
+    generate_html_index(grouped_packages, &index_path, config);
     fs::write(style_path, CSS).expect("Failed to write style.css");
 
     let mut index_files = search::FileIndexBuilder::new();

@@ -17,7 +17,7 @@ impl IdentifierConfig {
         .unwrap_or(("".into(), false));
         // better than importing heavy deps like chrono
         let time = String::from_utf8_lossy(
-            &Command::new("date")
+            Command::new("date")
                 .arg("-u")
                 .arg("+%Y-%m-%dT%H:%M:%SZ")
                 .stdout(Stdio::piped())
