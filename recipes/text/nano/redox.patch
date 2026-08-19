@@ -1,0 +1,12 @@
+diff --color -ruwN source/lib/fseterr.c source-new/lib/fseterr.c
+--- source/lib/fseterr.c	2026-07-31 13:13:07.000000000 +0700
++++ source-new/lib/fseterr.c	2026-08-19 21:12:05.375336440 +0700
+@@ -53,7 +53,7 @@
+ #elif defined EPLAN9                /* Plan9 */
+   if (fp->state != 0 /* CLOSED */)
+     fp->state = 5 /* ERR */;
+-#elif 0                             /* unknown  */
++#elif defined __redox__                         /* unknown  */
+   /* Portable fallback, based on an idea by Rich Felker.
+      Wow! 6 system calls for something that is just a bit operation!
+      Not activated on any system, because there is no way to repair FP when
