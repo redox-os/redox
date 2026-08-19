@@ -1,6 +1,6 @@
 [source]
 git = "https://github.com/ilai-deutel/kibi"
-rev = "v0.3.2"
+rev = "v0.3.3"
 
 [build]
 template = "custom"
