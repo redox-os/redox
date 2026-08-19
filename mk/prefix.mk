@@ -394,7 +394,7 @@ endif
 # BUILD RUST ---------------------------------------------------
 else
 
-$(PREFIX)/wasip1-libc-install: $(PREFIX)/clang-install $(FSTOOLS_TAG) $(CONTAINER_TAG)
+$(PREFIX)/wasip1-libc-install: $(PREFIX)/clang-install | $(FSTOOLS_TAG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
