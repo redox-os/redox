@@ -1,14 +1,15 @@
 [source]
-tar = "https://www.nano-editor.org/dist/v7/nano-7.2.tar.xz"
+tar = "https://www.nano-editor.org/dist/v9/nano-9.2.tar.xz"
+blake3 = "6a4dd380f6ee2bb2d74851c182090774f61eddfc37d9ff4d060b69f2c0fe4646"
+patches = [
+    "redox.patch"
+]
+
 [build]
-template = "custom"
+template = "configure"
 dependencies = [
     "ncursesw",
 ]
-script = """
-DYNAMIC_INIT
-cookbook_configure
-"""
 
 [package]
 dependencies = [
