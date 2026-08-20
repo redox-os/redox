@@ -1,0 +1,8 @@
+#TODO compile and test
+[source]
+git = "https://github.com/pythops/kudu"
+shallow_clone = true
+[build]
+template = "cargo"
+[package]
+dependencies = ["qemu"]

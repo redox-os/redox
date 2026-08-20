@@ -1,0 +1,12 @@
+#TODO compile and test
+[source]
+git = "https://github.com/Mode8fx/blockamok"
+rev = "v1.21"
+shallow_clone = true
+[build]
+template = "cmake"
+dependencies = [
+    "sdl2",
+    "sdl2-ttf",
+    "sdl2-mixer",
+]

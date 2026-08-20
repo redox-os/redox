@@ -1,0 +1,9 @@
+#TODO lacking a build system, add manual compilation script: https://github.com/clovis-p/tanks/issues/1
+# similar recipe: https://gitlab.redox-os.org/redox-os/redox/-/blob/master/recipes/wip/games/engines/openlara/recipe.toml
+[source]
+git = "https://github.com/clovis-p/tanks"
+rev = "0b22b8dfbccf8399419a160a99e5270e57b541c9"
+shallow_clone = true
+[build]
+template = "custom"
+dependencies = ["sdl2"]

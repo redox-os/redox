@@ -1,0 +1,14 @@
+#TODO compile and test
+[source]
+git = "https://github.com/fmang/oshu"
+rev = "2.0.3"
+shallow_clone = true
+[build]
+template = "cmake"
+dependencies = [
+    "sdl2",
+    "sdl2-image",
+    "ffmpeg6",
+    "cairo",
+    "pango",
+]

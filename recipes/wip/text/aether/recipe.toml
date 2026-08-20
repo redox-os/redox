@@ -1,0 +1,13 @@
+#TODO compile and test
+[source]
+git = "https://github.com/7777Satish/Aether"
+rev = "0362d725c16bce53e7d969dfd19b2a8213f71a4f"
+shallow_clone = true
+[build]
+template = "cmake"
+[package]
+dependencies = [
+    "sdl3",
+    "sdl3-image",
+    "sdl3-ttf",
+]

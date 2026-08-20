@@ -1,0 +1,18 @@
+#TODO compile and test
+[source]
+git = "https://github.com/rofl0r/SDLBook"
+rev = "9ebf64275bc8a0c35ce38dea989f8af7d54f4999"
+shallow_clone = true
+[build]
+template = "custom"
+dependencies = [
+    "sdl1",
+    "mupdf",
+    "djvulibre",
+]
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+DYNAMIC_INIT
+"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}"
+"${COOKBOOK_MAKE}" install PREFIX="${COOKBOOK_STAGE}/usr"
+"""

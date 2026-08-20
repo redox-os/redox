@@ -1,0 +1,19 @@
+#TODO configure "nob" build system for redox cross-compilation
+[source]
+git = "https://github.com/tsoding/musializer"
+rev = "4d7d2fa849ef66e94ce03a53a2e7aa3e36aa2392"
+shallow_clone = true
+[build]
+template = "custom"
+dependencies = [
+    "libx11",
+    "libxcursor",
+    "libxrandr",
+    "libxinerama",
+    "libxi",
+]
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+cc -o nob nob.c
+./nob
+"""

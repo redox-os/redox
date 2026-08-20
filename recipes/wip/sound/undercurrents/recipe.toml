@@ -1,0 +1,16 @@
+#TODO compile and test
+#TODO add command to install
+[source]
+git = "https://github.com/bahamas10/undercurrents"
+rev = "fc28c10c2405c1323a15882c725bacb693c5682f"
+shallow_clone = true
+[build]
+template = "custom"
+dependencies = [
+    "sdl2",
+]
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+DYNAMIC_INIT
+"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}"
+"""

@@ -1,0 +1,15 @@
+# the sdl2 frontend was removed in newer commits
+#TODO compile and test
+[source]
+git = "https://github.com/tsoding/sowon"
+rev = "36a55237477a88e0d13204788a1957c007e297b0"
+shallow_clone = true
+[build]
+template = "custom"
+dependencies = ["sdl2"]
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+DYNAMIC_INIT
+"${COOKBOOK_MAKE}" sowon -j "${COOKBOOK_MAKE_JOBS}"
+"${COOKBOOK_MAKE}" install DESTDIR="${COOKBOOK_STAGE}/usr"
+"""

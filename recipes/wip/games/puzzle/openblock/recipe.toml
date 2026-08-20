@@ -1,0 +1,20 @@
+#TODO compile and test
+[source]
+git = "https://github.com/mmatyas/openblok"
+rev = "f5cbbde4ac852083e7a0ed32f4122cecbac4f455"
+shallow_clone = true
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DUSE_BUNDLED_UNITTESTPP=OFF",
+    "-DENABLE_MP3=OFF",
+    "-DENABLE_MOD=OFF",
+    "-DENABLE_FLAC=OFF",
+    "-DENABLE_LOCALES=OFF",
+]
+dependencies = [
+    "sdl2",
+    "sdl2-image",
+    "sdl2-ttf",
+    "sdl2-mixer",
+]

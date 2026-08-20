@@ -1,0 +1,8 @@
+#TODO patch bundled sdl2 dependency config to use sdl2 recipe
+[source]
+git = "https://github.com/serge-rgb/milton"
+rev = "768c0351fd7a221ec047fe91c85830f544a76661"
+shallow_clone = true
+[build]
+template = "cmake"
+dependencies = ["sdl2"]

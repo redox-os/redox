@@ -1,0 +1,11 @@
+#TODO compile and test
+[source]
+git = "https://github.com/Theldus/windy"
+rev = "c7e2b2cfcf3571f4bb5a6ca8388268a892340eea"
+shallow_clone = true
+[build]
+template = "cmake"
+dependencies = [
+    "sdl3",
+    "sdl3-ttf",
+]

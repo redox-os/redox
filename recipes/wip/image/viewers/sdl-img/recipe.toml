@@ -1,0 +1,20 @@
+#TODO compile and test
+[source]
+git = "https://github.com/rswinkle/sdl_img"
+rev = "0.101.0"
+shallow_clone = true
+[build]
+template = "custom"
+dependencies = [
+    "sdl2",
+]
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+DYNAMIC_INIT
+MAKEFLAGS=(
+    PLAT=linux
+    config=release
+)
+"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}" "${MAKEFLAGS[@]}"
+"${COOKBOOK_MAKE}" install DESTDIR="${COOKBOOK_STAGE}/usr"
+"""
