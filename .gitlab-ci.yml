@@ -49,15 +49,20 @@ img:
     - curl "https://sh.rustup.rs" -sSf | sh -s -- -y --default-toolchain stable --profile minimal
     - export PATH="$HOME/.cargo/bin:$PATH"
     - export PODMAN_BUILD=0 SKIP_CHECK_TOOLS=1 REPO_BINARY=1 FSTOOLS_NO_MOUNT=1 COOKBOOK_VERBOSE=false
-    - make ci-img IMG_TAG=$CI_COMMIT_REF_NAME
+    - make desktop IMG_TAG=$CI_COMMIT_REF_NAME
 
 pkg:
   image: "rust:trixie"
   stage: test
   script:
+    - export PATH="$HOME/.cargo/bin:$PATH" PODMAN_BUILD=0
     - |
-      export PATH="$HOME/.cargo/bin:$PATH" PODMAN_BUILD=0 &&
       make CONFIG_NAME=ci SKIP_CHECK_TOOLS=1 repo-tree ARCH=x86_64 &&
       make CONFIG_NAME=ci SKIP_CHECK_TOOLS=1 repo-tree ARCH=i586 &&
       make CONFIG_NAME=ci SKIP_CHECK_TOOLS=1 repo-tree ARCH=aarch64 &&
       make CONFIG_NAME=ci SKIP_CHECK_TOOLS=1 repo-tree ARCH=riscv64gc
+    - |
+      make CONFIG_NAME=demo SKIP_CHECK_TOOLS=1 repo-tree ARCH=x86_64 &&
+      make CONFIG_NAME=demo SKIP_CHECK_TOOLS=1 repo-tree ARCH=i586 &&
+      make CONFIG_NAME=demo SKIP_CHECK_TOOLS=1 repo-tree ARCH=aarch64 &&
+      make CONFIG_NAME=demo SKIP_CHECK_TOOLS=1 repo-tree ARCH=riscv64gc
