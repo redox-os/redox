@@ -9,7 +9,7 @@ dependencies = [
     "libxkbcommon",
 ]
 script = """
-DYNAMIC_INIT
+DYNAMIC_STATIC_INIT
 export GETTEXT_DIR="${COOKBOOK_SYSROOT}/usr"
 (COOKBOOK_SOURCE+="/cosmic-settings" cookbook_cargo --no-default-features \
     --config 'patch.crates-io.rustix.git = "https://github.com/bytecodealliance/rustix"' \

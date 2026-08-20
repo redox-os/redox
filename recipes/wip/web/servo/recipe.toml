@@ -17,7 +17,7 @@ dev-dependencies = [
     "host:libarchive",  # workaround for cmake error
 ]
 script = """
-DYNAMIC_INIT
+DYNAMIC_STATIC_INIT
 
 cp -v "${COOKBOOK_RECIPE}/.servobuild" "${COOKBOOK_SOURCE}/.servobuild"
 

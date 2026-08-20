@@ -42,6 +42,7 @@ COOKBOOK_CONFIGURE_FLAGS=(
   --prefix=/usr
   --dest-cpu=${NODE_CPU}
   --dest-os=${NODE_OS}
+  --enable-lto
   --shared-cares
   --shared-libuv
   --shared-ngtcp2

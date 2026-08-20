@@ -11,7 +11,7 @@ patches = [
 [build]
 template = "custom"
 script = """
-DYNAMIC_INIT
+DYNAMIC_STATIC_INIT
 # TODO: upstream changes, consider using feat_require_unix_core if relibc is ready?
 CARGO_PROFILE_RELEASE_LTO=thin cookbook_cargo --no-default-features --features feat_os_unix_redox,kill,nice --bin coreutils
 
