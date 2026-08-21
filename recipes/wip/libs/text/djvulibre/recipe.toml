@@ -1,0 +1,5 @@
+#TODO compile and test
+[source]
+tar = "http://downloads.sourceforge.net/djvu/djvulibre-3.5.30.tar.gz"
+[build]
+template = "configure"

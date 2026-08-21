@@ -1,0 +1,17 @@
+#TODO compile and test
+# build instructions: https://github.com/dosbox-staging/dosbox-staging/blob/main/docs/build-linux.md
+[source]
+git = "https://github.com/dosbox-staging/dosbox-staging"
+rev = "v0.82.2"
+shallow_clone = true
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DOPT_OPENGL=OFF",
+    "-DOPT_TESTS=OFF",
+    "-DUSE_SYSTEM_LIBS=ON",
+]
+dependencies = [
+    "sdl3",
+    "sdl3-image",
+]

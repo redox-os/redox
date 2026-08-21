@@ -1,0 +1,12 @@
+#TODO discover how to build: https://gitlab.com/freepascal.org/fpc/source
+# build instructions: https://wiki.freepascal.org/Installing_the_Free_Pascal_Compiler#Installing_from_source_on_BSD.2FLinux
+[source]
+tar = "https://sourceforge.net/projects/freepascal/files/Source/3.2.2/fpc-3.2.2.source.tar.gz/download"
+[build]
+template = "custom"
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+DYNAMIC_INIT
+"${COOKBOOK_MAKE}" all -j "${COOKBOOK_MAKE_JOBS}"
+"${COOKBOOK_MAKE}" install DESTDIR="${COOKBOOK_STAGE}/usr"
+"""

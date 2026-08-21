@@ -1,0 +1,5 @@
+#TODO compile and test
+[source]
+tar = "https://www.oberhumer.com/opensource/lzo/download/lzo-2.10.tar.gz"
+[build]
+template = "configure"

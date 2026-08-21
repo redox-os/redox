@@ -1,0 +1,11 @@
+#TODO compile and test
+[source]
+tar = "https://casper.mupdf.com/downloads/archive/mupdf-1.28.2-source.tar.gz"
+[build]
+template = "custom"
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+DYNAMIC_INIT
+"${COOKBOOK_MAKE}" libs -j "${COOKBOOK_MAKE_JOBS}"
+"${COOKBOOK_MAKE}" install-libs PREFIX="${COOKBOOK_STAGE}/usr"
+"""

@@ -1,0 +1,12 @@
+#TODO compile and test
+[source]
+tar = "https://www.libsdl.org/projects/SDL_ttf/release/SDL3_ttf-3.2.2.tar.gz"
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DSDLTTF_VENDORED=OFF",
+    "-DSDLTTF_SAMPLES=OFF",
+]
+dependencies = [
+    "sdl3",
+]

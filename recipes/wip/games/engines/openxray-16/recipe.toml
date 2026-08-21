@@ -1,0 +1,21 @@
+#TODO compile and test
+# build and setup instructions: https://github.com/OpenXRay/xray-16/wiki/%5BEN%5D-How-to-build-and-setup-on-Linux-and-MacOS
+[source]
+git = "https://github.com/OpenXRay/xray-16"
+rev = "29030f81b137f6ea5365b3d71f2b588490832f5b"
+shallow_clone = true
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DMEMORY_ALLOCATOR=standard",
+]
+dependencies = [
+    "openal",
+    "libogg",
+    "libtheora",
+    "libvorbis",
+    "sdl2",
+    "lzo",
+    "libjpeg-turbo",
+    #"mimalloc",
+]

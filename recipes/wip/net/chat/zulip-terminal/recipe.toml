@@ -1,0 +1,7 @@
+#TODO determine missing dependencies
+[source]
+git = "https://github.com/zulip/zulip-terminal"
+rev = "5c2b68ef8995d283b4e5dc600a4d51d4cd031763"
+shallow_clone = true
+[build]
+template = "python"
