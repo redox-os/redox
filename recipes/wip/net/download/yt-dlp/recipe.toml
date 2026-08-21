@@ -1,11 +1,6 @@
-#TODO not compiled or tested
+#TODO test
 [source]
-tar = "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.tar.gz"
+git = "https://github.com/yt-dlp/yt-dlp"
+shallow_clone = true
 [build]
-template = "custom"
-script = """
-mkdir -pv "${COOKBOOK_STAGE}"/usr/bin/yt-dlp-dir
-cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}"/usr/bin/yt-dlp-dir
-echo "/usr/bin/yt-dlp-dir/yt-dlp.sh" > "${COOKBOOK_STAGE}"/usr/bin/yt-dlp
-chmod +x "${COOKBOOK_STAGE}"/usr/bin/yt-dlp-dir/yt-dlp.sh "${COOKBOOK_STAGE}"/usr/bin/yt-dlp
-"""
+template = "python"
