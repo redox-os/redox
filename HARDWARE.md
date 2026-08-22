@@ -103,7 +103,8 @@ Each "Vendor" has its own alphabetical order in "Model", independent from models
 | Dell | XPS 13 (9350) | 0.8.0 | 2022-11-11 | desktop | x86-64 | BIOS, UEFI | Boots to Orbital, NVMe driver livelocks |
 | Dell | XPS L502X | 0.9.0 | 2026-05-01 | desktop | x86-64 | BIOS | Does not find the bootloader without patching the partition type byte to FAT32 (LBA), Boots to orbital with the patch in live mode, The entire system freezes after the orblogin screen appears unless recompiling the kernel without ACPI support, almost everything works out of box when using the kernel without ACPI, except the touchpad scrolling, WiFi and Intel graphics |
 | HP | Dev One | 0.8.0 | 2022-11-11 | desktop | x86-64 | UEFI | Boots to Orbital, No touchpad support, requires I2C HID |
-| HP | EliteBook Folio 9480M | 0.9.0 | 2025-11-04 | desktop | x86-64 | UEFI | Boots to Orbital, touchpad and usb work, cannot connect to the Internet, install failed, right maximum display resolution 1600x900
+| HP | EliteBook Folio 9480M | 0.9.0 | 2025-11-04 | desktop | x86-64 | UEFI | Boots to Orbital, touchpad and usb work, cannot connect to the Internet, install failed, right maximum display resolution 1600x900 |
+| HP | Pro 3010 Microtower PC (Custom), Intel Core 2 Quad Q8400 | daily | 2026-07-15 | demo | x86_64 | BIOS | Boots to Orbital login, No USB mouse or keyboard support, Correct video mode not offered (firmware issue) |
 | Lenovo | Thinkbook 14 Gen 2 ARE (AMD Ryzen Edition) Laptop | 0.9.0 | 2026-05-02 | desktop | x86-64 | UEFI | Boots to Orbital, but trackpad and USB mouse doesn't work so unable to test further |
 | Lenovo | ThinkPad Yoga 260 Laptop - Type 20FE | 0.9.0 | 2024-09-07 | demo | x86-64 | UEFI | Boots to Orbital, No audio |
 | Lenovo | Yoga S730-13IWL | 0.9.0 | 2024-11-09 | desktop | x86-64 | UEFI | Boots to Orbital, No trackpad or USB mouse input support |
