@@ -11,7 +11,7 @@ dependencies = [
     "zlib",
 ]
 script = """
-DYNAMIC_INIT
+DYNAMIC_STATIC_INIT
 export BINDGEN_EXTRA_CLANG_ARGS="--sysroot=${COOKBOOK_HOST_SYSROOT}/${GNU_TARGET} -I${COOKBOOK_HOST_SYSROOT}/${GNU_TARGET}/include"
 # Define endianness for mupdf
 export CFLAGS="${CFLAGS} -D__LITTLE_ENDIAN__"

@@ -9,6 +9,8 @@ HOST_ARCH?=$(shell uname -m)
 ARCH?=$(HOST_ARCH)
 ## Sub-device type for aarch64 if needed
 BOARD?=
+## Compile with LTO and extended ARCH extension
+ARCH_OPTIMIZED?=0
 ## Enable to use binary prefix (much faster)
 PREFIX_BINARY?=1
 ## Enable to use up-to-date rust compiler (experimental, only available to Tier 2 targets)
@@ -197,6 +199,25 @@ export BOARD FIND
 ifeq ($(SCCACHE_BUILD),1)
 	export CC_WRAPPER:=sccache
 	export RUSTC_WRAPPER:=$(CC_WRAPPER)
+endif
+
+# enable LTO and CPU extension
+ifeq ($(ARCH_OPTIMIZED),1)
+# for dynamic compilation, we omit compiling machine code at compile
+export CPPFLAGS=-Ofast -funroll-loops -flto=auto -fno-fat-lto-objects
+# ...then do compilation at linking
+export LDFLAGS=-Ofast -funroll-loops -flto=auto
+ifeq ($(ARCH),x86_64)
+# Enable x86-64-v3 for 2010-era CPUs
+export CPPFLAGS+=-march=x86-64-v3
+export LDFLAGS+=-march=x86-64-v3
+export RUSTFLAGS=-C target-cpu=x86-64-v3
+else ifeq ($(ARCH),aarch64)
+# Enable ARMv8.2-A for Cortex A76 and Neoverse V1
+export CPPFLAGS+=-march=armv8.2-a+dotprod+fp16
+export LDFLAGS+=-march=armv8.2-a+dotprod+fp16
+export RUSTFLAGS=-C target-cpu=armv8.2-a -C target-feature=+dotprod,+fp16
+endif
 endif
 
 ifeq ($(HOSTED_REDOX),1)

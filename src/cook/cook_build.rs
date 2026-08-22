@@ -359,7 +359,7 @@ pub fn build(
             } => {
                 allow_cargo_offline = true;
                 let mut script = format!(
-                    "DYNAMIC_INIT\n{}{}\nCOOKBOOK_CARGO_PATH={} ",
+                    "DYNAMIC_STATIC_INIT\n{}{}\nCOOKBOOK_CARGO_PATH={} ",
                     bool_fn("COOKBOOK_CARGO_FLAGS=()\n", clearlocked),
                     flags_fn("COOKBOOK_CARGO_FLAGS", cargoflags),
                     cargopath.as_deref().unwrap_or(".")

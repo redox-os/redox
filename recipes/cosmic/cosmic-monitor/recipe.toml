@@ -9,7 +9,7 @@ dependencies = [
     "libxkbcommon",
 ]
 script = """
-DYNAMIC_INIT
+DYNAMIC_STATIC_INIT
 export GETTEXT_DIR="${COOKBOOK_SYSROOT}/usr"
 cookbook_cargo --no-default-features
 
