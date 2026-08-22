@@ -78,9 +78,10 @@ You can read the best practices and guidelines on the [Best practices and guidel
 
 This section has important details to not waste your and our time with unnecessary questions.
 
-- We don't accept Git pushs using SSH to protect against AI scrappers and bots, you need to use [HTTPS with your PAT](https://doc.redox-os.org/book/signing-in-to-gitlab.html#setting-up-pat) in our GitLab server
-- For complete or advanced development you need the [Redox build system](https://doc.redox-os.org/book/podman-build.html) instead of Redoxer
-- If you want to work on individual repositories without the Redox build system you need to use [Redoxer](https://gitlab.redox-os.org/redox-os/redoxer) because our toolchain is not fully upstreamed yet
+- We don't accept Git pushs using SSH to protect against AI scrappers and bots, you need to use [HTTPS with your PAT](https://doc.redox-os.org/book/signing-in-to-gitlab.html#setting-up-pat) in our GitLab server.
+- For complete or advanced development you need the [Redox build system](https://doc.redox-os.org/book/podman-build.html) instead of Redoxer.
+- If you want to work on individual repositories without the Redox build system you need to use [Redoxer](https://gitlab.redox-os.org/redox-os/redoxer) because our toolchain is not fully upstreamed yet.
+- When creating a MR write a short title and explain your changes on description (if long enough to be necessary) in a easy way and what they fixed or/and improved, use a bullet item list if you did multiple changes that aren't explained in commit titles.
 
 ## Development Recommendations and Tips
 
@@ -88,8 +89,8 @@ This section has important details to not waste your and our time with unnecessa
 - Comment out configuration or code while testing is better than removal, to remember the testing conditions and prevent mistakes from forgotten logic
 - Read the entire [Build System Reference](https://doc.redox-os.org/book/build-system-reference.html) and [Developer FAQ](https://doc.redox-os.org/book/developer-faq.html) pages
 - Make sure your build system is up-to-date, read the [Update The Build System](https://doc.redox-os.org/book/build-system-reference.html#update-the-build-system) section if in doubt.
-- If you want to make local changes in recipe sources it's recommended to automatic recipe source update, read [this](https://doc.redox-os.org/book/configuration-settings.html#local-recipe-changes) section to learn how to this for one or multiple recipes and [this](https://doc.redox-os.org/book/configuration-settings.html#cookbook-offline-mode) section for all recipes.
-- If you want to make changes to system components, drivers or RedoxFS you need to manually update initfs, read [this](https://doc.redox-os.org/book/coding-and-building.html#how-to-update-initfs) section to learn how to do that.
+- If you want to make local changes in recipe sources it's recommended to disable the automatic recipe source update, read [this](https://doc.redox-os.org/book/configuration-settings.html#local-recipe-changes) section to learn how to this for one or multiple recipes and [this](https://doc.redox-os.org/book/configuration-settings.html#cookbook-offline-mode) section for all recipes.
+- If you want to make changes to system components, drivers or RedoxFS, you need to manually update initfs, read [this](https://doc.redox-os.org/book/coding-and-building.html#how-to-update-initfs) section to learn how to do that.
 - If some program can't build or work, something can be missing/hiding on [relibc](https://gitlab.redox-os.org/redox-os/relibc), like a POSIX/Linux function or bug.
 - If you have some error on QEMU remember to test different settings or verify your operating system (Pop_OS!, Ubuntu, Debian and Fedora are the recommend Linux distributions to do testing/development for Redox).
 - Remember to log all errors, you can use the following command as example:
@@ -98,6 +99,7 @@ This section has important details to not waste your and our time with unnecessa
 your-command 2>&1 | tee file-name.log
 ```
 
+- If a bug is random or hard to reproduce, disable KVM with the `make qemu kvm=no` command to see if it becomes more frequent
 - If you have a problem that seems to not have a solution, think on simple/stupid things. Sometimes you are very confident on your method and forget obvious things (very common).
 - If you want a quick review of your Merge Request, make it small.
 - If your big Merge Request is taking too long to be reviewed and merged try to split it in small MRs. But make sure it don't break anything, if this method break your changes, don't shrink.
