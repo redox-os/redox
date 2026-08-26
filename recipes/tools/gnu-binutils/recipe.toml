@@ -4,8 +4,12 @@ blake3 = "f074c81313b70eabc58ce9a9411cd771c5fa2433792d0ad8abcc45f603f58ed6"
 patches = ["01_build_fix.patch"]
 script = """
 DYNAMIC_INIT
-
-COOKBOOK_AUTORECONF=autoreconf2.69 autotools_recursive_regenerate -I"$(realpath ./config)"
+export COOKBOOK_AUTORECONF=$(
+    command -v autoreconf2.69 2>/dev/null || \\
+    (autoreconf --version 2>/dev/null | grep -q '2\\.69' && command -v autoreconf) || \\
+    (echo "Error: Autoconf 2.69 required" >&2; exit 1)
+)
+autotools_recursive_regenerate -I"$(realpath ./config)"
 cp -fpv ${COOKBOOK_HOST_SYSROOT}/share/libtool/build-aux/{config.sub,config.guess,install-sh} libiberty/
 """
 
