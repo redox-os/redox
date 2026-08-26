@@ -4,7 +4,12 @@ branch = "redox-13.2.0"
 shallow_clone = true
 script = """
 DYNAMIC_INIT
-COOKBOOK_AUTORECONF=autoreconf2.69 autotools_recursive_regenerate -I"$(realpath ./config)"
+export COOKBOOK_AUTORECONF=$(
+    command -v autoreconf2.69 2>/dev/null || \\
+    (autoreconf --version 2>/dev/null | grep -q '2\\.69' && command -v autoreconf) || \\
+    (echo "Error: Autoconf 2.69 required" >&2; exit 1)
+)
+autotools_recursive_regenerate -I"$(realpath ./config)"
 LIBTOOL_BUILD_AUX="${COOKBOOK_LIBTOOL_DIR:-$COOKBOOK_HOST_SYSROOT}"/share/libtool/build-aux
 cp -fpv "$LIBTOOL_BUILD_AUX"/{config.sub,config.guess,install-sh} libiberty/
 cp -fpv "$LIBTOOL_BUILD_AUX"/{config.sub,config.guess,install-sh} zlib/contrib/minizip/
