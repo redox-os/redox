@@ -95,6 +95,7 @@ python312 = {}
 redoxfs = {}
 relibc = {}
 ripgrep = {}
+rldd = {}
 rsync = {}
 rust = {}
 rustpython = {}
