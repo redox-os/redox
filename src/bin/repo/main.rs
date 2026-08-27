@@ -549,7 +549,8 @@ fn parse_args(args: Vec<String>) -> Result<(CliConfig, CliCommand, Vec<CookRecip
 
     let mut preloaded_recipes: BTreeMap<PackageName, CookRecipe> = BTreeMap::new();
 
-    if recipe_names.is_empty() {
+    // TODO: Unindent
+    {
         if config.all.is_some() || config.category.is_some() {
             let all_recipes_path = match (&config.all, config.category.is_some()) {
                 (Some(AllOption::All), _) | (None, true) => {
@@ -588,7 +589,7 @@ fn parse_args(args: Vec<String>) -> Result<(CliConfig, CliCommand, Vec<CookRecip
                 preloaded_recipes.insert(recipe_name.clone(), recipe);
                 recipe_names.push(recipe_name);
             }
-        } else {
+        } else if recipe_names.is_empty() {
             if let Some(conf) = config.filesystem.as_ref() {
                 recipe_names = conf
                     .packages
