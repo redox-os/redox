@@ -1,14 +1,18 @@
 # Configuration file for recipe commands
 
 $(REPO_TAG): prefix $(FILESYSTEM_CONFIG) | $(FSTOOLS) $(FSTOOLS_TAG) $(CONTAINER_TAG)
+	$(MAKE) cook
+
+# Internal command for rebuild (this is PHONY; use make rebuild if possible)
+cook:
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
+	mkdir -p $(BUILD)
 	export PATH="$(PREFIX_PATH):$$PATH" && \
 	export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
 	$(REPO_BIN) cook $(COOKBOOK_OPTS) --with-package-deps
-	mkdir -p $(BUILD)
-	touch $@
+	touch $(REPO_TAG)
 endif
 
 comma := ,
@@ -173,7 +177,7 @@ endif
 
 # Rebuild and push all recipes specified by the filesystem config
 rebuild-push: $(FSTOOLS_TAG) FORCE
-	$(MAKE) repo
+	$(MAKE) cook
 	$(MAKE) push
 
 # Invoke unfetch for one or more targets separated by comma
