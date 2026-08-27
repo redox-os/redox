@@ -3,6 +3,9 @@ git = "https://gitlab.redox-os.org/redox-os/book.git"
 shallow_clone = true
 [build]
 template = "custom"
+dev-dependencies = [
+    "host:mdbook"
+]
 script = """
 dir="${COOKBOOK_STAGE}/usr/share/book"
 mkdir -pv "${dir}"
