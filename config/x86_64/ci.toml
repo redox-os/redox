@@ -164,6 +164,7 @@ lua-compat-53 = {}
 luajit = {}
 luarocks = {}
 lz4 = {}
+mdbook = {}
 mednaffe = {}
 mednafen = {}
 mesa = {}
