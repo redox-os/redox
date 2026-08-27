@@ -47,7 +47,7 @@ COOKBOOK_AUTORECONF="autoreconf"
 autotools_recursive_regenerate() {
     for f in $(find . -name configure.ac -o -name configure.in -type f | sort); do
         echo "* autotools regen in '$(dirname $f)'..."
-        ( cd "$(dirname "$f")" && "${COOKBOOK_AUTORECONF}" -fvi "$@" -I${COOKBOOK_HOST_SYSROOT}/share/aclocal )
+        ( cd "$(dirname "$f")" && "${COOKBOOK_AUTORECONF}" -fvi "$@" -I${COOKBOOK_LIBTOOL_DIR:-$COOKBOOK_HOST_SYSROOT}/share/aclocal )
     done
 }
 

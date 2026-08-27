@@ -54,7 +54,11 @@ fi
 # Don't poison the stage1 compiler (host -> host)
 unset AR AS CC CXX LD LDFLAGS NM OBJCOPY OBJDUMP RANLIB READELF RUSTFLAGS CARGO_ENCODED_RUSTFLAGS STRIP
 
-SSL_CERT_FILE="/etc/ssl/certs/ca-certificates.crt" \
+# Curl fix for some platform
+for cert in "/etc/ssl/certs/ca-certificates.crt" \
+    "/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem"
+do if [ -f "$cert" ]; then export SSL_CERT_FILE="$cert"; break; fi; done
+
 python3 "${COOKBOOK_SOURCE}/x.py" install \
     --config config.toml \
     --jobs ${COOKBOOK_MAKE_JOBS}
