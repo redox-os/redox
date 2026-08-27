@@ -123,12 +123,20 @@ pub fn display_tree_entry(
 ) -> Result<TreeData> {
     let mut data = TreeData::new();
     let num_roots = package_roots.len() - 1;
-    let dependents = if matches!(display_opt, DisplayOptions::Csv) {
+    let dependents = if matches!(display_opt, DisplayOptions::Csv | DisplayOptions::Tree) {
         Some(build_dependents(recipe_map, tree_opt))
     } else {
         None
     };
     for (i, name) in package_roots.iter().enumerate() {
+        if matches!(display_opt, DisplayOptions::Tree)
+            && dependents
+                .as_ref()
+                .and_then(|h| h.get(name))
+                .is_some_and(|e| !e.is_empty())
+        {
+            continue;
+        }
         walk_tree_entry(
             name,
             recipe_map,
