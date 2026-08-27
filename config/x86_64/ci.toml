@@ -240,6 +240,7 @@ relibc = {}
 relibc-tests = {}
 relibc-tests-bins = {}
 ripgrep = {}
+rldd = {}
 rodioplay = {}
 rs-nes = {}
 rsille = {}
