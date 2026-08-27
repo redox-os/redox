@@ -1,0 +1,14 @@
+[source]
+git = "https://github.com/zatrazz/rldd"
+rev = "v0.4.0"
+patches = [ "redox.patch" ]
+
+[build]
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_cargo
+
+cp ${COOKBOOK_RECIPE}/ldd.sh ${COOKBOOK_STAGE}/usr/bin/ldd
+chmod +x ${COOKBOOK_STAGE}/usr/bin/ldd
+"""

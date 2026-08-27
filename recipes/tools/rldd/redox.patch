@@ -1,0 +1,67 @@
+diff --git a/Cargo.toml b/Cargo.toml
+index 0a346a7..14d9171 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -33,12 +33,3 @@ raw-cpuid = "11.6.0"
+ 
+ [target.'cfg(target_os = "freebsd")'.dev-dependencies]
+ tempfile = "3.3.0"
+-
+-[profile.release]
+-strip = true
+-opt-level = "z"
+-lto = true
+-# Defaultimproves compile times, but prevents some optimizations.
+-codegen-units = 1
+-# Remove stack unwinder and backtrace.
+-panic = "abort"
+diff --git a/src/deptree.rs b/src/deptree.rs
+index c0f3f93..fc6a44d 100644
+--- a/src/deptree.rs
++++ b/src/deptree.rs
+@@ -96,7 +96,7 @@ impl fmt::Display for DepMode {
+             DepMode::LdCache => write!(f, "[ld-so.hints]"),
+             #[cfg(target_os = "netbsd")]
+             DepMode::LdCache => write!(f, "[ld.so.conf]"),
+-            #[cfg(any(target_os = "illumos", target_os = "solaris"))]
++            #[cfg(any(target_os = "illumos", target_os = "solaris", target_os = "redox"))]
+             DepMode::LdCache => write!(f, "[unknown]"),
+             #[cfg(target_os = "macos")]
+             DepMode::LdCache => write!(f, "[dyld cache]"),
+diff --git a/src/elf.rs b/src/elf.rs
+index 1b1add2..9b7e621 100644
+--- a/src/elf.rs
++++ b/src/elf.rs
+@@ -526,6 +526,10 @@ fn check_elf_header(elc: &ElfInfo) -> bool {
+ fn check_elf_header(elc: &ElfInfo) -> bool {
+     elc.ei_osabi == ELFOSABI_SYSV || elc.ei_osabi == ELFOSABI_SOLARIS
+ }
++#[cfg(any(target_os = "redox"))]
++fn check_elf_header(elc: &ElfInfo) -> bool {
++    elc.ei_osabi == ELFOSABI_SYSV
++}
+ 
+ fn match_elf_header(a1: &ElfInfo, a2: &ElfInfo) -> bool {
+     a1.ei_class == a2.ei_class && a1.ei_data == a2.ei_data && a1.e_machine == a2.e_machine
+@@ -893,7 +897,7 @@ fn load_so_cache<P: AsRef<Path>>(ld_cache: &mut Option<LoaderCache>, _binary: &P
+         *ld_cache = ld_so_conf_netbsd::parse_ld_so_conf(&Path::new("/etc/ld.so.conf")).ok()
+     }
+ }
+-#[cfg(any(target_os = "illumos", target_os = "solaris"))]
++#[cfg(any(target_os = "illumos", target_os = "solaris", target_os = "redox"))]
+ fn load_so_cache<P: AsRef<Path>>(_ld_cache: &mut Option<LoaderCache>, _binary: &P, _ecl: &ElfInfo) {
+ }
+ 
+diff --git a/src/elf/system_dirs.rs b/src/elf/system_dirs.rs
+index 6641544..e19aebe 100644
+--- a/src/elf/system_dirs.rs
++++ b/src/elf/system_dirs.rs
+@@ -245,7 +245,7 @@ pub fn get_system_dirs(
+         .collect())
+ }
+ 
+-#[cfg(any(target_os = "openbsd", target_os = "netbsd"))]
++#[cfg(any(target_os = "openbsd", target_os = "netbsd", target_os = "redox"))]
+ pub fn get_system_dirs(
+     _interp: &Option<String>,
+     _is_musl: bool,
