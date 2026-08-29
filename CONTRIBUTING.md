@@ -78,10 +78,11 @@ You can read the best practices and guidelines on the [Best practices and guidel
 
 This section has important details to not waste your and our time with unnecessary questions.
 
-- We don't accept Git pushs using SSH to protect against AI scrappers and bots, you need to use [HTTPS with your PAT](https://doc.redox-os.org/book/signing-in-to-gitlab.html#setting-up-pat) in our GitLab server.
+- We don't accept Git pushs using SSH, to protect against AI scrappers and bots. You need to use [HTTPS with your PAT](https://doc.redox-os.org/book/signing-in-to-gitlab.html#setting-up-pat) in our GitLab server.
 - For complete or advanced development you need the [Redox build system](https://doc.redox-os.org/book/podman-build.html) instead of Redoxer.
 - If you want to work on individual repositories without the Redox build system you need to use [Redoxer](https://gitlab.redox-os.org/redox-os/redoxer) because our toolchain is not fully upstreamed yet.
 - When creating a MR write a short title and explain your changes on description (if long enough to be necessary) in a easy way and what they fixed or/and improved, use a bullet item list if you did multiple changes that aren't explained in commit titles.
+- If you want to contribute to `relibc`, read its [CONTRIBUTING.md](https://gitlab.redox-os.org/redox-os/relibc/-/blob/master/CONTRIBUTING.md) document before.
 
 ## Development Recommendations and Tips
 
@@ -100,7 +101,13 @@ your-command 2>&1 | tee file-name.log
 ```
 
 - If a bug is random or hard to reproduce, disable KVM with the `make qemu kvm=no` command to see if it becomes more frequent
-- If you have a problem that seems to not have a solution, think on simple/stupid things. Sometimes you are very confident on your method and forget obvious things (very common).
+- If you have a problem that seems to not have a solution, do the following things:
+  - Write down your thoughts to reduce cognitive load and better analyze the details, high complexity in mind space can make you forget parts of the logical construct, cause confusion and redundancy
+  - Verify if basic functionality is working (if you are working on complex functionality)
+  - Think on simple/stupid things that may not have a obvious breakage
+
+Sometimes you are very confident on your method and forget obvious things (very common).
+
 - If you want a quick review of your Merge Request, make it small.
 - If your big Merge Request is taking too long to be reviewed and merged try to split it in small MRs. But make sure it don't break anything, if this method break your changes, don't shrink.
 
