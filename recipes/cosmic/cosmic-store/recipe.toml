@@ -5,7 +5,6 @@ shallow_clone = true
 template = "custom"
 dependencies = [
     "gettext",
-    "libxkbcommon",
     "openssl3",
 ]
 script = """
@@ -23,3 +22,8 @@ cp -v "${COOKBOOK_SOURCE}/res/${APPID}.metainfo.xml" "${COOKBOOK_STAGE}/usr/shar
 mkdir -pv "${COOKBOOK_STAGE}/usr/share/icons/"
 cp -rv "${COOKBOOK_SOURCE}/res/icons/hicolor/" "${COOKBOOK_STAGE}/usr/share/icons/"
 """
+
+[package]
+dependencies = [
+    "libxkbcommon",
+]
