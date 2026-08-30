@@ -139,18 +139,35 @@ wireshark: FORCE
 	wireshark $(BUILD)/network.pcap
 
 KPROF_KERNEL_BINARY?=recipes/core/profiling-kernel/target/$(TARGET)/build/kernel
-KPROF_KERNEL_SYM?=build/flamegraph/$(TARGET)-kernel-syms.txt
-KPROF_OUTPUT_TXT?=build/$(ARCH)/$(CONFIG_NAME)/filesystem/home/root/kprof.txt
-KPROF_PERF_SVG?=build/flamegraph/$(TARGET)-$(CONFIG_NAME)-kflamegraph.svg
+KPROF_KERNEL_SYM?=$(BUILD)/flamegraph/kernel-syms.txt
+KPROF_OUTPUT_TXT?=$(BUILD)/filesystem/home/root/kprof.txt
+KPROF_PERF_SVG?=$(BUILD)/flamegraph/kflamegraph.svg
+KPROF_PROCESSED_OUTPUT?=$(BUILD)/flamegraph/processed.txt
+KPROF_COLLAPSED_OUTPUT?=$(BUILD)/flamegraph/collapsed.txt
 # XXX: This assumes the TSC is invariant, that the value for cpu0 is the same as for all other CPUs, and that the value from ACPI actually reflects the TSC rate. It also only works on Linux.
 KPROF_CPU_GHZ?=$(shell (cat /sys/devices/system/cpu/cpu0/acpi_cppc/nominal_freq || echo 3400) | xargs echo "0.001 *" | bc)
 # See https://gitlab.redox-os.org/redox-os/kprofiling/-/blob/master/src/main.rs?ref_type=heads#L16-L18
 # Set e.g. to "xo" to show individual instruction offsets
-KPROF_OPTIONS?=_
+KPROF_OPTIONS?=u
+# for example, set --reverse to get a reverse flamegraph
+KPROF_FLAMEGRAPH_OPTIONS?=
+
+.PHONY: flamegraph rotate-flamegraph differential-flamegraph
+
+rotate-flamegraph:
+	mkdir -p "$(BUILD)"
+	rm -rf "$(BUILD)/flamegraph.old"
+	mv "$(BUILD)/flamegraph" "$(BUILD)/flamegraph.old" || true
 
 flamegraph:
-	mkdir -p build/flamegraph && \
-	make mount && \
-	nm -CS $(KPROF_KERNEL_BINARY) >$(KPROF_KERNEL_SYM) && \
-	redox-kprofiling $(KPROF_OUTPUT_TXT) $(KPROF_KERNEL_SYM) $(KPROF_OPTIONS) $(KPROF_CPU_GHZ) | inferno-collapse-perf | inferno-flamegraph > $(KPROF_PERF_SVG) && \
+	mkdir -p $(BUILD)/flamegraph
 	make unmount
+	make mount
+	nm -CS $(KPROF_KERNEL_BINARY) >$(KPROF_KERNEL_SYM)
+	redox-kprofiling $(KPROF_OUTPUT_TXT) $(KPROF_KERNEL_SYM) $(KPROF_OPTIONS) $(KPROF_CPU_GHZ) >$(KPROF_PROCESSED_OUTPUT)
+	inferno-collapse-perf <$(KPROF_PROCESSED_OUTPUT) >$(KPROF_COLLAPSED_OUTPUT)
+	inferno-flamegraph $(KPROF_FLAMEGRAPH_OPTIONS) <$(KPROF_COLLAPSED_OUTPUT) >$(KPROF_PERF_SVG)
+
+differential-flamegraph:
+	inferno-diff-folded $(BUILD)/flamegraph/collapsed.txt $(BUILD)/flamegraph.old/collapsed.txt >$(BUILD)/flamegraph/differential.txt
+	inferno-flamegraph $(KPROF_FLAMEGRAPH_OPTIONS) <$(BUILD)/flamegraph/differential.txt >$(BUILD)/flamegraph/differential.svg
