@@ -173,6 +173,7 @@ mesa-demos-x11 = {}
 mgba = {}
 miniserve = {}
 mpc = {}
+mupdf = {}
 nano = {}
 nasm = {}
 ncdu = {}

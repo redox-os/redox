@@ -1,0 +1,16 @@
+#TODO compile and test
+[source]
+tar = "https://github.com/ArtifexSoftware/jbig2dec/releases/download/0.20/jbig2dec-0.20.tar.gz"
+blake3 = "d03f5f958f4083e17d6d09d7da9a77b5dc9083b71f8c20167ce51a2fca14660c"
+patches = [
+    "redox.patch"
+]
+script = """
+GNU_CONFIG_GET config.sub
+"""
+[build]
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_configure
+"""
