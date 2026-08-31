@@ -1,26 +1,21 @@
 [source]
-tar = "https://www.libsdl.org/projects/SDL_image/release/SDL2_image-2.0.4.tar.gz"
+tar = "https://www.libsdl.org/projects/SDL_image/release/SDL2_image-2.8.12.tar.gz"
+blake3 = "7b1a9b8c37b5c2c80591ddb99cc7dda72db1759fbb32146841292bce83ce38f2"
+script = """
+touch AUTHORS NEWS README ChangeLog
+autotools_recursive_regenerate
+"""
 
 [build]
-template = "custom"
+template = "configure"
 dependencies = [
-    "libjpeg",
-    "liborbital",
-    "libpng",
-    "mesa",
     "sdl2",
-    "zlib",
 ]
-script = """
-DYNAMIC_INIT
-export SDL_LIBS="-lSDL2 -lorbital $("${TARGET}-pkg-config" --libs osmesa) -lstdc++"
-COOKBOOK_CONFIGURE_FLAGS=(
-    --prefix=/usr
-    --host="${TARGET}"
-    --disable-sdltest
-    --enable-shared
-    --enable-png
-    --enable-jpg
-)
-cookbook_configure
-"""
+dev-dependencies = [
+    "libstdcxx"
+]
+configureflags = [
+    "--disable-sdltest",
+    "--enable-png",
+    "--enable-jpg",
+]
