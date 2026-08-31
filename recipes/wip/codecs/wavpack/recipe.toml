@@ -1,8 +1,12 @@
-#TODO compilation error: missing header
+#TODO compiled but not tested
 [source]
 tar = "https://github.com/dbry/WavPack/releases/download/5.9.0/wavpack-5.9.0.tar.xz"
+blake3 = "162edba02265b2bf10e14d2f2b8a0ecf8f76a6f6b67f6d4c3354ac8931999ed8"
 [build]
-template = "configure"
+template = "cmake"
 dependencies = [
     "libiconv",
+]
+cmakeflags = [
+    "-DWAVPACK_ENABLE_THREADS=Off"
 ]
