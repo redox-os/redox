@@ -1,8 +1,8 @@
 #TODO compiled but not tested
 [source]
 tar = "https://codeberg.org/gumbo-parser/gumbo-parser/archive/0.13.2.tar.gz"
-script = """
-autotools_recursive_regenerate
-"""
 [build]
-template = "configure"
+template = "meson"
+mesonflags = [
+    "-Dtests=false"
+]

@@ -1,11 +1,23 @@
-#TODO compile and test
+#TODO compiled but not tested, need freeglut or x11
 [source]
-tar = "https://casper.mupdf.com/downloads/archive/mupdf-1.28.2-source.tar.gz"
+tar = "https://casper.mupdf.com/downloads/archive/mupdf-1.28.3-source.tar.gz"
+blake3 = "30376f12931f638c17785d69152b9e4eda44cf7bea2c883d67f90408e4f6a138"
 [build]
 template = "custom"
+dependencies = [
+    "harfbuzz",
+    "libjpeg",
+    "freetype2",
+    "libbrotli",
+    "openjpeg",
+    "jbig2dec",
+    "libgumbo",
+    # "freeglut", TODO: HAVE_GLUT=yes
+]
 script = """
-rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 DYNAMIC_INIT
-"${COOKBOOK_MAKE}" libs -j "${COOKBOOK_MAKE_JOBS}"
-"${COOKBOOK_MAKE}" install-libs PREFIX="${COOKBOOK_STAGE}/usr"
+cd $COOKBOOK_SOURCE
+mkdir -p $COOKBOOK_BUILD/shared-release
+"${COOKBOOK_MAKE}" install-libs install-apps shared=yes build=release USE_SYSTEM_LIBS=yes  \
+    -j "${COOKBOOK_MAKE_JOBS}" DESTDIR="${COOKBOOK_STAGE}" "OUT=$COOKBOOK_BUILD/shared-release"
 """
