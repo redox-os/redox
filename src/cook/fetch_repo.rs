@@ -8,7 +8,7 @@ use std::{
 
 use crate::cook::fs;
 use pkg::{
-    PackageName, RemotePackage, RepoManager, Repository,
+    PackageName, RepoManager, Repository,
     callback::{Callback, PlainCallback, SilentCallback},
     net_backend::{CurlBackend, DownloadBackend},
 };
@@ -219,10 +219,5 @@ impl Callback for PlainPtyCallback {
             let _ = writeln!(&self.pty);
             self.download_file = None;
         }
-    }
-
-    fn install_extract(&mut self, remote_pkg: &RemotePackage) {
-        let _ = writeln!(&self.pty, "Extracting {}...", remote_pkg.package.name);
-        self.flush();
     }
 }
