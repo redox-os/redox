@@ -4,16 +4,9 @@ branch = "master"
 shallow_clone = true
 [build]
 template = "custom"
-dependencies = [
-    "gettext",
-    "libxkbcommon",
-]
 script = """
 DYNAMIC_INIT
-export GETTEXT_DIR="${COOKBOOK_SYSROOT}/usr"
-(COOKBOOK_SOURCE+="/cosmic-settings" cookbook_cargo --no-default-features \
-    --config 'patch.crates-io.rustix.git = "https://github.com/bytecodealliance/rustix"' \
-    --config 'patch.crates-io.rustix.rev = "8bf15a0"')
+COOKBOOK_SOURCE+="/cosmic-settings" cookbook_cargo --no-default-features
 
 mkdir -pv "${COOKBOOK_STAGE}/usr/bin/"
 cp -v "target/${TARGET}/release/cosmic-settings" "${COOKBOOK_STAGE}/usr/bin/"
@@ -28,3 +21,8 @@ cp -rv "${COOKBOOK_SOURCE}/resources/default_schema/" "${COOKBOOK_STAGE}/usr/sha
 mkdir -pv "${COOKBOOK_STAGE}/usr/share/icons/"
 cp -rv "${COOKBOOK_SOURCE}/resources/icons/" "${COOKBOOK_STAGE}/usr/share/icons/hicolor/"
 """
+
+[package]
+dependencies = [
+    "libxkbcommon",
+]
