@@ -737,7 +737,7 @@ pub fn fetch_remote(
                     let toml_file =
                         File::create(&tmp_toml).map_err(wrap_io_err!(tmp_toml, "Creating file"))?;
                     let mut writer = DownloadBackendWriter::ToFile(toml_file);
-                    manager.download(&format!("{}.toml", source_name), None, &mut writer)?;
+                    manager.download(&format!("{}.toml", source_name), None, None, &mut writer)?;
                     read_source_toml(&tmp_toml)?
                 };
 
@@ -750,6 +750,7 @@ pub fn fetch_remote(
                 manager.download(
                     &format!("{}.pkgar", source_name),
                     Some(pkg_toml.network_size),
+                    None,
                     &mut writer,
                 )?;
                 rename(&tmp_pkgar, &source_pkgar)?;

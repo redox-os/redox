@@ -702,8 +702,8 @@ checksum = "04744f49eae99ab78e0d5c0b603ab218f515ea8cfe5a456d7629ad883a3b6e7d"
 
 [[package]]
 name = "pkgar"
-version = "0.2.2"
-source = "git+https://gitlab.redox-os.org/redox-os/pkgar.git#ee2bcb2af97eba496ebd8eaf44f5acbed452c4ec"
+version = "0.2.3"
+source = "git+https://gitlab.redox-os.org/redox-os/pkgar.git#a7b65343e856d4b16f9e788a7c49fffb05822dab"
 dependencies = [
  "blake3",
  "bytemuck",
@@ -715,8 +715,8 @@ dependencies = [
 
 [[package]]
 name = "pkgar-core"
-version = "0.2.2"
-source = "git+https://gitlab.redox-os.org/redox-os/pkgar.git#ee2bcb2af97eba496ebd8eaf44f5acbed452c4ec"
+version = "0.2.3"
+source = "git+https://gitlab.redox-os.org/redox-os/pkgar.git#a7b65343e856d4b16f9e788a7c49fffb05822dab"
 dependencies = [
  "bitflags",
  "blake3",
@@ -726,8 +726,8 @@ dependencies = [
 
 [[package]]
 name = "pkgar-keys"
-version = "0.2.2"
-source = "git+https://gitlab.redox-os.org/redox-os/pkgar.git#ee2bcb2af97eba496ebd8eaf44f5acbed452c4ec"
+version = "0.2.3"
+source = "git+https://gitlab.redox-os.org/redox-os/pkgar.git#a7b65343e856d4b16f9e788a7c49fffb05822dab"
 dependencies = [
  "hex",
  "pkgar-core",
@@ -856,8 +856,8 @@ dependencies = [
 
 [[package]]
 name = "redox-pkg"
-version = "0.3.1"
-source = "git+https://gitlab.redox-os.org/redox-os/pkgutils.git#1250a77bf160a79492cf1943b3b2533b39ebba73"
+version = "0.3.2"
+source = "git+https://gitlab.redox-os.org/redox-os/pkgutils.git#5de8f295fdce141aa76ddba6f787b5589db18783"
 dependencies = [
  "hex",
  "serde",
@@ -895,7 +895,7 @@ dependencies = [
 [[package]]
 name = "redox_installer"
 version = "0.2.42"
-source = "git+https://gitlab.redox-os.org/redox-os/installer.git#d7409a2cc6ebd44eab9f0c57551bb0b2798d21e1"
+source = "git+https://gitlab.redox-os.org/redox-os/installer.git#b5a11310e1ac915494efea6d18e242966da74f3f"
 dependencies = [
  "anyhow",
  "arg_parser",
@@ -918,7 +918,7 @@ dependencies = [
 [[package]]
 name = "redoxer"
 version = "0.2.63"
-source = "git+https://gitlab.redox-os.org/redox-os/redoxer.git#bf7488c52d63f5be2aac2bf16fd74dfb5be4baaa"
+source = "git+https://gitlab.redox-os.org/redox-os/redoxer.git#5c74b7d78113bba19905225fe1a5d11adcc5c5a3"
 dependencies = [
  "anyhow",
  "dirs",
