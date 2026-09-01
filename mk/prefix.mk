@@ -12,6 +12,7 @@ LIBSTDCXX_TARGET=recipes/libs/libstdcxx-v3/target/$(TARGET)/$(HOST_TARGET)
 RELIBC_FREESTANDING_TARGET=recipes/core/relibc/target/$(TARGET)/$(HOST_TARGET)
 RELIBC_TARGET=recipes/core/relibc/target/$(TARGET)
 LLVM_TARGET=recipes/dev/llvm21/target/$(HOST_TARGET)/$(TARGET)
+LLVM_RT_TARGET=recipes/dev/llvm-rt21/target/$(TARGET)/$(HOST_TARGET)
 RUST_TARGET=recipes/dev/rust/target/$(HOST_TARGET)/$(TARGET)
 CLANG_TARGET=recipes/dev/clang21/target/$(HOST_TARGET)/$(TARGET)
 LLD_TARGET=recipes/dev/lld21/target/$(HOST_TARGET)/$(TARGET)
@@ -305,6 +306,8 @@ else
 	@#TODO: generates wrong lib path for libtool
 	rm -f "$@.partial"/$(GNU_TARGET)/lib/libstdc++.la
 	rm -f "$@.partial"/$(GNU_TARGET)/lib/libsupc++.la
+	@#TODO: Needed by clang, yet not emitted
+	ln -s crtbegin.o "$@.partial"/lib/gcc/$(GNU_TARGET)/13.2.0/crtbeginT.o
 # hosted libstdcxx
 	export PATH="$(ROOT)/$@.partial/bin:$$PATH" \
 		ACLOCAL_PATH="$(LIBTOOL_PATH)/share/aclocal:$$ACLOCAL_PATH" && \
@@ -431,7 +434,7 @@ endif
 endif
 
 # BUILD CLANG ---------------------------------------------------
-$(PREFIX)/clang-install: | $(PREFIX)/gcc-install $(FSTOOLS_TAG) $(CONTAINER_TAG)
+$(PREFIX)/clang-install: | $(PREFIX)/relibc-freestanding-install $(FSTOOLS_TAG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
@@ -446,9 +449,15 @@ else
 	cp -r "$(CLANG_TARGET)/stage/usr/". "$@.partial"
 	cp -r "$(LLD_TARGET)/stage/usr/". "$@.partial"
 	rm -rf "$@.partial/lib/"*.a
+	echo "--sysroot=$(ROOT)/$(PREFIX)/relibc-freestanding-install" > "$@.partial/bin/$(GNU_TARGET).cfg"
+	export PATH="$(LIBTOOL_PATH)/bin:$(ROOT)/$@.partial/bin:$$PATH" $(PREFIX_CONFIG) \
+		COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_TARGET=$(HOST_TARGET) REDOXER_USE_CLANG=1 && \
+		$(REPO_BIN) cook llvm-rt21
+	cp -r "$(LLVM_RT_TARGET)/stage/usr/". "$@.partial"
+	echo "--sysroot=../$(GNU_TARGET)" > "$@.partial/bin/$(GNU_TARGET).cfg"
 	mv "$@.partial" "$@"
 # no longer needed, delete build files to save disk space
-	rm -rf $(CLANG_TARGET) $(LLD_TARGET)
+	rm -rf $(CLANG_TARGET) $(LLD_TARGET) $(LLVM_RT_TARGET)
 endif
 
 endif

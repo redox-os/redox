@@ -259,6 +259,15 @@ set(CMAKE_C_COMPILER clang)
 set(CMAKE_NM llvm-nm)
 set(CMAKE_RANLIB llvm-ranlib)
 EOF
+
+if [ "$target" != "$COOKBOOK_HOST_TARGET" ]; then
+cat >> $file <<EOF
+set(CMAKE_C_COMPILER_TARGET ${target})
+set(CMAKE_CXX_COMPILER_TARGET ${target})
+set(CMAKE_ASM_COMPILER_TARGET ${target})
+EOF
+fi
+
 fi
     cat >> $file <<EOF
 set(CMAKE_FIND_ROOT_PATH ${sysroot})
