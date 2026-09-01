@@ -3,13 +3,8 @@ git = "https://github.com/pop-os/cosmic-term.git"
 
 [build]
 template = "custom"
-dependencies = [
-    "gettext",
-    "libxkbcommon",
-]
 script = """
 DYNAMIC_INIT
-export GETTEXT_DIR="${COOKBOOK_SYSROOT}/usr"
 cookbook_cargo --no-default-features
 
 mkdir -pv "${COOKBOOK_STAGE}/usr/share/ui/apps"
@@ -23,3 +18,8 @@ cp -v "${COOKBOOK_SOURCE}/res/${APPID}.metainfo.xml" "${COOKBOOK_STAGE}/usr/shar
 mkdir -pv "${COOKBOOK_STAGE}/usr/share/icons/"
 cp -rv "${COOKBOOK_SOURCE}/res/icons/hicolor/" "${COOKBOOK_STAGE}/usr/share/icons/"
 """
+
+[package]
+dependencies = [
+    "libxkbcommon",
+]
