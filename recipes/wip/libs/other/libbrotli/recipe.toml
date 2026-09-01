@@ -2,6 +2,7 @@
 # build instructions: https://github.com/google/brotli#cmake
 [source]
 git = "https://github.com/google/brotli"
+patches = [ "redox.patch" ]
 branch = "v1.2"
 shallow_clone = true
 [build]

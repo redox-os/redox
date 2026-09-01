@@ -1,0 +1,18 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 22b21d2..b900d57 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -17,13 +17,6 @@ else()
+   message(STATUS "Build type is '${CMAKE_BUILD_TYPE}'")
+ endif()
+ 
+-include(CheckCSourceCompiles)
+-check_c_source_compiles(
+-  "#if defined(__EMSCRIPTEN__)
+-   int main() {return 0;}
+-   #endif"
+-  BROTLI_EMSCRIPTEN
+-)
+ if (BROTLI_EMSCRIPTEN)
+   message("-- Compiler is EMSCRIPTEN")
+ else()

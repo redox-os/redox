@@ -1,0 +1,12 @@
+diff -ruwN source/configure source-new/configure
+--- source/configure	2023-09-14 19:44:55.000000000 +0700
++++ source-new/configure	2026-08-30 08:13:54.849157973 +0700
+@@ -11593,7 +11593,7 @@
+   ;;
+ 
+ # This must be glibc/ELF.
+-linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu*)
++linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu* | redox*)
+   version_type=linux # correct to gnu/linux during the next big refactor
+   need_lib_prefix=no
+   need_version=no
