@@ -243,7 +243,7 @@ function generate_cookbook_cmake_file {
         SYSTEM_NAME="UnixPaths"
     fi
 
-if [ -z "${REDOXER_USE_CLANG}" ]; then
+if [[ "$REDOXER_USE_CLANG" != "1" && "$REDOXER_USE_CLANG" != "true" ]]; then
 cat > $file <<EOF
 set(CMAKE_AR ${gcc_prefix}gcc-ar)
 set(CMAKE_CXX_COMPILER ${gcc_prefix}g++)
