@@ -34,7 +34,7 @@ UPSTREAM_RUSTC_VERSION=2026-05-24
 export PREFIX_RUSTFLAGS=-L $(ROOT)/$(PREFIX_INSTALL)/$(TARGET)/lib
 export RUSTUP_TOOLCHAIN=$(ROOT)/$(PREFIX_INSTALL)
 export REDOXER_TOOLCHAIN=$(RUSTUP_TOOLCHAIN)
-PREFIX_CONFIG=CI=1 COOKBOOK_CLEAN_BUILD=true COOKBOOK_CLEAN_TARGET=false COOKBOOK_VERBOSE=true COOKBOOK_NONSTOP=false
+PREFIX_CONFIG=CI=1 REDOXER_USE_CLANG=0 COOKBOOK_CLEAN_BUILD=true COOKBOOK_CLEAN_TARGET=false COOKBOOK_VERBOSE=true COOKBOOK_NONSTOP=false
 
 prefix: $(PREFIX)/sysroot
 
@@ -404,8 +404,8 @@ ifeq ($(PODMAN_BUILD),1)
 else
 	@echo "\033[1;36;49mBuilding wasip1-libc-install\033[0m"
 	rm -rf "$@.partial" "$@"
-	export REDOXER_TOOLCHAIN=$(ROOT)/$(PREFIX)/clang-install REDOXER_USE_CLANG=1 PATH="$(ROOT)/$(PREFIX)/clang-install/bin:$$PATH" \
-		$(PREFIX_CONFIG) COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_TARGET=wasm32-wasip1 COOKBOOK_CROSS_GNU_TARGET=wasm32-wasip1 && \
+	export REDOXER_TOOLCHAIN=$(ROOT)/$(PREFIX)/clang-install $(PREFIX_CONFIG) PATH="$(ROOT)/$(PREFIX)/clang-install/bin:$$PATH" \
+		REDOXER_USE_CLANG=1 COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_TARGET=wasm32-wasip1 COOKBOOK_CROSS_GNU_TARGET=wasm32-wasip1 && \
 		$(REPO_BIN) cook host:wasi-libc
 	cp -r "$(WASIP1_LIBC_TARGET)/stage/usr/". "$@.partial"
 	mkdir -p "$@.partial/share/wasi-sysroot"
@@ -434,7 +434,7 @@ endif
 endif
 
 # BUILD CLANG ---------------------------------------------------
-$(PREFIX)/clang-install: | $(PREFIX)/relibc-freestanding-install $(FSTOOLS_TAG) $(CONTAINER_TAG)
+$(PREFIX)/clang-install: | $(PREFIX)/gcc-install $(FSTOOLS_TAG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
@@ -449,8 +449,8 @@ else
 	cp -r "$(CLANG_TARGET)/stage/usr/". "$@.partial"
 	cp -r "$(LLD_TARGET)/stage/usr/". "$@.partial"
 	rm -rf "$@.partial/lib/"*.a
-	echo "--sysroot=$(ROOT)/$(PREFIX)/relibc-freestanding-install" > "$@.partial/bin/$(GNU_TARGET).cfg"
-	export PATH="$(LIBTOOL_PATH)/bin:$(ROOT)/$@.partial/bin:$$PATH" $(PREFIX_CONFIG) \
+	echo "--sysroot=$(ROOT)/$(PREFIX)/gcc-install" > "$@.partial/bin/$(GNU_TARGET).cfg"
+	export PATH="$(ROOT)/$@.partial/bin:$$PATH" $(PREFIX_CONFIG) \
 		COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_TARGET=$(HOST_TARGET) REDOXER_USE_CLANG=1 && \
 		$(REPO_BIN) cook llvm-rt21
 	cp -r "$(LLVM_RT_TARGET)/stage/usr/". "$@.partial"
