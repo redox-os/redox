@@ -10,3 +10,4 @@ dependencies = [
     "xfce4-terminal",
     "xfce4-common",
 ]
+description = "Standard components for X11-based XFCE4 desktop"

@@ -10,3 +10,4 @@ dependencies = [
     "xfce4-settings",
     "xfwm4",
 ]
+description = "Minimal components for X11-based XFCE4 desktop"
