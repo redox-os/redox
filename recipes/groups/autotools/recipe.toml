@@ -6,3 +6,4 @@ dependencies = [
     "gettext",
     "gnu-make",
 ]
+description = "Components for GNU Autoconf"

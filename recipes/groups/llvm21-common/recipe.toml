@@ -6,3 +6,4 @@ dependencies = [
     "lld21",
     "llvm-rt21",
 ]
+description = "Components for LLVM compiler"

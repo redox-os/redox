@@ -19,3 +19,4 @@ dependencies = [
     "pop-icon-theme",
     "shared-mime-info",
 ]
+description = "Desktop components"

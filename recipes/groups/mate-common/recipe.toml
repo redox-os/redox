@@ -11,3 +11,4 @@ dependencies = [
     "mate-terminal",
     "mate-themes",
 ]
+description = "Minimal components for X11-based MATE desktop"

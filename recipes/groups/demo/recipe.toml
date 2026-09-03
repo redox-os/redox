@@ -20,3 +20,4 @@ dependencies = [
     "rodioplay",
     "freepats",
 ]
+description = "Desktop components with demos"
