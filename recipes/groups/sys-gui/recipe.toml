@@ -4,3 +4,4 @@ dependencies = [
     "orbdata",
     "orbutils",
 ]
+description = "Minimal components for desktop"

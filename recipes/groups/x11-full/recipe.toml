@@ -7,3 +7,4 @@ dependencies = [
     "xkbutils",
     "xterm",
 ]
+description = "Standard components for X11"

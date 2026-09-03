@@ -6,3 +6,4 @@ dependencies = [
     "kernel",
     "relibc",
 ]
+description = "Minimal components for operating system"

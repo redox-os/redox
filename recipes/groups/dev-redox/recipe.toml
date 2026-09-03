@@ -18,3 +18,4 @@ dependencies = [
     "xz",
     "zlib",
 ]
+description = "Standard self-hosted development tools"
