@@ -166,15 +166,16 @@ To see all Redox repositories open the [redox-os group](https://gitlab.redox-os.
 
 If you don't know programming:
 
-- Test the [daily images](https://static.redox-os.org/img/) on your computer and add the report on the [Hardware Compatibility](https://gitlab.redox-os.org/redox-os/redox/-/blob/master/HARDWARE.md) list
-- Monitor and warn developers if the [daily images](https://static.redox-os.org/img/) are outdated
-- Use/test Redox and create issues for bugs or needed features (please check for duplicates first)
-- Fix and write documentation
+- Fix, update, and write documentation
 - Find or fix typos in configuration
+- Monitor and warn developers if the [daily images](https://static.redox-os.org/img/) are outdated
+- Test the [daily images](https://static.redox-os.org/img/) on your computer and add the report on the [Hardware Compatibility](https://gitlab.redox-os.org/redox-os/redox/-/blob/master/HARDWARE.md) list
+- Use/test Redox and create issues for bugs or needed features (please check for duplicates first)
+- Verify if [reported bugs](https://gitlab.redox-os.org/groups/redox-os/-/issues/?label_name[]=bug) still happen
 
 If you don't know how to code in Rust but know other programming languages:
 
-- Web development on the website (we only accept minimal JavaScript code to preserve performance)
+- Improve the website (we only accept minimal JavaScript code to preserve performance)
 - Write unit tests (may require minimal knowledge of Rust)
 - Port C/C++ programs to Redox (read the `TODO`s of the recipes on the [WIP category](https://gitlab.redox-os.org/redox-os/redox/-/tree/master/recipes/wip))
 - Port programs to Redox
