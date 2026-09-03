@@ -21,15 +21,6 @@ requires_weak 10_net.target 20_audiod.service
 nowait VT=3 orbital contain_orblogin launcher
 """
 
-# Override console init to use contain
-[[files]]
-path = "/usr/lib/init.d/30_console"
-data = """
-requires_weak 20_orbital
-nowait getty --contain 2
-nowait getty --contain /scheme/debug/no-preserve -J
-"""
-
 [[files]]
 path = "/etc/contain.toml"
 data = """
