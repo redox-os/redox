@@ -171,7 +171,7 @@ If you don't know programming:
 - Monitor and warn developers if the [daily images](https://static.redox-os.org/img/) are outdated
 - Test the [daily images](https://static.redox-os.org/img/) on your computer and add the report on the [Hardware Compatibility](https://gitlab.redox-os.org/redox-os/redox/-/blob/master/HARDWARE.md) list
 - Use/test Redox and create issues for bugs or needed features (please check for duplicates first)
-- Verify if [reported bugs](https://gitlab.redox-os.org/groups/redox-os/-/work_items?sort=updated_desc&state=opened&first_page_size=20?label_name[]=bug) still happen
+- Verify if [reported bugs](https://gitlab.redox-os.org/groups/redox-os/-/work_items?sort=updated_desc&state=opened&label_name[]=bug&first_page_size=20) still happen
 
 If you don't know how to code in Rust but know other programming languages:
 
@@ -182,9 +182,9 @@ If you don't know how to code in Rust but know other programming languages:
 
 If you know how to code in Rust but don't know operating system development:
 
-- See the [easy](https://gitlab.redox-os.org/groups/redox-os/-/work_items?sort=updated_desc&state=opened&first_page_size=20?label_name[]=easy) issues
-- See the "[good first issue](https://gitlab.redox-os.org/groups/redox-os/-/work_items?sort=updated_desc&state=opened&first_page_size=20?label_name[]=good%20first%20issue)" issues
-- See the [help wanted](https://gitlab.redox-os.org/groups/redox-os/-/work_items?sort=updated_desc&state=opened&first_page_size=20?label_name[]=help%20wanted) issues (it's worth noting the skill level varies between projects, but a large subset of these should be approachable by contributors familiar with regular Rust/Unix application programming)
+- See the [easy](https://gitlab.redox-os.org/groups/redox-os/-/work_items?sort=updated_desc&state=opened&label_name[]=easy&first_page_size=20) issues
+- See the "[good first issue](https://gitlab.redox-os.org/groups/redox-os/-/work_items?sort=updated_desc&state=opened&label_name[]=good%20first%20issue&first_page_size=20)" issues
+- See the [help wanted](https://gitlab.redox-os.org/groups/redox-os/-/work_items?sort=updated_desc&state=opened&label_name[]=help%20wanted&first_page_size=20) issues (it's worth noting the skill level varies between projects, but a large subset of these should be approachable by contributors familiar with regular Rust/Unix application programming)
 - Improve the package manager, or build system tooling like `redoxer` or `installer`
 - Improve the [Ion](https://gitlab.redox-os.org/redox-os/ion) shell, or other high-level or mid-level projects
 - Port Rust programs (also look for issues with the `port` label)
@@ -204,23 +204,23 @@ If you know how to code in Rust, and have experience with systems software/OS de
 
 For those who want to contribute to the Redox GUI, our GUI strategy has changed.
 
-- Read the [Orbital open issues](https://gitlab.redox-os.org/redox-os/orbital/-/work_items)
+- Read the [Orbital open issues](https://gitlab.redox-os.org/redox-os/orbital/-/work_items?sort=created_date&state=opened&first_page_size=20)
 - OrbTk is in maintenance mode, and its developers have moved to other projects such as the ones below. There is currently no Redox-specific GUI development underway.
 
 ## Priorities
 
 You can use the following GitLab issue label filters to know our development priorities on the moment:
 
-- [Critical](https://gitlab.redox-os.org/groups/redox-os/-/work_items?sort=updated_desc&state=opened&first_page_size=20?label_name[]=critical)
-- [High-priority](https://gitlab.redox-os.org/groups/redox-os/-/work_items?sort=updated_desc&state=opened&first_page_size=20?label_name[]=high-priority)
-- [Medium-priority](https://gitlab.redox-os.org/groups/redox-os/-/work_items?sort=updated_desc&state=opened&first_page_size=20?label_name[]=medium-priority)
-- [Low-priority](https://gitlab.redox-os.org/groups/redox-os/-/work_items?sort=updated_desc&state=opened&first_page_size=20?label_name[]=low-priority)
+- [Critical](https://gitlab.redox-os.org/groups/redox-os/-/work_items?sort=updated_desc&state=opened&label_name[]=critical&first_page_size=20)
+- [High-priority](https://gitlab.redox-os.org/groups/redox-os/-/work_items?sort=updated_desc&state=opened&label_name[]=high-priority&first_page_size=20)
+- [Medium-priority](https://gitlab.redox-os.org/groups/redox-os/-/work_items?sort=updated_desc&state=opened&label_name[]=medium-priority&first_page_size=20)
+- [Low-priority](https://gitlab.redox-os.org/groups/redox-os/-/work_items?sort=updated_desc&state=opened&label_name[]=low-priority&first_page_size=20)
 
 ## Roadmap
 
 We use tracking issues for the goals in our roadmap, you can see them in the filter below:
 
-- [Tracking issues](https://gitlab.redox-os.org/groups/redox-os/-/work_items?sort=updated_desc&state=opened&first_page_size=20?label_name[]=tracking%20issue)
+- [Tracking issues](https://gitlab.redox-os.org/groups/redox-os/-/work_items?sort=updated_desc&state=opened&label_name[]=tracking%20issue&first_page_size=20)
 
 ## RFCs
 
