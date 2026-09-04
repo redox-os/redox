@@ -1,7 +1,7 @@
 [source]
-tar = "https://ftp.gnu.org/gnu/grep/grep-3.1.tar.xz"
-blake3 = "46b6e24dfa1b0f309f4eae3c450d612396c8faa6510b53a55f629e4f4c70b4a3"
-patches = ["grep.patch"]
+tar = "https://ftp.gnu.org/gnu/grep/grep-3.12.tar.xz"
+blake3 = "e15c2e03ff6e9e7e8fb7c726539e10b6ff17ecfc3d6961f7419e948d31043f4f"
+patches = ["redox.patch"]
 
 [build]
 template = "configure"
