@@ -87,23 +87,27 @@ fn auto_deps_from_dynamic_linking(
             let object::build::elf::Dynamic::String { tag, val } = dynamic else {
                 continue;
             };
-            if *tag == object::elf::DT_NEEDED {
-                let Ok(name) = str::from_utf8(val) else {
-                    continue;
-                };
-                if let Ok(relative_path) = path.strip_prefix(rel_path)
-                    && verbose
-                {
-                    log_to_pty!(logger, "DEBUG: {} needs {}", relative_path.display(), name);
+            let Ok(name) = str::from_utf8(val) else {
+                continue;
+            };
+            let path_rel = path
+                .strip_prefix(rel_path)
+                .ok()
+                .filter(|_| verbose)
+                .map(|s| s.display());
+            match *tag {
+                object::elf::DT_NEEDED => {
+                    if let Some(path_rel) = path_rel {
+                        log_to_pty!(logger, "DEBUG: {} needs {}", path_rel, name);
+                    }
+                    needed.insert(name.to_string());
                 }
-                needed.insert(name.to_string());
-            } else {
-                log_to_pty!(
-                    logger,
-                    "DEBUG: autopath failed {} is outside {}",
-                    path.display(),
-                    rel_path.display()
-                );
+                object::elf::DT_RPATH | object::elf::DT_RUNPATH => {
+                    if let Some(path_rel) = path_rel {
+                        log_to_pty!(logger, "DEBUG: {} uses runpath {}", path_rel, name);
+                    }
+                }
+                _ => {} // DT_SONAME
             }
         }
     }
@@ -148,7 +152,7 @@ fn auto_deps_from_dynamic_linking(
 
     if verbose {
         for name in missing {
-            log_to_pty!(logger, "INFO: {} missing", name);
+            log_to_pty!(logger, "INFO: missing {}", name);
         }
     }
 
