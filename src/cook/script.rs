@@ -38,7 +38,7 @@ function DYNAMIC_INIT {
     export RUSTFLAGS="-C target-feature=-crt-static -L native=${COOKBOOK_SYSROOT}/lib -C link-arg=-Wl,-rpath-link,${COOKBOOK_SYSROOT}/lib"
     export COOKBOOK_DYNAMIC=1
 
-    if [ function = $(type -t reexport_flags) ]; then
+    if [ "function" = "$(type -t reexport_flags)" ]; then
         reexport_flags
     fi
 }
