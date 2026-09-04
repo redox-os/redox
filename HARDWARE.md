@@ -126,6 +126,7 @@ Each "Vendor" has its own alphabetical order in "Model", independent from models
 | Dell | Latitude D600 | 0.9.0 | 2026-01-25 | desktop | i586 | BIOS | Some kernel messages displayed, then locks up |
 | HP | Compaq nc6120 | 0.9.0 | 2024-11-08 | desktop, server | i686 | BIOS | Unloads into memory at a rate slower than 1MB/s after selecting resolution. When unloading is complete the logger initializes and crashes after kernel::acpi, some information about APIC is printed. Boot logs do not progress after this point. |
 | HP | EliteBook 2570p | 0.8.0 | 2022-11-23 | demo | x86-64 | BIOS (CSM mode?) | Gets to resolution selection, Fails assert in `src/os/bios/mod.rs:77` after selecting resolution |
+| HP | ENVY Laptop 16-h1055cl | 0.9.0 | 2026-08-29 | demo | x86-64 | UEFI | Successfully boots, touchpad does not work, which means that the rest of the features don't work |
 | Lenovo | G570 | 0.8.0 | 2022-11-11 | desktop | x86-64 | BIOS | Bootloader panics in `alloc_zeroed_page_aligned`, Correct video mode not offered (firmware issue) |
 | Lenovo | IdeaPad Y510P | 0.8.0 | 2022-11-11 | desktop | i686 | BIOS | Panics on `phys_to_virt overflow`, probably having invalid mappings for 32-bit |
 | Lenovo | ThinkPad X1 20KH-002 | 0.9.0 | 2026-02-11 | server | x86-64 | UEFI | Boots once after build but not a second time, fails in ps2d |
