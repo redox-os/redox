@@ -18,7 +18,6 @@ pub fn generate_html_pkg(
     let version = &package.version;
     let target = &package.target;
     let category = &get_category(&recipe.dir);
-    let description = recipe.recipe.package.description.as_deref().unwrap_or("-");
 
     let desc_html = recipe
         .recipe
@@ -89,6 +88,13 @@ pub fn generate_html_pkg(
             .filter(|p| !p.ends_with('/') && !p.is_empty())
             .count();
         (format!("<pre>{stage_files}</pre>"), format!("{}", count))
+    } else if package.version.is_empty() {
+        (
+            String::from(
+                r#"<p>This package is a meta-package, it does not have any file by itself.</p>"#,
+            ),
+            String::from("0"),
+        )
     } else {
         (
             String::from(r#"<p>No package files defined.</p>"#),
@@ -142,8 +148,7 @@ pub fn generate_html_pkg(
         <div class="container">
             <a href="index.html" class="back-link">&larr; Back to packages</a>
             <h1>{name} <span class="version">{version}</span></h1>
-{desc_html}
-            <p class="description">{description}</p>
+                {desc_html}
             <div class="install-action">
                 <span class="prompt">$</span>
                 <code>pkg install {name}</code>
