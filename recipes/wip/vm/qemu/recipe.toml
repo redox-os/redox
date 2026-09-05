@@ -7,22 +7,18 @@ shallow_clone = true
 template = "custom"
 dependencies = [
     "curl",
-    "gettext",
     "glib",
     "libffi",
-    "libiconv",
-    "libjpeg",
-    "liborbital",
-    "libpng",
-    "libstdcxx",
+    "ncursesw",
     "mesa",
-    "nghttp2",
-    "openssl3",
     "pcre2",
     "pixman",
+    "gtk3",
     "sdl2",
     "sdl2-image",
-    "zlib",
+]
+dev-dependencies = [
+    "libstdcxx",
 ]
 script = """
 DYNAMIC_INIT
@@ -32,6 +28,7 @@ COOKBOOK_CONFIGURE_FLAGS=(
     --cross-prefix="${TARGET}"
     --disable-coroutine-pool
     --disable-dbus-display
+    --enable-zstd
     --disable-tpm
 )
 case "${TARGET}" in
