@@ -281,7 +281,7 @@ set(CMAKE_SYSTEM_NAME ${SYSTEM_NAME})
 set(CMAKE_SYSTEM_PROCESSOR ${arch})
 EOF
 
-    if [ "$target" = "$TARGET" ]
+    if [ "$target" = "$GNU_TARGET" ]
     then
         echo "set(CMAKE_C_FLAGS \"${CFLAGS} ${CPPFLAGS}\")" >> $file
         echo "set(CMAKE_CXX_FLAGS \"${CFLAGS} ${CPPFLAGS}\")" >> $file
@@ -301,7 +301,7 @@ function cookbook_cmake {
     else
         GCC_PREFIX=$GNU_TARGET-
     fi
-    generate_cookbook_cmake_file "$TARGET" "$GCC_PREFIX" "$COOKBOOK_SYSROOT" cross_file.cmake
+    generate_cookbook_cmake_file "$GNU_TARGET" "$GCC_PREFIX" "$COOKBOOK_SYSROOT" cross_file.cmake
 
     "${COOKBOOK_CMAKE}" "${COOKBOOK_SOURCE}" \
         -DCMAKE_BUILD_TYPE=Release \
