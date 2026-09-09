@@ -234,10 +234,9 @@ function generate_cookbook_cmake_file {
     gcc_prefix=$2
     sysroot=$3
     file=$4
-    arch=$(echo "$target" | cut -d - -f1)
-    os=$(echo "$target" | cut -d - -f3)
+    ARCH=$(echo "$target" | cut -d - -f1)
 
-    if [ "$os" = "linux" ]; then
+    if [[ "$target" == *"-linux-"* ]]; then
         SYSTEM_NAME="Linux"
     else
         SYSTEM_NAME="UnixPaths"
@@ -278,7 +277,7 @@ set(CMAKE_PLATFORM_USES_PATH_WHEN_NO_SONAME 1)
 set(CMAKE_PREFIX_PATH, ${sysroot})
 set(CMAKE_SHARED_LIBRARY_SONAME_C_FLAG "-Wl,-soname,")
 set(CMAKE_SYSTEM_NAME ${SYSTEM_NAME})
-set(CMAKE_SYSTEM_PROCESSOR ${arch})
+set(CMAKE_SYSTEM_PROCESSOR ${ARCH})
 EOF
 
     if [ "$target" = "$GNU_TARGET" ]
