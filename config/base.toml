@@ -249,3 +249,26 @@ shell = "/usr/bin/ion"
 [groups.sudo]
 gid = 1
 members = ["user"]
+
+# Useful Ion aliases
+[[files]]
+path = "/home/user/.config/ion/initrc"
+data = """
+alias cl = "clear"
+alias ld-debug = "LD_DEBUG=all"
+alias libc-trace = "RELIBC_LOG_LEVEL=trace"
+alias app-blocking = "cat /scheme/sys/block"
+alias fd-debug = "cat /scheme/sys/iostat"
+alias kernel-stats = "cat /scheme/sys/stat"
+"""
+
+[[files]]
+path = "/home/root/.config/ion/initrc"
+data = """
+alias cl = "clear"
+alias ld-debug = "LD_DEBUG=all"
+alias libc-trace = "RELIBC_LOG_LEVEL=trace"
+alias app-blocking = "cat /scheme/sys/block"
+alias fd-debug = "cat /scheme/sys/iostat"
+alias kernel-stats = "cat /scheme/sys/stat"
+"""
