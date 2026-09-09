@@ -273,7 +273,7 @@ pub fn fetch(recipe: &CookRecipe, check_source: bool, logger: &PtyOut) -> Result
                             match get_git_fetch_rev(
                                 &source_dir,
                                 &remote.remote_url,
-                                &remote.remote_branch,
+                                branch.as_ref().unwrap_or(&remote.remote_branch),
                             ) {
                                 Ok(fetch_rev) => fetch_rev == head_rev,
                                 Err(e) => {
@@ -322,6 +322,7 @@ pub fn fetch(recipe: &CookRecipe, check_source: bool, logger: &PtyOut) -> Result
                 } else {
                     let branch = match branch {
                         Some(branch) => branch.clone(),
+                        // TODO: Reuse default branch name from get_git_remote_tracking?
                         None => get_git_remote_branch(&source_dir, "origin")?,
                     };
                     let mut command = Command::new("git");
