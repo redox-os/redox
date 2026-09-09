@@ -252,7 +252,7 @@ members = ["user"]
 
 # Useful Ion aliases
 [[files]]
-path = "/home/user/.config/ion/initrc"
+path = "/etc/skel/.config/ion/initrc"
 data = """
 alias cl = "clear"
 alias ld-debug = "LD_DEBUG=all"
