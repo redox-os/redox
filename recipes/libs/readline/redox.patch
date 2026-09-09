@@ -1,0 +1,45 @@
+diff -ruwN source/support/config.rpath source-new/support/config.rpath
+--- source/support/config.rpath	2024-12-13 15:06:05.000000000 +0100
++++ source-new/support/config.rpath	2026-09-10 01:30:24.508062009 +0200
+@@ -132,7 +132,7 @@
+     irix5* | irix6* | nonstopux*)
+       wl='-Wl,'
+       ;;
+-    linux* | k*bsd*-gnu | kopensolaris*-gnu)
++    linux* | k*bsd*-gnu | kopensolaris*-gnu | redox*)
+       case $cc_basename in
+         ecc*)
+           wl='-Wl,'
+diff -ruwN source/support/shlib-install source-new/support/shlib-install
+--- source/support/shlib-install	2019-12-13 15:46:13.000000000 +0100
++++ source-new/support/shlib-install	2026-09-10 01:32:00.337579502 +0200
+@@ -71,7 +71,7 @@
+ # Cygwin installs both a dll (which must go in $BINDIR) and an implicit
+ # link library (in $libdir)
+ case "$host_os" in
+-hpux*|darwin*|macosx*|linux*|solaris2*)
++hpux*|darwin*|macosx*|linux*|solaris2*|redox*)
+ 	if [ -z "$uninstall" ]; then
+ 		chmod 755 ${INSTALLDIR}/${LIBNAME}
+ 	fi ;;
+@@ -118,7 +118,7 @@
+ # Create symlinks to the installed library.  This section is incomplete.
+ #
+ case "$host_os-$host_vendor" in
+-*linux*|freebsd*|dragonfly*)
++*linux*|freebsd*|dragonfly*|redox*)
+ 	# libname.so.M -> libname.so.M.N
+ 	${echo} ${RM} ${INSTALLDIR}/$LINK2
+ 	if [ -z "$uninstall" ]; then
+diff -ruwN source/support/shobj-conf source-new/support/shobj-conf
+--- source/support/shobj-conf	2024-02-14 16:42:57.000000000 +0100
++++ source-new/support/shobj-conf	2026-09-02 12:52:53.682084689 +0200
+@@ -123,7 +123,7 @@
+ 	;;
+ 
+ # All versions of Linux (including Gentoo/FreeBSD) or the semi-mythical GNU Hurd.
+-linux*-*|gnu*-*|k*bsd*-gnu-*|midnightbsd*|freebsd*|dragonfly*)
++linux*-*|gnu*-*|k*bsd*-gnu-*|midnightbsd*|freebsd*|dragonfly*|redox*)
+ 	SHOBJ_CFLAGS=-fPIC
+ 	SHOBJ_LD='${CC}'
+ 	SHOBJ_LDFLAGS='-shared -Wl,-soname,$@'

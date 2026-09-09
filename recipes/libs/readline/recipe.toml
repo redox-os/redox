@@ -1,6 +1,9 @@
 [source]
 tar = "https://ftp.gnu.org/gnu/readline/readline-8.3.tar.gz"
 blake3 = "7109f094062bda387a0c16b4875375b96e36437bebbbd8d8f91bb27ba01d687f"
+patches = [
+    "redox.patch"
+]
 
 [build]
 template = "custom"
@@ -9,13 +12,7 @@ dependencies = [
 ]
 script = """
 DYNAMIC_INIT
+COOKBOOK_MAKE_FLAGS=(SHLIB_LIBS="-lncursesw")
 cookbook_configure
 OS=$(echo "${TARGET}" | cut -d - -f3)
-if [ "${OS}" = "redox" ]; then
-if [ "${COOKBOOK_DYNAMIC}" = "1" ]; then
-    ln -s "libhistory.so.8" "${COOKBOOK_STAGE}"/usr/lib/libhistory.so
-    ln -s "libreadline.so.8" "${COOKBOOK_STAGE}"/usr/lib/libreadline.so
-    patchelf --add-needed libncursesw.so "${COOKBOOK_STAGE}/usr/lib/libreadline.so.8"
-fi
-fi
 """
