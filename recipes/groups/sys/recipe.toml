@@ -3,7 +3,12 @@ dependencies = [
     "base",
     "bootloader",
     "coreutils",
+    "libgcc",
+    "libstdcxx",
+    "netutils",
     "kernel",
     "relibc",
+    "userutils",
+    "uutils",
 ]
 description = "Minimal components for operating system"
