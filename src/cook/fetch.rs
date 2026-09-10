@@ -428,7 +428,7 @@ pub fn fetch(recipe: &CookRecipe, check_source: bool, logger: &PtyOut) -> Result
                 } else if cached_info.is_none() {
                     log_to_pty!(logger, "DEBUG: updating source: cached info is missing");
                     true
-                } else if cached_info
+                } else if !cached_info
                     .as_ref()
                     .unwrap()
                     .is_updated(&source_ident, &patches_ident)
