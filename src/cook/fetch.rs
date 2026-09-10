@@ -421,15 +421,36 @@ pub fn fetch(recipe: &CookRecipe, check_source: bool, logger: &PtyOut) -> Result
                 }
             }
             let mut cached = true;
-            if source_dir.is_dir()
-                && (tar_updated
-                    || cached_info.is_none_or(|s| !s.is_updated(&source_ident, &patches_ident)))
-            {
-                log_to_pty!(
-                    logger,
-                    "DEBUG: source tar or patches is newer than the source directory"
-                );
-                remove_all(&source_dir)?
+            if source_dir.is_dir() {
+                let should_update = if tar_updated {
+                    log_to_pty!(logger, "DEBUG: updating source: tar is newer");
+                    true
+                } else if cached_info.is_none() {
+                    log_to_pty!(logger, "DEBUG: updating source: cached info is missing");
+                    true
+                } else if cached_info
+                    .as_ref()
+                    .unwrap()
+                    .is_updated(&source_ident, &patches_ident)
+                {
+                    if cached_info.unwrap().source_identifier != source_ident {
+                        log_to_pty!(
+                            logger,
+                            "DEBUG: updating source: tar is newer than cached info"
+                        );
+                    } else {
+                        log_to_pty!(
+                            logger,
+                            "DEBUG: updating source: patches are newer than cached info"
+                        );
+                    }
+                    true
+                } else {
+                    false
+                };
+                if should_update {
+                    remove_all(&source_dir)?
+                }
             }
             if !source_dir.is_dir() {
                 // Create source.tmp
