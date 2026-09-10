@@ -10,8 +10,12 @@ patches = [
 
 [build]
 template = "custom"
+dependencies = [
+  "libonig"
+]
 script = """
 DYNAMIC_INIT
+export RUSTONIG_DYNAMIC_LIBONIG=1
 # TODO: upstream changes, consider using feat_require_unix_core if relibc is ready?
 CARGO_PROFILE_RELEASE_LTO=thin cookbook_cargo --no-default-features --features feat_os_unix_redox,kill,nice --bin coreutils
 
