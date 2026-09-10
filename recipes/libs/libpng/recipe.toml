@@ -13,5 +13,5 @@ template = "custom"
 dependencies = ["zlib"]
 script = """
 DYNAMIC_STATIC_INIT
-cookbook_configure
+cookbook_cmake
 """

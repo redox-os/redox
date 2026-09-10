@@ -265,6 +265,8 @@ set(CMAKE_C_COMPILER_TARGET ${target})
 set(CMAKE_CXX_COMPILER_TARGET ${target})
 set(CMAKE_ASM_COMPILER_TARGET ${target})
 EOF
+# redox clang workaround (see redoxer env)
+CXXFLAGS="${CXXFLAGS:+$CXXFLAGS }-stdlib=libstdc++"
 fi
 
 fi
@@ -283,7 +285,7 @@ EOF
     if [ "$target" = "$GNU_TARGET" ]
     then
         echo "set(CMAKE_C_FLAGS \"${CFLAGS} ${CPPFLAGS}\")" >> $file
-        echo "set(CMAKE_CXX_FLAGS \"${CFLAGS} ${CPPFLAGS}\")" >> $file
+        echo "set(CMAKE_CXX_FLAGS \"${CXXFLAGS} ${CPPFLAGS}\")" >> $file
     fi
 
     if [ -n "${CC_WRAPPER}" ]
