@@ -223,7 +223,7 @@ pub fn init_config() {
 #[allow(unused_variables)]
 fn extract_env<T: FromStr>(key: &str, default: T) -> T {
     #[cfg(not(test))]
-    if let Ok(e) = std::env::var(key) {
+    if let Ok(e) = std::env::var(key.trim()) {
         str::parse(&e).unwrap_or(default)
     } else {
         default
