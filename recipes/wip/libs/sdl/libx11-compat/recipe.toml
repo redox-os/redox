@@ -1,4 +1,4 @@
-#TODO compile and test
+#TODO requires RTLD_NEXT
 [source]
 git = "https://github.com/sysprog21/libx11-compat"
 shallow_clone = true
@@ -16,6 +16,6 @@ MAKEFLAGS=(
     SDL_BACKEND=sdl2
     XCB=1
 )
-"${COOKBOOK_MAKE}" all examples -j "${COOKBOOK_MAKE_JOBS}" "${MAKEFLAGS[@]}" \
+"${COOKBOOK_MAKE}" all examples -j "${COOKBOOK_MAKE_JOBS}" "${MAKEFLAGS[@]}"
 "${COOKBOOK_MAKE}" install DESTDIR="${COOKBOOK_STAGE}/usr"
 """
