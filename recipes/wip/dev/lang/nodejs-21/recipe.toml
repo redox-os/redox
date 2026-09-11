@@ -26,7 +26,11 @@ dev-dependencies = [
 script = """
 DYNAMIC_INIT
 export PYTHONDONTWRITEBYTECODE=1 COOKBOOK_NOSTRIP=true
+if [[ "$REDOXER_USE_CLANG" != "1" && "$REDOXER_USE_CLANG" != "true" ]]; then
 export CC_host="$CC_WRAPPER gcc" CXX_host="$CC_WRAPPER g++"
+else
+export CC_host="$CC_WRAPPER clang" CXX_host="$CC_WRAPPER clang++" LDFLAGS_host="-fuse-ld=lld"
+fi
 
 rsync -av "${COOKBOOK_SOURCE}/" ./
 

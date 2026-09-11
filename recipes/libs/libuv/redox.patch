@@ -128,6 +128,17 @@ diff -ruwN source/src/unix/fs.c source-new/src/unix/fs.c
    stat_fs->f_type = 0;  /* f_type is not supported. */
  #else
    stat_fs->f_type = buf.f_type;
+diff -ruwN source/src/unix/process.c source-new/src/unix/process.c
+--- source/src/unix/process.c	2025-04-25 09:50:27.000000000 +0000
++++ source-new/src/unix/process.c	2026-09-10 14:04:01.547065156 +0000
+@@ -22,6 +22,7 @@
+ #include "uv.h"
+ #include "internal.h"
+ 
++#include <grp.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <assert.h>
 diff -ruwN source/src/unix/proctitle.c source-new/src/unix/proctitle.c
 --- source/src/unix/proctitle.c	2025-04-25 16:50:27.000000000 +0700
 +++ source-new/src/unix/proctitle.c	2025-10-10 11:18:29.025229760 +0700
