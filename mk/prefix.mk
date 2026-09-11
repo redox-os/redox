@@ -450,7 +450,7 @@ else
 	cp -r "$(LLD_TARGET)/stage/usr/". "$@.partial"
 	rm -rf "$@.partial/lib/"*.a
 	echo "--sysroot=$(ROOT)/$(PREFIX)/gcc-install" > "$@.partial/bin/$(GNU_TARGET).cfg"
-	ln -s clang-21 "$@.partial/bin/$(TARGET)-clang"
+	ln -s clang-21 "$@.partial/bin/$(GNU_TARGET)-clang"
 	export PATH="$(ROOT)/$@.partial/bin:$$PATH" $(PREFIX_CONFIG) \
 		COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_TARGET=$(HOST_TARGET) REDOXER_USE_CLANG=1 && \
 		$(REPO_BIN) cook llvm-rt21
