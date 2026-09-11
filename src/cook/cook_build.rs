@@ -7,6 +7,7 @@ use crate::config::CookConfig;
 use crate::cook::fetch_repo;
 use crate::cook::package::{package_source_paths, package_target};
 use crate::cook::{fetch, fs, pty::PtyOut, script::*};
+use crate::recipe::BuildCompiler;
 use crate::recipe::{AutoDeps, BuildKind, CookRecipe, OptionalPackageRecipe, Recipe};
 use std::io::Read;
 use std::{
@@ -464,6 +465,23 @@ pub fn build(
             } else if name.is_host() {
                 command.env("COOKBOOK_TOOLCHAIN", &cookbook_sysroot);
             }
+            if let Some(compiler) = recipe.build.compiler.as_ref() {
+                match compiler {
+                    BuildCompiler::Gcc | BuildCompiler::GccNoLTO => {
+                        command.env("REDOXER_USE_CLANG", "0");
+                    }
+                    BuildCompiler::Clang | BuildCompiler::ClangNoLTO => {
+                        command.env("REDOXER_USE_CLANG", "1");
+                    }
+                    _ => {}
+                }
+                match compiler {
+                    BuildCompiler::ClangNoLTO | BuildCompiler::GccNoLTO | BuildCompiler::NoLTO => {
+                        command.env("REDOXER_USE_LTO", "0");
+                    }
+                    _ => {}
+                }
+            };
             command.env("COOKBOOK_MAKE_JOBS", cli_jobs.to_string());
             if cook_config.verbose_cmd {
                 command.env("COOKBOOK_VERBOSE", "1");

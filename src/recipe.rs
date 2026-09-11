@@ -142,6 +142,7 @@ pub struct BuildRecipe {
     #[serde(flatten)]
     pub kind: BuildKind,
     pub dependencies: Vec<PackageName>,
+    pub compiler: Option<BuildCompiler>,
     #[serde(rename = "dev-dependencies")]
     pub dev_dependencies: Vec<PackageName>,
 }
@@ -175,6 +176,20 @@ pub struct Recipe {
     /// Specifies optional packages based from this recipe
     #[serde(rename = "optional-packages")]
     pub optional_packages: Vec<OptionalPackageRecipe>,
+}
+
+#[derive(Debug, Clone, Deserialize, PartialEq, Serialize)]
+pub enum BuildCompiler {
+    #[serde(rename = "gcc")]
+    Gcc,
+    #[serde(rename = "clang")]
+    Clang,
+    #[serde(rename = "gcc-no-lto")]
+    GccNoLTO,
+    #[serde(rename = "clang-no-lto")]
+    ClangNoLTO,
+    #[serde(rename = "no-lto")]
+    NoLTO,
 }
 
 impl BuildRecipe {

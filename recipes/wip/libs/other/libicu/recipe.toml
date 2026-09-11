@@ -8,6 +8,7 @@ patches = ["redox.patch"]
 dev-dependencies = [
     "host:libicu"
 ]
+compiler = "no-lto"
 template = "custom"
 script = """
 DYNAMIC_INIT

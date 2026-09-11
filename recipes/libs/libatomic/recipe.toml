@@ -9,6 +9,7 @@ dependencies = [
     "mpc",
     "zlib"
 ]
+compiler = "gcc-no-lto"
 script = """
 DYNAMIC_INIT
 COOKBOOK_CONFIGURE="${COOKBOOK_SOURCE}/libatomic/configure"
