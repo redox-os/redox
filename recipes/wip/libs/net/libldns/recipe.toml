@@ -1,0 +1,14 @@
+[source]
+git = "https://github.com/NLnetLabs/ldns"
+shallow_clone = true
+rev = "1.9.2"
+script = """
+autotools_recursive_regenerate
+cp drill/install-sh .
+"""
+
+[build]
+template = "configure"
+dependencies = [ 
+    "openssl3"
+]

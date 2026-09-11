@@ -1,7 +1,6 @@
-#TODO lack of resolv.h, expect dns not working
-#TODO lack of utmpx.h, expect no way to track login in sshd
 [source]
-tar = "https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-9.8p1.tar.gz"
+tar = "https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-10.5p1.tar.gz"
+blake3 = "60c9bdc9997dbd78d6011b4d52705fb9cd412104078020832c0f0154403615c1"
 patches = [
     "redox.patch",
 ]
@@ -9,6 +8,8 @@ patches = [
 template = "custom"
 dependencies = [
     "openssl3",
+    "libldns",
+    "libedit",
     "zlib",
     "zstd",
 ]
@@ -16,7 +17,10 @@ script = """
 DYNAMIC_INIT
 COOKBOOK_CONFIGURE_FLAGS+=(
     --disable-strip
+    --with-ldns
+    --with-libedit
     --sysconfdir=/etc/ssh
+    --disable-utmpx
 )
 export CFLAGS+=" -DSYSTEMD_NOTIFY=1"
 cookbook_configure

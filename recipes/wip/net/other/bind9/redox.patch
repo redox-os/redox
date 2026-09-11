@@ -1,0 +1,27 @@
+diff --git a/config.sub b/config.sub
+index 61cb4bc22..20df0e7e3 100644
+--- a/config.sub
++++ b/config.sub
+@@ -1457,6 +1457,9 @@ case $os in
+ 	-nsk*)
+ 		os=-nsk
+ 		;;
++	-redox*)
++		os=-redox
++		;;
+ 	# Preserve the version number of sinix5.
+ 	-sinix5.*)
+ 		os=`echo $os | sed -e 's|sinix|sysv|'`
+diff --git a/configure b/configure
+index 23e9457d5..51302815c 100755
+--- a/configure
++++ b/configure
+@@ -10747,7 +10747,7 @@ linux*android*)
+   ;;
+ 
+ # This must be glibc/ELF.
+-linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu*)
++linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu* | redox*)
+   version_type=linux # correct to gnu/linux during the next big refactor
+   need_lib_prefix=no
+   need_version=no
