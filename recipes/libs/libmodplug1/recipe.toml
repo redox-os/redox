@@ -11,5 +11,7 @@ script = """
 DYNAMIC_INIT
 # For strings.h from string.h
 export CPPFLAGS="${CPPFLAGS} -D_GNU_SOURCE"
+# clang: pin std standard
+export CXXFLAGS="${CXXFLAGS} -std=gnu++14"
 cookbook_configure
 """
