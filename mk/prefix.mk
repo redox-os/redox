@@ -73,6 +73,7 @@ else
 	rm -rf "$@.partial/include/"*
 	cp -r "$(PREFIX)/gcc-install/include/c++" "$@.partial/include/c++"
 endif
+	$(REPO_BIN) clean-target relibc $(COOKBOOK_OPTS)
 	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
 	export CARGO="env -u CARGO cargo" $(PREFIX_CONFIG) && \
 	$(REPO_BIN) cook relibc $(COOKBOOK_OPTS)
