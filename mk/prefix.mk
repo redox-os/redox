@@ -456,7 +456,7 @@ else
 		COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_TARGET=$(HOST_TARGET) REDOXER_USE_CLANG=1 && \
 		$(REPO_BIN) cook llvm-rt21
 	cp -r "$(LLVM_RT_TARGET)/stage/usr/". "$@.partial"
-	echo "--sysroot=../$(GNU_TARGET)" > "$@.partial/bin/$(GNU_TARGET).cfg"
+	echo "--sysroot=<CFGDIR>/../$(GNU_TARGET)" > "$@.partial/bin/$(GNU_TARGET).cfg"
 	mv "$@.partial" "$@"
 # no longer needed, delete build files to save disk space
 	rm -rf $(CLANG_TARGET) $(LLD_TARGET) $(LLVM_RT_TARGET)
