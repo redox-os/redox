@@ -43,6 +43,17 @@ diff -ruwN source/Source/bmalloc/libpas/src/libpas/pas_committed_pages_vector.h 
  #else
      return vector->raw_data[page_index] & (MINCORE_REFERENCED |
                                             MINCORE_REFERENCED_OTHER |
+diff -ruwN source/Source/bmalloc/libpas/src/libpas/pas_min_heap.h source-new/Source/bmalloc/libpas/src/libpas/pas_min_heap.h
+--- source/Source/bmalloc/libpas/src/libpas/pas_min_heap.h	2023-09-18 09:56:46.743076800 +0200
++++ source-new/Source/bmalloc/libpas/src/libpas/pas_min_heap.h	2026-08-05 17:04:15.526097594 +0200
+@@ -28,6 +28,7 @@
+ 
+ #include "pas_allocation_config.h"
+ #include "pas_utils.h"
++#include <strings.h>
+ #include <stdio.h>
+ 
+ PAS_BEGIN_EXTERN_C;
 diff -ruwN source/Source/bmalloc/libpas/src/libpas/pas_monotonic_time.c source-new/Source/bmalloc/libpas/src/libpas/pas_monotonic_time.c
 --- source/Source/bmalloc/libpas/src/libpas/pas_monotonic_time.c	2023-09-18 14:56:46.743076800 +0700
 +++ source-new/Source/bmalloc/libpas/src/libpas/pas_monotonic_time.c	2025-10-07 22:23:50.202403881 +0700
@@ -423,6 +434,31 @@ diff -ruwN source/Source/ThirdParty/skia/src/gpu/ganesh/GrAutoLocaleSetter.h sou
  #define HAVE_LOCALE_T 0
  #else
  #define HAVE_LOCALE_T 1
+diff -ruwN source/Source/ThirdParty/skia/src/ports/SkFontConfigInterface_direct.cpp source-new/Source/ThirdParty/skia/src/ports/SkFontConfigInterface_direct.cpp
+--- source/Source/ThirdParty/skia/src/ports/SkFontConfigInterface_direct.cpp	2024-05-30 13:59:23.961655400 +0200
++++ source-new/Source/ThirdParty/skia/src/ports/SkFontConfigInterface_direct.cpp	2026-08-05 16:53:21.573813814 +0200
+@@ -21,6 +21,7 @@
+ #include "src/ports/SkFontConfigInterface_direct.h"
+ 
+ #include <fontconfig/fontconfig.h>
++#include <strings.h>
+ #include <unistd.h>
+ 
+ namespace {
+diff -ruwN source/Source/ThirdParty/skia/src/ports/SkFontMgr_fontconfig.cpp source-new/Source/ThirdParty/skia/src/ports/SkFontMgr_fontconfig.cpp
+--- source/Source/ThirdParty/skia/src/ports/SkFontMgr_fontconfig.cpp	2025-03-24 10:55:01.410501000 +0100
++++ source-new/Source/ThirdParty/skia/src/ports/SkFontMgr_fontconfig.cpp	2026-08-05 16:53:15.563471644 +0200
+@@ -97,8 +97,8 @@
+     }
+ 
+ public:
+-    FCLocker() { lock(); }
+-    ~FCLocker() { unlock(); }
++    FCLocker() { }
++    ~FCLocker() { }
+ 
+     static void AssertHeld() { SkDEBUGCODE(
+         if (FcGetVersion() < FontConfigThreadSafeVersion) {
 diff -ruwN source/Source/ThirdParty/skia/src/ports/SkMemory_malloc.cpp source-new/Source/ThirdParty/skia/src/ports/SkMemory_malloc.cpp
 --- source/Source/ThirdParty/skia/src/ports/SkMemory_malloc.cpp	2024-05-30 18:59:23.965655000 +0700
 +++ source-new/Source/ThirdParty/skia/src/ports/SkMemory_malloc.cpp	2025-09-09 09:08:03.579987255 +0700
@@ -462,9 +498,9 @@ diff -ruwN source/Source/WebCore/page/Page.cpp source-new/Source/WebCore/page/Pa
  
  #if ENABLE(MEDIA_STREAM)
 diff -ruwN source/Source/WebCore/PlatformGTK.cmake source-new/Source/WebCore/PlatformGTK.cmake
---- source/Source/WebCore/PlatformGTK.cmake	2024-12-16 16:07:48.162613200 +0700
-+++ source-new/Source/WebCore/PlatformGTK.cmake	2025-09-09 09:08:03.580987266 +0700
-@@ -75,21 +75,18 @@
+--- source/Source/WebCore/PlatformGTK.cmake	2024-12-16 10:07:48.162613200 +0100
++++ source-new/Source/WebCore/PlatformGTK.cmake	2026-08-05 17:07:39.393738852 +0200
+@@ -75,7 +75,6 @@
  )
  
  list(APPEND WebCore_LIBRARIES
@@ -472,13 +508,7 @@ diff -ruwN source/Source/WebCore/PlatformGTK.cmake source-new/Source/WebCore/Pla
      ${GLIB_GIO_LIBRARIES}
      ${GLIB_GMODULE_LIBRARIES}
      ${GLIB_GOBJECT_LIBRARIES}
-     ${GLIB_LIBRARIES}
-     ${LIBSECRET_LIBRARIES}
-     ${LIBTASN1_LIBRARIES}
--    ${HYPHEN_LIBRARIES}
-     ${UPOWERGLIB_LIBRARIES}
-     ${X11_X11_LIB}
-     GTK::GTK
+@@ -89,7 +88,6 @@
  )
  
  list(APPEND WebCore_SYSTEM_INCLUDE_DIRECTORIES
@@ -487,16 +517,9 @@ diff -ruwN source/Source/WebCore/PlatformGTK.cmake source-new/Source/WebCore/Pla
      ${GLIB_INCLUDE_DIRS}
      ${LIBSECRET_INCLUDE_DIRS}
 diff -ruwN source/Source/WebKit/Platform/IPC/unix/ConnectionUnix.cpp source-new/Source/WebKit/Platform/IPC/unix/ConnectionUnix.cpp
---- source/Source/WebKit/Platform/IPC/unix/ConnectionUnix.cpp	2025-03-31 16:35:43.461813700 +0700
-+++ source-new/Source/WebKit/Platform/IPC/unix/ConnectionUnix.cpp	2025-09-09 09:08:03.591987383 +0700
-@@ -48,13 +48,13 @@
- #include <wtf/glib/GUniquePtr.h>
- #endif
- 
--#if OS(DARWIN)
-+#if OS(DARWIN) || defined(__redox__)
- #define MSG_NOSIGNAL 0
- #endif
+--- source/Source/WebKit/Platform/IPC/unix/ConnectionUnix.cpp	2025-03-31 11:35:43.461813700 +0200
++++ source-new/Source/WebKit/Platform/IPC/unix/ConnectionUnix.cpp	2026-08-05 16:52:28.679802544 +0200
+@@ -54,7 +54,7 @@
  
  // Although it's available on Darwin, SOCK_SEQPACKET seems to work differently
  // than in traditional Unix so fallback to STREAM on that platform.

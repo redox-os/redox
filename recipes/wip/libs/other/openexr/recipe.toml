@@ -8,3 +8,9 @@ dependencies = [
     "libdeflate",
     "libimath"
 ]
+cmakeflags = [
+    "-DBUILD_TESTING=OFF"
+]
+dev-dependencies = [
+    "libstdcxx"
+]
