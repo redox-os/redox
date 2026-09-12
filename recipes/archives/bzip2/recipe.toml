@@ -17,6 +17,7 @@ rsync -av --delete "${COOKBOOK_SOURCE}/" ./
     PREFIX="${COOKBOOK_STAGE}/usr" \
     install
 
+if [ "${COOKBOOK_DYNAMIC}" = "1" ]; then
 # However, distros distribute libbz2 as well so we'll support it too
 # Linking the lib fails if we don't rebuild the objects from earlier
 "${COOKBOOK_MAKE}" clean
@@ -32,6 +33,7 @@ rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 cp -av libbz2.so* "${COOKBOOK_STAGE}/usr/lib"
 ln -s "libbz2.so.1.0" "${COOKBOOK_STAGE}/usr/lib/libbz2.so.1"
 ln -s "libbz2.so.1.0" "${COOKBOOK_STAGE}/usr/lib/libbz2.so"
+fi
 
 mkdir -p "${COOKBOOK_STAGE}/usr/lib/pkgconfig"
 cp "${COOKBOOK_RECIPE}/pkgconfig" "${COOKBOOK_STAGE}/usr/lib/pkgconfig/bzip2.pc"
