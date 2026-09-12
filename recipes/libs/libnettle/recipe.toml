@@ -13,6 +13,7 @@ template = "custom"
 dependencies = [
     "libgmp"
 ]
+compiler = "gcc"
 script = """
 DYNAMIC_INIT
 # TODO: sccache regression
