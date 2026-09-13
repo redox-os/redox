@@ -406,7 +406,7 @@ else
 	@echo "\033[1;36;49mBuilding wasip1-libc-install\033[0m"
 	rm -rf "$@.partial" "$@"
 	export REDOXER_TOOLCHAIN=$(ROOT)/$(PREFIX)/clang-install $(PREFIX_CONFIG) PATH="$(ROOT)/$(PREFIX)/clang-install/bin:$$PATH" \
-		REDOXER_USE_CLANG=1 COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_TARGET=wasm32-wasip1 COOKBOOK_CROSS_GNU_TARGET=wasm32-wasip1 && \
+		COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_TARGET=wasm32-wasip1 COOKBOOK_CROSS_GNU_TARGET=wasm32-wasip1 && \
 		$(REPO_BIN) cook host:wasi-libc
 	cp -r "$(WASIP1_LIBC_TARGET)/stage/usr/". "$@.partial"
 	mkdir -p "$@.partial/share/wasi-sysroot"
@@ -453,7 +453,7 @@ else
 	echo "--sysroot=$(ROOT)/$(PREFIX)/gcc-install" > "$@.partial/bin/$(GNU_TARGET).cfg"
 	ln -s clang-21 "$@.partial/bin/$(GNU_TARGET)-clang"
 	export PATH="$(ROOT)/$@.partial/bin:$$PATH" $(PREFIX_CONFIG) \
-		COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_TARGET=$(HOST_TARGET) REDOXER_USE_CLANG=1 && \
+		COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_TARGET=$(HOST_TARGET) && \
 		$(REPO_BIN) cook llvm-rt21
 	cp -r "$(LLVM_RT_TARGET)/stage/usr/". "$@.partial"
 	echo "--sysroot=<CFGDIR>/../$(GNU_TARGET)" > "$@.partial/bin/$(GNU_TARGET).cfg"
