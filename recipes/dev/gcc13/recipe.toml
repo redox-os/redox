@@ -17,6 +17,7 @@ autotools_recursive_regenerate -I"$(realpath ./config)"
 
 [build]
 template = "custom"
+compiler = "gcc"
 dependencies = [
     "libgmp",
     "libmpfr",
