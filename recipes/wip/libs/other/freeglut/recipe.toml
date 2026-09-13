@@ -1,7 +1,10 @@
 #TODO wayland only
 [source]
-tar = "https://github.com/freeglut/freeglut/releases/download/v3.4.0/freeglut-3.4.0.tar.gz"
-blake3 = "e11ef6f8710c995ca200c0213a5fee2c8710d5cfd1284ec442c9c734dd3f98fb"
+tar = "https://github.com/freeglut/freeglut/releases/download/v3.8.0/freeglut-3.8.0.tar.gz"
+blake3 = "f0f61839c91b633c958afb2bf015f8067cd9fe650fce92cc68ed1a93aad74352"
+patches = [
+    "redox.patch"
+]
 [build]
 dependencies = [
     "mesa",
@@ -11,9 +14,10 @@ dependencies = [
 ]
 template = "cmake"
 cmakeflags = [
-    "-DFREEGLUT_WAYLAND=1",
-    "-DFREEGLUT_GLES=1",
-    "-DFREEGLUT_BUILD_DEMOS=1"
+    "-DFREEGLUT_WAYLAND=ON",
+    "-DFREEGLUT_X11=OFF",
+    "-DFREEGLUT_GLES=OFF",
+    "-DFREEGLUT_BUILD_DEMOS=OFF",
 ]
 
 [package]

@@ -1,4 +1,4 @@
-diff --color -ruwN source/meson.build source-new/meson.build
+diff -ruwN source/meson.build source-new/meson.build
 --- source/meson.build	2023-03-22 19:13:43.000000000 +0700
 +++ source-new/meson.build	2026-06-12 05:37:17.049652059 +0700
 @@ -39,7 +39,7 @@
@@ -6,7 +6,7 @@ diff --color -ruwN source/meson.build source-new/meson.build
  dep_winmm = cc.find_library('winmm', required : false)
  
 -dep_gl = dependency('gl')
-+dep_gl = dependency('gl', required: false)
++dep_gl = dependency('opengl')
  
  dep_epoll = dependency('epoll-shim', required : false)
  dep_gles1 = dependency('glesv1_cm', required : get_option('gles1'))
@@ -19,7 +19,7 @@ diff --color -ruwN source/meson.build source-new/meson.build
    # xquartz doesn't have a glx.pc, but it does have the header. And all the
    # symbols reside in libGL, so let's just use that.
    if cc.check_header('GL/glx.h', dependencies: dep_x11)
-diff --color -ruwN source/src/egl/eglut/eglut_wayland.c source-new/src/egl/eglut/eglut_wayland.c
+diff -ruwN source/src/egl/eglut/eglut_wayland.c source-new/src/egl/eglut/eglut_wayland.c
 --- source/src/egl/eglut/eglut_wayland.c	2023-03-22 19:13:43.000000000 +0700
 +++ source-new/src/egl/eglut/eglut_wayland.c	2026-06-12 06:13:45.751910615 +0700
 @@ -7,7 +7,7 @@
@@ -72,7 +72,7 @@ diff --color -ruwN source/src/egl/eglut/eglut_wayland.c source-new/src/egl/eglut
     } else if (!(caps & WL_SEAT_CAPABILITY_KEYBOARD)) {
        wl_keyboard_destroy(d->seat.keyboard);
        d->seat.keyboard = NULL;
-diff --color -ruwN source/src/egl/opengles2/es2gears.c source-new/src/egl/opengles2/es2gears.c
+diff -ruwN source/src/egl/opengles2/es2gears.c source-new/src/egl/opengles2/es2gears.c
 --- source/src/egl/opengles2/es2gears.c	2023-03-22 19:13:43.000000000 +0700
 +++ source-new/src/egl/opengles2/es2gears.c	2026-06-12 06:16:40.759435351 +0700
 @@ -155,6 +155,13 @@
@@ -89,7 +89,7 @@ diff --color -ruwN source/src/egl/opengles2/es2gears.c source-new/src/egl/opengl
     for (i = 0; i < teeth; i++) {
        /* Calculate needed sin/cos for varius angles */
        sincos(i * 2.0 * M_PI / teeth, &s[0], &c[0]);
-diff --color -ruwN source/src/vulkan/wsi/wayland.c source-new/src/vulkan/wsi/wayland.c
+diff -ruwN source/src/vulkan/wsi/wayland.c source-new/src/vulkan/wsi/wayland.c
 --- source/src/vulkan/wsi/wayland.c	2023-03-22 19:13:43.000000000 +0700
 +++ source-new/src/vulkan/wsi/wayland.c	2026-06-12 06:14:03.701669367 +0700
 @@ -35,7 +35,7 @@
