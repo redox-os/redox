@@ -8,7 +8,14 @@ cp drill/install-sh .
 """
 
 [build]
-template = "configure"
+template = "custom"
 dependencies = [ 
     "openssl3"
 ]
+script = """
+DYNAMIC_INIT
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --with-ssl="$COOKBOOK_SYSROOT"
+)
+cookbook_configure
+"""
