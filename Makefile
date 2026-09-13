@@ -152,7 +152,7 @@ KPROF_OPTIONS?=u
 # for example, set --reverse to get a reverse flamegraph
 KPROF_FLAMEGRAPH_OPTIONS?=
 
-.PHONY: flamegraph rotate-flamegraph differential-flamegraph
+.PHONY: flamegraph rotate-flamegraph differential-flamegraph acid-output rotate-acid-output compare-acid-output
 
 rotate-flamegraph:
 	mkdir -p "$(BUILD)"
@@ -165,9 +165,25 @@ flamegraph:
 	make mount
 	nm -CS $(KPROF_KERNEL_BINARY) >$(KPROF_KERNEL_SYM)
 	redox-kprofiling $(KPROF_OUTPUT_TXT) $(KPROF_KERNEL_SYM) $(KPROF_OPTIONS) $(KPROF_CPU_GHZ) >$(KPROF_PROCESSED_OUTPUT)
+	make unmount
 	inferno-collapse-perf <$(KPROF_PROCESSED_OUTPUT) >$(KPROF_COLLAPSED_OUTPUT)
 	inferno-flamegraph $(KPROF_FLAMEGRAPH_OPTIONS) <$(KPROF_COLLAPSED_OUTPUT) >$(KPROF_PERF_SVG)
 
 differential-flamegraph:
 	inferno-diff-folded $(BUILD)/flamegraph/collapsed.txt $(BUILD)/flamegraph.old/collapsed.txt >$(BUILD)/flamegraph/differential.txt
 	inferno-flamegraph $(KPROF_FLAMEGRAPH_OPTIONS) <$(BUILD)/flamegraph/differential.txt >$(BUILD)/flamegraph/differential.svg
+
+acid-output:
+	mkdir -p $(BUILD)/acid-output
+	make unmount
+	make mount
+	cp $(BUILD)/filesystem/home/root/acid.txt $(BUILD)/acid-output/output.txt
+	make unmount
+
+rotate-acid-output:
+	mkdir -p "$(BUILD)"
+	rm -rf "$(BUILD)/acid-output.old"
+	mv "$(BUILD)/acid-output" "$(BUILD)/acid-output.old" || true
+
+compare-acid-output:
+	./recipes/tests/acid/source/bench_compare.py $(BUILD)/acid-output.old/output.txt $(BUILD)/acid-output/output.txt
