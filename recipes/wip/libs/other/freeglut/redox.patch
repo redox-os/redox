@@ -1,0 +1,13 @@
+diff -ruwN source/CMakeLists.txt source-new/CMakeLists.txt
+--- source/CMakeLists.txt	2025-11-16 18:58:36.000000000 +0000
++++ source-new/CMakeLists.txt	2026-09-13 16:56:44.965356983 +0000
+@@ -408,7 +408,8 @@
+ 
+     if(NOT CMAKE_VERSION VERSION_LESS "3.10")
+       FIND_PACKAGE(OpenGL REQUIRED COMPONENTS OpenGL)
+-      LIST(APPEND LIBS OpenGL::GL)
++      # Renamed to OpenGL::OpenGL to match with GLVND
++      LIST(APPEND LIBS OpenGL::OpenGL)
+     else()
+       FIND_PACKAGE(OpenGL REQUIRED)
+       LIST(APPEND LIBS ${OPENGL_gl_LIBRARY})

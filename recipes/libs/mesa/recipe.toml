@@ -11,6 +11,7 @@ dependencies = [
     "liborbital",
     "llvm21",
     "zlib",
+    "libglvnd",
 ]
 dev-dependencies = [
     "llvm21.dev",
@@ -36,6 +37,7 @@ cookbook_meson \
     -Dglx=disabled \
     -Dllvm=enabled \
     -Dosmesa=true \
+    -Dglvnd=true \
     -Dshader-cache=disabled \
     -Dgallium-drivers=swrast
 
@@ -44,3 +46,8 @@ LLVMLIBS="-lLLVMBitReader -lLLVMCore -lLLVMExecutionEngine -lLLVMInstCombine -lL
 LLVMLIBS+=" -lLLVMMCJIT -lLLVMScalarOpts -lLLVMTransformUtils -lLLVMCoroutines -lLLVMLTO"
 sed -i "s/ -lOSMesa / -lOSMesa ${LLVMLIBS} -lstdc++ /" "${COOKBOOK_STAGE}/usr/lib/pkgconfig/osmesa.pc"
 """
+
+[package]
+dependencies = [
+    "libglvnd"
+]

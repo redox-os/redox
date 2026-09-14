@@ -3,12 +3,9 @@
 git = "https://github.com/NVIDIA/libglvnd.git"
 
 [build]
-dependencies = [
-    "libpthread-stubs",
-    "libx11",
-    "libxau",
-    "libxcb",
-    "libxext",
-    "x11proto",
-]
 template = "meson"
+mesonflags = [
+    "-Dglx=disabled",
+    "-Dx11=disabled",
+    "-Dhgl=false",
+]

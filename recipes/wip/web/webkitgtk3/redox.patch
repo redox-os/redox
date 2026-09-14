@@ -142,6 +142,19 @@ diff -ruwN source/Source/bmalloc/libpas/src/libpas/pas_probabilistic_guard_mallo
      free_wasted_mem  += value->mem_to_waste;
      free_virtual_mem += value->size_of_allocated_pages;
  
+diff -ruwN source/Source/bmalloc/libpas/src/libpas/pas_thread_local_cache.c source-new/Source/bmalloc/libpas/src/libpas/pas_thread_local_cache.c
+--- source/Source/bmalloc/libpas/src/libpas/pas_thread_local_cache.c	2025-01-27 12:56:15.198834200 +0000
++++ source-new/Source/bmalloc/libpas/src/libpas/pas_thread_local_cache.c	2026-09-13 15:08:33.505794000 +0000
+@@ -214,6 +214,9 @@
+ #endif
+ #if PAS_PLATFORM(PLAYSTATION)
+     getname_result = pthread_get_name_np(thread, thread_name);
++#elif PAS_OS(REDOX)
++    // no op
++    getname_result = -1;
+ #else
+     getname_result = pthread_getname_np(thread, thread_name, sizeof(thread_name));
+ #endif
 diff -ruwN source/Source/JavaScriptCore/heap/BlockDirectory.cpp source-new/Source/JavaScriptCore/heap/BlockDirectory.cpp
 --- source/Source/JavaScriptCore/heap/BlockDirectory.cpp	2025-03-21 00:07:59.015023500 +0700
 +++ source-new/Source/JavaScriptCore/heap/BlockDirectory.cpp	2025-09-09 09:08:03.419985553 +0700
