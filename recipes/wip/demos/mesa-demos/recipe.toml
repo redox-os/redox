@@ -1,6 +1,9 @@
 #TODO wayland only
 [source]
 tar = "https://archive.mesa3d.org/demos/mesa-demos-9.0.0.tar.xz"
+patches = [
+    "redox.patch"
+]
 [build]
 template = "meson"
 dependencies = [
