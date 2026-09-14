@@ -5,6 +5,7 @@ shallow_clone = true
 
 [build]
 template = "custom"
+compiler = "gcc"
 dependencies = [
     "llvm21",
     "zlib",

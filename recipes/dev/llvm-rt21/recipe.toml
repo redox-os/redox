@@ -3,6 +3,7 @@ same_as = "../llvm21"
 
 [build]
 template = "custom"
+compiler = "clang"
 script = """
 DYNAMIC_INIT
 
