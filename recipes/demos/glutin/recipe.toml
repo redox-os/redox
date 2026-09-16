@@ -5,12 +5,17 @@ upstream = "https://github.com/rust-windowing/glutin.git"
 
 [build]
 template = "custom"
-cargopath = "glutin_examples"
 dependencies = [
     "mesa",
-    "zlib"
+    "zlib",
+]
+dev-dependencies = [
+    "libstdcxx",
 ]
 script = """
 DYNAMIC_INIT
-CARGOPATH="glutin_examples" cookbook_cargo_examples window
+COOKBOOK_CARGO_FLAGS=()
+CARGOPATH="glutin_examples"
+export RUSTFLAGS="$RUSTFLAGS -Clink-arg=-lOSMesa"
+cookbook_cargo_examples window
 """
