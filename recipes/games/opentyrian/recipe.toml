@@ -9,7 +9,8 @@
 
 [source]
 git = "https://github.com/opentyrian/opentyrian"
-patches = [ "redox.patch" ]
+shallow_clone = true
+rev = "v2.1.20260913"
 
 [build]
 template = "custom"
@@ -19,6 +20,9 @@ dependencies = [
     "sdl2",
     "zlib",
     # "sdl2-net"
+]
+dev-dependencies = [
+    "libstdcxx",
 ]
 script = """
 DYNAMIC_INIT
@@ -30,16 +34,10 @@ COOKBOOK_CONFIGURE_FLAGS=""
 # See Makefile for variables to override
 export PKG_CONFIG="${TARGET}-pkg-config"
 ASSETSDIR="${COOKBOOK_STAGE}/usr/share/games/tyrian"
-export WITH_NETWORK=false
-export REDOX_OVERRIDE=true
 export prefix="/usr"
 export bindir="${prefix}/games"
 export icondir="/usr/share/icons/apps"
 export gamesdir="${prefix}/share/games"
-
-if [ "${COOKBOOK_DYNAMIC}" == "1" ]; then
-    LDFLAGS+=" -lstdc++"
-fi
 
 # Prepare the sources and download Tyrian (freeware)
 rsync -av --delete "${COOKBOOK_SOURCE}/" "${COOKBOOK_RECIPE}/tyrian21.zip.sha" ./
