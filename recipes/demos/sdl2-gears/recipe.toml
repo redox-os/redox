@@ -11,7 +11,7 @@ mkdir -p "${COOKBOOK_STAGE}/usr/games/sdl2_gears"
 ${CXX} -O2 -I "${COOKBOOK_SYSROOT}/include" $LDFLAGS ${COOKBOOK_RECIPE}/gears.c \
     -o sdl2_gears -dynamic \
     -lSDL2_image -lSDL2_mixer -lSDL2_ttf $("${PKG_CONFIG}" --libs osmesa) \
-    -lSDL2 -lorbital -lfreetype -lpng -ljpeg -lvorbisfile -lvorbis -logg -lz
+    -lSDL2 -lorbital -lfreetype -lpng -lvorbisfile -lvorbis -logg -lz
 cp -rv "${COOKBOOK_RECIPE}/assets" "${COOKBOOK_STAGE}/usr/games/sdl2_gears/"
 cp -v sdl2_gears "${COOKBOOK_STAGE}/usr/games/sdl2_gears/"
 """
