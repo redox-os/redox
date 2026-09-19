@@ -11,7 +11,8 @@ dependencies = [
     "liborbital",
     "llvm21",
     "zlib",
-    "libglvnd",
+    # disabled, see https://gitlab.redox-os.org/redox-os/redox/-/work_items/1883
+    # "libglvnd", 
 ]
 dev-dependencies = [
     "llvm21.dev",
@@ -46,8 +47,3 @@ LLVMLIBS="-lLLVMBitReader -lLLVMCore -lLLVMExecutionEngine -lLLVMInstCombine -lL
 LLVMLIBS+=" -lLLVMMCJIT -lLLVMScalarOpts -lLLVMTransformUtils -lLLVMCoroutines -lLLVMLTO"
 sed -i "s/ -lOSMesa / -lOSMesa ${LLVMLIBS} -lstdc++ /" "${COOKBOOK_STAGE}/usr/lib/pkgconfig/osmesa.pc"
 """
-
-[package]
-dependencies = [
-    "libglvnd"
-]
