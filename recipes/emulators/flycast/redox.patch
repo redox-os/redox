@@ -77,6 +77,18 @@ index 61ee752..4b140b9 100644
  // POSIX threads.
  #if !defined(ASIO_HAS_PTHREADS)
  # if defined(ASIO_HAS_THREADS)
+diff --git a/core/deps/picotcp/modules/pico_dev_ppp.c b/core/deps/picotcp/modules/pico_dev_ppp.c
+index dcffacee..121ac27f 100644
+--- a/core/deps/picotcp/modules/pico_dev_ppp.c
++++ b/core/deps/picotcp/modules/pico_dev_ppp.c
+@@ -7,6 +7,7 @@
+  *********************************************************************/
+ 
+ 
++#include <alloca.h>
+ #include <stdint.h>
+ #include <stdlib.h>
+ #include <string.h>
 diff --git a/core/hw/sh4/modules/mmu.cpp b/core/hw/sh4/modules/mmu.cpp
 index af9de30e..6f839fc7 100644
 --- a/core/hw/sh4/modules/mmu.cpp
