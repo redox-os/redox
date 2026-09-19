@@ -685,7 +685,7 @@ fn parse_args(args: Vec<String>) -> Result<(CliConfig, CliCommand, Vec<CookRecip
             }
         }
 
-        {
+        if command.is_building() || command.is_pushing() {
             source_recipe_names =
                 CookRecipe::get_package_deps_recursive(&source_recipe_names, true)?;
             binary_recipe_names =
