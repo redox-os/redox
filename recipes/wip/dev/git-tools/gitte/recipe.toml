@@ -1,0 +1,13 @@
+#TODO compile and test
+[source]
+git = "https://codeberg.org/ckruse/Gitte"
+shallow_clone = true
+[build]
+template = "meson"
+dependencies = [
+    "gtk4",
+    "libadwaita",
+    "libgit2",
+]
+[package]
+dependencies = ["git"]

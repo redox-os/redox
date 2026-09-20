@@ -1,0 +1,15 @@
+#TODO compile and test
+[source]
+git = "https://github.com/linx-systems/clamui"
+rev = "v0.4.0"
+shallow_clone = true
+[build]
+template = "python"
+dependencies = [
+    "gtk4",
+    "libadwaita",
+]
+[package]
+dependencies = [
+    "clamav"
+]

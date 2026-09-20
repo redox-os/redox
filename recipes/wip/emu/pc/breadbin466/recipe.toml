@@ -1,0 +1,6 @@
+#TODO compile and test
+[source]
+git = "https://github.com/Breadbin466/Breadbin466"
+shallow_clone = true
+[build]
+template = "cargo"

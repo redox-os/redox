@@ -1,0 +1,12 @@
+#TODO compile and test
+[source]
+git = "https://github.com/linebender/fearless_simd"
+shallow_clone = true
+[build]
+template = "cargo"
+cargopath = "fearless_simd/examples"
+cargoexamples = [
+    "sigmoid",
+    "sigmoid_generic",
+    "srgb",
+]

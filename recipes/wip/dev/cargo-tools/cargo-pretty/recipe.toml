@@ -1,0 +1,6 @@
+#TODO compile and test
+[source]
+git = "https://github.com/romancitodev/cargo-pretty"
+shallow_clone = true
+[build]
+template = "cargo"

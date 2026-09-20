@@ -1,0 +1,7 @@
+#TODO compile and test
+[source]
+git = "https://codeberg.org/sugar700/anville"
+shallow_clone = true
+[build]
+template = "cargo"
+cargopackages = ["anville"]
