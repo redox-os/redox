@@ -6,4 +6,10 @@ script = """
 autotools_recursive_regenerate
 """
 [build]
-template = "configure"
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_configure
+# TODO: fini arrays causes hang in uutils
+${OBJCOPY} --remove-section=.fini_array --remove-section=.fini ${COOKBOOK_STAGE}/usr/lib/libonig.so.5
+"""
