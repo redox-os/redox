@@ -1,0 +1,8 @@
+# Configuration used for building redoxer base image
+
+include = ["../redoxer.toml"]
+
+# General settings
+[general]
+# Filesystem size in MiB
+filesystem_size = 1024
