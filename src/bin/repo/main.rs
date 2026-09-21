@@ -11,10 +11,7 @@ use cookbook::cook::tree::{self, DisplayOptions, TreeData, TreeItem, TreeOptions
 use cookbook::cook::tui::join_logs;
 use cookbook::cook::{fetch_repo, ident};
 use cookbook::recipe::{
-    CookRecipe,
-    SourceRecipe,
-    recipes_flatten_package_names,
-    recipes_mark_as_deps,
+    CookRecipe, SourceRecipe, recipes_flatten_package_names, recipes_mark_as_deps,
     validate_filesystem_rules,
 };
 use cookbook::{Error, Result, staged_pkg};
