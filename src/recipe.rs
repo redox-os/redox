@@ -636,6 +636,45 @@ pub fn recipes_flatten_package_names(packages: Vec<CookRecipe>) -> Vec<CookRecip
     }
     new_packages
 }
+/// Fail early if a recipe configured as `ignore` is still required as a
+/// build dependency of another recipe that will be built.
+pub fn validate_filesystem_rules(recipes: &[CookRecipe]) -> crate::Result<()> {
+    let ignored: BTreeSet<String> = recipes
+        .iter()
+        .filter(|r| r.rule == "ignore")
+        .map(|r| r.canon_recipe_name().without_prefix().to_string())
+        .collect();
+    if ignored.is_empty() {
+        return Ok(());
+    }
+    for recipe in recipes {
+        if recipe.rule == "ignore" {
+            continue;
+        }
+        if recipe.recipe.build.kind == BuildKind::None
+            || recipe.recipe.build.kind == BuildKind::Remote
+        {
+            // Not built from source, so build dependencies are irrelevant.
+            continue;
+        }
+        for dep in recipe
+            .recipe
+            .build
+            .dependencies
+            .iter()
+            .chain(recipe.recipe.build.dev_dependencies.iter())
+        {
+            if ignored.contains(&dep.without_prefix().to_string()) {
+                bail_other_err!(
+                    "Invalid filesystem config: {:?} is configured as \"ignore\" but is required as a build dependency by {:?}",
+                    dep.without_prefix().to_string(),
+                    recipe.name.as_str(),
+                );
+            }
+        }
+    }
+    Ok(())
+}
 
 #[derive(Serialize, Deserialize)]
 pub struct AutoDeps {
@@ -798,5 +837,59 @@ mod tests {
                 ..Default::default()
             }
         );
+    }
+
+    #[test]
+    fn ignore_required_by_build_dep_is_rejected() {
+        use crate::recipe::{BuildKind, BuildRecipe, CookRecipe, validate_filesystem_rules};
+
+        let mut ignored = CookRecipe::dummy(&PackageName::new("libogg").unwrap());
+        ignored.rule = "ignore".into();
+
+        let mut dependent = CookRecipe::dummy(&PackageName::new("libvorbis").unwrap());
+        dependent.recipe.build = BuildRecipe::new(BuildKind::Custom {
+            script: "make".to_string(),
+        });
+        dependent.recipe.build.dependencies = vec![PackageName::new("libogg").unwrap()];
+
+        let err = validate_filesystem_rules(&[ignored, dependent]).unwrap_err();
+        let msg = format!("{}", err);
+        assert!(
+            msg.contains("libogg") && msg.contains("libvorbis"),
+            "unexpected error: {msg}"
+        );
+    }
+
+    #[test]
+    fn ignore_required_by_dev_dep_is_rejected() {
+        use crate::recipe::{BuildKind, BuildRecipe, CookRecipe, validate_filesystem_rules};
+
+        let mut ignored = CookRecipe::dummy(&PackageName::new("libogg").unwrap());
+        ignored.rule = "ignore".into();
+
+        let mut dependent = CookRecipe::dummy(&PackageName::new("libvorbis").unwrap());
+        dependent.recipe.build = BuildRecipe::new(BuildKind::Custom {
+            script: "make".to_string(),
+        });
+        dependent.recipe.build.dev_dependencies = vec![PackageName::new("libogg").unwrap()];
+
+        let err = validate_filesystem_rules(&[ignored, dependent]).unwrap_err();
+        assert!(format!("{}", err).contains("libogg"));
+    }
+
+    #[test]
+    fn ignore_leaf_is_allowed() {
+        use crate::recipe::{BuildKind, BuildRecipe, CookRecipe, validate_filesystem_rules};
+
+        // e.g. pruning `orbterm` from a metapackage: nothing references it.
+        let mut ignored = CookRecipe::dummy(&PackageName::new("orbterm").unwrap());
+        ignored.rule = "ignore".into();
+
+        let mut meta = CookRecipe::dummy(&PackageName::new("desktop-minimal").unwrap());
+        meta.recipe.build = BuildRecipe::new(BuildKind::None);
+        meta.recipe.package.dependencies = vec![PackageName::new("orbital").unwrap()];
+
+        assert!(validate_filesystem_rules(&[ignored, meta]).is_ok());
+        assert!(validate_filesystem_rules(&[]).is_ok());
     }
 }
