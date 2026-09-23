@@ -657,6 +657,7 @@ pub fn validate_filesystem_rules(recipes: &[CookRecipe]) -> crate::Result<()> {
             // Not built from source, so build dependencies are irrelevant.
             continue;
         }
+        let mut ignored_dependencies: Vec<&str> = Vec::new();
         for dep in recipe
             .recipe
             .build
@@ -664,13 +665,18 @@ pub fn validate_filesystem_rules(recipes: &[CookRecipe]) -> crate::Result<()> {
             .iter()
             .chain(recipe.recipe.build.dev_dependencies.iter())
         {
-            if ignored.contains(&dep.without_prefix().to_string()) {
-                bail_other_err!(
-                    "Invalid filesystem config: {:?} is configured as \"ignore\" but is required as a build dependency by {:?}",
-                    dep.without_prefix().to_string(),
-                    recipe.name.as_str(),
-                );
+            let dep = dep.without_prefix();
+
+            if ignored.contains(dep) {
+                ignored_dependencies.push(dep);
             }
+        }
+        if !ignored_dependencies.is_empty() {
+            bail_other_err!(
+                "Invalid filesystem config: the following packages are configured as \"ignore\" but are required as build dependencies by {:?}: {:?}",
+                ignored_dependencies,
+                recipe.name.as_str(),
+            );
         }
     }
     Ok(())
@@ -859,7 +865,35 @@ mod tests {
             "unexpected error: {msg}"
         );
     }
+    #[test]
+    fn ignore_multiple_required_by_build_dep_are_rejected() {
+        use crate::recipe::{BuildKind, BuildRecipe, CookRecipe, validate_filesystem_rules};
 
+        let mut ignored_ogg = CookRecipe::dummy(&PackageName::new("libogg").unwrap());
+        ignored_ogg.rule = "ignore".into();
+
+        let mut ignored_foo = CookRecipe::dummy(&PackageName::new("libfoo").unwrap());
+        ignored_foo.rule = "ignore".into();
+
+        let mut dependent = CookRecipe::dummy(&PackageName::new("libvorbis").unwrap());
+
+        dependent.recipe.build = BuildRecipe::new(BuildKind::Custom {
+            script: "make".to_string(),
+        });
+
+        dependent.recipe.build.dependencies = vec![
+            PackageName::new("libogg").unwrap(),
+            PackageName::new("libfoo").unwrap(),
+        ];
+
+        let err = validate_filesystem_rules(&[ignored_ogg, ignored_foo, dependent]).unwrap_err();
+
+        let msg = format!("{err}");
+
+        assert!(msg.contains("libogg"), "unexpected error: {msg}");
+        assert!(msg.contains("libfoo"), "unexpected error: {msg}");
+        assert!(msg.contains("libvorbis"), "unexpected error: {msg}");
+    }
     #[test]
     fn ignore_required_by_dev_dep_is_rejected() {
         use crate::recipe::{BuildKind, BuildRecipe, CookRecipe, validate_filesystem_rules};
