@@ -1,6 +1,6 @@
 [source]
 git = "https://github.com/pop-os/cosmic-monitor.git"
-rev = "epoch-1.2.0"
+branch = "redox"
 
 [build]
 template = "custom"
