@@ -1,0 +1,12 @@
+[build]
+template = "cargo"
+dependencies = [
+    "libffi",
+    "libwayland",
+    "libxkbcommon",
+]
+
+[package]
+dependencies = [
+    "mesa"
+]
