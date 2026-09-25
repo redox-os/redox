@@ -1,0 +1,68 @@
+# TODO: Not tested
+[source]
+tar = "https://www.python.org/ftp/python/3.14.6/Python-3.14.6.tar.xz"
+blake3 = "5380441c1be9eb181266b6b8e89d8d2e0db658d0eebdf8131a1d8bbdcb63ec83"
+patches = [
+    "redox.patch"
+]
+
+[build]
+template = "custom"
+dependencies = [
+    "target:bzip2",
+    "target:libffi",
+    "target:openssl3",
+    "target:ncursesw",
+    "target:readline",
+    "target:sqlite3",
+    "target:zlib",
+    "target:xz",
+    "target:zstd",
+]
+dev-dependencies = [
+    "host:python314"
+]
+script = """
+DYNAMIC_INIT
+
+export PYTHONDONTWRITEBYTECODE=1
+ARCH="${TARGET%%-*}"
+OS=$(echo "${TARGET}" | cut -d - -f3-4)
+
+if [ "$TARGET" != "$COOKBOOK_HOST_TARGET" ]; then
+    COOKBOOK_CONFIGURE_FLAGS=(
+        --prefix=/usr
+        --disable-ipv6
+        --host=${GNU_TARGET}
+        --build="$ARCH"
+        --with-build-python="${COOKBOOK_TOOLCHAIN}/usr/bin/python3.14"
+        --with-ensurepip=install
+        --disable-test-modules
+        --with-ssl-default-suites=openssl
+        ac_cv_file__dev_ptmx=no
+        ac_cv_file__dev_ptc=no
+    )
+else
+    COOKBOOK_CONFIGURE_FLAGS=(--prefix=/usr)
+fi
+
+if [ "${COOKBOOK_DYNAMIC}" != "1" ]; then
+    export MODULE_BUILDTYPE=static
+    COOKBOOK_CONFIGURE_FLAGS+=( --enable-shared )
+fi
+
+cookbook_configure
+
+# A same file to save some disk space
+if [ "$TARGET" != "$COOKBOOK_HOST_TARGET" ]; then
+(cd "${COOKBOOK_STAGE}/usr/lib/python3.14/config-3.14" && \
+    rm -f libpython3.14.a && ln -s ../../libpython3.14.a)
+fi
+"""
+
+[[optional-packages]]
+name = "dev"
+files = [
+    "usr/lib/python3.14/config-*/**",
+    "usr/lib/libpython*.a"
+]
