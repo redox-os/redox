@@ -1,3 +1,6 @@
+[package]
+description = "Low-level package format utilities for Redox"
+
 [source]
 git = "https://gitlab.redox-os.org/redox-os/pkgar.git"
 

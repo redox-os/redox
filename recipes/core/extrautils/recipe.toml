@@ -1,3 +1,6 @@
+[package]
+description = "Basic, but not essential for system function, UNIX shell utilities, uutils versions"
+
 [source]
 git = "https://gitlab.redox-os.org/redox-os/extrautils.git"
 

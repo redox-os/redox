@@ -1,3 +1,6 @@
+[package]
+description = "Compression library and tools, lz4 format"
+
 [source]
 tar = "https://github.com/lz4/lz4/releases/download/v1.10.0/lz4-1.10.0.tar.gz"
 blake3 = "3e69fd475e7852e17594985528b5232afeba7d3d56cfebe2e89071768b2ab36a"

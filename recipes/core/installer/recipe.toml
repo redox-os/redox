@@ -1,3 +1,6 @@
+[package]
+description = "Builds a bootable Redox image"
+
 [source]
 git = "https://gitlab.redox-os.org/redox-os/installer.git"
 

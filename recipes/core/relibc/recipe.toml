@@ -1,3 +1,6 @@
+[package]
+description = "Essential system library implementing libc for Redox"
+
 [source]
 git = "https://gitlab.redox-os.org/redox-os/relibc.git"
 

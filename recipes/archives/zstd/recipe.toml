@@ -1,3 +1,6 @@
+[package]
+description = "Compression library and tools, zstd/.zst format"
+
 [source]
 tar = "https://github.com/facebook/zstd/releases/download/v1.5.7/zstd-1.5.7.tar.gz"
 blake3 = "730dca31244abd219e995f03a55d95b2cfb4b3e16cda055a79fa6f30a4f0e1db"
