@@ -1,3 +1,6 @@
+[package]
+description = "Daemon used for profiling kernel (requires special kernel)"
+
 [source]
 git = "https://gitlab.redox-os.org/redox-os/profiled.git"
 

@@ -1,3 +1,6 @@
+[package]
+description = "Standard package manager for Redox"
+
 [source]
 git = "https://gitlab.redox-os.org/redox-os/pkgutils.git"
 

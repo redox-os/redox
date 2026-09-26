@@ -1,3 +1,6 @@
+[package]
+description = "Alternate kernel instrumented for profiling"
+
 [source]
 same_as = "../kernel"
 

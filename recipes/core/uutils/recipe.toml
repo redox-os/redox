@@ -1,3 +1,6 @@
+[package]
+description = "General, useful command-line UNIX shell utilities"
+
 # TODO Fix locale init bug caused by OnceLock combined with thread_local
 # TODO 0.12.0 requires rustix symlink_at
 [source]

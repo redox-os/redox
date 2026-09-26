@@ -1,3 +1,6 @@
+[package]
+description = "UNIX find utility, uutils version"
+
 [source]
 git = "https://gitlab.redox-os.org/redox-os/findutils.git"
 
