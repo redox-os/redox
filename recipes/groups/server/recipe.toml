@@ -1,11 +1,11 @@
 # server variant meta-package
 [package]
 dependencies = [
+    "sys",
     "bash",
     "bottom",
     "ca-certificates",
     #"contain",
-    "coreutils",
     "curl",
     "diffutils",
     "extrautils",
@@ -14,5 +14,6 @@ dependencies = [
     "installer",
     "ion",
     "kibi",
+    "uutils-procps",
 ]
 description = "Server components"
