@@ -1,0 +1,14 @@
+#TODO need ffmpeg +7.x
+[source]
+git = "https://github.com/jub0t/Concat"
+shallow_clone = true
+[build]
+template = "cargo"
+cargopath = "src"
+cargopackages = [
+    "concat",
+    "concat-cli",
+]
+dependencies = [
+    "ffmpeg",
+]
