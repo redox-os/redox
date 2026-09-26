@@ -12,6 +12,7 @@ use cookbook::cook::tui::join_logs;
 use cookbook::cook::{fetch_repo, ident};
 use cookbook::recipe::{
     CookRecipe, SourceRecipe, recipes_flatten_package_names, recipes_mark_as_deps,
+    validate_filesystem_rules,
 };
 use cookbook::{Error, Result, staged_pkg};
 use pkg::{PackageName, PackageState};
@@ -763,6 +764,8 @@ fn parse_args(args: Vec<String>) -> Result<(CliConfig, CliCommand, Vec<CookRecip
 
             recipe.apply_filesystem_config(rule)?;
         }
+
+        validate_filesystem_rules(&recipes)?;
 
         recipes
     };
