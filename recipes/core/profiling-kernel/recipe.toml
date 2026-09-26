@@ -1,5 +1,5 @@
 [package]
-description = "Alternate kernel instrumented for profiling"
+description = "Kernel with profiling code enabled"
 
 [source]
 same_as = "../kernel"

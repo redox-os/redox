@@ -4,4 +4,3 @@ git = "https://github.com/szabodanika/microbin"
 shallow_clone = true
 [build]
 template = "cargo"
-# TODO: DYNAMIC_INIT

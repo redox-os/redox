@@ -1,5 +1,5 @@
 [package]
-description = "Command-line utility for debugging kernel"
+description = "Command-line utility for debugging the system"
 
 [source]
 git = "https://gitlab.redox-os.org/redox-os/strace-redox.git"
