@@ -1,3 +1,6 @@
+[package]
+description = "LLVM-based C/C++ compiler"
+
 [source]
 same_as = "../llvm21"
 

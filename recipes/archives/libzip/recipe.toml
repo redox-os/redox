@@ -1,3 +1,6 @@
+[package]
+description = "Compression library, .zip format, based on zlib"
+
 [source]
 tar = "https://libzip.org/download/libzip-1.11.4.tar.gz"
 blake3 = "844cf66c68f2dcf182f6626d5b72d55b75a100c0a93b3e6a45b447669ecf7088"

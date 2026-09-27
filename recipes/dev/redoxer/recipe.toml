@@ -1,3 +1,6 @@
+[package]
+description = "Wrapper tool to configure Rust, C, and other compilers to build for Redox"
+
 [source]
 git = "https://gitlab.redox-os.org/redox-os/redoxer"
 branch = "master"

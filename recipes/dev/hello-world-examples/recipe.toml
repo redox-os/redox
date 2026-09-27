@@ -1,3 +1,6 @@
+[package]
+description = "\"Hello world\" example code for over 1000 languages"
+
 [source]
 git = "https://github.com/leachim6/hello-world"
 shallow_clone = true

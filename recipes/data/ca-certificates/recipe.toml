@@ -1,3 +1,6 @@
+[package]
+description = "TLS certificate authorities, from the Mozilla CA Certificate Program"
+
 [source]
 git = "https://gitlab.redox-os.org/redox-os/ca-certificates.git"
 

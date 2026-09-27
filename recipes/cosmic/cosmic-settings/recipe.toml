@@ -23,6 +23,7 @@ cp -rv "${COOKBOOK_SOURCE}/resources/icons/" "${COOKBOOK_STAGE}/usr/share/icons/
 """
 
 [package]
+description = "GUI system settings from COSMIC desktop"
 dependencies = [
     "libxkbcommon",
 ]

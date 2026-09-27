@@ -1,3 +1,6 @@
+[package]
+description = "Examples from winit GUI library"
+
 [source]
 git = "https://gitlab.redox-os.org/redox-os/winit"
 branch = "redox-0.31.0-beta"

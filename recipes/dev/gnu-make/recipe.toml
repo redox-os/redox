@@ -1,3 +1,6 @@
+[package]
+description = "Build Makefile-based projects"
+
 #TODO slower jobserver due to lack of named pipes
 [source]
 tar = "http://ftp.gnu.org/gnu/make/make-4.4.tar.gz"

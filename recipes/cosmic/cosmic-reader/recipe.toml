@@ -38,6 +38,7 @@ cp -rv "${COOKBOOK_SOURCE}/res/icons/hicolor/" "${COOKBOOK_STAGE}/usr/share/icon
 """
 
 [package]
+description = "GUI PDF reader from COSMIC desktop"
 dependencies = [
     "libxkbcommon",
 ]

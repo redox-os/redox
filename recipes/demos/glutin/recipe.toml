@@ -1,3 +1,6 @@
+[package]
+description = "Demo of Glutin OpenGL-initialization library"
+
 [source]
 git = "https://gitlab.redox-os.org/redox-os/glutin.git"
 branch = "redox-0.30"

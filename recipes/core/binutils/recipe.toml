@@ -1,3 +1,6 @@
+[package]
+description = "Utilities for processing, manipulating, and inspecting binary files"
+
 [source]
 git = "https://gitlab.redox-os.org/redox-os/binutils.git"
 

@@ -1,3 +1,6 @@
+[package]
+description = "LLVM additional support libraries used by clang"
+
 [source]
 same_as = "../llvm21"
 

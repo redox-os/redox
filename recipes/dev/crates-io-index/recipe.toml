@@ -1,3 +1,6 @@
+[package]
+description = "Metadata for Rust cargo, to download crates and resolve their dependencies"
+
 [source]
 git = "https://github.com/rust-lang/crates.io-index.git"
 shallow_clone = true

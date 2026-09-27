@@ -1,3 +1,6 @@
+[package]
+description = "Default etc files required for networking"
+
 [source]
 git = "https://gitlab.redox-os.org/redox-os/netdb.git"
 

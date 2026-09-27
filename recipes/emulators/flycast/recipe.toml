@@ -1,3 +1,6 @@
+[package]
+description = "Sega Dreamcast, Naomi, Naomi 2 and Atomiswave emulator"
+
 [source]
 git = "https://github.com/flyinghead/flycast.git"
 rev = "v2.6"

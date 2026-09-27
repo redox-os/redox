@@ -1,3 +1,6 @@
+[package]
+description = "The Redox microkernel"
+
 [source]
 git = "https://gitlab.redox-os.org/redox-os/kernel.git"
 

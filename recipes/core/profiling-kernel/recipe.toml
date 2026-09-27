@@ -1,3 +1,6 @@
+[package]
+description = "Kernel with profiling code enabled"
+
 [source]
 same_as = "../kernel"
 

@@ -6,4 +6,5 @@ blake3 = "f42cfc333aaaa11f2bcb05b5b0273b8706c820c22f9ba4367f7eb920551695cd"
 template = "configure"
 
 [package]
+description = "Tools for high-level build scripting atop Make (creates \"Makefile.in\")"
 dependencies = ["perl5"]

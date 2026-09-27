@@ -1,3 +1,6 @@
+[package]
+description = "Standard \"gears\" OpenGL demo, running inside SDL2"
+
 [build]
 template = "custom"
 dependencies = [

@@ -1,3 +1,6 @@
+[package]
+description = "Example of a GUI app that creates a window by talking to the Orbital client library directly"
+
 [source]
 git = "https://gitlab.redox-os.org/redox-os/orbclient.git"
 

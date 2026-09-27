@@ -6,4 +6,5 @@ blake3 = "da1cc8af8551c343de9f42af0ae53fd7dff3623487157623892b6cd7e3bb5692"
 template = "configure"
 
 [package]
+description = "Tools for self-configuring software source code packages (creates \"configure\")"
 dependencies = ["perl5"]

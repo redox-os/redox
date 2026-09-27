@@ -6,6 +6,6 @@ shallow_clone = true
 [build]
 template = "cargo"
 dependencies = [
-    "boost"
+    "boost",
     "sdl2",
 ]

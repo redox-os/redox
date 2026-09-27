@@ -1,3 +1,6 @@
+[package]
+description = "Lua programming language, LuaJIT distribution, language version 5.1 plus extensions"
+
 [source]
 git = "https://luajit.org/git/luajit.git"
 rev = "a4f56a459a588ae768801074b46ba0adcfb49eb1"

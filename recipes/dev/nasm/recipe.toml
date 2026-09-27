@@ -1,3 +1,6 @@
+[package]
+description = "Netwide assembler for x86 and x86_64"
+
 [source]
 #TODO: nasm.us is down: tar = "https://www.nasm.us/pub/nasm/releasebuilds/2.14.02/nasm-2.14.02.tar.gz"
 tar = "https://gstreamer.freedesktop.org/src/mirror/nasm-2.14.02.tar.xz"

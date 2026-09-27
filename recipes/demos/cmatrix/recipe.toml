@@ -25,6 +25,7 @@ sed -i -e 's|#define USE_TIOCSTI 1|/* #undef USE_TIOCSTI */|g' config.h
 """
 
 [package]
+description = "Terminal based \"The Matrix\" like implementation"
 dependencies = [
     "terminfo"
 ]

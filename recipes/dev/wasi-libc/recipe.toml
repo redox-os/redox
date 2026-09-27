@@ -1,3 +1,6 @@
+[package]
+description = "Libc implementation for WebAssembly/WASI"
+
 # NOTE: This is only used to compile into wasi
 [source]
 git = "https://github.com/WebAssembly/wasi-libc"

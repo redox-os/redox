@@ -1,3 +1,6 @@
+[package]
+description = "Libraries and tools for LLVM generic compiler backend, version 18"
+
 [source]
 git = "https://gitlab.redox-os.org/redox-os/llvm-project.git"
 upstream = "https://github.com/rust-lang/llvm-project.git"

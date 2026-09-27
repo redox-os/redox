@@ -1,3 +1,6 @@
+[package]
+description = "A dependency manager for PHP"
+
 #TODO must be run using `php $(which composer)`
 [build]
 template = "custom"

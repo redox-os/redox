@@ -1,3 +1,6 @@
+[package]
+description = "Rust reimplementation of git"
+
 [source]
 git = "https://github.com/Byron/gitoxide.git"
 rev = "v0.54.0"

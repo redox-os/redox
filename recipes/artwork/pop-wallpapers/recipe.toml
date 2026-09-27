@@ -1,3 +1,6 @@
+[package]
+description = "Wallpapers from Pop!_OS Linux"
+
 [source]
 git = "https://github.com/pop-os/wallpapers"
 shallow_clone = true
