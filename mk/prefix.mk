@@ -79,6 +79,7 @@ endif
 	$(REPO_BIN) cook relibc $(COOKBOOK_OPTS)
 ifneq ($(HOSTED_REDOX),1)
 	cp -r "$(RELIBC_TARGET)/stage/usr/". "$@.partial/$(GNU_TARGET)"
+	rm "$@.partial/$(GNU_TARGET)/include/stdatomic.h"
 	mkdir -p "$@.partial/$(GNU_TARGET)/usr"
 	ln -s "../include" "$@.partial/$(GNU_TARGET)/usr/include"
 	ln -s "../lib" "$@.partial/$(GNU_TARGET)/usr/lib"

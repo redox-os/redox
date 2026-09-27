@@ -1,0 +1,24 @@
+[build]
+template = "custom"
+script = """
+mkdir -p ${COOKBOOK_STAGE}/usr/bin
+cp ${COOKBOOK_RECIPE}/gio-gen.sh ${COOKBOOK_STAGE}/usr/bin/gio-gen.sh
+chmod +x ${COOKBOOK_STAGE}/usr/bin/gio-gen.shs
+"""
+
+[package]
+description = "Scripts for generating base GIR objects"
+dependencies = [
+    "gobject-introspection",
+    "gcc13",
+    "pkg-config",
+    "rldd",
+# libraries to generate
+    "glib",
+    # "dbus",
+    # "dbus-glib",
+    # "fontconfig",
+    # "cairo",
+    # "freetype2",
+    # "libxml2",
+]
