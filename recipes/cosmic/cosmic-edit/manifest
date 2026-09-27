@@ -1,6 +1,6 @@
 name=COSMIC Text Editor
 binary=/bin/cosmic-edit
-icon=/ui/icons/apps/accessories-text-editor.png
+icon=/usr/share/ui/icons/apps/accessories-text-editor.png
 accept=*.asm
 accept=*.c
 accept=*.conf
