@@ -26,7 +26,7 @@ data = """
 export RUST_BACKTRACE=full
 export HOME=/home/root
 acid-runner
-bash /root/relibc-tests/run.sh
+bash /usr/share/relibc-tests/run.sh
 os-test-runner
 shutdown
 """
