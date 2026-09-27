@@ -32,8 +32,4 @@ COOKBOOK_CMAKE_FLAGS+=(
     -DWITH_SYSTEM_ZSTD=ON
 )
 cookbook_cmake
-
-# for some reason flycast require local dir already set up
-mkdir -p ${COOKBOOK_STAGE}/home/user/.local/share/flycast
-touch ${COOKBOOK_STAGE}/home/user/.local/share/flycast/.tmp
 """
