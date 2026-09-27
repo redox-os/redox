@@ -1,5 +1,5 @@
 name=COSMIC Terminal
 binary=/bin/cosmic-term
-icon=/ui/icons/apps/utilities-terminal.png
+icon=/usr/share/ui/icons/apps/utilities-terminal.png
 author=Jeremy Soller
 description=COSMIC Terminal

@@ -1,6 +1,6 @@
 name=COSMIC Reader
 binary=/bin/cosmic-reader
-icon=/ui/icons/apps/accessories-text-editor.png
+icon=/usr/share/ui/icons/apps/accessories-text-editor.png
 accept=*.pdf
 accept=*.epub
 accept=*.cbz
