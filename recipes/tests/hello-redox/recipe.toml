@@ -1,8 +1,6 @@
-# Due to necessary write permission for compilation the filesystem path of source code installation is an exception
-# where the package manager can't switch between system-wide and user paths
 [build]
 template = "custom"
 script = """
-mkdir -pv "${COOKBOOK_STAGE}/home/user/hello-redox"
-cp -rv "${COOKBOOK_RECIPE}"/files/* "${COOKBOOK_STAGE}/home/user/hello-redox"
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/hello-redox"
+cp -rv "${COOKBOOK_RECIPE}"/files/* "${COOKBOOK_STAGE}/usr/share/hello-redox"
 """
