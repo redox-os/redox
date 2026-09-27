@@ -6,10 +6,10 @@ template = "custom"
 script = """
 rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 
-make install-tests DESTDIR="${COOKBOOK_STAGE}/home/user" NATIVE_LIBC=1 IS_REDOX=1
+make install-tests DESTDIR="${COOKBOOK_STAGE}/usr/share" NATIVE_LIBC=1 IS_REDOX=1
 
 if [ -n "$TESTBIN" ]; then
-"${COOKBOOK_REDOXER}" write-exec sh -c "cd /home/user/relibc-tests; make run-once TESTBIN=bins_dynamic/$TESTBIN"
+"${COOKBOOK_REDOXER}" write-exec sh -c "cd /usr/share/relibc-tests; make run-once TESTBIN=bins_dynamic/$TESTBIN"
 fi
 
 # Create runner script
@@ -17,8 +17,8 @@ mkdir -p "${COOKBOOK_STAGE}/usr/bin"
 cat > "${COOKBOOK_STAGE}/usr/bin/relibc-tests-runner" <<EOF
 #!/usr/bin/env bash
 set -e
-cd /home/user/relibc-tests
-make run IS_REDOX=1
+cd /usr/share/relibc-tests
+make run IS_REDOX=1 # FIXME use a user writable dir as build dir
 EOF
 
 chmod +x "${COOKBOOK_STAGE}/usr/bin/relibc-tests-runner"

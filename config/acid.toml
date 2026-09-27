@@ -25,7 +25,7 @@ path = "/usr/lib/run_acid.ion"
 data = """
 #!/usr/bin/env ion
 export RUST_BACKTRACE=full
-cd /home/user/acid
-cargo test
+export HOME=/home/root
+acid-runner
 shutdown
 """

@@ -4,6 +4,6 @@ git = "https://github.com/jackpot51/rustconf2025.git"
 [build]
 template = "custom"
 script = """
-mkdir -p "${COOKBOOK_STAGE}/home/user"
-cp -v "${COOKBOOK_SOURCE}/"*.pdf "${COOKBOOK_STAGE}/home/user"
+mkdir -p "${COOKBOOK_STAGE}/usr/share"
+cp -v "${COOKBOOK_SOURCE}/"*.pdf "${COOKBOOK_STAGE}/usr/share"
 """
