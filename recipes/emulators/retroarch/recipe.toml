@@ -1,3 +1,6 @@
+[package]
+description = "Frontend for cores by various developers emulating vintage systems"
+
 #TODO: fix linking error
 [source]
 git = "https://github.com/jackpot51/retroarch.git"

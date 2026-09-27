@@ -1,3 +1,6 @@
+[package]
+description = "Mesa offscreen rendering demo"
+
 [build]
 template = "custom"
 dependencies = [

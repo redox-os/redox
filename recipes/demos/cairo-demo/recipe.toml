@@ -1,3 +1,6 @@
+[package]
+description = "Demo of cairo GUI library"
+
 # source is part of cookbook
 
 [build]

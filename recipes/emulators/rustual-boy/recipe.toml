@@ -11,6 +11,7 @@ cookbook_cargo
 """
 
 [package]
+description = "Virtual Boy emulator"
 dependencies = [
     "orbital",
 ]

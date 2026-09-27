@@ -47,6 +47,7 @@ rm -rf "${COOKBOOK_STAGE}/usr/share/man"
 """
 
 [package]
+description = "Distributed version control system"
 dependencies = [
     "ca-certificates",
     "nghttp2"

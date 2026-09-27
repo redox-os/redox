@@ -1,3 +1,6 @@
+[package]
+description = "Swiss army chainsaw" # WIP
+
 #TODO compiles, works in a basic way but needs figuring out why -ldl is ignored
 #TODO also until new signal implementation gets to be the default, remove siginfo struct from relibc's include/bits/signal.h
 # and modify relibc/src/header/signal/mod.rs sigtimedwait second parameter's type from siginfo_t to siginfo (cbindgen needs a reference)

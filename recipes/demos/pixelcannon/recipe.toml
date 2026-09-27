@@ -15,6 +15,7 @@ cp -v "${COOKBOOK_SOURCE}/manifest" "${COOKBOOK_STAGE}/usr/share/ui/apps/pixelca
 """
 
 [package]
+description = "3D laughing face GUI demo"
 dependencies = [
     "orbital",
 ]

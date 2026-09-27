@@ -1,3 +1,6 @@
+[package]
+description = "Commodore 64 emulator"
+
 [source]
 git = "https://gitlab.redox-os.org/redox-os/rust64.git"
 #git_upstream = "https://github.com/kondrak/rust64.git"

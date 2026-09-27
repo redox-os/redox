@@ -1,3 +1,6 @@
+[package]
+description = "Python interpreter written in Rust"
+
 [source]
 git = "https://github.com/RustPython/RustPython"
 # newer rev requires 'bits/libc-header-start.h' for bindgen

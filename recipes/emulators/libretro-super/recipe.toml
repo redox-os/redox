@@ -1,3 +1,6 @@
+[package]
+description = "Super Nintendo core for Retroarch"
+
 [source]
 git = "https://github.com/jackpot51/libretro-super.git"
 shallow_clone = true

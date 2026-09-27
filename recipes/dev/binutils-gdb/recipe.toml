@@ -1,3 +1,6 @@
+[package]
+description = "Step debuggger, based on GNU binutils version"
+
 [source]
 git = "https://gitlab.redox-os.org/redox-os/binutils-gdb"
 branch = "redox-2.43.1"

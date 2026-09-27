@@ -1,3 +1,6 @@
+[package]
+description = "Interactive, object-oriented programming language, 3.12 series"
+
 [source]
 tar = "https://www.python.org/ftp/python/3.12.12/Python-3.12.12.tar.xz"
 blake3 = "29636fdae3e0ee8d0fe585e528c9376fe43876f5f3f0f7892140567946fd907b"

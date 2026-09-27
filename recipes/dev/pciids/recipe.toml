@@ -1,3 +1,6 @@
+[package]
+description = "Data file mapping mapping PCI IDs to human-readable names"
+
 [source]
 git = "https://github.com/pciutils/pciids.git"
 

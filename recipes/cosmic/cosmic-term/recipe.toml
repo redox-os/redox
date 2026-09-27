@@ -20,6 +20,7 @@ cp -rv "${COOKBOOK_SOURCE}/res/icons/hicolor/" "${COOKBOOK_STAGE}/usr/share/icon
 """
 
 [package]
+description = "GUI terminal emulator from COSMIC desktop"
 dependencies = [
     "libxkbcommon",
 ]

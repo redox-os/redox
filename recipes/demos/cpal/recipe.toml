@@ -1,3 +1,7 @@
+# TODO: When more CPAL examples are added, description should be changed
+[package]
+description = "Command line beep tool (demo from CPAL sound library)"
+
 [source]
 git = "https://gitlab.redox-os.org/redox-os/cpal.git"
 branch = "redox"

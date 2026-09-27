@@ -1,3 +1,6 @@
+[package]
+description = "Standard \"gears\" OpenGL demo"
+
 [build]
 dependencies=[
     "liborbital",

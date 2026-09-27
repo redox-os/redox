@@ -1,3 +1,6 @@
+[package]
+description = "Example of a daemon for Redox"
+
 [source]
 git = "https://gitlab.redox-os.org/redox-os/exampled.git"
 

@@ -1,3 +1,6 @@
+[package]
+description = "Attaches to a local process to run gdb on a different machine"
+
 [source]
 git = "https://gitlab.redox-os.org/redox-os/gdbserver.git"
 
