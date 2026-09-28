@@ -10,6 +10,7 @@ cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}/home/user/redox-posix-tests"
 """
 
 [package]
+description = "Testsuite for Redox POSIX/C Standard Library (POSIX signals tests)"
 dependencies = [
     "gcc13",
     "gnu-binutils",

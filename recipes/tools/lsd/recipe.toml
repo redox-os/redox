@@ -1,3 +1,6 @@
+[package]
+description = "\"Next-gen\" ls implementation"
+
 [source]
 git = "https://github.com/lsd-rs/lsd"
 [build]

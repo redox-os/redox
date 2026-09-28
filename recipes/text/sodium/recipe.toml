@@ -1,3 +1,6 @@
+[package]
+description = "Modern terminal text editor inspired by Vim"
+
 [source]
 git = "https://gitlab.redox-os.org/redox-os/sodium.git"
 

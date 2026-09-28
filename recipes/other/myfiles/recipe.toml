@@ -1,3 +1,6 @@
+[package]
+description = "When building Redox from source, add files to this recipe to auto-install them in your home dir"
+
 [build]
 template = "custom"
 script = """

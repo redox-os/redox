@@ -1,3 +1,6 @@
+[package]
+description = "Print lines that match patterns (Rust reimplementation of grep)"
+
 [source]
 git = "https://github.com/guerinoni/perg.git"
 rev = "e206fab6bbd9c363c686fa7503d318304e48ddbe"

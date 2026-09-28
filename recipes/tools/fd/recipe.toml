@@ -1,3 +1,6 @@
+[package]
+description = "User-friendly alternative to UNIX \"find\""
+
 [source]
 git = "https://github.com/sharkdp/fd.git"
 rev = "840a565d3aadbeb303b10a01c0aa3561924dfc46"

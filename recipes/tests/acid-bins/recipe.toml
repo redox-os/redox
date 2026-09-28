@@ -1,3 +1,6 @@
+[package]
+description = "Runner tool for Redox OS test suite"
+
 [source]
 same_as = "../acid"
 [build]

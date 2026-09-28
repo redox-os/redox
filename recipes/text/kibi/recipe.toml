@@ -1,3 +1,6 @@
+[package]
+description = "Minimal vim-like terminal text editor, written in Rust"
+
 [source]
 git = "https://github.com/ilai-deutel/kibi"
 rev = "v0.3.3"

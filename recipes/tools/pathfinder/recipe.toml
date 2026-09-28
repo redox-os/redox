@@ -1,3 +1,6 @@
+[package]
+description = "Fast, practical GPU rasterizer for fonts and vector graphics"
+
 [source]
 git = "https://gitlab.redox-os.org/redox-os/pathfinder.git"
 branch = "redox"

@@ -68,6 +68,7 @@ chmod +x "${COOKBOOK_STAGE}/usr/bin/os-test-runner"
 """
 
 [package]
+description = "Test suites for POSIX compliance (as compiled binary)"
 dependencies = [
     "gnu-grep",
     "gnu-make",

@@ -10,6 +10,7 @@ cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}/home/user/wasi-testsuite"
 """
 
 [package]
+description = "Test suite for WebAssembly System Interface"
 dependencies = [
   "python312",
   "python3-colorama",

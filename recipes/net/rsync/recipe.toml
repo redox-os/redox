@@ -1,3 +1,6 @@
+[package]
+description = "Fast, versatile remote (and local) file-copying tool"
+
 [source]
 tar = "https://download.samba.org/pub/rsync/src/rsync-3.4.1.tar.gz"
 blake3 = "e1cfdd51a1a89a49e73f8fa730a4321392fe4a29533c0979c2c09c7ce3808b6f"

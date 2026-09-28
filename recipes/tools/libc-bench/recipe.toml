@@ -1,3 +1,6 @@
+[package]
+description = "Benchmark basic POSIX functions"
+
 [source]
 tar = "https://www.etalabs.net/releases/libc-bench-20110206.tar.gz"
 blake3 = "64093102f29faa76da455f55a7b4be25b6d74d5c3d6fe88dbbc38aaae185182f"

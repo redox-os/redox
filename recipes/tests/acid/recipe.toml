@@ -22,4 +22,5 @@ chmod +x "${COOKBOOK_STAGE}/usr/bin/acid-runner"
 
 """
 [package]
+description = "Redox OS general-purpose test suite"
 dependencies = ["rust"]

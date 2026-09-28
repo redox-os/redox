@@ -12,6 +12,7 @@ cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}/home/user/openposixtestsuite"
 """
 
 [package]
+description = "Tests based on Open POSIX test suite"
 dependencies = [
     "gcc13",
     "gnu-binutils",

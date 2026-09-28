@@ -1,3 +1,6 @@
+[package]
+description = "Command line sound file player, FLAC, MP3, Vorbis and Wav, based on rodio library"
+
 [source]
 git = "https://gitlab.redox-os.org/redox-os/rodioplay.git"
 

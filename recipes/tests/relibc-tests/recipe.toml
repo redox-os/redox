@@ -11,4 +11,5 @@ cp -rv "${COOKBOOK_SOURCE}/tests" "${COOKBOOK_STAGE}/home/user/relibc-tests"
 """
 
 [package]
+description = "Testsuite for Redox POSIX/C Standard Library (basic)"
 dependencies = ["gcc13"]

@@ -1,3 +1,6 @@
+[package]
+description = "Command-line markdown viewer"
+
 [source]
 git = "https://github.com/visit1985/mdp.git"
 

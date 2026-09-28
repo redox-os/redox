@@ -26,4 +26,5 @@ chmod +x "${COOKBOOK_STAGE}/usr/bin/relibc-tests-runner"
 """
 
 [package]
+description = "Runner tool for Redox POSIX/C Standard Library tests"
 dependencies = ["gnu-make"]

@@ -1,3 +1,6 @@
+[package]
+description = "Test suites for POSIX compliance (invoke recipe to build and run tests)"
+
 [source]
 same_as = "../os-test"
 

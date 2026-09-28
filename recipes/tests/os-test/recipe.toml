@@ -13,6 +13,7 @@ cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}/home/user/os-test"
 """
 
 [package]
+description = "Test suites for POSIX compliance (as source code)"
 dependencies = [
     "gcc13",
     "gnu-binutils",

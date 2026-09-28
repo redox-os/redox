@@ -1,3 +1,6 @@
+[package]
+description = "Multifunctional network performance testing tool"
+
 [source]
 tar = "https://downloads.es.net/pub/iperf/iperf-3.20.tar.gz"
 

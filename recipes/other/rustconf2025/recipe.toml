@@ -1,3 +1,6 @@
+[package]
+description = "Slides for RustConf 2025 presentation, \"10 Years of Redox OS and Rust\""
+
 [source]
 git = "https://github.com/jackpot51/rustconf2025.git"
 
