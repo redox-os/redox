@@ -3,6 +3,9 @@
 # Version: 0.96.3
 # Version date: 31-July-2024 
 
+[package]
+description = "Authorized port of Id Quake 1 (requires legally purchased game files OR freedoom package)"
+
 [source]
 git = "https://github.com/sezero/quakespasm"
 rev = "cc32abe09ed417ce3be10af300d2dc2f686349ba"

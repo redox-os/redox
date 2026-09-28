@@ -12,6 +12,7 @@ cookbook_cargo
 """
 
 [package]
+description = "Standard terminal emulator for Redox"
 dependencies = [
     "orbital"
 ]

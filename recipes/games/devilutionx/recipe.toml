@@ -1,3 +1,6 @@
+[package]
+description = "Implementation of Diablo 1 and Diablo: Hellfire (requires legally purchased game files)"
+
 [source]
 tar = "https://github.com/diasurgical/devilutionX/archive/refs/tags/1.5.4.tar.gz"
 blake3 = "d4a61ff3a7c69d86a29158918aad48ab9c4866c6a22a3e8da5feadbb7d23b3ca"

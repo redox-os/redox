@@ -1,3 +1,6 @@
+[package]
+description = "GUI to build a bootable Redox image"
+
 [source]
 same_as = "../../core/installer"
 

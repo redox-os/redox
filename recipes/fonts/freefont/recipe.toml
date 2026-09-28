@@ -1,3 +1,6 @@
+[package]
+description = "GNU FreeFont Sans, Serif, and Mono"
+
 [source]
 tar = "https://ftp.gnu.org/gnu/freefont/freefont-otf-20120503.tar.gz"
 blake3 = "e950397741d84981106cf648fbc143c7827b61d637c86c916232d47aabdfe253"

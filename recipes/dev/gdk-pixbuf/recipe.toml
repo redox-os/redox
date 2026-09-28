@@ -23,7 +23,7 @@ mesonflags = [
 ]
 
 [package]
-description = "Image loading library (PNG, JPEG, TIFF, TGA, GIF) from GNOME"
+description = "Image loading library (PNG, JPEG, TIFF, TGA, GIF) from GNOME project"
 dependencies = [
     "shared-mime-info",
 ]

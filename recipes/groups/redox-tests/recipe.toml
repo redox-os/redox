@@ -1,4 +1,5 @@
 [package]
+description = "Components for testing Redox"
 dependencies = [
     "acid",
     "acid-bins",

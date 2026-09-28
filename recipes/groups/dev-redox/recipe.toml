@@ -18,4 +18,4 @@ dependencies = [
     "xz",
     "zlib",
 ]
-description = "Standard self-hosted development tools"
+description = "Components for self-hosted development of Redox"

@@ -1,3 +1,6 @@
+[package]
+description = "Neverball 3D marble game and Neverputt golf game"
+
 [source]
 tar = "https://neverball.org/neverball-1.6.0.tar.gz"
 blake3 = "74f3b68595f475e89fd2ca8b5fc349837ff36fbbe141f321dfc232dbf8fccf51"

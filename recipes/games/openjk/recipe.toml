@@ -1,3 +1,6 @@
+[package]
+description = "Port of Jedi Academy and Jedi Outcast (requires legally purchased game files)"
+
 [source]
 git = "https://github.com/jackpot51/OpenJK"
 upstream = "https://github.com/JACoders/OpenJK.git"

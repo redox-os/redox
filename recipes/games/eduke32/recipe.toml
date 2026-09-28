@@ -1,3 +1,6 @@
+[package]
+description = "Authorized port of Duke Nukem 3D (requires legally purchased game files)"
+
 [source]
 tar = "https://dukeworld.com/eduke32/synthesis/20181010-7067/eduke32_src_20181010-7067.tar.xz"
 blake3 = "b0b759fe9ca51849f42669e4832ae1ae1f9ad7938529769108f7cf6a6a176558"

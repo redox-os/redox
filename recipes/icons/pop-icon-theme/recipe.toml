@@ -1,3 +1,6 @@
+[package]
+description = "Icons from Pop!_OS GNOME theme"
+
 [source]
 git = "https://github.com/pop-os/icon-theme.git"
 shallow_clone = true

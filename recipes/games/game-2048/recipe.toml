@@ -1,3 +1,6 @@
+[package]
+description = "Unauthorized clone of Sirvo's \"Threes\""
+
 #TODO: fix rustc-serialize crate error, update?
 [source]
 git = "https://gitlab.redox-os.org/redox-os/2048-rs.git"

@@ -1,3 +1,6 @@
+[package]
+description = "Implementation of Transport Tycoon Deluxe (requires legally purchased game files OR -open packages)"
+
 [source]
 git = "https://github.com/OpenTTD/OpenTTD.git"
 #TODO: fix issues with this: branch = "release/1.8"

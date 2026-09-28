@@ -1,3 +1,6 @@
+[package]
+description = "Third-party Minecraft Classic client written with Rust/Piston"
+
 [source]
 git = "https://gitlab.redox-os.org/redox-os/hematite.git"
 branch = "redox"
