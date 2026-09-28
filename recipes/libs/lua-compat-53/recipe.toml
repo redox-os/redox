@@ -1,3 +1,6 @@
+[package]
+description = "Partial Lua-5.3-compatibility library for Lua-5.1-standard interpreters"
+
 [source]
 git = "https://github.com/lunarmodules/lua-compat-5.3.git"
 [build]

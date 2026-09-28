@@ -1,3 +1,6 @@
+[package]
+description = "Library for serializing and deserializing C structures as JSON"
+
 #TODO not compiled or tested
 # build instructions: https://github.com/json-c/json-c#build-instructions--
 [source]

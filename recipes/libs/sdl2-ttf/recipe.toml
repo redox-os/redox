@@ -1,3 +1,6 @@
+[package]
+description = "Text rendering library for SDL with TrueType (SDL API version 2)"
+
 [source]
 tar = "https://www.libsdl.org/projects/SDL_ttf/release/SDL2_ttf-2.24.0.tar.gz"
 blake3 = "5832e4e0312e145b4648127ee58558885c4aee0d6f91e020538d0f7b53eb939e"

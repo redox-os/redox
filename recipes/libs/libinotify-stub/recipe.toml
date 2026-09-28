@@ -1,3 +1,6 @@
+[package]
+description = "Redox compatibility library for Linux inotify"
+
 [source]
 tar = "https://github.com/willnode/inotify-stub/archive/refs/tags/v0.2.tar.gz"
 blake3 = "f76d204b0453e56688a4d8609d0b5680163eb9d2984cbd9e897f514becaf8e31"

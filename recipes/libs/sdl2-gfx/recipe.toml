@@ -1,3 +1,6 @@
+[package]
+description = "High-level graphics function library for SDL (SDL API version 2)"
+
 [source]
 tar = "http://www.ferzkopp.net/Software/SDL2_gfx/SDL2_gfx-1.0.4.tar.gz"
 blake3 = "2e9bd2dc0f004349b51418f33219ebf5cd69f25ed0ba660373652a662cbb857c"

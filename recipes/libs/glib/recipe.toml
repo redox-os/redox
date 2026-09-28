@@ -1,3 +1,6 @@
+[package]
+description = "General-purpose C utility library from GNOME project"
+
 [source]
 tar = "https://download.gnome.org/sources/glib/2.87/glib-2.87.0.tar.xz"
 blake3 = "26b77ae24bc02f85d1c6742fe601167b056085f117cda70da7b805cefa6195e9"

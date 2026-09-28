@@ -1,3 +1,6 @@
+[package]
+description = "Library for FAT family filesystems"
+
 [source]
 git = "https://gitlab.redox-os.org/redox-os/redox-fatfs.git"
 [build]

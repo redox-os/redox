@@ -1,3 +1,6 @@
+[package]
+description = "GNU library for arbitrary-precision integer, rational, and floating-point math"
+
 # GNU Multiple Precision Arithmetic Library (GMP) is a free and open source
 # library for arbitrary-precision arithmetic, operating on signed integers,
 # rational numbers, and floating-point numbers.

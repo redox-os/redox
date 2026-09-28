@@ -1,3 +1,6 @@
+[package]
+description = "Library and tools for JPEG images"
+
 # libjpeg-turbo is compatible with libjpeg
 [source]
 tar = "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/3.1.0/libjpeg-turbo-3.1.0.tar.gz"

@@ -1,3 +1,6 @@
+[package]
+description = "GNOME accessibility library"
+
 [source]
 tar = "https://download.gnome.org/sources/atk/2.38/atk-2.38.0.tar.xz"
 blake3 = "cbc1b7ba03009ee5cc0e646d8a86117e0d65bf8d105f2e8714fbde0299a8012e"

@@ -1,3 +1,6 @@
+[package]
+description = "C asynchronous IO/event loop library"
+
 [source]
 tar = "https://dist.libuv.org/dist/v1.51.0/libuv-v1.51.0.tar.gz"
 blake3 = "e8b5e68bc2d0776ac4ea67df59d694fca58d5cc570c103443a2284e723d01fc2"

@@ -1,3 +1,6 @@
+[package]
+description = "Implementations of OpenGL and Vulkan with software-rendering fallback"
+
 [source]
 git = "https://gitlab.redox-os.org/redox-os/mesa.git"
 upstream = "https://gitlab.freedesktop.org/mesa/mesa"

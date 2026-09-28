@@ -1,3 +1,6 @@
+[package]
+description = "Reference-implementation library for Portable Network Graphics format"
+
 [source]
 tar = "https://github.com/pnggroup/libpng/archive/refs/tags/v1.6.46.tar.gz"
 blake3 = "36f4bbb48c70975116b00ab0cff577931b96f703b2774ac3b33131d001419435"

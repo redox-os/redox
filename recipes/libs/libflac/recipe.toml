@@ -1,3 +1,6 @@
+[package]
+description = "Library for Free Lossless Audio Codec"
+
 [source]
 tar = "https://github.com/xiph/flac/releases/download/1.5.0/flac-1.5.0.tar.xz"
 blake3 = "2adca3cd8da4b577ebb9c12e73c91cf6f6a7feb7485b3f003853b82710bada84"
