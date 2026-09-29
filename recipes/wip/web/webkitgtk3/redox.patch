@@ -670,3 +670,17 @@ diff -ruwN source/Source/WTF/wtf/posix/ThreadingPOSIX.cpp source-new/Source/WTF/
      Locker locker { m_mutex };
  
      int policy;
+diff -ruwN source/Source/WebKit/UIProcess/gtk/AcceleratedBackingStoreDMABuf.cpp source-new/Source/WebKit/UIProcess/gtk/AcceleratedBackingStoreDMABuf.cpp
+--- source/Source/WebKit/UIProcess/gtk/AcceleratedBackingStoreDMABuf.cpp	2025-03-07 11:11:01.594008200 +0000
++++ source-new/Source/WebKit/UIProcess/gtk/AcceleratedBackingStoreDMABuf.cpp	2026-09-27 19:45:00.480807469 +0000
+@@ -82,7 +82,9 @@
+     static OptionSet<RendererBufferTransportMode> mode;
+     static std::once_flag onceFlag;
+     std::call_once(onceFlag, [] {
+-        const char* disableDMABuf = getenv("WEBKIT_DISABLE_DMABUF_RENDERER");
++        // redox: the mesa implementation for dma-buf renderer is incomplete
++        // https://blogs.igalia.com/carlosgc/2023/04/03/webkitgtk-accelerated-compositing-rendering/
++        const char* disableDMABuf = "1";// getenv("WEBKIT_DISABLE_DMABUF_RENDERER");
+         if (disableDMABuf && strcmp(disableDMABuf, "0"))
+             return;
+ 

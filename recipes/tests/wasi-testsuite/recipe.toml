@@ -5,8 +5,8 @@ branch = "prod/testsuite-base"
 [build]
 template = "custom"
 script = """
-mkdir -pv "${COOKBOOK_STAGE}/home/user/wasi-testsuite"
-cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}/home/user/wasi-testsuite"
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/wasi-testsuite"
+cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}/usr/share/wasi-testsuite"
 """
 
 [package]

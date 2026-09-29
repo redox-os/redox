@@ -1,0 +1,14 @@
+diff -ruwN source/tparam.c source-new/tparam.c
+--- source/tparam.c	2002-02-25 17:37:24.000000000 +0000
++++ source-new/tparam.c	2026-09-22 15:11:03.072524045 +0000
+@@ -38,6 +38,10 @@
+ #define bcopy(s, d, n) memcpy ((d), (s), (n))
+ #endif
+ 
++#ifdef HAVE_UNISTD_H
++#include <unistd.h>
++#endif
++
+ #endif /* not emacs */
+ 
+ #ifndef NULL

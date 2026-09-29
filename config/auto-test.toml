@@ -24,9 +24,9 @@ path = "/usr/lib/run_tests.ion"
 data = """
 #!/usr/bin/env ion
 export RUST_BACKTRACE=full
-cd /home/user/acid
-cargo test
-bash /root/relibc-tests/run.sh
+export HOME=/home/root
+acid-runner
+bash /usr/share/relibc-tests/run.sh
 os-test-runner
 shutdown
 """

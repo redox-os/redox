@@ -7,8 +7,8 @@ script = """
 DYNAMIC_INIT
 cookbook_cargo
 
-mkdir -pv "${COOKBOOK_STAGE}/home/user/cookbook"
-cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}/home/user/cookbook"
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/cookbook"
+cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}/usr/share/cookbook"
 """
 
 [package]

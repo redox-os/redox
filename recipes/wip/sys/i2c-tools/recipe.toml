@@ -1,0 +1,13 @@
+#TODO compile and test
+# freebsd probably have a native port: https://github.com/freebsd/freebsd-ports/tree/main/sysutils/i2c-tools/files
+# build instructions: https://git.kernel.org/pub/scm/utils/i2c-tools/i2c-tools.git/tree/README#n62
+[source]
+tar = "https://www.kernel.org/pub/software/utils/i2c-tools/i2c-tools-4.4.tar.gz"
+[build]
+template = "custom"
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+DYNAMIC_INIT
+"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}"
+"${COOKBOOK_MAKE}" install DESTDIR="${COOKBOOK_STAGE}/usr"
+"""

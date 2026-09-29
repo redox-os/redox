@@ -1,4 +1,4 @@
 name=QuakeSpasm
 category=Games
 binary=/usr/games/quakespasm
-icon=/ui/icons/apps/quakespasm.png
+icon=/usr/share/ui/icons/apps/quakespasm.png

@@ -5,7 +5,7 @@ pub(crate) static SHARED_PRESCRIPT: &str = r#"
 # Build dynamically
 function DYNAMIC_INIT {
     case "${TARGET}" in
-        "i586-unknown-redox" | "riscv64gc-unknown-redox")
+        "riscv64gc-unknown-redox")
             [ -z "${COOKBOOK_VERBOSE}" ] || echo "WARN: ${TARGET} does not support dynamic linking." >&2
             return
             ;;
@@ -35,7 +35,8 @@ function DYNAMIC_INIT {
 
     # TODO: check paths for spaces
     export LDFLAGS="${USER_LDFLAGS}-Wl,-rpath-link,${COOKBOOK_SYSROOT}/lib -L${COOKBOOK_SYSROOT}/lib -Wl,--export-dynamic"
-    export RUSTFLAGS="-C target-feature=-crt-static -L native=${COOKBOOK_SYSROOT}/lib -C link-arg=-Wl,-rpath-link,${COOKBOOK_SYSROOT}/lib"
+    rustflags="-C target-feature=-crt-static -L native=${COOKBOOK_SYSROOT}/lib -C link-arg=-Wl,-rpath-link,${COOKBOOK_SYSROOT}/lib"
+    export "${REDOXER_RUSTFLAGS_KEY}=${!REDOXER_RUSTFLAGS_KEY} ${rustflags}"
     export COOKBOOK_DYNAMIC=1
 
     if [ "function" = "$(type -t reexport_flags)" ]; then
@@ -234,12 +235,12 @@ function generate_cookbook_cmake_file {
     gcc_prefix=$2
     sysroot=$3
     file=$4
-    ARCH=$(echo "$target" | cut -d - -f1)
+    arch=$(echo "$target" | cut -d - -f1)
 
     if [[ "$target" == *"-linux-"* ]]; then
-        SYSTEM_NAME="Linux"
+        system_name="Linux"
     else
-        SYSTEM_NAME="UnixPaths"
+        system_name="UnixPaths"
     fi
 
 if [[ "$REDOXER_USE_CLANG" != "1" && "$REDOXER_USE_CLANG" != "true" ]]; then
@@ -278,8 +279,8 @@ set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
 set(CMAKE_PLATFORM_USES_PATH_WHEN_NO_SONAME 1)
 set(CMAKE_PREFIX_PATH, ${sysroot})
 set(CMAKE_SHARED_LIBRARY_SONAME_C_FLAG "-Wl,-soname,")
-set(CMAKE_SYSTEM_NAME ${SYSTEM_NAME})
-set(CMAKE_SYSTEM_PROCESSOR ${ARCH})
+set(CMAKE_SYSTEM_NAME ${system_name})
+set(CMAKE_SYSTEM_PROCESSOR ${arch})
 EOF
 
     if [ "$target" = "$GNU_TARGET" ]

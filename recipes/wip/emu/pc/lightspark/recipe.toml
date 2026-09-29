@@ -1,0 +1,25 @@
+#TODO compile and test
+[source]
+git = "https://github.com/lightspark/lightspark"
+rev = "ff478b8a6a349a6d919e342d04793dad454fdf5c"
+shallow_clone = true
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DCOMPILE_NPAPI_PLUGIN=FALSE",
+    "-DCOMPILE_PPAPI_PLUGIN=FALSE",
+    "-DENABLE_GLES2=TRUE",
+    "-DENABLE_LIBAVCODEC=FALSE",
+    "-DENABLE_RTMP=FALSE",
+]
+#dependencies = [
+    #"mesa",
+    #"curl",
+    #"zlib",
+    #"ffmpeg6",
+    #"rtmpdump",
+    #"sdl2",
+    #"libjpeg",
+    #"xz",
+    #"fontconfig",
+#]

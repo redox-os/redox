@@ -1,6 +1,6 @@
-diff -ruw gstreamer-1.24.12/subprojects/gst-plugins-bad/ext/dtls/gstdtlsconnection.c source/subprojects/gst-plugins-bad/ext/dtls/gstdtlsconnection.c
---- gstreamer-1.24.12/subprojects/gst-plugins-bad/ext/dtls/gstdtlsconnection.c	2025-01-29 13:12:29.000000000 -0700
-+++ source/subprojects/gst-plugins-bad/ext/dtls/gstdtlsconnection.c	2026-02-10 19:13:12.530288659 -0700
+diff -ruwN source/subprojects/gst-plugins-bad/ext/dtls/gstdtlsconnection.c source-new/subprojects/gst-plugins-bad/ext/dtls/gstdtlsconnection.c
+--- source/subprojects/gst-plugins-bad/ext/dtls/gstdtlsconnection.c	2025-01-29 20:12:29.000000000 +0000
++++ source-new/subprojects/gst-plugins-bad/ext/dtls/gstdtlsconnection.c	2026-09-13 01:22:57.407426034 +0000
 @@ -49,6 +49,10 @@
  #include <errno.h>
  #endif
@@ -12,9 +12,9 @@ diff -ruw gstreamer-1.24.12/subprojects/gst-plugins-bad/ext/dtls/gstdtlsconnecti
  GST_DEBUG_CATEGORY_STATIC (gst_dtls_connection_debug);
  #define GST_CAT_DEFAULT gst_dtls_connection_debug
  
-diff -ruw gstreamer-1.24.12/subprojects/gst-plugins-base/gst-libs/gst/tag/meson.build source/subprojects/gst-plugins-base/gst-libs/gst/tag/meson.build
---- gstreamer-1.24.12/subprojects/gst-plugins-base/gst-libs/gst/tag/meson.build	2025-01-29 13:12:29.000000000 -0700
-+++ source/subprojects/gst-plugins-base/gst-libs/gst/tag/meson.build	2026-02-10 19:09:53.259120404 -0700
+diff -ruwN source/subprojects/gst-plugins-base/gst-libs/gst/tag/meson.build source-new/subprojects/gst-plugins-base/gst-libs/gst/tag/meson.build
+--- source/subprojects/gst-plugins-base/gst-libs/gst/tag/meson.build	2025-01-29 20:12:29.000000000 +0000
++++ source-new/subprojects/gst-plugins-base/gst-libs/gst/tag/meson.build	2026-09-13 01:22:57.408426091 +0000
 @@ -136,10 +136,10 @@
      install: false)
  endif
@@ -31,4 +31,16 @@ diff -ruw gstreamer-1.24.12/subprojects/gst-plugins-base/gst-libs/gst/tag/meson.
 +#  install : false)
  
  gst_tag_dir = meson.current_source_dir()
-Only in source/subprojects/gst-plugins-base/gst-libs/gst/tag: meson.build.orig
+diff -ruwN source/subprojects/gstreamer/gst/gstregistry.c source-new/subprojects/gstreamer/gst/gstregistry.c
+--- source/subprojects/gstreamer/gst/gstregistry.c	2025-01-29 20:12:29.000000000 +0000
++++ source-new/subprojects/gstreamer/gst/gstregistry.c	2026-09-29 02:59:06.518249721 +0000
+@@ -174,7 +174,8 @@
+ static GstRegistry *_gst_registry_default = NULL;
+ 
+ /* defaults */
+-#define DEFAULT_FORK TRUE
++/* redox: forking result in hang */
++#define DEFAULT_FORK FALSE
+ 
+ /* control the behaviour of registry rebuild */
+ static gboolean _gst_enable_registry_fork = DEFAULT_FORK;

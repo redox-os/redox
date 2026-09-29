@@ -1,0 +1,13 @@
+#TODO compile and test
+[source]
+git = "https://github.com/jhawthorn/fzy"
+rev = "v1.1"
+shallow_clone = true
+[build]
+template = "custom"
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+DYNAMIC_INIT
+"${COOKBOOK_MAKE}" fzy -j "${COOKBOOK_MAKE_JOBS}"
+"${COOKBOOK_MAKE}" install DESTDIR="${COOKBOOK_STAGE}/usr"
+"""

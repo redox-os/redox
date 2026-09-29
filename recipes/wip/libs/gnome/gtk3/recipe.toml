@@ -50,3 +50,8 @@ cookbook_meson \
     -Dintrospection=false \
     -Dtests=false
 """
+
+[package]
+dependencies = [
+    "librsvg",
+]
