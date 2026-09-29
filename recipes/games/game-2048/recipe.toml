@@ -1,5 +1,5 @@
 [package]
-description = "Unauthorized clone of Sirvo's \"Threes\""
+description = "Sliding numbers puzzle game, similar to \"Threes\""
 
 #TODO: fix rustc-serialize crate error, update?
 [source]
