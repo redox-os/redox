@@ -104,17 +104,13 @@
         #TODO: This isn't tested yet, use at your own risk
         native = (pkgs.mkShell.override { stdenv = pkgs.gcc14Stdenv; }) rec {
           nativeBuildInputs =
-            let
-              autoreconf269 = pkgs.writeShellScriptBin "autoreconf2.69" "${pkgs.autoconf269}/bin/autoreconf";
-            in
             with pkgs;
             [
               (pkgs.writeShellScriptBin "${pkgs.stdenv.hostPlatform.system}-gnu-strip" ''
                 ${pkgs.bintools-unwrapped}/bin/strip $@
               '')
               ant
-              autoconf
-              autoreconf269 # gnu-binutils
+              autoconf269
               automake
               bison
               cmake
