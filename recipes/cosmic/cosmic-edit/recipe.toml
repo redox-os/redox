@@ -24,7 +24,7 @@ cp -rv "${COOKBOOK_SOURCE}/res/icons/hicolor/" "${COOKBOOK_STAGE}/usr/share/icon
 """
 
 [package]
-description = "GUI text editor from COSMIC desktop"
+description = "Graphical text editor from COSMIC desktop"
 dependencies = [
     "libxkbcommon",
 ]

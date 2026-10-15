@@ -1,5 +1,5 @@
 [package]
-description = "Libc implementation for WebAssembly/WASI"
+description = "C Standard Library implementation for WebAssembly/WASI"
 
 # NOTE: This is only used to compile into wasi
 [source]

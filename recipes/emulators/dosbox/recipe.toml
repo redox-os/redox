@@ -1,5 +1,5 @@
 [package]
-description = "Emulation environment for MS-DOS"
+description = "MS-DOS emulator"
 
 [source]
 tar = "https://sourceforge.net/projects/dosbox/files/dosbox/0.74-3/dosbox-0.74-3.tar.gz/download"

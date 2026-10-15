@@ -1,5 +1,5 @@
 [package]
-description = "Wrapper tool to configure Rust, C, and other compilers to build for Redox"
+description = "Wrapper and command-line tool to quickly test and run Rust, C, and C++ applications and libraries in a minimal Redox virtual machine"
 
 [source]
 git = "https://gitlab.redox-os.org/redox-os/redoxer"

@@ -1,5 +1,5 @@
 [package]
-description = "Apply a diff file to an original"
+description = "Tool to apply a diff file to an original"
 
 [source]
 tar = "https://ftp.gnu.org/gnu/patch/patch-2.7.6.tar.xz"

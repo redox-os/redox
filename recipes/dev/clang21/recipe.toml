@@ -1,5 +1,5 @@
 [package]
-description = "LLVM-based C/C++ compiler"
+description = "LLVM C/C++ frontend/compiler"
 
 [source]
 same_as = "../llvm21"

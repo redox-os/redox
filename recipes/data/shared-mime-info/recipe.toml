@@ -1,5 +1,5 @@
 [package]
-description = "Freedesktop common MIME database"
+description = "FreeDesktop common MIME database"
 
 # This does not build update-mime-database to avoid bringing in C code to Redox
 [source]

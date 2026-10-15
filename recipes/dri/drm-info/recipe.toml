@@ -1,5 +1,5 @@
 [package]
-description = "Tool to dump info about Direct Rendering Manager devices"
+description = "Tool to dump information about Linux Direct Rendering Manager drivers"
 
 [source]
 tar = "https://gitlab.freedesktop.org/emersion/drm_info/-/archive/v2.9.0/drm_info-v2.9.0.tar.gz"

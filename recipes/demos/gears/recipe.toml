@@ -1,5 +1,5 @@
 [package]
-description = "Standard \"gears\" OpenGL demo"
+description = "Mesa3D \"gears\" OpenGL demo ported to Orbital windowing"
 
 [build]
 dependencies=[

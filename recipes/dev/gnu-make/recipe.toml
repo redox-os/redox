@@ -1,5 +1,5 @@
 [package]
-description = "Build Makefile-based projects"
+description = "GNU version of Make tool"
 
 #TODO slower jobserver due to lack of named pipes
 [source]

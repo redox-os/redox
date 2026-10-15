@@ -1,5 +1,5 @@
 [package]
-description = "Example of a daemon for Redox"
+description = "Redox device driver daemon example"
 
 [source]
 git = "https://gitlab.redox-os.org/redox-os/exampled.git"

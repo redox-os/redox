@@ -1,5 +1,5 @@
 [package]
-description = "Interactive, object-oriented programming language, 3.12 series"
+description = "Object-oriented interpreted programming language, version 3.12.x"
 
 [source]
 tar = "https://www.python.org/ftp/python/3.12.12/Python-3.12.12.tar.xz"

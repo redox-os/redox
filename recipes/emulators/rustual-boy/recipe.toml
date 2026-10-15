@@ -11,7 +11,7 @@ cookbook_cargo
 """
 
 [package]
-description = "Virtual Boy emulator"
+description = "Virtual Boy emulator written in Rust"
 dependencies = [
     "orbital",
 ]

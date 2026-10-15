@@ -1,5 +1,5 @@
 [package]
-description = "Rust reimplementation of git"
+description = "Rust reimplementation of Git"
 
 [source]
 git = "https://github.com/Byron/gitoxide.git"

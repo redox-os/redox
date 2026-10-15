@@ -1,5 +1,5 @@
 [package]
-description = "Standard \"gears\" OpenGL demo, running inside SDL2"
+description = "Mesa3D \"gears\" OpenGL demo ported to SDL2 windowing"
 
 [build]
 template = "custom"

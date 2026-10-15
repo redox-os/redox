@@ -1,5 +1,5 @@
 [package]
-description = "NES and Famicom emulator"
+description = "NES and Famicom emulator written in Rust"
 
 [source]
 git = "https://gitlab.redox-os.org/redox-os/rs-nes.git"

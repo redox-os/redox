@@ -1,5 +1,5 @@
 [package]
-description = "Frontend for cores by various developers emulating vintage systems"
+description = "Official libretro frontend"
 
 #TODO: fix linking error
 [source]

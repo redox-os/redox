@@ -1,5 +1,5 @@
 [package]
-description = "Super Nintendo core for Retroarch"
+description = "libretro library and cores"
 
 [source]
 git = "https://github.com/jackpot51/libretro-super.git"

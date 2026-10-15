@@ -1,5 +1,5 @@
 [package]
-description = "Lua programming language, PUC-Rio distribution, language version 5.4"
+description = "Lua programming language, PUC-Rio distribution, version 5.4"
 
 [source]
 tar = "https://lua.org/ftp/lua-5.4.7.tar.gz"
