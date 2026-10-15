@@ -1,6 +1,10 @@
-#TODO liberrno linking error: undefined reference to `errno_location'
+#TODO compiled but not tested
 [source]
 git = "https://github.com/igor-petruk/scriptisto"
+rev = "511875fe6"
 shallow_clone = true
+patches = [
+    "redox.patch"
+]
 [build]
 template = "cargo"
