@@ -1,5 +1,5 @@
 [package]
-description = "\"Tracker\" GUI music composition program, based on Impulse Tracker"
+description = "Graphical \"tracker\" music composition program, based on Impulse Tracker"
 
 [source]
 tar = "https://github.com/schismtracker/schismtracker/archive/20181223.tar.gz"
