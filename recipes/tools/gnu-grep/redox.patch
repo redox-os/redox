@@ -1,0 +1,32 @@
+diff -ruwN source/configure source-new/configure
+--- source/configure	2025-04-10 23:02:07.000000000 +0700
++++ source-new/configure	2026-07-04 19:11:53.300427492 +0700
+@@ -61285,7 +61285,7 @@
+ COLORIZE_SOURCE=colorize-$suffix.c
+ 
+ 
+-ac_config_files="$ac_config_files Makefile lib/Makefile src/Makefile tests/Makefile po/Makefile.in doc/Makefile gnulib-tests/Makefile"
++ac_config_files="$ac_config_files Makefile lib/Makefile src/Makefile tests/Makefile po/Makefile.in doc/Makefile"
+ 
+ cat >confcache <<\_ACEOF
+ # This file is a shell script that caches the results of configure
+@@ -62134,7 +62134,6 @@
+     "tests/Makefile") CONFIG_FILES="$CONFIG_FILES tests/Makefile" ;;
+     "po/Makefile.in") CONFIG_FILES="$CONFIG_FILES po/Makefile.in" ;;
+     "doc/Makefile") CONFIG_FILES="$CONFIG_FILES doc/Makefile" ;;
+-    "gnulib-tests/Makefile") CONFIG_FILES="$CONFIG_FILES gnulib-tests/Makefile" ;;
+ 
+   *) as_fn_error $? "invalid argument: '$ac_config_target'" "$LINENO" 5;;
+   esac
+diff -ruwN source/Makefile.in source-new/Makefile.in
+--- source/Makefile.in	2025-04-10 22:51:23.000000000 +0700
++++ source-new/Makefile.in	2026-07-04 19:12:39.035812285 +0700
+@@ -2399,7 +2399,7 @@
+ # along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ #
+ AUTOMAKE_OPTIONS = gnu 1.12
+-SUBDIRS = po lib doc src tests gnulib-tests
++SUBDIRS = po lib doc src tests
+ EXTRA_DIST = \
+   .mailmap		\
+   ChangeLog-2009	\
