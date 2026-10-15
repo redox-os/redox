@@ -120,6 +120,18 @@ diff -ruwN source/Modules/_cryptmodule.c source-new/Modules/_cryptmodule.c
      if (crypt_result == NULL) {
          return PyErr_SetFromErrno(PyExc_OSError);
      }
+diff -ruwN source/Modules/fcntlmodule.c source-new/Modules/fcntlmodule.c
+--- source/Modules/fcntlmodule.c	2025-10-09 11:07:00.000000000 +0000
++++ source-new/Modules/fcntlmodule.c	2026-10-15 10:21:56.351900218 +0000
+@@ -159,7 +159,7 @@
+        in their unsigned long ioctl codes this will break and need
+        special casing based on the platform being built on.
+      */
+-    int arg = 0;
++    char* arg = 0;
+     int ret;
+     Py_buffer pstr;
+     char *str;
 diff -ruwN source/Modules/resource.c source-new/Modules/resource.c
 --- source/Modules/resource.c	2025-10-09 18:07:00.000000000 +0700
 +++ source-new/Modules/resource.c	2025-12-09 22:14:30.781035339 +0700
