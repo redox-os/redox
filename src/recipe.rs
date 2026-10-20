@@ -326,6 +326,8 @@ impl CookRecipe {
                 .into_iter()
                 .filter_map(fn_map)
                 .collect();
+            // package deps is not applicable to host recipes
+            recipe.package.dependencies = Vec::new()
         }
         Ok(Self {
             name,
