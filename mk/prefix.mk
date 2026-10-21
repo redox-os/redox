@@ -451,6 +451,7 @@ else
 	cp -r "$(LLD_TARGET)/stage/usr/". "$@.partial"
 	rm -rf "$@.partial/lib/"*.a
 	echo "--sysroot=$(ROOT)/$(PREFIX)/gcc-install" > "$@.partial/bin/$(GNU_TARGET).cfg"
+	ln -s clang-21 "$@.partial/bin/wasm32-wasip1-clang"
 	ln -s clang-21 "$@.partial/bin/$(GNU_TARGET)-clang"
 	ln -s clang++ "$@.partial/bin/$(GNU_TARGET)-clang++"
 	export PATH="$(ROOT)/$@.partial/bin:$$PATH" $(PREFIX_CONFIG) \

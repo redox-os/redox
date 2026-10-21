@@ -5,7 +5,7 @@ pub(crate) static SHARED_PRESCRIPT: &str = r#"
 # Build dynamically
 function DYNAMIC_INIT {
     case "${TARGET}" in
-        "riscv64gc-unknown-redox")
+        "riscv64gc-unknown-redox" | "wasm32-wasip1")
             [ -z "${COOKBOOK_VERBOSE}" ] || echo "WARN: ${TARGET} does not support dynamic linking." >&2
             return
             ;;
