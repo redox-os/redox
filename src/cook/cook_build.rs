@@ -9,7 +9,6 @@ use crate::cook::package::{package_source_paths, package_target};
 use crate::cook::{fetch, fs, pty::PtyOut, script::*};
 use crate::recipe::BuildCompiler;
 use crate::recipe::{AutoDeps, BuildKind, CookRecipe, OptionalPackageRecipe, Recipe};
-use std::io::Read;
 use std::{
     collections::{BTreeSet, VecDeque},
     path::{Path, PathBuf},
@@ -822,16 +821,14 @@ pub fn build_remote(
 }
 
 fn hint_incorrect_pkey(logger: &PtyOut, source_pubkey: &Path, source_pkgar: &Path) -> Option<()> {
-    // TODO: Move to pkgar
-    let mut file = std::fs::File::open(source_pkgar).ok()?;
-    let mut buffer = vec![0u8; pkgar_core::HEADER_SIZE];
-    file.read_exact(&mut buffer).ok()?;
     log_to_pty!(
         logger,
         "DEBUG: Pkgar key mismatch, hint:\n - expected: {:?}\n - current:  {:?}",
-        blake3::Hash::from_bytes(unsafe {
-            pkgar_core::Header::new_unchecked(&buffer).ok()?.public_key
-        })
+        blake3::Hash::from_bytes(
+            pkgar_keys::PublicKeyFile::from_header_path(source_pkgar)
+                .ok()?
+                .pkey
+        )
         .to_hex()
         .to_string(),
         blake3::Hash::from_bytes(PublicKeyFile::open(source_pubkey).ok()?.pkey)
