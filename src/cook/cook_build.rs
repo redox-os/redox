@@ -470,7 +470,7 @@ pub fn build(
                     BuildCompiler::Gcc | BuildCompiler::GccNoLTO => {
                         command.env("REDOXER_USE_CLANG", "0");
                     }
-                    BuildCompiler::Clang | BuildCompiler::ClangNoLTO => {
+                    BuildCompiler::Clang | BuildCompiler::ClangNoLTO | BuildCompiler::Wasm => {
                         command.env("REDOXER_USE_CLANG", "1");
                     }
                     _ => {}
@@ -480,6 +480,9 @@ pub fn build(
                         command.env("REDOXER_USE_LTO", "0");
                     }
                     _ => {}
+                }
+                if matches!(compiler, BuildCompiler::Wasm) {
+                    command.env("TARGET", "wasm32-wasip1");
                 }
             };
             command.env("COOKBOOK_MAKE_JOBS", cli_jobs.to_string());

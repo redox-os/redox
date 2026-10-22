@@ -190,6 +190,8 @@ pub enum BuildCompiler {
     ClangNoLTO,
     #[serde(rename = "no-lto")]
     NoLTO,
+    #[serde(rename = "wasm")]
+    Wasm,
 }
 
 impl BuildRecipe {
