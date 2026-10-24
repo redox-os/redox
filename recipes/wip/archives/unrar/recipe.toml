@@ -1,5 +1,11 @@
-#TODO missing script for gnu make, read the makefile in the tarball
+#TODO not compiled or tested
 [source]
 tar = "https://www.rarlab.com/rar/unrarsrc-7.2.6.tar.gz"
 [build]
 template = "custom"
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+DYNAMIC_INIT
+"${COOKBOOK_MAKE}" unrar lib -j "${COOKBOOK_MAKE_JOBS}"
+"${COOKBOOK_MAKE}" install-unrar install-lib DESTDIR="${COOKBOOK_STAGE}/usr"
+"""

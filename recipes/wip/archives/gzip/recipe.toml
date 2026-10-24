@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO port gnulib fseterr.c
 [source]
 tar = "https://ftp.gnu.org/gnu/gzip/gzip-1.14.tar.gz"
 [build]
