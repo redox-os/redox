@@ -1,7 +1,7 @@
 #TODO build error
 [source]
 git = "https://github.com/lightspark/lightspark"
-rev = "ff478b8a6a349a6d919e342d04793dad454fdf5c"
+rev = "0.10.0"
 shallow_clone = true
 [build]
 template = "cmake"

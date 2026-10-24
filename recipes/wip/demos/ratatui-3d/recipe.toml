@@ -7,6 +7,5 @@ template = "cargo"
 cargoflags = ["--no-default-features --features=gltf,gpu"]
 cargoexamples = [
     "cornell",
-    "cube",
     "dna",
 ]
