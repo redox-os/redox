@@ -1,9 +1,6 @@
 [source]
 tar = "https://www.nano-editor.org/dist/v9/nano-9.2.tar.xz"
 blake3 = "6a4dd380f6ee2bb2d74851c182090774f61eddfc37d9ff4d060b69f2c0fe4646"
-patches = [
-    "redox.patch"
-]
 
 [build]
 template = "configure"
