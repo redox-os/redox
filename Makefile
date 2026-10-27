@@ -96,8 +96,10 @@ include mk/repo.mk
 include mk/disk.mk
 
 # Emulation recipes
+include mk/virtiofs.mk
 include mk/qemu.mk
 include mk/virtualbox.mk
+include mk/ch.mk
 
 # CI
 include mk/ci.mk

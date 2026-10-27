@@ -23,3 +23,5 @@ source.tar
 source.tar.tmp
 target
 wget-log
+# Cloud Hypervisor firmware, supplied by the user (see mk/ch.mk)
+CLOUDHV.fd
