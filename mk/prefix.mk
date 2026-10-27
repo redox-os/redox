@@ -99,6 +99,8 @@ $(PREFIX)/relibc-install.tar.gz: $(PREFIX)/sysroot
 	tar \
 		--create \
 		--gzip \
+		--sort=name \
+		--mtime='@0' \
 		--file "$@" \
 		--directory="$<" \
 		.
@@ -205,6 +207,8 @@ $(PREFIX)/%.tar.gz: $(PREFIX)/%
 	tar \
 		--create \
 		--gzip \
+		--sort=name \
+		--mtime='@0' \
 		--file "$@" \
 		--directory="$<" \
 		.
