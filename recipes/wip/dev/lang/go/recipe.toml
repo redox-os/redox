@@ -1,21 +1,22 @@
 #TODO compiling, not tested further
 [source]
 git = "https://github.com/willnode/go"
-branch = "go-1.25-redox"
+branch = "go-1.27-redox"
 shallow_clone = true
 
 [build]
 template = "custom"
 script = """
-export PATH=$HOME/go/bin:$PATH
+export PATH=$HOME/.local/go/bin:$PATH
 
 export GOPATH=${COOKBOOK_BUILD}/gopath
 if ! command -v go &> /dev/null; then
-   GO_TARBALL=go1.24.6.linux-$( [ "$(uname -m)" = "aarch64" ] && echo "arm64" || echo "amd64" ).tar.gz
+   mkdir -p "$HOME/.local"
+   GO_TARBALL=go1.27.3.linux-$( [ "$(uname -m)" = "aarch64" ] && echo "arm64" || echo "amd64" ).tar.gz
    GO_DOWNLOAD_URL="https://dl.google.com/go/${GO_TARBALL}"
    echo "Installing Go..."
    wget -q --show-progress "${GO_DOWNLOAD_URL}"
-   tar -C "$HOME" -xzf "${GO_TARBALL}"
+   tar -C "$HOME/.local" -xzf "${GO_TARBALL}"
 fi
 
 # Go does not support out-of-tree builds :(
@@ -31,7 +32,7 @@ case "${TARGET}" in
 esac
 
 export CGO_ENABLED=1
-echo "go1.25.0" > VERSION # to set -trimpath
+echo "go1.27.3" > VERSION # to set -trimpath
 (cd ./src && bash ./make.bash)
 
 mkdir -p "${COOKBOOK_STAGE}"/usr/bin \
