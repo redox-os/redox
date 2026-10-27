@@ -110,6 +110,7 @@ goaccess = {}
 gobject-introspection = {}
 gitoxide = {}
 gstreamer = {}
+gzip = {}
 harfbuzz = {}
 hicolor-icon-theme = {}
 helix = {}

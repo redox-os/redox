@@ -1,5 +1,7 @@
-#TODO port gnulib fseterr.c
 [source]
-tar = "https://ftp.gnu.org/gnu/gzip/gzip-1.14.tar.gz"
+tar = "https://ftp.gnu.org/gnu/gzip/gzip-1.15.tar.gz"
 [build]
 template = "configure"
+configureflags = [
+  "ac_cv_have_decl___fseterr=yes"
+]
