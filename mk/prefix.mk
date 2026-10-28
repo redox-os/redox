@@ -213,6 +213,8 @@ $(PREFIX)/%.tar.gz: $(PREFIX)/%
 		--directory="$<" \
 		.
 
+PREFIX_FETCH_TAG=$(PREFIX)/fetch.tag
+
 # BUILD GCC ---------------------------------------------------
 $(PREFIX)/libtool-install: | $(FSTOOLS_TAG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
@@ -232,7 +234,26 @@ else
 	mv "$@.partial" "$@"
 endif
 
-$(PREFIX)/binutils-install: | $(PREFIX)/libtool-install $(FSTOOLS_TAG) $(CONTAINER_TAG)
+# libtool may be used during autoconf, so this depends after building libtool
+# it is fine to skip this, but this is used to fail early if sources fail due to autoconf
+$(PREFIX_FETCH_TAG): | $(PREFIX)/libtool-install $(FSTOOLS_TAG) $(CONTAINER_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
+	@echo "\033[1;36;49mFetching prefix sources\033[0m"
+	rm -f "$@"
+	export $(PREFIX_CONFIG) COOKBOOK_LIBTOOL_DIR=$(LIBTOOL_PATH) PATH="$(ROOT)/$(PREFIX)/libtool-install/bin:$$PATH" \
+		COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_TARGET=$(TARGET) COOKBOOK_CROSS_GNU_TARGET=$(GNU_TARGET) && \
+	$(REPO_BIN) fetch host:binutils-gdb host:gcc13 host:llvm21 relibc
+ifneq ($(PREFIX_USE_UPSTREAM_RUST_COMPILER),1)
+	export $(PREFIX_CONFIG) COOKBOOK_LIBTOOL_DIR=$(LIBTOOL_PATH) PATH="$(ROOT)/$(PREFIX)/libtool-install/bin:$$PATH" \
+		COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_TARGET=$(TARGET) COOKBOOK_CROSS_GNU_TARGET=$(GNU_TARGET) && \
+	$(REPO_BIN) fetch host:wasi-libc host:rust
+endif
+	touch "$@"
+endif
+
+$(PREFIX)/binutils-install: | $(PREFIX_FETCH_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
@@ -247,7 +268,7 @@ else
 	mv "$@.partial" "$@"
 endif
 
-$(PREFIX)/gcc-freestanding-install: $(PREFIX)/binutils-install | $(PREFIX)/libtool-install $(FSTOOLS_TAG) $(CONTAINER_TAG)
+$(PREFIX)/gcc-freestanding-install: $(PREFIX)/binutils-install | $(PREFIX_FETCH_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
@@ -267,7 +288,7 @@ else
 	mv "$@.partial" "$@"
 endif
 
-$(PREFIX)/relibc-freestanding-install: $(PREFIX)/gcc-freestanding-install | $(FSTOOLS_TAG) $(CONTAINER_TAG)
+$(PREFIX)/relibc-freestanding-install: $(PREFIX)/gcc-freestanding-install | $(PREFIX_FETCH_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
@@ -284,7 +305,7 @@ else
 	mv "$@.partial" "$@"
 endif
 
-$(PREFIX)/gcc-install: $(PREFIX)/relibc-freestanding-install | $(PREFIX)/libtool-install $(FSTOOLS_TAG) $(CONTAINER_TAG)
+$(PREFIX)/gcc-install: $(PREFIX)/relibc-freestanding-install | $(PREFIX)/libtool-install $(PREFIX_FETCH_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
@@ -403,7 +424,7 @@ endif
 # BUILD RUST ---------------------------------------------------
 else
 
-$(PREFIX)/wasip1-libc-install: $(PREFIX)/clang-install | $(FSTOOLS_TAG) $(CONTAINER_TAG)
+$(PREFIX)/wasip1-libc-install: $(PREFIX)/clang-install | $(PREFIX_FETCH_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
@@ -420,7 +441,7 @@ else
 # TODO: Cache from WASIP1_LIBC_TARGET is currently not cleared.
 endif
 
-$(PREFIX)/rust-install: | $(PREFIX)/wasip1-libc-install $(PREFIX)/gcc-install $(FSTOOLS_TAG) $(CONTAINER_TAG)
+$(PREFIX)/rust-install: | $(PREFIX)/wasip1-libc-install $(PREFIX)/gcc-install $(PREFIX_FETCH_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
@@ -439,7 +460,7 @@ endif
 endif
 
 # BUILD CLANG ---------------------------------------------------
-$(PREFIX)/clang-install: | $(PREFIX)/gcc-install $(FSTOOLS_TAG) $(CONTAINER_TAG)
+$(PREFIX)/clang-install: | $(PREFIX)/gcc-install $(PREFIX_FETCH_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
