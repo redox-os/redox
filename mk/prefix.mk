@@ -332,8 +332,6 @@ else
 	@#TODO: generates wrong lib path for libtool
 	rm -f "$@.partial"/$(GNU_TARGET)/lib/libstdc++.la
 	rm -f "$@.partial"/$(GNU_TARGET)/lib/libsupc++.la
-	@#TODO: Needed by clang, yet not emitted
-	ln -s crtbegin.o "$@.partial"/lib/gcc/$(GNU_TARGET)/13.2.0/crtbeginT.o
 # hosted libstdcxx
 	export PATH="$(ROOT)/$@.partial/bin:$$PATH" \
 		ACLOCAL_PATH="$(LIBTOOL_PATH)/share/aclocal:$$ACLOCAL_PATH" && \
