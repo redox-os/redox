@@ -1,4 +1,4 @@
-#TODO compile and test
+#TODO glutin crate error
 [source]
 git = "https://github.com/rayon-rs/rayon"
 shallow_clone = true

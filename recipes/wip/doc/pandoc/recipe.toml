@@ -1,0 +1,5 @@
+#TODO add a script for stack build system: https://pandoc.org/installing.html#compiling-from-source
+[source]
+tar = "https://hackage.haskell.org/package/pandoc-3.12/pandoc-3.12.tar.gz"
+[build]
+template = "custom"

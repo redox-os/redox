@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO port: unsupported platform, UnixPaths
 # build instructions: https://learn.netdata.cloud/docs/developer-and-contributor-corner/build-the-netdata-agent-yourself/compile-from-source-code#building-netdata
 [source]
 tar = "https://github.com/netdata/netdata/releases/download/v2.8.5/netdata-v2.8.5.tar.gz"

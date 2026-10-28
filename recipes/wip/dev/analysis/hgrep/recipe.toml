@@ -1,4 +1,4 @@
-#TODO compilation error, missing mimalloc sys/syscall.h
+#TODO compiled but untested
 [source]
 git = "https://github.com/rhysd/hgrep"
 shallow_clone = true

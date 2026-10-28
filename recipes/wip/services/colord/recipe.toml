@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO add gusb dep
 #TODO discover minimum dependencies from meson log
 [source]
 git = "https://github.com/hughsie/colord"
@@ -8,9 +8,14 @@ shallow_clone = true
 template = "meson"
 mesonflags = [
     "-Dsystemd=false",
-    "-Dudev-rules=false",
+    #"-Dudev-rules=false",
     "-Dintrospection=false",
     "-Dtests=false",
     "-Ddocs=false",
     "-Dman=false",
+]
+dependencies = [
+    "glib",
+    "liblcms",
+    "sqlite3",
 ]

@@ -1,4 +1,4 @@
-#TODO compile and test
+#TODO compiled but untested
 [source]
 git = "https://github.com/poghdev/Evcode-ide"
 shallow_clone = true

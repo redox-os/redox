@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO fix wxwidgets-gtk3 dep
 #TODO discover minimum dependencies from cmake log
 # build instructions: https://docs.codelite.org/build/build_from_sources/#linux
 [source]
@@ -7,8 +7,8 @@ rev = "18.3.0"
 shallow_clone = true
 [build]
 template = "cmake"
-#dependencies = [
+dependencies = [
     #"libssh",
-    #"sqlite3",
-    #"wxwidgets-gtk3",
-#]
+    "sqlite3",
+    "wxwidgets-gtk3",
+]

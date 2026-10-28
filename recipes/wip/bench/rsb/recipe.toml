@@ -1,6 +1,7 @@
-#TODO not compiled or tested
+#TODO openssl-sys crate error, make it use openssl3 recipe
 [source]
 git = "https://github.com/gamelife1314/rsb"
 shallow_clone = true
 [build]
 template = "cargo"
+dependencies = ["openssl3"]

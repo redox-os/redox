@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Servo
+Comment=Servoshell
+Exec=servo
+Icon=/usr/lib/servo/resources/servo_64.png
+Terminal=false
+Type=Application
+StartupNotify=true
+Categories=Network;WebBrowser;
+NoDisplay=true

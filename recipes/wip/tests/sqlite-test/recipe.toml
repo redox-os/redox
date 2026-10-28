@@ -1,3 +1,4 @@
+#TODO test
 [source]
 git = "https://github.com/sqlite/sqlite"
 shallow_clone = true

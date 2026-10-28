@@ -9,6 +9,10 @@ dependencies = [
     "lua54"
 ]
 script = """
-mkdir -pv "${COOKBOOK_STAGE}/include"
-cp -r "$COOKBOOK_SOURCE/c-api/." "${COOKBOOK_STAGE}/include"
+${CC} -O2 -fPIC ${CPPFLAGS} -c "${COOKBOOK_SOURCE}/c-api/compat-5.3.c" -o compat-5.3.o
+${AR} rcs libcompat53.a compat-5.3.o
+
+mkdir -p "${COOKBOOK_STAGE}/usr/lib" "${COOKBOOK_STAGE}/usr/include"
+cp libcompat53.a "${COOKBOOK_STAGE}/usr/lib/"
+cp "${COOKBOOK_SOURCE}/c-api/compat-5.3.h" "${COOKBOOK_STAGE}/usr/include/"
 """

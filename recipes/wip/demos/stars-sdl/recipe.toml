@@ -1,4 +1,4 @@
-#TODO compile and test
+#TODO can't find SDL2/_real_SDL_config.h
 #TODO add a command to install
 [source]
 git = "https://github.com/Patater/demokit"
@@ -8,7 +8,8 @@ shallow_clone = true
 template = "custom"
 dependencies = ["sdl2"]
 script = """
-rsync -av --delete "${COOKBOOK_SOURCE}/stars" ./
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+cd source/stars
 DYNAMIC_INIT
 "${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}"
 """

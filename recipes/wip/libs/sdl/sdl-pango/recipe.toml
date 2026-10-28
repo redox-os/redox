@@ -1,0 +1,7 @@
+#TODO compiled but untested
+[source]
+tar = "https://sourceforge.net/projects/sdlpango/files/SDL_Pango/0.1.2/SDL_Pango-0.1.2.tar.gz/download"
+script = "GNU_CONFIG_GET config.sub"
+[build]
+template = "configure"
+dependencies = ["pango"]

@@ -1,8 +1,7 @@
-#TODO not compiled or tested
+#TODO very outdated fs4 crate
 [source]
 git = "https://github.com/mstange/samply"
+shallow_clone = true
 [build]
-template = "custom"
-script = """
-cookbook_cargo_packages samply
-"""
+template = "cargo"
+cargopackages = ["samply"]

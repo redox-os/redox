@@ -1,10 +1,7 @@
-#TODO camino crate error
+#TODO tikv-jemalloc-sys crate error: unsupported platform
 [source]
 git = "https://github.com/woodruffw/zizmor"
 shallow_clone = true
 [build]
-template = "custom"
-script = """
-DYNAMIC_INIT
-cookbook_cargo_packages zizmor
-"""
+template = "cargo"
+cargopackages = ["zizmor"]

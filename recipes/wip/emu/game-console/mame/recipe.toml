@@ -1,14 +1,27 @@
-#TODO missing script for gnu make: https://docs.mamedev.org/initialsetup/compilingmame.html
+#TODO compile and test
+# cross-compilation doc: https://docs.mamedev.org/initialsetup/compilingmame.html#cross-compiling-mame
 [source]
 git = "https://github.com/mamedev/mame"
 rev = "mame0282"
 shallow_clone = true
 [build]
 template = "custom"
-dependencies = [
-    "sdl2",
-    "sdl2-ttf",
-    "fontconfig",
-    "qt5-base",
-    "qt5-tools",
-]
+#dependencies = [
+#    "sdl2",
+#    "sdl2-ttf",
+#    "fontconfig",
+#    "qt5-base",
+#    "qt5-tools",
+#]
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+DYNAMIC_INIT
+MAKEFLAGS=(
+    CROSS_BUILD=1
+    NO_OPENGL=1
+    NO_USE_PORTAUDIO=1
+    NO_USE_PULSEAUDIO=1
+)
+"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}" "${MAKEFLAGS[@]}"
+"${COOKBOOK_MAKE}" install DESTDIR="${COOKBOOK_STAGE}/usr"
+"""

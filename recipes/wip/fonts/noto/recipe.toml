@@ -7,6 +7,7 @@ template = "custom"
 script = """
 mkdir -pv "${COOKBOOK_STAGE}"/usr/share/fonts/Noto
 for f in "${COOKBOOK_SOURCE}"/fonts/*; do 
-echo cp -rv "${f}/full/ttf/* "${COOKBOOK_STAGE}/usr/share/fonts/Noto/$(basename ${f})/"
+mkdir "${COOKBOOK_STAGE}/usr/share/fonts/Noto/$(basename ${f})/"
+cp -rv "${f}/googlefonts/ttf"/* "${COOKBOOK_STAGE}/usr/share/fonts/Noto/$(basename ${f})/" || true
 done
 """

@@ -1,5 +1,6 @@
-#TODO not compiled or tested
+#TODO compiled but not tested
 [source]
 git = "https://github.com/0l3d/ffetch"
+shallow_clone = true
 [build]
 template = "cargo"

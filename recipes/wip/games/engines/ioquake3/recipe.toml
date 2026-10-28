@@ -1,8 +1,14 @@
 #TODO missing script for "make", see https://github.com/ioquake/ioq3#compilation-and-installation
 [source]
 git = "https://github.com/ioquake/ioq3"
+rev = "83a7762"
+shallow_clone = true
 [build]
-template = "custom"
-dependencies = [
-    "sdl2",
+template = "cmake"
+cmakeflags = [
+    "-DBUILD_SERVER=OFF",
+    "-DUSE_VOIP=OFF",
+    "-DUSE_MUMBLE=OFF",
+    "-DUSE_INTERNAL_LIBS=OFF",
 ]
+dependencies = ["sdl2"]

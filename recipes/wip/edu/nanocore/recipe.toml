@@ -1,9 +1,11 @@
 #TODO not compiled or tested
 [source]
 git = "https://github.com/AfaanBilal/NanoCore"
+shallow_clone = true
 [build]
 template = "custom"
 script = """
+DYNAMIC_INIT
 cookbook_cargo
 mkdir -pv "${COOKBOOK_STAGE}/usr/share/nanocore"
 cp -rv "${COOKBOOK_SOURCE}"/programs/* "${COOKBOOK_STAGE}/usr/share/nanocore"

@@ -1,0 +1,10 @@
+#TODO need "#import <alloca.h>"
+[source]
+git = "https://github.com/opencv/opencv"
+branch = "4.x"
+shallow_clone = true
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DOPENCV_FORCE_3RDPARTY_BUILD=ON"
+]

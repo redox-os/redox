@@ -1,0 +1,14 @@
+#TODO compile and test
+[source]
+git = "https://github.com/nkleemann/ascii-rain"
+rev = "39396dea0a84b4580f0ee5f46de9de4468566ed0"
+shallow_clone = true
+[build]
+template = "custom"
+dependencies = ["ncursesw"]
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/rain.c" ./
+mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
+DYNAMIC_INIT
+"${COOKBOOK_CC}" rain.c -o "${COOKBOOK_STAGE}"/usr/bin/rain -lncurses
+"""

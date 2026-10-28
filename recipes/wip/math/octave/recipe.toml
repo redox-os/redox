@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO enable gcc fortran frontend
 #TODO discover minimum dependencies from configure log
 [source]
 tar = "https://ftp.gnu.org/gnu/octave/octave-11.1.0.tar.lz"

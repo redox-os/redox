@@ -10,7 +10,6 @@ dependencies = [
     "openmp",
 ]
 script = """
-COOKBOOK_SOURCE="${COOKBOOK_SOURCE}/src"
 DYNAMIC_INIT
-cookbook_cmake
+cookbook_cmake "${COOKBOOK_SOURCE}"/src
 """

@@ -1,10 +1,10 @@
-#TODO not compiled or tested
+#TODO compiled but untested
 [source]
 git = "https://github.com/rezigned/tur"
 shallow_clone = true
 [build]
-template = "custom"
-script = """
-DYNAMIC_INIT
-cookbook_cargo_packages tur-cli tur-tui
-"""
+template = "cargo"
+cargopackages = [
+    "tur-cli",
+    "tur-tui",
+]

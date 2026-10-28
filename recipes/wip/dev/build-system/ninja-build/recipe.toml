@@ -1,7 +1,8 @@
-#TODO not compiled or tested 
+#TODO 'getloadavg' was not declared in this scope
 # build instructions: https://github.com/ninja-build/ninja#building-ninja-itself
 [source]
 git = "https://github.com/ninja-build/ninja"
 rev = "v1.13.1"
+shallow_clone = true
 [build]
 template = "cmake"

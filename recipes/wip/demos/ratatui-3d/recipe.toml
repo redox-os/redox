@@ -1,4 +1,4 @@
-#TODO compile and test
+#TODO compiled but not tested
 [source]
 git = "https://github.com/limlabs/ratatui-3d"
 shallow_clone = true
@@ -7,6 +7,5 @@ template = "cargo"
 cargoflags = ["--no-default-features --features=gltf,gpu"]
 cargoexamples = [
     "cornell",
-    "cube",
     "dna",
 ]

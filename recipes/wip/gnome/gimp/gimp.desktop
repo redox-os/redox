@@ -1,0 +1,15 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=GIMP
+GenericName=Image Editor
+Comment=Create images and edit photographs
+Keywords=GIMP;graphic;design;illustration;painting;
+Exec=gimp
+TryExec=gimp
+Icon=gimp
+Terminal=false
+Categories=Graphics;2DGraphics;RasterGraphics;GTK;
+StartupNotify=true
+MimeType=image/x-xcf;
+StartupWMClass=gimp

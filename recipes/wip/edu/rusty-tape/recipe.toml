@@ -1,10 +1,12 @@
 #TODO compiled but not tested
 [source]
 git = "https://github.com/Kkobarii/Rusty-Tape"
+shallow_clone = true
 [build]
 template = "custom"
 script = """
+DYNAMIC_INIT
+cookbook_cargo
 mkdir -pv "${COOKBOOK_STAGE}"/usr/share/rusty-tape
 cp -rv "${COOKBOOK_SOURCE}"/data/* "${COOKBOOK_STAGE}"/usr/share/rusty-tape
-cookbook_cargo
 """

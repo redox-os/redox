@@ -1,0 +1,6 @@
+#TODO compiled but not tested
+[source]
+tar = "https://github.com/mypaint/mypaint-brushes/releases/download/v2.0.2/mypaint-brushes-2.0.2.tar.xz"
+[build]
+template = "configure"
+

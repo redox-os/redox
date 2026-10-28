@@ -1,4 +1,5 @@
-#TODO not compiled or tested
+#TODO outdated metriken-core crate
+#TODO metriken-core crate error: distributed_slice is not implemented for this platform
 [source]
 git = "https://github.com/iopsystems/rpc-perf"
 shallow_clone = true

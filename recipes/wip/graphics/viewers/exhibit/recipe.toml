@@ -4,3 +4,6 @@ git = "https://github.com/Nokse22/Exhibit"
 rev = "v1.5.1"
 [build]
 template = "meson"
+dev-dependencies = [
+    "host:itstool",
+]

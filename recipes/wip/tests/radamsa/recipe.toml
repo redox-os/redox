@@ -1,5 +1,11 @@
-#TODO add script for gnu make:https://gitlab.com/akihe/radamsa#building-radamsa
+#TODO not compiled or tested
 [source]
 tar = "https://gitlab.com/akihe/radamsa/-/archive/v0.7/radamsa-v0.7.tar.bz2"
 [build]
 template = "custom"
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+DYNAMIC_INIT
+"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}"
+"${COOKBOOK_MAKE}" install DESTDIR="${COOKBOOK_STAGE}/usr"
+"""

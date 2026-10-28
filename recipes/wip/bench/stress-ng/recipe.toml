@@ -1,4 +1,4 @@
-#TODO missing script for gnu make: https://github.com/ColinIanKing/stress-ng#building-stress-ng
+#TODO '_SC_MAPPED_FILES' undeclared
 #TODO determine minimum dependencies
 [source]
 git = "https://github.com/ColinIanKing/stress-ng"
@@ -19,3 +19,9 @@ template = "custom"
 #    "zlib",
 #    "mesa",
 #]
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+DYNAMIC_INIT
+"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}"
+"${COOKBOOK_MAKE}" install DESTDIR="${COOKBOOK_STAGE}/usr"
+"""

@@ -1,8 +1,10 @@
-#TODO not compiled or tested
+#TODO atomic-write-file and nix crates error
 [source]
 git = "https://github.com/nasedkinpv/numr"
+shallow_clone = true
 [build]
-template = "custom"
-script = """
-cookbook_cargo_packages numr-cli numr-tui
-"""
+template = "cargo"
+cargopackages = [
+    "numr-cli",
+    "numr-tui",
+]

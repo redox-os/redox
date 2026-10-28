@@ -1,6 +1,7 @@
 #TODO not tested
 [source]
 git = "https://github.com/dwmkerr/hacker-laws"
+shallow_clone = true
 [build]
 template = "custom"
 script = """

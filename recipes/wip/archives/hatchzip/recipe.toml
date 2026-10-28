@@ -1,0 +1,11 @@
+#TODO build error: HatchZip has no platform module for this system yet; add one in src/platform/
+[source]
+git = "https://github.com/xevrion/hatchzip"
+shallow_clone = true
+[build]
+template = "cargo"
+cargopackages = [
+    "hatchzip",
+    "hatchzip-gui",
+]
+#dependencies = ["fontconfig"] # needed?

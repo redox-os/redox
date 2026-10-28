@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO makefile can't be found
 [source]
 git = "https://github.com/vanhauser-thc/thc-hydra"
 rev = "v9.7"

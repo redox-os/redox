@@ -1,0 +1,8 @@
+#TODO port exacl crate
+[source]
+git = "https://github.com/saidsay-so/pjdfstest"
+shallow_clone = true
+[build]
+template = "cargo"
+cargopath = "rust"
+compiler = "no-lto"

@@ -1,4 +1,4 @@
-#TODO compile and test
+#TODO can't find CMakeLists.txt file
 [source]
 git = "https://github.com/AKJ7/dinorunner"
 rev = "v1.3.2"

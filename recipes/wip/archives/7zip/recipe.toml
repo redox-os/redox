@@ -1,5 +1,5 @@
-#TODO missing script for gnu make: https://github.com/mcmilk/7-Zip/tree/master/DOC#readme
+#TODO add script for gnu make: https://github.com/ip7z/7zip/blob/main/DOC/readme.txt#L110
 [source]
-tar = "https://7-zip.org/a/7z2301-src.tar.xz"
+tar = "https://7-zip.org/a/7z2605-src.tar.xz"
 [build]
 template = "cmake"

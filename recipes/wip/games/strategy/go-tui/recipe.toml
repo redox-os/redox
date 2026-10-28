@@ -1,4 +1,4 @@
-#TODO compile and test
+#TODO compiled but not tested
 [source]
 git = "https://github.com/rs-jensen/go-game-tui"
 shallow_clone = true

@@ -1,9 +1,8 @@
-#TODO not compiled or tested
+#TODO compiled but untested
 [source]
 git = "https://github.com/rust-lang/rust-analyzer"
+rev = "2026-05-25"
 shallow_clone = true
 [build]
-template = "custom"
-script = """
-cookbook_cargo_packages rust-analyzer
-"""
+template = "cargo"
+cargopackages = ["rust-analyzer"]

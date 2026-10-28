@@ -1,9 +1,17 @@
-#TODO probably missing dependencies: https://github.com/mypaint/libmypaint/#dependencies
+#TODO compiled but not tested
 [source]
 tar = "https://github.com/mypaint/libmypaint/releases/download/v1.6.0/libmypaint-1.6.0.tar.xz"
+script = """
+GNU_CONFIG_GET config.sub
+"""
 [build]
-template = "configure"
+template = "custom"
+script = """
+DYNAMIC_INIT
+export CPPFLAGS+=" -I${COOKBOOK_SYSROOT}/include/glib-2.0 -I${COOKBOOK_SYSROOT}/lib/glib-2.0/include"
+cookbook_configure
+"""
 dependencies = [
     "glib",
-    "gobject-introspection",
+    "json-c",
 ]

@@ -1,5 +1,6 @@
 #TODO if-addrs crate error
 [source]
 git = "https://github.com/Macchina-CLI/macchina"
+shallow_clone = true
 [build]
 template = "cargo"

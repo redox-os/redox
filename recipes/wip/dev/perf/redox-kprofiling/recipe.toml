@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO compiled but untested
 [source]
 git = "https://gitlab.redox-os.org/redox-os/kprofiling"
 shallow_clone = true

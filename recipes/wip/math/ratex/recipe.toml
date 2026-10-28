@@ -1,12 +1,13 @@
-#TODO compile and test
+#TODO compiled but untested
+#TODO add script for installation
 [source]
 git = "https://github.com/erweixin/RaTeX"
 shallow_clone = true
 [build]
 template = "cargo"
 cargopackages = [
-    "ratex-render",
+    #"ratex-render",
     "ratex-pdf",
     "ratex-svg",
 ]
-cargoflags = ["--features cli embed-fonts"]
+cargoflags = ["--features=cli,embed-fonts"]

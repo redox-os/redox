@@ -1,0 +1,35 @@
+diff -ruwN source/CMakeLists.txt source-new/CMakeLists.txt
+--- source/CMakeLists.txt	2026-03-15 13:48:50.000000000 +0000
++++ source-new/CMakeLists.txt	2026-10-08 05:58:36.546675313 +0000
+@@ -686,6 +686,7 @@
+     set(COMMON_C_DEFINITIONS WIN32_LEAN_AND_MEAN _CRT_SECURE_NO_WARNINGS)
+ else()
+     set(COMMON_C_DEFINITIONS _GNU_SOURCE)
++    set(COMMON_C_DEFINITIONS HAVE_ALLOCA_H)
+ endif()
+ 
+ # MSVC requires C11 for stdatomic.h
+diff -ruwN source/include/libfyaml/libfyaml-endian.h source-new/include/libfyaml/libfyaml-endian.h
+--- source/include/libfyaml/libfyaml-endian.h	2026-03-15 13:48:50.000000000 +0000
++++ source-new/include/libfyaml/libfyaml-endian.h	2026-10-08 05:53:56.988388856 +0000
+@@ -42,7 +42,7 @@
+ extern "C" {
+ #endif
+ 
+-#if defined(__linux__) || defined(__CYGWIN__) || defined(__OpenBSD__) || defined(__GNU__) || defined(__EMSCRIPTEN__)
++#if defined(__linux__) || defined(__CYGWIN__) || defined(__OpenBSD__) || defined(__GNU__) || defined(__redox__) || defined(__EMSCRIPTEN__)
+ # include <endian.h>
+ #elif defined(__APPLE__)
+ # include <libkern/OSByteOrder.h>
+diff -ruwN source/src/util/fy-utils.c source-new/src/util/fy-utils.c
+--- source/src/util/fy-utils.c	2026-03-15 13:48:50.000000000 +0000
++++ source-new/src/util/fy-utils.c	2026-10-08 06:03:33.209958279 +0000
+@@ -960,7 +960,7 @@
+ 	if (!fyms)
+ 		return NULL;
+ 	memset(fyms, 0, sizeof(*fyms));
+-#if !defined(_WIN32)
++#if !defined(_WIN32) && !defined(__redox__)
+ 	fyms->fp = open_memstream(&fyms->buf, &fyms->size);
+ #else
+ 	fyms->fp = tmpfile();

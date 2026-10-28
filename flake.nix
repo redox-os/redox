@@ -86,7 +86,8 @@
               # with FSTOOLS_IN_PODMAN=1 these are not needed
               # without it, the installer fails to link FUSE somehow
               #fuse
-              qemu_kvm
+              qemu_kvm # for host arch
+              qemu
             ];
 
             LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath buildInputs;

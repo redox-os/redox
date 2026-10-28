@@ -1,4 +1,4 @@
-#TODO compile and test
+#TODO compiled but not tested
 [source]
 git = "https://gitlab.freedesktop.org/xdg/desktop-file-utils"
 rev = "0.28"

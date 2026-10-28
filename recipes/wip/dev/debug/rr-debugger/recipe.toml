@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO fix capnproto dep
 # build instructions: https://github.com/rr-debugger/rr/wiki/Building-And-Installing
 [source]
 git = "https://github.com/rr-debugger/rr"

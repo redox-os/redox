@@ -1,4 +1,4 @@
-#TODO compile and test
+#TODO missing "getpermit" make target for "all" target
 # installation instructions: https://cgit.git.savannah.gnu.org/cgit/tiger.git/tree/USING#n80
 [source]
 tar = "https://download.savannah.gnu.org/releases/tiger/tiger_3.2.4rc1.tar.gz"

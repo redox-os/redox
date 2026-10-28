@@ -1,5 +1,14 @@
-#TODO missing script for the "make.sh" file, see https://github.com/google/rowhammer-test#readme
+#TODO build and test
+# build script: https://github.com/google/rowhammer-test/blob/master/make.sh
 [source]
 git = "https://github.com/google/rowhammer-test"
+rev = "c1d2bd9"
+shallow_clone = true
 [build]
 template = "custom"
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/rowhammer_test.cc" ./
+mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
+DYNAMIC_INIT
+"${COOKBOOK_CXX}" rowhammer_test.cc -o "${COOKBOOK_STAGE}"/usr/bin/rowhammer-test -g -Wall -Werror -O2
+"""

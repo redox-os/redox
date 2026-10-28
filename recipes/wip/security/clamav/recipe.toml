@@ -1,10 +1,16 @@
-#TODO not compiled or tested
+#TODO try to disable libcheck?
 # build instructions: https://docs.clamav.net/manual/Installing/Installing-from-source-Unix.html
-#TODO missing Sendmail Mail Filter API (Milter)
 [source]
-tar = "https://www.clamav.net/downloads/production/clamav-1.5.0.tar.gz"
+tar = "https://www.clamav.net/downloads/production/clamav-1.5.4.tar.gz"
 [build]
-template = "custom"
+template = "cmake"
+cmakeflags = [
+    "-DENABLE_MILTER_DEFAULT=OFF",
+    "-DENABLE_TESTS_DEFAULT=OFF",
+    "-DENABLE_MAN_PAGES_DEFAULT=OFF",
+    "-DENABLE_UNRAR_DEFAULT=OFF",
+    "-DENABLE_SYSTEMD_DEFAULT=OFF",
+]
 dependencies = [
     "curl",
     "ncursesw",
@@ -15,8 +21,3 @@ dependencies = [
     "libxml2",
     "zlib",
 ]
-script = """
-DYNAMIC_INIT
-export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include/ncurses"
-cookbook_cmake
-"""

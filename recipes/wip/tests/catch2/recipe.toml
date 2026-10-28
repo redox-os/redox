@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO compiled but not tested
 [source]
 git = "https://github.com/catchorg/Catch2"
 rev = "v3.13.0"

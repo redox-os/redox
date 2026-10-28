@@ -1,4 +1,4 @@
-#TODO open crate error (after cargo update)
+#TODO very outdated "open" crate (after cargo update)
 [source]
 git = "https://github.com/sloganking/codevis"
 shallow_clone = true

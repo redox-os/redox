@@ -1,0 +1,11 @@
+[source]
+tar = "https://download.netsurf-browser.org/libs/releases/buildsystem-1.10.tar.gz"
+
+[build]
+template = "custom"
+script = """
+# Netsurf does not currently support out-of-tree builds :(
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+
+make install PREFIX=/usr DESTDIR="${COOKBOOK_STAGE}"
+"""

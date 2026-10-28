@@ -1,5 +1,6 @@
-#TODO openssl-sys crate error (after cargo update)
+#TODO fs-set-times crate error
 [source]
 git = "https://github.com/zellij-org/zellij"
+shallow_clone = true
 [build]
 template = "cargo"

@@ -1,4 +1,4 @@
-#TODO compile and test
+#TODO fix sdl3 dep
 [source]
 git = "https://github.com/jsoulier/black_hole_simulation"
 rev = "6205903db7f22d86d2dbc328831bfc2f68108b7a"

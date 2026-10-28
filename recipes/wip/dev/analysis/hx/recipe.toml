@@ -1,7 +1,13 @@
-#TODO missing script for gnu make: https://github.com/krpors/hx#compiling-and-running
+#TODO build and test
 [source]
 git = "https://github.com/krpors/hx"
 rev = "v1.0.15"
 shallow_clone = true
 [build]
 template = "custom"
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+DYNAMIC_INIT
+"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}"
+"${COOKBOOK_MAKE}" install DESTDIR="${COOKBOOK_STAGE}/usr"
+"""

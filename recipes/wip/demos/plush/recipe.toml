@@ -1,4 +1,4 @@
-#TODO compile and test
+#TODO error[E0658]: use of unstable library feature `float_algebraic`
 [source]
 git = "https://github.com/maximecb/plush"
 shallow_clone = true

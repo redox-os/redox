@@ -6,7 +6,7 @@ tar = "http://osirion.org/files/osirion-0.2.8-src.tar.bz2"
 template = "configure"
 dependencies = [
     "zlib",
-    "bullet-physics",
+    "bullet",
     "libpng",
     "libjpeg",
     "sdl2",

@@ -1,0 +1,14 @@
+#TODO port
+[source]
+git = "https://github.com/fastfetch-cli/fastfetch"
+rev = "2.69.0"
+shallow_clone = true
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DENABLE_ZLIB=OFF",
+    "-DSET_TWEAK=OFF",
+    "-DENABLE_LUA=OFF",
+    "-DENABLE_LIBZFS=OFF",
+    "-DENABLE_IMAGE_LOGO=OFF",
+]

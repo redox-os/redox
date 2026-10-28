@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO fix gobject-introspection dep
 # build instructions: https://gitlab.freedesktop.org/pipewire/pipewire/-/blob/master/INSTALL.md
 [source]
 git = "https://gitlab.freedesktop.org/pipewire/pipewire"
@@ -15,6 +15,8 @@ mesonflags = [
     "-Dflatpak=disabled",
 ]
 dependencies = [
-    "libpulse",
+    #"libpulse",
     "sdl2",
+    "glib",
+    "gobject-introspection",
 ]

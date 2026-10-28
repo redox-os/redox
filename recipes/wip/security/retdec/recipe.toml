@@ -2,10 +2,16 @@
 # build instructions: https://github.com/avast/retdec#process
 [source]
 git = "https://github.com/avast/retdec"
-rev = "53e55b4b26e9b843787f0e06d867441e32b1604e"
+rev = "9450585"
+shallow_clone = true
 [build]
 template = "cmake"
+cmakeflags = [
+    "-DRETDEC_USE_SYSTEM_CAPSTONE=ON",
+    "-DRETDEC_ENABLE_ALL=OFF",
+]
 dependencies = [
     "openssl3",
     "zlib",
+    "capstone",
 ]

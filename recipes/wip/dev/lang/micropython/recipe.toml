@@ -1,5 +1,4 @@
 #TODO compile and test
-# probably wrong gnu make command
 # build instructions:
 # https://github.com/micropython/micropython#the-micropython-cross-compiler-mpy-cross
 # https://github.com/micropython/micropython/blob/master/ports/unix/README.md
@@ -18,6 +17,6 @@ make -C ../../mpy-cross # build cross-compiler
 MAKEFLAGS=(
     VARIANT=minimal
 )
-"${COOKBOOK_MAKE}" install -j"$COOKBOOK_MAKE_JOBS" \
-"${MAKEFLAGS[@]}" DESTDIR="$COOKBOOK_STAGE/usr"
+"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}" "${MAKEFLAGS[@]}"
+"${COOKBOOK_MAKE}" install DESTDIR="${COOKBOOK_STAGE}/usr"
 """

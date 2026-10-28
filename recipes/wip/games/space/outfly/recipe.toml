@@ -1,5 +1,6 @@
-#TODO not compiled or tested
+#TODO bevy_embedded_assets crate error
 [source]
 git = "https://codeberg.org/outfly/outfly"
+shallow_clone = true
 [build]
 template = "cargo"

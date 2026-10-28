@@ -1,6 +1,7 @@
 #TODO make the libpcap dependency work
 [source]
 git = "https://github.com/kpcyrd/sniffglue"
+shallow_clone = true
 [build]
 template = "cargo"
 dependencies = [

@@ -1,8 +1,7 @@
 #TODO nnd crate error
 [source]
 git = "https://github.com/al13n321/nnd"
+shallow_clone = true
 [build]
-template = "custom"
-script = """
-cookbook_cargo --profile=dbgo
-"""
+template = "cargo"
+cargoflags = ["--profile=dbgo"]

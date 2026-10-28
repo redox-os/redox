@@ -1,6 +1,7 @@
-#TODO make libnettle work
+#TODO nettle-sys crate error
 [source]
 git = "https://gitlab.com/sequoia-pgp/sequoia-sqv"
+shallow_clone = true
 [build]
 template = "cargo"
 dependencies = [

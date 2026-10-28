@@ -1,4 +1,5 @@
-#TODO: runtime crash
+#STATUS: redox guest working in terminal mode and gtk frontend
+#TODO: fix sdl frontend and linux guest boot
 [source]
 git = "https://github.com/jackpot51/qemu.git"
 shallow_clone = true

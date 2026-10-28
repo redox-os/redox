@@ -1,7 +1,15 @@
-#TODO missing script for "make", see https://trac.smokin-guns.org/wiki/SmokinGuns/Building/linux
-#TODO bundled with the ioquake3 engine?
+#TODO build and test
+# bundled with the ioquake3 engine?
 #TODO determine dependencies
 [source]
 git = "https://github.com/smokin-guns/SmokinGuns"
+rev = "v1.1"
+shallow_clone = true
 [build]
 template = "custom"
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+DYNAMIC_INIT
+"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}"
+"${COOKBOOK_MAKE}" install DESTDIR="${COOKBOOK_STAGE}/usr"
+"""

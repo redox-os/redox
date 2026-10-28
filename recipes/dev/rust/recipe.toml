@@ -33,9 +33,6 @@ sed -i "s|TARGET|${TARGET}|g" config.toml
 else
 
 DYNAMIC_INIT
-# Linker flags for stage2 compiler (host -> target)
-ARCH="${TARGET%%-*}"
-export CARGO_TARGET_${ARCH^^}_UNKNOWN_REDOX_RUSTFLAGS="${RUSTFLAGS}" # Rust
 # Hack for Rust errorneusly running `llvm-config --version` on cross compiled llvm-config
 cat "${COOKBOOK_ROOT}/bin/${TARGET}-llvm-config" > "${COOKBOOK_SYSROOT}/bin/llvm-config"
 # Hack for Rust stage1 being dynamically linked with LLVM in prefix toolchain

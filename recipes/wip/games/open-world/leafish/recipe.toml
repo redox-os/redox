@@ -1,6 +1,7 @@
-#TODO make gtk3 work
+#TODO glutin crate error (after cargo update)
 [source]
 git = "https://github.com/Lea-fish/Leafish"
+shallow_clone = true
 [build]
 template = "cargo"
 dependencies = [

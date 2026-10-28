@@ -1,7 +1,7 @@
-#TODO missing script for "make", see https://gitlab.com/xonotic/xonotic/-/wikis/Compiling
+#TODO build and test
+# build instructions: https://gitlab.com/xonotic/xonotic/-/wikis/Compiling
 [source]
-git = "https://gitlab.com/xonotic/xonotic"
-rev = "0100f2c8d7947267292db66714c1af55039809ad"
+tar = "https://gitlab.com/xonotic/xonotic/-/archive/xonotic-v0.8.6/xonotic-xonotic-v0.8.6.tar.bz2"
 [build]
 template = "custom"
 dependencies = [
@@ -15,3 +15,9 @@ dependencies = [
     "curl",
     "rsync",
 ]
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+DYNAMIC_INIT
+"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}"
+"${COOKBOOK_MAKE}" install DESTDIR="${COOKBOOK_STAGE}/usr"
+"""

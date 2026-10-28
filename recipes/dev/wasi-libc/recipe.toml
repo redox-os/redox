@@ -10,5 +10,5 @@ shallow_clone = true
 template = "custom"
 compiler = "clang"
 script = """
-cookbook_cmake
+cookbook_cmake -DCMAKE_LINK_DEPENDS_USE_LINKER=FALSE
 """

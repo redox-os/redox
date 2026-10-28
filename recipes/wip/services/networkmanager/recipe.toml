@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO patch to disable libudev
 #TODO discover minimum dependencies from meson log
 # build instructions: https://gitlab.freedesktop.org/NetworkManager/NetworkManager/-/blob/main/CONTRIBUTING.md#building-from-source
 # freebsd has a shim to bypass linux dependencies: https://github.com/freebsd/freebsd-ports/blob/main/net-mgmt/networkmanager-shim/Makefile
@@ -17,7 +17,7 @@ mesonflags = [
     "-Dmodem_manager=false",
     "-Dnm_cloud_setup=false",
     "-Dnbft=false",
-    "-Dclat=false",
+    #"-Dclat=false",
     "-Dintrospection=false",
     "-Dman=false",
     "-Dtests=no",
@@ -32,8 +32,9 @@ mesonflags = [
     "-Dcrypto=null",
     "-Dppp=false",
 ]
-#dependencies = [
+dependencies = [
+    "libuuid",
     #"libpsl",
     #"readline",
     #"gnutls3",
-#]
+]

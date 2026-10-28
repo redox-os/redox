@@ -1,7 +1,7 @@
-#TODO compile and test
+#TODO shared_library crate error: cannot find module or crate `dl` in this scope
 [source]
 git = "https://github.com/KaminariOS/rustracer"
 shallow_clone = true
 [build]
 template = "cargo"
-cargoexamples = ["gltf-renderer"]
+cargopackages = ["gltf-renderer"]

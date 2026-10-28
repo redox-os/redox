@@ -1,0 +1,13 @@
+
+[source]
+tar = "https://github.com/hughsie/libxmlb/releases/download/0.3.29/libxmlb-0.3.29.tar.xz"
+
+[build]
+template = "meson"
+mesonflags = [
+    "-Dintrospection=false"
+]
+dependencies = [
+    "glib",
+    "zstd",
+]

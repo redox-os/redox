@@ -1,0 +1,44 @@
+diff -ruwN source/babl/babl-conversion.c source-new/babl/babl-conversion.c
+--- source/babl/babl-conversion.c	2026-03-10 15:56:45.000000000 +0000
++++ source-new/babl/babl-conversion.c	2026-10-08 02:54:11.064600969 +0000
+@@ -18,6 +18,7 @@
+ 
+ 
+ #include "config.h"
++#include <alloca.h>
+ #include <string.h>
+ #include <stdarg.h>
+ #include <math.h>
+diff -ruwN source/babl/babl-fish-path.c source-new/babl/babl-fish-path.c
+--- source/babl/babl-fish-path.c	2026-03-10 15:56:45.000000000 +0000
++++ source-new/babl/babl-fish-path.c	2026-10-08 02:54:11.064600969 +0000
+@@ -18,6 +18,7 @@
+ 
+ #include "config.h"
+ #include <math.h>
++#include <alloca.h>
+ #ifdef _WIN32
+ #include <malloc.h>
+ #endif
+diff -ruwN source/babl/babl-polynomial.c source-new/babl/babl-polynomial.c
+--- source/babl/babl-polynomial.c	2026-03-10 15:56:45.000000000 +0000
++++ source-new/babl/babl-polynomial.c	2026-10-08 02:54:11.064600969 +0000
+@@ -51,6 +51,7 @@
+ 
+ #include "config.h"
+ #include <string.h>
++#include <alloca.h>
+ #include <math.h>
+ #ifdef _WIN32
+ #include <malloc.h>
+diff -ruwN source/extensions/sse2-float.c source-new/extensions/sse2-float.c
+--- source/extensions/sse2-float.c	2026-03-10 15:56:45.000000000 +0000
++++ source-new/extensions/sse2-float.c	2026-10-08 02:54:11.064600969 +0000
+@@ -25,6 +25,7 @@
+ /* SSE 2 */
+ #include <emmintrin.h>
+ 
++#include <alloca.h>
+ #include <stdint.h>
+ #include <stdlib.h>
+ 

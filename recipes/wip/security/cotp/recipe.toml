@@ -1,12 +1,9 @@
-#TODO not compiled or tested
+#TODO outdated nix crate?
 [source]
 git = "https://github.com/replydev/cotp"
+shallow_clone = true
 [build]
-template = "custom"
+template = "cargo"
 dependencies = [
     "libxkbcommon",
 ]
-script = """
-DYNAMIC_INIT
-cookbook_cargo
-"""

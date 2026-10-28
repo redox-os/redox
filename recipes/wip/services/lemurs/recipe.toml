@@ -1,6 +1,7 @@
-#TODO not compiled or tested
+#TODO outdated users crate
 [source]
 git = "https://github.com/coastalwhite/lemurs"
+shallow_clone = true
 [build]
 template = "custom"
 script = """

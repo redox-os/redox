@@ -2,4 +2,4 @@
 [source]
 tar = "https://poppler.freedesktop.org/poppler-data-0.4.12.tar.gz"
 [build]
-template = "custom"
+template = "cmake"

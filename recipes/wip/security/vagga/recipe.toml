@@ -1,5 +1,6 @@
-#TODO libc and nix crate errors (after cargo update)
+#TODO very outdated nix crate (after cargo update)
 [source]
 git = "https://github.com/tailhook/vagga"
+shallow_clone = true
 [build]
 template = "cargo"

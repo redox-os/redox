@@ -1,5 +1,4 @@
 #TODO compile and test
-# probably wrong gnu make command
 [source]
 git = "https://git.sr.ht/~sircmpwn/wev"
 rev = "1.1.0"
@@ -13,5 +12,6 @@ dependencies = [
 script = """
 rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 DYNAMIC_INIT
-"${COOKBOOK_MAKE}" install -j"$COOKBOOK_MAKE_JOBS" "${MAKEFLAGS[@]}" DESTDIR="$COOKBOOK_STAGE/usr"
+"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}"
+"${COOKBOOK_MAKE}" install DESTDIR="${COOKBOOK_STAGE}/usr"
 """

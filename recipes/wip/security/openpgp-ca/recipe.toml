@@ -1,9 +1,11 @@
 #TODO make the libpcsclite dependency work
 [source]
 git = "https://gitlab.com/openpgp-ca/openpgp-ca"
+shallow_clone = true
 [build]
 template = "custom"
 script = """
+DYNAMIC_INIT
 cookbook_cargo_packages openpgp-ca openpgp-ca-restd
 """
 dependencies = [

@@ -1,5 +1,6 @@
 #TODO compiled but not tested (after cargo update)
 [source]
 git = "https://github.com/DhruvDh/upscaler"
+shallow_clone = true
 [build]
 template = "cargo"

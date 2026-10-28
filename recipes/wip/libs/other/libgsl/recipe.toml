@@ -1,5 +1,6 @@
-#TODO can't recognize Redox target
+#TODO compiled but untested
 [source]
 tar = "https://ftp.gnu.org/gnu/gsl/gsl-2.7.1.tar.gz"
+script = "GNU_CONFIG_GET config.sub"
 [build]
 template = "configure"

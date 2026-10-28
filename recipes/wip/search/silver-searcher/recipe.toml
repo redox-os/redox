@@ -1,0 +1,10 @@
+#TODO compile and test
+[source]
+tar = "https://geoff.greer.fm/ag/releases/the_silver_searcher-2.2.0.tar.gz"
+[build]
+template = "configure"
+dependencies = [
+    "pcre",
+    "zlib",
+    "xz",
+]

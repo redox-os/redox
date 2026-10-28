@@ -1,4 +1,5 @@
-#TODO missing script for gnu make: https://git.zx2c4.com/wireguard-tools/tree/README.md
+#TODO build and test
+# build instructions: https://git.zx2c4.com/wireguard-tools/tree/README.md
 [source]
 tar = "https://git.zx2c4.com/wireguard-tools/snapshot/wireguard-tools-1.0.20260223.tar.xz"
 [build]
@@ -7,3 +8,9 @@ template = "custom"
 dependencies = [
     "wireguard-rs",
 ]
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/src" ./
+DYNAMIC_INIT
+"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}"
+"${COOKBOOK_MAKE}" install DESTDIR="${COOKBOOK_STAGE}/usr"
+"""

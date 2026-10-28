@@ -1,4 +1,4 @@
-#TODO camino crate error
+#TODO openssl-sys crate error, make it use openssl3 recipe
 [source]
 git = "https://github.com/anistark/feluda"
 shallow_clone = true

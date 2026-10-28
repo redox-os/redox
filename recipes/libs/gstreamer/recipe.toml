@@ -11,7 +11,7 @@ template = "custom"
 dependencies = [
     "bzip2",
     "curl",
-    #TODO: "ffmpeg6",
+    "ffmpeg6",
     "gdk-pixbuf",
     "libass",
     "libffi",
@@ -21,6 +21,7 @@ dependencies = [
     "libsoup",
     "libwebp",
     "mesa",
+    "libfdk-aac",
     #TODO: "openal",
     "pango",
 ]
@@ -34,7 +35,7 @@ CFLAGS="${CFLAGS} -DM_LN2=0.69314718055994530942"
 cookbook_meson \
     -Ddevtools=disabled \
     -Dexamples=disabled \
-    -Dlibav=disabled \
+    -Dlibav=enabled \
     -Dlibnice=disabled \
     -Dorc=disabled \
     -Dtests=disabled \

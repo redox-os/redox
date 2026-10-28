@@ -1,4 +1,4 @@
-#TODO compile and test
+#TODO build error: can be cross-compiled?
 [source]
 git = "https://github.com/prp/franken-solver"
 shallow_clone = true

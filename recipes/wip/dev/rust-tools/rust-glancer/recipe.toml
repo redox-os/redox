@@ -1,4 +1,4 @@
-#TODO compile and test
+#TODO outdated crates
 [source]
 git = "https://github.com/rust-glancer/rust-glancer"
 shallow_clone = true

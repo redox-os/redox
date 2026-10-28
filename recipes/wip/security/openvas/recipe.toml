@@ -1,3 +1,4 @@
+#TODO fix krb5 dep
 #TODO discover minimum dependencies from cmake log
 # build instructions: https://github.com/greenbone/openvas-scanner/blob/main/INSTALL.md
 [source]
@@ -6,20 +7,20 @@ rev = "v23.45.6"
 shallow_clone = true
 [build]
 template = "cmake"
-#dependencies = [
+dependencies = [
     #"net-snmp",
     #"libpcap",
-    #"glib",
-    #"json-glib",
+    "glib",
+    "json-glib",
     #"libgcrypt",
     #"gpgme",
     #"redis",
     #"libssh",
     #"libksba",
-    #"gnutls",
-    #"curl",
+    "gnutls3",
+    "curl",
     #"libbsd",
-    #"krb5",
+    "krb5",
     #"gvm-libs",
     #"file",
-#]
+]

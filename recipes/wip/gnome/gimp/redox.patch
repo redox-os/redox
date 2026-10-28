@@ -1,0 +1,472 @@
+diff -ruwN source/app/widgets/gimpdashboard.c source-new/app/widgets/gimpdashboard.c
+--- source/app/widgets/gimpdashboard.c	2026-04-17 08:37:38.000000000 +0000
++++ source-new/app/widgets/gimpdashboard.c	2026-10-08 08:12:01.951143761 +0000
+@@ -2243,7 +2243,7 @@
+   clock_t               curr_usage;
+   struct tms            tms;
+ 
+-  curr_clock = times (&tms);
++  curr_clock = (clock_t) -1;//times (&tms);
+ 
+   if (curr_clock == (clock_t) -1)
+     {
+diff -ruwN source/desktop/meson.build source-new/desktop/meson.build
+--- source/desktop/meson.build	2026-04-17 08:37:38.000000000 +0000
++++ source-new/desktop/meson.build	2026-10-08 06:34:47.957042051 +0000
+@@ -5,7 +5,7 @@
+ desktop_conf.set('GIMP_VERSION',      gimp_version)
+ desktop_conf.set('GIMP_APP_VERSION',  gimp_app_version)
+ desktop_conf.set('GIMP_DESKTOP_NAME', gimp_desktop_name)
+-desktop_conf.set('MIME_TYPES',        'image/x-xcf;' + MIMEtypes_dep.get_variable('MIMEtypes'))
++desktop_conf.set('MIME_TYPES',        'image/x-xcf;')
+ desktop_conf.set('BUG_REPORT_URL',    bug_report_url)
+ 
+ desktopfilein = configure_file(
+diff -ruwN source/gimp-data/meson.build source-new/gimp-data/meson.build
+--- source/gimp-data/meson.build	2026-04-07 19:54:05.000000000 +0000
++++ source-new/gimp-data/meson.build	2026-10-08 06:34:28.962938109 +0000
+@@ -1,9 +1,5 @@
+ ## Tools ##
+ 
+-native_glib_minver = '2.2.0'
+-native_glib = dependency('glib-2.0',    version: '>='+native_glib_minver, native: true)
+-native_rsvg = dependency('librsvg-2.0', version: '>='+rsvg_minver, native: true)
+-
+ subdir('tools')
+ 
+ ## Data ##
+diff -ruwN source/gimp-data/tools/colorsvg2png.c source-new/gimp-data/tools/colorsvg2png.c
+--- source/gimp-data/tools/colorsvg2png.c	2026-04-07 19:54:05.000000000 +0000
++++ source-new/gimp-data/tools/colorsvg2png.c	2026-10-08 06:34:20.069421216 +0000
+@@ -15,80 +15,52 @@
+  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  */
+ 
+-#include <glib/gprintf.h>
+-#include <librsvg/rsvg.h>
++#include <stdio.h>
++#include <stdlib.h>
+ 
++// Stubbed to avoid compiling native glib/librsvg
+ int
+ main (int argc, char **argv)
+ {
+-  GError            *error = NULL;
+-  RsvgHandle        *handle;
+-  cairo_surface_t   *surface;
+-  cairo_t           *cr;
+-#if LIBRSVG_CHECK_VERSION(2, 46, 0)
+-  RsvgRectangle      target_rect;
+-#endif
+-
+-  gchar             *input;
+-  gchar             *output;
+-  gint               dim;
+-  gint               retval = 0;
++  FILE *in_file;
++  FILE *out_file;
++  size_t bytes_read;
++  char buffer[8192];
+ 
+   if (argc != 4)
+     {
+-      g_fprintf (stderr, "Usage: colorsvg2png svg-image png-output size\n");
++      fprintf (stderr, "Usage: colorsvg2png svg-image png-output size\n");
+       return 1;
+     }
+ 
+-  input  = argv[1];
+-  output = argv[2];
+-  dim    = (gint) g_ascii_strtoull (argv[3], NULL, 10);
+-  if (dim < 1)
++  in_file = fopen (argv[1], "rb");
++  if (!in_file)
+     {
+-      g_fprintf (stderr, "Usage: invalid dimension %d\n", dim);
++      fprintf (stderr, "Error: failed to open input file '%s'\n", argv[1]);
+       return 1;
+     }
+ 
+-  handle = rsvg_handle_new_from_file (input, &error);
+-  if (! handle)
++  out_file = fopen (argv[2], "wb");
++  if (!out_file)
+     {
+-      g_fprintf (stderr,
+-                 "Error: failed to load '%s' as SVG: %s\n",
+-                 input, error->message);
+-      g_error_free (error);
++      fprintf (stderr, "Error: failed to open output file '%s'\n", argv[2]);
++      fclose (in_file);
+       return 1;
+     }
+ 
+-  surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, dim, dim);
+-  cr = cairo_create (surface);
+-
+-#if LIBRSVG_CHECK_VERSION(2, 46, 0)
+-  target_rect.x = target_rect.y = 0;
+-  target_rect.width = target_rect.height = dim;
+-
+-  if (! rsvg_handle_render_document (handle, cr, &target_rect, NULL))
+-#else
+-  if (! rsvg_handle_render_cairo (handle, cr))
+-#endif
++  while ((bytes_read = fread (buffer, 1, sizeof(buffer), in_file)) > 0)
+     {
+-      g_fprintf (stderr,
+-                 "Error: failed to render '%s'\n",
+-                 input);
+-      retval = 1;
+-    }
+-
+-  if (retval == 0 &&
+-      cairo_surface_write_to_png (surface, output) != CAIRO_STATUS_SUCCESS)
++      if (fwrite (buffer, 1, bytes_read, out_file) != bytes_read)
+     {
+-      g_fprintf (stderr,
+-                 "Error: failed to write '%s'\n",
+-                 output);
+-      retval = 1;
++          fprintf (stderr, "Error: failed to write to '%s'\n", argv[2]);
++          fclose (in_file);
++          fclose (out_file);
++          return 1;
++        }
+     }
+ 
+-  cairo_surface_destroy (surface);
+-  cairo_destroy (cr);
+-  g_object_unref (handle);
++  fclose (in_file);
++  fclose (out_file);
+ 
+-  return retval;
++  return 0;
+ }
+diff -ruwN source/gimp-data/tools/meson.build source-new/gimp-data/tools/meson.build
+--- source/gimp-data/tools/meson.build	2026-04-07 19:54:05.000000000 +0000
++++ source-new/gimp-data/tools/meson.build	2026-10-08 06:34:25.152716659 +0000
+@@ -2,8 +2,6 @@
+   'colorsvg2png.c',
+   native: true,
+   dependencies: [
+-    native_glib,
+-    native_rsvg
+   ],
+   # In case b_sanitize was set, we don't really care if the tool has issues (in
+   # particular we experienced some memory leaks with b_sanitize=address, within
+diff -ruwN source/libgimp/gimpplugin.c source-new/libgimp/gimpplugin.c
+--- source/libgimp/gimpplugin.c	2026-04-17 08:37:38.000000000 +0000
++++ source-new/libgimp/gimpplugin.c	2026-10-08 07:14:34.086664710 +0000
+@@ -24,6 +24,7 @@
+ #include <errno.h>
+ #include <libintl.h>
+ #include <string.h>
++#include <sys/select.h>
+ 
+ #include "gimp.h"
+ 
+diff -ruwN source/libgimp/meson.build source-new/libgimp/meson.build
+--- source/libgimp/meson.build	2026-04-17 08:37:38.000000000 +0000
++++ source-new/libgimp/meson.build	2026-10-08 08:06:39.354346391 +0000
+@@ -637,40 +637,3 @@
+     )
+   endif
+ endif
+-
+-if not platform_osx and host_cpu_family != 'x86'
+-  nm = find_program('nm', required: false)
+-
+-  # Verify .def files for Windows linking.
+-  # We check this on non-Windows platform (Debian) on CI, and on Windows itself.
+-  custom_target('check-def-files',
+-    input: [
+-      '../libgimpbase/gimpbase.def',
+-      '../libgimpcolor/gimpcolor.def',
+-      '../libgimpconfig/gimpconfig.def',
+-      '../libgimp/gimp.def',
+-      '../libgimp/gimpui.def',
+-      '../libgimpmath/gimpmath.def',
+-      '../libgimpmodule/gimpmodule.def',
+-      '../libgimpthumb/gimpthumb.def',
+-      '../libgimpwidgets/gimpwidgets.def',
+-    ],
+-    depends: [
+-      libgimpbase,
+-      libgimpcolor,
+-      libgimpconfig,
+-      libgimp,
+-      libgimpui,
+-      libgimpmath,
+-      libgimpmodule,
+-      libgimpthumb,
+-      libgimpwidgets
+-    ],
+-    env: nm.found() ? { 'NM': nm.full_path() } : {},
+-    output: [ 'check-def-files', ],
+-    command: [
+-      python, meson.project_source_root() / 'tools' / 'defcheck.py', meson.project_source_root(),
+-    ],
+-    build_by_default: true,
+-  )
+-endif
+diff -ruwN source/libgimpbase/meson.build source-new/libgimpbase/meson.build
+--- source/libgimpbase/meson.build	2026-04-17 08:37:38.000000000 +0000
++++ source-new/libgimpbase/meson.build	2026-10-08 06:37:40.002041333 +0000
+@@ -135,20 +135,3 @@
+   libgimpbase_headers,
+   subdir: gimp_api_name / 'libgimpbase',
+ )
+-
+-# Test program, not installed
+-executable('test-cpu-accel',
+-  'test-cpu-accel.c',
+-  include_directories: rootInclude,
+-  dependencies: [
+-    glib,
+-  ],
+-  c_args: [
+-    '-DG_LOG_DOMAIN="LibGimpBase"',
+-    '-DGIMP_BASE_COMPILATION',
+-  ],
+-  link_with: [
+-    libgimpbase,
+-  ],
+-  install: false,
+-)
+diff -ruwN source/meson.build source-new/meson.build
+--- source/meson.build	2026-04-17 08:37:38.000000000 +0000
++++ source-new/meson.build	2026-10-08 07:11:16.124158097 +0000
+@@ -486,8 +486,6 @@
+ # minimum requirement.
+ add_project_arguments('-DGLIB_VERSION_MAX_ALLOWED=GLIB_VERSION_2_76', language: 'c')
+ 
+-gi                = dependency('gobject-introspection-1.0')
+-
+ gobject           = dependency('gobject-2.0',        version: '>='+glib_minver)
+ gmodule           = dependency('gmodule-no-export-2.0')
+ 
+@@ -573,38 +571,6 @@
+   pangoft2     = dependency('pangoft2',    version: '>='+pango_minver)
+ endif
+ 
+-if cc.run('''
+-  #include <pango/pango.h>
+-  #include <string.h>
+-  #include <stdlib.h>
+-
+-  int main () {
+-    const char *text = "ภาษาไทย";
+-    int char_count = 7;
+-    int byte_len = strlen(text);
+-    int breaks_found = 0;
+-
+-    PangoLogAttr *attrs = (PangoLogAttr *) calloc(char_count + 1, sizeof(PangoLogAttr));
+-
+-    pango_get_log_attrs (text, byte_len, -1, pango_language_from_string("th"), attrs, char_count + 1);
+-    for (int i = 1; i < char_count; i++) {
+-      if (attrs[i].is_line_break)
+-        breaks_found++;
+-    }
+-
+-    if (breaks_found > 0)
+-      return 0;
+-    else
+-      return 1;
+-  }
+-  ''',
+-  name: 'pango is built with libthai support',
+-  dependencies: [pango]).returncode() != 0
+-  thai_warning = 'Pango was not built with libthai support. Line breaking on Text tool may be incorrect on Thai language.'
+-  warning(thai_warning)
+-  warnings += thai_warning
+-endif
+-
+ conf.set('PANGO_DISABLE_DEPRECATED',pangocairo.version().version_compare('<1.43'))
+ 
+ # Check if Pango is built with a recent fontconfig
+@@ -801,7 +767,7 @@
+ ################################################################################
+ # Check for x11 support
+ 
+-x11_target = gtk3.get_variable(pkgconfig: 'targets').contains('x11')
++x11_target = false
+ 
+ x11   = x11_target ? dependency('x11')    : no_dep
+ xmu   = x11_target ? dependency('xmu')    : no_dep
+@@ -1200,45 +1166,7 @@
+   py_candidates += ['python3.' + i.to_string()]
+ endforeach
+ 
+-python = disabler()
+-pygobject_found = ''
+-pygobject_gexiv2_found = false
+-foreach py : py_candidates
+-  #Check if PyGobject installation have pycairo (#13105)
+-  python_tmp = pythonmod.find_installation(py, modules: ['gi', 'cairo'], required: false)
+-  if python_tmp.found() and python_tmp.language_version().version_compare(python3_minver)
+-    python = python_tmp
+-    #Check if PyGObject installation have minimum version
+-    pygobject_found = run_command(python_tmp, '-c',
+-                                  '\n'.join([
+-                                  '''import gi''',
+-                                  '''print(".".join(map(str, gi.version_info)))''']),
+-                                  check: false)
+-    #Check if PyGObject installation have gexiv2 (#15179)
+-    #(This is specially important on MacPorts where gexiv2 have many python variants)
+-    pygobject_gexiv2_found = run_command(python_tmp, '-c',
+-                                        '\n'.join([
+-                                        '''import sys, gi''',
+-                                        '''try:''',
+-                                        '''    import gi.repository.GExiv2''',
+-                                        '''except (ImportError):''',
+-                                        '''    sys.exit(1)''']),
+-                                        check: false).returncode() == 0
+-    if pygobject_found.returncode() == 0 and pygobject_found.stdout().strip().version_compare(pygobject_minver) and pygobject_gexiv2_found
+-      break
+-    endif
+-  endif
+-endforeach
+-
+-if not python.found() or not python.language_version().version_compare(python3_minver)
+-  error('No suitable Python installation (with cairo and gi modules) found. Minimum supported version: @0@'.format(python3_minver))
+-endif
+-message('Found Python @0@'.format(python.language_version()))
+-
+-if pygobject_found.returncode() != 0 or not pygobject_found.stdout().strip().version_compare(pygobject_minver) or not pygobject_gexiv2_found
+-  error('No suitable PyGObject (with GExiv2 submodule) found. Minimum supported version: @0@'.format(pygobject_minver))
+-endif
+-message('Found PyGObject: @0@'.format(pygobject_found.stdout().strip()))
++python = pythonmod.find_installation('python3')
+ 
+ ## Javascript
+ 
+@@ -1756,49 +1684,7 @@
+ ).returncode() == 0
+ 
+ generate_version_h = is_git_repository or not has_version_h
+-if generate_version_h
+-  gitversion_h1 = vcs_tag(
+-    input : 'app/git-version.h.in',
+-    output: 'git-version.h.in.1',
+-    command: [ 'git', 'describe', '--always', ],
+-    replace_string: '@GIMP_GIT_VERSION@',
+-    fallback: 'unknown (unsupported)',
+-  )
+-  gitversion_h2 = vcs_tag(
+-    input : gitversion_h1,
+-    output: 'git-version.h.in.2',
+-    command: [ 'git', 'rev-parse', '--short', 'HEAD', ],
+-    replace_string: '@GIMP_GIT_VERSION_ABBREV@',
+-    fallback: 'unknown (unsupported)',
+-  )
+-  gitversion_h = vcs_tag(
+-    input : gitversion_h2,
+-    output: 'git-version.h',
+-    command: [ 'git', 'log', '-n1', '--date=format:%Y', '--pretty=%cd', ],
+-    replace_string: '@GIMP_GIT_LAST_COMMIT_YEAR@',
+-    fallback: 'unknown (unsupported)',
+-  )
+-
+-  git = find_program('git', required: false)
+-  if not is_git_repository or not git.found()
+-  # We create git-version.h but know it will be useless because we are
+-  # not in a git repository. Output a warning.
+-  git_warning = '''
+-
+-        UNSUPPORTED BUILD!
+-
+-        This is not a distribution tarball (git-version.h missing) and
+-        we could not establish the corresponding commit (either this is
+-        not a git repository or git command is missing). Therefore
+-        we have no reference for debugging.
+-        Please either use release tarballs or build from the repository.
+-  '''
+-  warning(git_warning)
+-  warnings += git_warning
+-  endif
+-else
+   gitversion_h = files('git-version.h')
+-endif
+ 
+ install_conf = configuration_data()
+ install_conf.set('GIMP_APP_VERSION', gimp_app_version)
+@@ -2071,7 +1957,7 @@
+   elif platform_osx
+     gimp_exe_depends += [patched_libgimp_gir, patched_libgimpui_gir]
+ 
+-    gimp_run_env.set('GIMP_GI_DIR', gi.get_variable('libdir'))
++    gimp_run_env.set('GIMP_GI_DIR', '/usr/lib')
+ 
+     gimp_run_env.set('GIMP_TEMP_UPDATE_RPATH', gimp_real_exe.full_path())
+     gimp_run_env.prepend('GIMP_TEMP_UPDATE_RPATH', libgimp.full_path())
+@@ -2087,20 +1973,10 @@
+     endforeach
+   endif
+ else
+-  # Cross-builds require an existing native GIMP installed, unless we
+-  # can run target binaries.
+-  native_gimp_exe = find_program([gimpconsole_exe_name, gimpmain_exe_name],
+-                                 native: true, required: false)
+-
+-  if not native_gimp_exe.found()
+-    error('When cross-compiling, the build requires either an exe_wrapper or a native GIMP installed (@0@ or @1@).'.format(gimpconsole_exe_name, gimpmain_exe_name))
+-  endif
+-
+-  gimp_run_env.set('GIMP_SELF_IN_BUILD', native_gimp_exe.full_path())
+   gimp_exe_depends = []
+ endif
+ 
+-gimp_exe = find_program('tools'/'in-build-gimp.py')
++gimp_exe = disabler() # we're stripping native gimp build
+ 
+ ################################################################################
+ # Subdirs: part 2
+@@ -2108,14 +1984,6 @@
+ # gimp-data submodule part 2
+ subdir('gimp-data/images/')
+ 
+-# Unit testing
+-subdir('app/tests')
+-subdir('libgimp/tests')
+-
+-# Docs
+-subdir('docs')
+-subdir('devel-docs')
+-
+ # Inno Windows installer
+ if get_option('windows-installer')
+   subdir('po-windows-installer')
+diff -ruwN source/plug-ins/meson.build source-new/plug-ins/meson.build
+--- source/plug-ins/meson.build	2026-04-17 08:37:38.000000000 +0000
++++ source-new/plug-ins/meson.build	2026-10-08 07:53:23.381004527 +0000
+@@ -34,8 +34,8 @@
+   { 'name': 'metadata', },
+   { 'name': 'pagecurl', },
+   { 'name': 'print', },
+-  { 'name': 'screenshot', },
+-  { 'name': 'script-fu', },
++#  screenshot need x11
++#  script-fu need 'gi'
+   { 'name': 'selection-to-path', }
+ ]
+ 
+@@ -92,17 +92,6 @@
+   endif
+ endforeach
+ 
+-
+-#Dynamically created list of supported files with the plugins lists above
+-MIMEtypes_output = run_command(
+-  python,
+-  meson.current_source_dir() / 'generate_mime_ext.py',
+-  '--mime',
+-  meson.current_build_dir() / 'file_mimetypes.list',
+-  all_plugins_sources, check: true
+-).stdout().strip()
+-MIMEtypes_dep = declare_dependency(variables : {'MIMEtypes': MIMEtypes_output})
+-
+ if get_option('windows-installer') or get_option('ms-store')
+   custom_target('file_associations',
+     input : all_plugins_sources,

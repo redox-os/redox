@@ -1,4 +1,4 @@
-#TODO compile and test
+#TODO compiled but untested
 [source]
 git = "https://codeberg.org/oscfri/photo-editor"
 shallow_clone = true

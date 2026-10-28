@@ -1,0 +1,16 @@
+
+[source]
+tar = "https://snowballstem.org/dist/libstemmer_c-3.1.1.tar.gz"
+
+[build]
+template = "custom"
+compiler = "no-lto"
+script = """
+DYNAMIC_INIT
+rsync -a --delete "${COOKBOOK_SOURCE}/" ./
+mkdir -p ${COOKBOOK_STAGE}/usr/bin ${COOKBOOK_STAGE}/usr/lib ${COOKBOOK_STAGE}/usr/include
+make CFLAGS="-O2 -fPIC $CPPFLAGS"
+cp libstemmer.a ${COOKBOOK_STAGE}/usr/lib
+cp stemwords  ${COOKBOOK_STAGE}/usr/bin
+cp include/* ${COOKBOOK_STAGE}/usr/include
+"""

@@ -684,3 +684,15 @@ diff -ruwN source/Source/WebKit/UIProcess/gtk/AcceleratedBackingStoreDMABuf.cpp 
          if (disableDMABuf && strcmp(disableDMABuf, "0"))
              return;
  
+diff -ruwN source/Source/WTF/wtf/FileSystem.cpp source-new/Source/WTF/wtf/FileSystem.cpp
+--- source/Source/WTF/wtf/FileSystem.cpp	2025-03-21 11:07:10.828055100 +0000
++++ source-new/Source/WTF/wtf/FileSystem.cpp	2026-10-03 11:58:07.275782479 +0000
+@@ -360,7 +360,7 @@
+     mprotect(map, bytesSize, PROT_READ);
+ 
+     // Flush (asynchronously) to file, turning this into clean memory.
+-    msync(map, bytesSize, MS_ASYNC);
++    // msync(map, bytesSize, MS_ASYNC); // redox: msync unimplemented
+ #endif
+ }
+ 

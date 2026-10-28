@@ -1,4 +1,4 @@
-#TODO compile and test
+#TODO GLM_GTX_component_wise is an experimental extension and may change in the future. Use #define GLM_ENABLE_EXPERIMENTAL before including it, if you really want to use it.
 [source]
 git = "https://github.com/gue-ni/OpenGL_Flightsim"
 rev = "7b865b085e18fc3b9e242651f3bd12073e3071dd"
@@ -9,9 +9,10 @@ dependencies = [
     "sdl2",
     "sdl2-image",
     "glew",
-    "glm",
+    "libglm",
 ]
 script = """
+COOKBOOK_SOURCE="${COOKBOOK_SOURCE}/OpenGL_Flightsim"
 DYNAMIC_INIT
-cookbook_cmake "${COOKBOOK_SOURCE}"/OpenGL_Flightsim
+cookbook_cmake
 """

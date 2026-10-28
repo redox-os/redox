@@ -1,3 +1,4 @@
+#TODO fix libvulkan dep
 #TODO determine sdl2 backend dependencies from meson log
 [source]
 git = "https://github.com/ValveSoftware/gamescope"
@@ -19,4 +20,7 @@ mesonflags = [
 ]
 dependencies = [
     "sdl2",
+    "libx11",
+    "libwayland",
+    "libvulkan",
 ]

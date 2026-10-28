@@ -5,7 +5,7 @@ pub(crate) static SHARED_PRESCRIPT: &str = r#"
 # Build dynamically
 function DYNAMIC_INIT {
     case "${TARGET}" in
-        "riscv64gc-unknown-redox")
+        "riscv64gc-unknown-redox" | "wasm32-wasip1")
             [ -z "${COOKBOOK_VERBOSE}" ] || echo "WARN: ${TARGET} does not support dynamic linking." >&2
             return
             ;;
@@ -36,6 +36,7 @@ function DYNAMIC_INIT {
     # TODO: check paths for spaces
     export LDFLAGS="${USER_LDFLAGS}-Wl,-rpath-link,${COOKBOOK_SYSROOT}/lib -L${COOKBOOK_SYSROOT}/lib -Wl,--export-dynamic"
     rustflags="-C target-feature=-crt-static -L native=${COOKBOOK_SYSROOT}/lib -C link-arg=-Wl,-rpath-link,${COOKBOOK_SYSROOT}/lib"
+    REDOXER_RUSTFLAGS_KEY=${REDOXER_RUSTFLAGS_KEY:-RUSTFLAGS}
     export "${REDOXER_RUSTFLAGS_KEY}=${!REDOXER_RUSTFLAGS_KEY} ${rustflags}"
     export COOKBOOK_DYNAMIC=1
 
@@ -414,12 +415,25 @@ function cookbook_python {
 "#;
 
 pub(crate) static BUILD_POSTSCRIPT: &str = r#"
+STRIP="${GNU_TARGET}-strip"
+STRIP_ARGS="-v"
+
+if [[ "$REDOXER_USE_CLANG" = "1" || "$REDOXER_USE_CLANG" = "true" ]]; then
+    STRIP="llvm-strip"
+    STRIP_ARGS="--verbose"
+elif [[ "$REDOXER_USE_LTO" = "1" || "$REDOXER_USE_LTO" = "true" ]]; then
+    GCC_BIN=$(command -v "${GNU_TARGET}-gcc")
+    GCC_VER=$("${GNU_TARGET}-gcc" -dumpfullversion) 
+    PLUGIN_PATH=$(realpath "$(dirname "$GCC_BIN")/../libexec/gcc/${GNU_TARGET}/${GCC_VER}/liblto_plugin.so")
+    [ -f "$PLUGIN_PATH" ] && STRIP_ARGS="--plugin=${PLUGIN_PATH} -v" || echo "DEBUG: $PLUGIN_PATH not found"
+fi
+
 # Strip binaries
 for dir in "${COOKBOOK_STAGE}/bin" "${COOKBOOK_STAGE}/usr/bin" "${COOKBOOK_STAGE}/libexec" "${COOKBOOK_STAGE}/usr/libexec"
 do
     if [ -d "${dir}" ] && [ -z "${COOKBOOK_NOSTRIP}" ]
     then
-        find "${dir}" -type f -exec "${GNU_TARGET}-strip" -v {} ';'
+        find "${dir}" -type f -exec "${STRIP}" ${STRIP_ARGS} {} ';'
     fi
 done
 
@@ -431,7 +445,7 @@ do
         find "${dir}" -type f -name '*.la' -exec rm -fv {} ';'
         if [ -z "${COOKBOOK_NOSTRIP}" ]
         then
-            find "${dir}" -type f -exec "${GNU_TARGET}-strip" --strip-debug -v {} ';'
+            find "${dir}" -type f -exec "${STRIP}" ${STRIP_ARGS} --strip-debug {} ';'
         fi
     fi
 done

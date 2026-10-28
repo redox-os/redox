@@ -1,9 +1,20 @@
-#TODO missing script for gnu make
+#TODO build and test
+#TODO add command for installation
 # build instructions: https://git.simple-cc.org/scc/file/README.html
 [source]
 git = "https://git.simple-cc.org/scc/"
 rev = "1ed0ff0000999561feee336c289252faf2502a7e"
+shallow_clone = true
 [build]
 template = "custom"
 [package]
 dependencies = ["qbe"]
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+DYNAMIC_INIT
+MAKEFLAGS=(
+    CONF=$(gcc -dumpmachine)
+    CROSS_COMPILE=$TARGET
+)
+"${COOKBOOK_MAKE}" config -j "${COOKBOOK_MAKE_JOBS}" "${MAKEFLAGS[@]}"
+"""

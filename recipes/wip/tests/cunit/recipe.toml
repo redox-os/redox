@@ -1,5 +1,8 @@
 #TODO not compiled or tested
 [source]
 tar = "https://downloads.sourceforge.net/project/cunit/CUnit/2.1-3/CUnit-2.1-3.tar.bz2"
+script = """
+autotools_recursive_regenerate
+"""
 [build]
 template = "configure"

@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO disable build tests
 # build instructions: https://cgit.git.savannah.gnu.org/cgit/gcl.git/tree/gcl/INSTALL
 [source]
 tar = "http://ftpmirror.gnu.org/gcl/gcl-2.7.1.tar.gz"

@@ -1,4 +1,4 @@
-#TODO compile and test
+#TODO compiled but not tested
 #TODO add manual installation on script
 [source]
 git = "https://github.com/gustavopezzi/voxelspace-sdl"

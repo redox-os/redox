@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO undefined references
 # build instructions: https://www.freedesktop.org/wiki/Software/PulseAudio/Documentation/Developer/PulseAudioFromGit/
 [source]
 tar = "https://freedesktop.org/software/pulseaudio/releases/pulseaudio-17.0.tar.xz"
@@ -6,9 +6,9 @@ tar = "https://freedesktop.org/software/pulseaudio/releases/pulseaudio-17.0.tar.
 template = "meson"
 mesonflags = [
     "-Ddaemon=false",
-    "-Ddoxygen=disabled",
+    "-Ddoxygen=false",
     "-Dman=false",
-    "-Dtests=disabled",
+    "-Dtests=false",
     "-Drunning-from-build-tree=false",
 ]
 dependencies = [

@@ -1,0 +1,22 @@
+#TODO build and test
+[source]
+git = "https://github.com/acreloaded/acr"
+rev = "v2.18.3"
+shallow_clone = true
+[build]
+template = "custom"
+dependencies = [
+    "sdl1",
+    "sdl1-image",
+    "openal",
+    "libogg",
+    "zlib",
+    "curl",
+    "libvorbis",
+]
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/source/src" ./
+DYNAMIC_INIT
+"${COOKBOOK_MAKE}" client -j "${COOKBOOK_MAKE_JOBS}"
+"${COOKBOOK_MAKE}" client_install DESTDIR="${COOKBOOK_STAGE}/usr"
+"""

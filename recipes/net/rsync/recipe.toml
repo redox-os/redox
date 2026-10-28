@@ -2,8 +2,8 @@
 description = "Fast, versatile remote (and local) file-copying tool"
 
 [source]
-tar = "https://download.samba.org/pub/rsync/src/rsync-3.4.1.tar.gz"
-blake3 = "e1cfdd51a1a89a49e73f8fa730a4321392fe4a29533c0979c2c09c7ce3808b6f"
+tar = "https://download.samba.org/pub/rsync/src/rsync-3.5.1.tar.gz"
+blake3 = "bafd113fecb286d462dbb0455078421a72fc73f3360a6c9f05c369f1c8707e1b"
 
 [build]
 template = "configure"
@@ -12,4 +12,8 @@ dependencies = [
     "lz4",
     "openssl3",
     "xxhash",
+]
+# TODO: libidn failing on libunistring (requires gnulib fseterr)
+configureflags = [
+    "--disable-idn"
 ]

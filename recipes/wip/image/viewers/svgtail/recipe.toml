@@ -1,4 +1,4 @@
-#TODO compile and test
+#TODO minifb crate error
 [source]
 git = "https://github.com/statusfailed/svgtail"
 shallow_clone = true

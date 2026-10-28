@@ -1,7 +1,7 @@
 #TODO compiled but not tested
 [source]
 git = "https://github.com/printfn/fend"
-
+shallow_clone = true
 [build]
 dependencies = [
     "openssl3",

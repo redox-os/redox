@@ -1,4 +1,4 @@
-#TODO compile and test
+#TODO can't find exe_wrapper
 [source]
 tar = "https://github.com/radareorg/radare2/releases/download/6.1.4/radare2-6.1.4.tar.xz"
 [build]

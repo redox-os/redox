@@ -1,5 +1,6 @@
 #TODO gmp-mpfr-sys crate error
 [source]
 git = "https://github.com/bgkillas/kalc"
+shallow_clone = true
 [build]
 template = "cargo"

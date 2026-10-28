@@ -1,0 +1,21 @@
+#TODO compiled but untested
+# build instructions: https://www.glfw.org/docs/latest/compile.html
+[source]
+git = "https://github.com/glfw/glfw"
+rev = "3.4"
+shallow_clone = true
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DGLFW_BUILD_TESTS=OFF",
+    "-DGLFW_BUILD_DOCS=OFF",
+    "-DGLFW_BUILD_WAYLAND=OFF",
+]
+dependencies = [
+    "libxkbcommon",
+    "libx11",
+    "libxrandr",
+    "libxinerama",
+    "libxcursor",
+    "libxi",
+]

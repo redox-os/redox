@@ -1,4 +1,4 @@
-#TODO compile and test
+#TODO port
 [source]
 git = "https://github.com/jrgerber/dmidecode-rs"
 shallow_clone = true

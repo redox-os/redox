@@ -1,4 +1,4 @@
-#TODO compile and test
+#TODO rfd crate error
 [source]
 git = "https://github.com/adrien-ben/vulkan-examples-rs"
 shallow_clone = true

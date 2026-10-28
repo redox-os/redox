@@ -20,7 +20,7 @@ do
     echo "name=$game" | sed 's/freedoom/FreeDOOM: Phase /' | sed 's/doom1/DOOM (Shareware)/' > "${COOKBOOK_STAGE}/usr/share/ui/apps/$game"
     echo "category=Games" >> "${COOKBOOK_STAGE}/usr/share/ui/apps/$game"
     echo "binary=/usr/games/$game" >> "${COOKBOOK_STAGE}/usr/share/ui/apps/$game"
-    echo "icon=/usr/share/ui/icons/apps/$game.png" >> "${COOKBOOK_STAGE}/usr/share/ui/apps/$game"
+    echo "icon=/usr/share/icons/apps/$game.png" >> "${COOKBOOK_STAGE}/usr/share/ui/apps/$game"
 
     cp -v "${COOKBOOK_SOURCE}/$game.png" "${COOKBOOK_STAGE}/usr/share/icons/apps/$game.png"
 done

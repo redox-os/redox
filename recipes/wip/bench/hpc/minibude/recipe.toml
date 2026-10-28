@@ -1,6 +1,7 @@
-#TODO missing script for gnu make: https://github.com/UoB-HPC/miniBUDE#building
+#TODO build and test
+#TODO does a model need to be chosen?: https://github.com/UoB-HPC/miniBUDE#building
 [source]
 git = "https://github.com/UoB-HPC/miniBUDE"
 shallow_clone = true
 [build]
-template = "custom"
+template = "cmake"

@@ -1,15 +1,21 @@
-#TODO make it use sdl2 recipe
-#TODO determine if/what bundled dependencies need to be patched
+#TODO make it use sdl2 recipe instead of bundled sdl2
 # dependencies: https://github.com/seigtm/meov/tree/Baranov_0.3.0_Linux_Builds/dependencies
 [source]
 git = "https://github.com/seigtm/meov"
 branch = "Baranov_0.3.0_Linux_Builds"
 shallow_clone = true
 [build]
-template = "cmake"
-cmakeflags = [
-    "-DMEOV_USING_OPENGL=false"
-]
+template = "custom"
 dependencies = [
     "sdl2",
 ]
+script = """
+DYNAMIC_INIT
+COOKBOOK_CMAKE_FLAGS+=(
+    -DMEOV_USING_OPENGL=false
+    -DOPENGL_opengl_LIBRARY="/dev/null"
+    -DOPENGL_glx_LIBRARY="/dev/null"
+
+)
+cookbook_cmake
+"""

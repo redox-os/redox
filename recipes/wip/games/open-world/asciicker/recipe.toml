@@ -1,14 +1,27 @@
-#TODO missing script for gnu make
-#TODO build the game, term and server
-#TODO build the terminal and sdl2 frontends
-# makeflags: -DSERVER -DGAME -DUSE_SDL2 -DPURE_TERM -DUSE_GPM
+# Y9 version have unnecessary v8 JS dependency
+#TODO build and test
+# build script: https://github.com/msokalski/asciicker/blob/y8/build.sh
 [source]
 git = "https://github.com/msokalski/asciicker"
-rev = "8ff75d0c5a8d2745a8ad6a8a841dd31a46e81635"
+rev = "Y8"
+shallow_clone = true
 [build]
 template = "custom"
 dependencies = [
     "mesa",
-    "sdl2",
+    "libx11",
+    "libxinerama",
     "libgpm",
 ]
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+DYNAMIC_INIT
+"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}" -f makefile_asciiid
+"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}" -f makefile_server
+"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}" -f makefile_game
+"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}" -f makefile_game_term
+"${COOKBOOK_MAKE}" install DESTDIR="${COOKBOOK_STAGE}/usr" -f makefile_asciiid
+"${COOKBOOK_MAKE}" install DESTDIR="${COOKBOOK_STAGE}/usr" -f makefile_server
+"${COOKBOOK_MAKE}" install DESTDIR="${COOKBOOK_STAGE}/usr" -f makefile_game
+"${COOKBOOK_MAKE}" install DESTDIR="${COOKBOOK_STAGE}/usr" -f makefile_game_term
+"""

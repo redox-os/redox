@@ -1,4 +1,4 @@
-#TODO async-io and rustix crates error
+#TODO lurk-cli crate error
 [source]
 git = "https://github.com/orhun/binsider"
 shallow_clone = true

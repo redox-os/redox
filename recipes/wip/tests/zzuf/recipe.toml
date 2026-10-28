@@ -1,4 +1,4 @@
-#TODO compile and test
+#TODO can't recognize redox
 [source]
 tar = "https://github.com/samhocevar/zzuf/releases/download/v0.15/zzuf-0.15.tar.bz2"
 [build]

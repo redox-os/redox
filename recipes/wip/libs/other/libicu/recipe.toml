@@ -12,6 +12,7 @@ compiler = "no-lto"
 template = "custom"
 script = """
 DYNAMIC_INIT
+CPPFLAGS+=" -fno-lto"
 COOKBOOK_CONFIGURE="${COOKBOOK_SOURCE}/source/configure"
 COOKBOOK_CONFIGURE_FLAGS+=(
     icu_cv_host_frag=mh-linux

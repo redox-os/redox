@@ -1,6 +1,6 @@
 [source]
 git = "https://gitlab.redox-os.org/redox-os/servo.git"
-branch = "redox"
+branch = "redox-0.7.0"
 
 [build]
 template = "custom"
@@ -12,10 +12,6 @@ dependencies = [
     "mesa",
     "zlib",
 ]
-dev-dependencies = [
-    "llvm21.dev",
-    "host:libarchive",  # workaround for cmake error
-]
 script = """
 DYNAMIC_INIT
 
@@ -23,30 +19,40 @@ cp -v "${COOKBOOK_RECIPE}/.servobuild" "${COOKBOOK_SOURCE}/.servobuild"
 
 # jemalloc specific configuration
 export JEMALLOC_SYS_WITH_LG_PAGE=16
+
+if [[ "$REDOXER_USE_CLANG" != "1" && "$REDOXER_USE_CLANG" != "true" ]]; then
+    export CC="${GNU_TARGET}-gcc"
+    export CXX="${GNU_TARGET}-g++"
+    export HOST_CC="gcc"
+    export HOST_CXX="g++"
+else
+    export CC="${GNU_TARGET}-clang"
+    export CXX="${GNU_TARGET}-clang++ -stdlib=libstdc++"
+    export HOST_CC="clang"
+    export HOST_CXX="clang++"
+fi
 export TARGET_CC="$CC"
 export TARGET_CXX="$CXX"
-export TARGET_AR="$AR"
+export MOZJS_FROM_SOURCE=1
 
 # pkg-config crate can only recognize one path to pkgconfig
 export PKG_CONFIG_PATH_x86_64_unknown_redox="${COOKBOOK_SYSROOT}/lib/pkgconfig"
 export PKG_CONFIG_SYSROOT_DIR_x86_64_unknown_redox="${COOKBOOK_SYSROOT}/lib/pkgconfig"
 # rsync -a -v ${COOKBOOK_SYSROOT}/usr/share/pkgconfig/*.pc ${COOKBOOK_SYSROOT}/lib/pkgconfig/
 
-#TODO: mozjs-sys and mozangle uses clang, it won't know our prefix C libraries, so here's the workaround
-PREFIX_INCLUDE="$COOKBOOK_HOST_SYSROOT/$TARGET/include"
-export CLANGFLAGS="-I $PREFIX_INCLUDE/c++/13.2.0 -I $PREFIX_INCLUDE/c++/13.2.0/$TARGET -I $PREFIX_INCLUDE/c++/13.2.0/backward -I $PREFIX_INCLUDE"
-
 #Mozjs specifics
+export CCACHE="$CC_WRAPPER"
 unset CC_WRAPPER
-export CARGO_MAKEFLAGS="-j $COOKBOOK_MAKE_JOBS" CCACHE="sccache"
+export CARGO_MAKEFLAGS="-j $COOKBOOK_MAKE_JOBS"
 
 COOKBOOK_CARGO_PATH="ports/servoshell" cookbook_cargo
 
 # resources packaging
-mkdir -p ${COOKBOOK_STAGE}/usr/lib/servo/bin
-mv ${COOKBOOK_STAGE}/usr/bin/servo ${COOKBOOK_STAGE}/usr/lib/servo/bin/
-ln -s ../lib/servo/bin/servo ${COOKBOOK_STAGE}/usr/bin/servo
-rsync -a -v ${COOKBOOK_SOURCE}/resources ${COOKBOOK_STAGE}/usr/lib/servo/
+mkdir -p "${COOKBOOK_STAGE}/usr/lib/servo/bin" "${COOKBOOK_STAGE}/usr/share/applications"
+mv "${COOKBOOK_STAGE}/usr/bin/servoshell" "${COOKBOOK_STAGE}/usr/lib/servo/bin/"
+rsync -a -v "${COOKBOOK_SOURCE}/resources" "${COOKBOOK_STAGE}/usr/lib/servo/"
+cp "${COOKBOOK_RECIPE}/servo.desktop" "${COOKBOOK_STAGE}/usr/share/applications/servo.desktop"
+cp "${COOKBOOK_RECIPE}/servo.sh" "${COOKBOOK_STAGE}/usr/bin/servo"
 """
 
 [package]

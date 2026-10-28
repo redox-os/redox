@@ -1,4 +1,4 @@
-#TODO missing script for gnu make: https://github.com/JuliaLang/julia#building-julia
+#TODO fix openblas and libunwind deps
 #TODO missing dependencies: https://github.com/JuliaLang/julia/blob/master/doc/src/devdocs/build/build.md#required-build-tools-and-external-libraries
 [source]
 tar = "https://github.com/JuliaLang/julia/releases/download/v1.12.5/julia-1.12.5.tar.gz"
@@ -16,3 +16,9 @@ dependencies = [
     "openssl3",
     "libunwind",
 ]
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+DYNAMIC_INIT
+"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}"
+"${COOKBOOK_MAKE}" install DESTDIR="${COOKBOOK_STAGE}/usr"
+"""

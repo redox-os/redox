@@ -6,6 +6,11 @@ rev = "v2.83.2"
 shallow_clone = true
 [build]
 template = "cmake"
+cmakeflags = [
+    "-DBUILD_SERVER=OFF",
+    "-DBUILD_MOD=OFF",
+    "-DBUNDLED_LIBS=OFF",
+]
 dependencies = [
     "sdl2",
     "openssl3",

@@ -1,7 +1,11 @@
-#TODO not compiled or tested
+#TODO compiled but untested
+#TODO need a command to copy the executable
 [source]
 git = "https://github.com/mkrueger/icy_sixel"
 shallow_clone = true
 [build]
-template = "cargo"
-cargopackages = ["icy_sixel-cli"]
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_cargo_packages icy_sixel-cli
+"""

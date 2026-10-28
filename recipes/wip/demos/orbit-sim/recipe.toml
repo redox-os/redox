@@ -1,4 +1,4 @@
-#TODO compile and test
+#TODO fix raylib dep
 [source]
 git = "https://github.com/IceWizard7/simulation-orbit"
 rev = "e772641909df7a0876093b9ffea0377e5bea82bf"

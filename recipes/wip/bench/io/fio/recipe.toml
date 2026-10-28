@@ -1,7 +1,10 @@
-#TODO configuration problem
+#TODO bad configure options
 [source]
 git = "https://github.com/axboe/fio"
 rev = "fio-3.41"
 shallow_clone = true
 [build]
 template = "configure"
+configureflags = [
+    "--disable-native",
+]

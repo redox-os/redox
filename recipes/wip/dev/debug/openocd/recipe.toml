@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO fix jimtcl dep
 # build instructions: https://github.com/openocd-org/openocd/#building-openocd
 [source]
 tar = "https://sourceforge.net/projects/openocd/files/openocd/0.12.0/openocd-0.12.0.tar.bz2/download"

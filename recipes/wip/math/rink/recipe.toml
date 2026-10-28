@@ -1,11 +1,10 @@
-#TODO async-io and rustix crates error
+#TODO compiled but untested
 [source]
 git = "https://github.com/tiffany352/rink-rs"
+shallow_clone = true
 [build]
-template = "custom"
+template = "cargo"
+cargopackages = ["rink"]
 dependencies = [
     "openssl3",
 ]
-script = """
-cookbook_cargo_packages rink
-"""

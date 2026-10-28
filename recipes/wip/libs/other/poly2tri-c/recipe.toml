@@ -1,0 +1,24 @@
+[source]
+git = "https://github.com/KyleLink/poly2tri-c"
+shallow_clone = true
+patches = [
+    "redox.patch"
+]
+script = """
+# find . -type d -exec touch {}/Makefile.in \\;
+# touch aclocal.m4 configure configure.ac Makefile.am
+autotools_recursive_regenerate
+"""
+
+[build]
+template = "custom"
+dependencies = [
+    "glib",
+]
+script = """
+DYNAMIC_INIT
+
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+COOKBOOK_CONFIGURE="./configure"
+cookbook_configure
+"""

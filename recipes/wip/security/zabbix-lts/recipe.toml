@@ -1,4 +1,4 @@
-#TODO compile and test
+#TODO Unable to do DNS lookups (libresolv check failed)
 #TODO discover minimum dependencies from configure log
 # build and configuration instructions: https://www.zabbix.com/documentation/7.0/en/manual/installation/install
 [source]

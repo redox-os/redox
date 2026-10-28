@@ -1,0 +1,44 @@
+diff -ruwN source/meson.build source-new/meson.build
+--- source/meson.build	2026-09-07 02:51:56.000000000 +0000
++++ source-new/meson.build	2026-10-08 04:30:15.334232657 +0000
+@@ -696,40 +696,8 @@
+ subdir('bin')
+ subdir('tools')
+ subdir('operations')
+-subdir('examples')
+-subdir('tests')
+ subdir('perf')
+ subdir('po')
+-subdir('docs')
+-
+-
+-if host_machine.system() != 'emscripten'
+-  nm = find_program('nm', required: false)
+-
+-  # Verify .def files for Windows linking (and for macOS too when -Wl,-exported_symbols_list is used).
+-  # We check this on non-Windows/non-macOS platform (Debian) on CI, and on Windows and macOS itself.
+-  # (This also checks if .gir files have parity with the library so parity with .def files too)
+-  custom_target('check-def-files',
+-    input: [
+-      gegl_def,
+-      g_ir.found() ? gegl_gir : [],
+-      gegl_npd_def,
+-      gegl_sc_def,
+-    ],
+-    depends: [
+-      gegl_lib,
+-      gegl_npd_lib,
+-      seamlessclone_lib
+-    ],
+-    env: nm.found() ? { 'NM': nm.full_path() } : {},
+-    output: [ 'check-def-files', ],
+-    command: [
+-      python, meson.project_source_root() / 'tools' / 'defcheck.py', '@INPUT@',
+-    ],
+-    build_by_default: true,
+-  )
+-endif
+-
+ 
+ if w3m.found()
+   # Create NEWS file from html file

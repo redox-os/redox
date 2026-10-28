@@ -1,4 +1,4 @@
-#TODO cargo-util crate error
+#TODO compiled but untested
 [source]
 git = "https://github.com/trailofbits/dylint"
 shallow_clone = true

@@ -1,8 +1,7 @@
 #TODO async and rustix crates error
 [source]
 git = "https://github.com/simonask/werk"
+shallow_clone = true
 [build]
-template = "custom"
-script = """
-cookbook_cargo_packages werk-cli
-"""
+template = "cargo"
+cargopackages = ["werk-cli"]

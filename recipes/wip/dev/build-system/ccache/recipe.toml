@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO disable warnings being treated as errors
 #TODO missing dependencies: https://github.com/ccache/ccache/blob/master/doc/INSTALL.md#dependencies
 # build instructions: https://github.com/ccache/ccache/blob/master/doc/INSTALL.md
 [source]

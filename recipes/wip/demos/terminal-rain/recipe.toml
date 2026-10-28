@@ -1,0 +1,7 @@
+#TODO compiled but not tested
+[source]
+git = "https://github.com/Oakamoore/terminal-rain"
+rev = "c46946f5a1ab71dc8b7f826f9ab634d46cb81c71"
+shallow_clone = true
+[build]
+template = "cmake"

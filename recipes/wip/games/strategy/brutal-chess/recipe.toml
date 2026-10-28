@@ -1,4 +1,4 @@
-#TODO compile and test
+#TODO can't recognize redox
 [source]
 tar = "https://sourceforge.net/projects/brutalchess/files/brutalchess-alpha/brutalchess-alpha-0.5.2/brutalchess-alpha-0.5.2-src.tar.gz/download"
 [build]

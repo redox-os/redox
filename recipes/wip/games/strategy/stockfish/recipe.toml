@@ -1,6 +1,14 @@
-#TODO missing script for "make", see https://disservin.github.io/stockfish-docs/pages/Compiling-from-source.html
+#TODO build and test
+# build instructions: https://github.com/official-stockfish/Stockfish/wiki/Compiling-from-source
 [source]
 git = "https://github.com/official-stockfish/Stockfish"
-rev = "68e1e9b3811e16cad014b590d7443b9063b3eb52"
+rev = "sf_19"
+shallow_clone = true
 [build]
 template = "custom"
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/src" ./
+DYNAMIC_INIT
+"${COOKBOOK_MAKE}" build -j "${COOKBOOK_MAKE_JOBS}"
+"${COOKBOOK_MAKE}" install DESTDIR="${COOKBOOK_STAGE}/usr"
+"""

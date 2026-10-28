@@ -1,5 +1,6 @@
 #TODO nix crate error (after cargo update)
 [source]
 git = "https://github.com/kamui-fin/rfetch"
+shallow_clone = true
 [build]
 template = "cargo"

@@ -1,5 +1,6 @@
 #TODO winit crate error
 [source]
 git = "https://github.com/slerpyyy/sh4der-jockey"
+shallow_clone = true
 [build]
 template = "cargo"

@@ -4,3 +4,7 @@ git = "https://github.com/romancitodev/nobubbles"
 shallow_clone = true
 [build]
 template = "cargo"
+cargoexamples = [
+    "counter",
+    "fx",
+]

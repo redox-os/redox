@@ -12,5 +12,5 @@ configureflags = [
 [package]
 description = "Collection of command-line completion recipes for Bash"
 dependencies = [
-    "sed",
+    "uutils-sed",
 ]

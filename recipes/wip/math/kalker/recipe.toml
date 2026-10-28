@@ -1,13 +1,12 @@
-#TODO gmp-mpfr-sys crate error (after cargo update)
+#TODO gmp-mpfr-sys crate error: redox unsupported
 [source]
 git = "https://github.com/PaddiM8/kalker"
+shallow_clone = true
 [build]
-template = "custom"
+template = "cargo"
+cargopackages = ["kalker"]
 dependencies = [
     "libgmp",
     "libmpfr",
     "mpc",
 ]
-script = """
-cookbook_cargo_packages kalker
-"""

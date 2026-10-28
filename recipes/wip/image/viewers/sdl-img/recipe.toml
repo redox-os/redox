@@ -1,4 +1,4 @@
-#TODO compile and test
+#TODO can't find SDL.h
 [source]
 git = "https://github.com/rswinkle/sdl_img"
 rev = "0.101.0"
@@ -7,6 +7,7 @@ shallow_clone = true
 template = "custom"
 dependencies = [
     "sdl2",
+    "curl",
 ]
 script = """
 rsync -av --delete "${COOKBOOK_SOURCE}/" ./

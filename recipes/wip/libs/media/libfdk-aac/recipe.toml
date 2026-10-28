@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO promote
 [source]
 git = "https://github.com/mstorsjo/fdk-aac"
 rev = "v2.0.3"

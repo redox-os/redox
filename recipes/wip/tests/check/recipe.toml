@@ -1,4 +1,4 @@
-#TODO compile and test
+#TODO compiled but not tested
 [source]
 tar = "https://github.com/libcheck/check/releases/download/0.15.2/check-0.15.2.tar.gz"
 [build]

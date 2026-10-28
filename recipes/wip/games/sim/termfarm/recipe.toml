@@ -1,4 +1,4 @@
-#TODO compile and test
+#TODO source code error
 [source]
 git = "https://github.com/indium114/termfarm"
 shallow_clone = true

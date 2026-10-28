@@ -1,4 +1,4 @@
-#TODO missing script for building, lacking build instructions
+#TODO build and test
 #TODO what is game code? - http://files.poulsander.com/~poul19/public_files/oa/dev088/oa-0.8.8.tar.bz2
 [source]
 tar = "http://files.poulsander.com/~poul19/public_files/oa/dev088/openarena-engine-source-0.8.8.tar.bz2"
@@ -10,3 +10,9 @@ dependencies = [
     "libvorbis",
     "mesa",
 ]
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+DYNAMIC_INIT
+"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}"
+"${COOKBOOK_MAKE}" install DESTDIR="${COOKBOOK_STAGE}/usr"
+"""

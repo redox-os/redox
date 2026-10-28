@@ -1,6 +1,5 @@
 # using DuckStation fork from when it was licensed as GPLv3 and the fork still had the Qt and ImGui? frontends (libretro fork don't have them anymore)
-#TODO not compiled or tested yet
-#TODO determine minimum dependencies from cmake log
+#TODO can't fetch submodules
 # build instructions: https://github.com/piepacker/swanstation#linux-1
 [source]
 git = "https://github.com/piepacker/swanstation"
@@ -15,9 +14,10 @@ cmakeflags = [
     "-DBUILD_QT_FRONTEND=OFF",
     "-DBUILD_MINI_FRONTEND=ON",
 ]
-#dependencies = [
-    #"sdl2",
+dependencies = [
+    "sdl2",
+    "curl",
     #"qt6-base",
     #"qt6-svg",
     #"qt6-tools",
-#]
+]

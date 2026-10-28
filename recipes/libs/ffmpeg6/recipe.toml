@@ -17,10 +17,14 @@ dependencies = [
     "sdl2",
     "zlib",
 ]
+dev-dependencies = [
+    "libstdcxx"
+]
+compiler = "gcc-no-lto"
 script = """
 DYNAMIC_INIT
 
-export LDFLAGS="$LDFLAGS -lSDL2 -lorbital -lOSMesa -lstdc++"
+export LDFLAGS="$LDFLAGS -lSDL2 -lorbital -lOSMesa"
 ARCH="${TARGET%%-*}"
 COOKBOOK_CONFIGURE_FLAGS=(
     --enable-cross-compile
@@ -34,6 +38,7 @@ COOKBOOK_CONFIGURE_FLAGS=(
     --disable-network
     --enable-sdl2
     --enable-zlib
+    --enable-pic
     --enable-encoder=png
     --enable-decoder=png
 )

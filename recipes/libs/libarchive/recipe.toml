@@ -6,4 +6,14 @@ tar = "https://libarchive.org/downloads/libarchive-3.8.7.tar.xz"
 blake3 = "6b7f744132368a53ecf98a4586af09c255f81cebf37687edd857528a1bfd3bd3"
 
 [build]
-template = "configure"
+template = "cmake"
+cmakeflags = [
+    "-DENABLE_TEST=OFF"
+]
+dependencies = [
+    "openssl3",
+    "libxml2",
+    "bzip2",
+    "zlib",
+    "zstd",
+]

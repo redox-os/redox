@@ -1,12 +1,15 @@
-#TODO not compiled or tested
-# build instructions: https://gitlab.gnome.org/GNOME/babl/-/blob/master/INSTALL.in?ref_type=heads
+#TODO compiled but not tested
 [source]
 tar = "https://download.gimp.org/pub/babl/0.1/babl-0.1.124.tar.xz"
+blake3 = "30ef72ccc64771f876b4e42e0d5d05f8561fd6bb4baf225ad498056b1e896f92"
+patches = [
+    "redox.patch"
+]
 [build]
 template = "meson"
 mesonflags = [
     "-Dwith-docs=false",
     "-Denable-gir=false",
     "-Denable-vapi=false",
-    "-Dgi-docgen=false",
+    "-Dgi-docgen=disabled",
 ]

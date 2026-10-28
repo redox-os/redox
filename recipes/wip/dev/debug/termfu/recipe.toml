@@ -1,5 +1,4 @@
-#TODO missing script for gnu make
-# build instructions: https://github.com/jvalcher/termfu#installation
+#TODO build and test
 [source]
 git = "https://github.com/jvalcher/termfu"
 rev = "v0.2.2"
@@ -8,6 +7,12 @@ template = "custom"
 dependencies = [
     "ncursesw",
 ]
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+DYNAMIC_INIT
+"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}"
+"${COOKBOOK_MAKE}" install DESTDIR="${COOKBOOK_STAGE}/usr"
+"""
 [package]
 dependencies = [
     "gdb",

@@ -1,4 +1,4 @@
-#TODO compile and test
+#TODO fix libunistring dep
 # build instructions: https://github.com/tstack/lnav#building-from-source
 [source]
 tar = "https://github.com/tstack/lnav/releases/download/v0.14.0/lnav-0.14.0.tar.bz2"

@@ -1,4 +1,5 @@
-#TODO not compiled or tested
+#TODO fix openimageio dependency
+#TODO enable brotli support in freetype2 recipe
 #TODO determine the minimum dependencies from cmake log
 # build instructions: https://developer.blender.org/docs/handbook/building_blender/
 [source]
@@ -11,22 +12,30 @@ cmakeflags = [
     "-DWITH_GHOST_SDL=ON",
     "-DWITH_SDL=ON",
     "-DWITH_EXPERIMENTAL_FEATURES=OFF",
+    "-DWITH_VULKAN_BACKEND=OFF",
+    "-DWITH_INTERNATIONAL=OFF",
+    "-DWITH_PYTHON=OFF",
+    "-DWITH_LIBS_PRECOMPILED=OFF",
 ]
-# dependencies = [
+dependencies = [
 #     "dbus",
 #     "libdecor",
-#     "libjpeg",
-#     "libpng",
-#     "freetype2",
+     "libjpeg",
+     "libpng",
+     "zlib",
+     "libtiff",
+     "openimageio",
+#     "libvulkan",
+     "freetype2",
 #     "fontconfig",
-#     "zstd",
+     "zstd",
 #     "bzip2",
 #     "xz",
-#     "sdl2",
-#     "libepoxy",
+     "sdl2",
+     "libepoxy",
 #     "shaderc",
 #     "libxml2",
 #     "libharu",
 #     "mesa-x11",
 #     "libxkbcommon",
-# ]
+]

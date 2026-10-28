@@ -1,4 +1,4 @@
-#TODO compile and test
+#TODO compiled but not tested
 [source]
 git = "https://github.com/Exiv2/exiv2"
 rev = "v0.28.8"
@@ -13,4 +13,5 @@ cmakeflags = [
 dependencies = [
     "zlib",
     "libiconv",
+    "inih",
 ]

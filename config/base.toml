@@ -174,22 +174,6 @@ path = "/share"
 data = "usr/share"
 symlink = true
 
-## legacy orbital directories
-[[files]]
-path = "/ui"
-data = "usr/share/ui"
-symlink = true
-
-[[files]]
-path = "/usr/share/ui/fonts"
-data = "/usr/share/fonts"
-symlink = true
-
-[[files]]
-path = "/usr/share/ui/icons"
-data = "/usr/share/icons"
-symlink = true
-
 ## /var
 [[files]]
 path = "/var"

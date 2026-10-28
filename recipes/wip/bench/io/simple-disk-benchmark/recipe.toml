@@ -1,6 +1,6 @@
 #TODO source code error
 [source]
-git = "https://github.com/schwa/simple-disk-benchmark-rs"
+git = "https://github.com/isan-Ethen/simple-disk-benchmark-rs"
 shallow_clone = true
 [build]
 template = "cargo"

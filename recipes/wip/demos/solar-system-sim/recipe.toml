@@ -1,4 +1,4 @@
-#TODO compile and test
+#TODO compiled but untested
 [source]
 git = "https://github.com/exor2008/solar-system-sim"
 shallow_clone = true

@@ -1,8 +1,7 @@
 #TODO not compiled or tested
 [source]
 git = "https://github.com/VirusTotal/yara-x"
+shallow_clone = true
 [build]
-template = "custom"
-script = """
-cookbook_cargo_packages yara-x-cli
-"""
+template = "cargo"
+cargopackages = ["yara-x-cli"]

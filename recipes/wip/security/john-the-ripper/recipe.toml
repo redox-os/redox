@@ -1,4 +1,5 @@
-#TODO missing script for GNU Autotools, see https://github.com/openwall/john/blob/bleeding-jumbo/doc/INSTALL
+#TODO missing script for GNU Autotools, see
+# build instructions: https://github.com/openwall/john/blob/bleeding-jumbo/doc/INSTALL
 [source]
 tar = "https://www.openwall.com/john/k/john-1.9.0-jumbo-1.tar.xz"
 [build]
@@ -9,3 +10,9 @@ dependencies = [
     "kerberos5",
     "libgmp",
 ]
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/src" ./
+DYNAMIC_INIT
+"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}"
+"${COOKBOOK_MAKE}" install DESTDIR="${COOKBOOK_STAGE}/usr"
+"""

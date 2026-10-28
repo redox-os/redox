@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO fix pipewire dep
 #TODO discover minimum dependencies from cmake log
 [source]
 git = "https://gitlab.freedesktop.org/pipewire/wireplumber"
@@ -9,4 +9,8 @@ template = "meson"
 mesonflags = [
     "-Dtests=false",
     "-Ddbus-tests=false",
+]
+dependencies = [
+    "glib",
+    "pipewire",
 ]

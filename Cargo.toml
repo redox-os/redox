@@ -48,7 +48,7 @@ redoxer = { git = "https://gitlab.redox-os.org/redox-os/redoxer.git", default-fe
 regex = "1.11"
 serde = { version = "1", features = ["derive"] }
 termion = "4"
-toml = "0.8"
+toml = "1"
 walkdir = "2.3.1"
 ansi-to-tui = { version = "8", optional = true }
 strip-ansi-escapes = { version = "0.2.1", optional = true }

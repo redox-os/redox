@@ -1,5 +1,6 @@
 #TODO outdated libc crate
 [source]
 git = "https://github.com/Arcterus/game-of-life"
+shallow_clone = true
 [build]
 template = "cargo"

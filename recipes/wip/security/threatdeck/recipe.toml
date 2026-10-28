@@ -1,6 +1,7 @@
-#TODO compile and test
+#TODO compiled but untested
 [source]
 git = "https://github.com/gripebomb/ThreatDeck"
 shallow_clone = true
 [build]
 template = "cargo"
+dependencies = ["openssl3"]

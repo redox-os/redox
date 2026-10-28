@@ -1,5 +1,6 @@
 #TODO pnet_sys crate error (after cargo update)
 [source]
 git = "https://github.com/kpcyrd/rshijack"
+shallow_clone = true
 [build]
 template = "cargo"

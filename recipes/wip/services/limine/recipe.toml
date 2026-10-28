@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO compiled but untested
 # build instructions: https://github.com/limine-bootloader/limine#building-the-bootloader
 [source]
 tar = "https://github.com/limine-bootloader/limine/releases/download/v7.2.0/limine-7.2.0.tar.xz"

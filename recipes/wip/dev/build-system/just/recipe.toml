@@ -2,7 +2,5 @@
 [source]
 git = "https://github.com/casey/just"
 [build]
-template = "custom"
-script = """
-cookbook_cargo_packages just
-"""
+template = "cargo"
+cargopackages = ["just"]

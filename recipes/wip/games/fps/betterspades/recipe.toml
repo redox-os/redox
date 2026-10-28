@@ -3,6 +3,8 @@
 # build instructions: https://github.com/xtreme8000/BetterSpades#linux
 [source]
 git = "https://github.com/xtreme8000/BetterSpades"
+rev = "v0.1.5"
+shallow_clone = true
 [build]
 template = "cmake"
 dependencies = [

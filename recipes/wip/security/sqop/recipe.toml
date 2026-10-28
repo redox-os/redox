@@ -1,6 +1,7 @@
-#TODO make libnettle work
+#TODO nettle-sys crate error (after cargo update)
 [source]
 git = "https://gitlab.com/sequoia-pgp/sequoia-sop"
+shallow_clone = true
 [build]
 template = "cargo"
 dependencies = [

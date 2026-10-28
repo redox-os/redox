@@ -3,7 +3,7 @@
 # build instructions: https://www.wireshark.org/docs/wsdg_html_chunked/ChSetupUNIX.html
 # build options: https://gitlab.com/wireshark/wireshark/-/blob/master/CMakeOptions.txt
 [source]
-tar = "https://2.na.dl.wireshark.org/src/wireshark-4.6.5.tar.xz"
+tar = "https://gitlab.com/wireshark/wireshark/-/archive/v4.7.4/wireshark-v4.7.4.tar.bz2"
 [build]
 template = "cmake"
 cmakeflags = [

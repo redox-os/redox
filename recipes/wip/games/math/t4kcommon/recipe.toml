@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO find a way to disable speech-dispatcher dep
 # build instructions: https://github.com/tux4kids/t4kcommon/blob/master/INSTALL#L33
 [source]
 git = "https://github.com/tux4kids/t4kcommon"
@@ -9,12 +9,16 @@ autotools_recursive_regenerate
 """
 [build]
 template = "configure"
+configureflags = [
+    "--without-sdlnet"
+]
 dependencies = [
     "sdl1",
     "sdl1-mixer",
     "sdl1-image",
     "sdl-pango",
-    "sdl2-net",
+    #"sdl1-net",
     "libpng",
     "libxml2",
+    "librsvg",
 ]

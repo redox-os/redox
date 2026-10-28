@@ -1,0 +1,14 @@
+#TODO compiled but untested
+[source]
+git = "https://github.com/bartobri/no-more-secrets"
+rev = "v1.0.1"
+shallow_clone = true
+[build]
+template = "custom"
+#dependencies = ["ncursesw"] # enable if needed
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+DYNAMIC_INIT
+"${COOKBOOK_MAKE}" nms -j "${COOKBOOK_MAKE_JOBS}"
+"${COOKBOOK_MAKE}" install DESTDIR="${COOKBOOK_STAGE}/usr"
+"""

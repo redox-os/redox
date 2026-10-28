@@ -1,5 +1,11 @@
-#TODO add script for gnu make: https://cgit.git.savannah.nongnu.org/cgit/dmidecode.git/tree/README#n22
+#TODO compile and test
 [source]
 tar = "https://download.savannah.gnu.org/releases/dmidecode/dmidecode-3.7.tar.xz"
 [build]
 template = "custom"
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+DYNAMIC_INIT
+"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}"
+"${COOKBOOK_MAKE}" install DESTDIR="${COOKBOOK_STAGE}/usr"
+"""

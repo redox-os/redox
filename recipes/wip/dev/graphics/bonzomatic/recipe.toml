@@ -3,6 +3,7 @@
 # build instructions - https://github.com/Gargaj/Bonzomatic#linux
 [source]
 git = "https://github.com/Gargaj/Bonzomatic"
+shallow_clone = true
 [build]
 template = "cmake"
 dependencies = [

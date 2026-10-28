@@ -1,5 +1,6 @@
-#TODO not compiled or tested
+#TODO outdated nix crate (after cargo update)
 [source]
 git = "https://git.madhouse-project.org/algernon/ala-lape"
+shallow_clone = true
 [build]
 template = "cargo"

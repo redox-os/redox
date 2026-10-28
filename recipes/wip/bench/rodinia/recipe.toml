@@ -1,5 +1,11 @@
-#TODO missing script for gnu make, build the openmp (cpu backend?) or opencl implementation
+#TODO build and test
 [source]
 tar = "http://www.cs.virginia.edu/~skadron/lava/rodinia/Packages/rodinia_3.1.tar.bz2"
 [build]
 template = "custom"
+dependencies = ["openmp"]
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+DYNAMIC_INIT
+"${COOKBOOK_MAKE}" OMP -j "${COOKBOOK_MAKE_JOBS}"
+"""

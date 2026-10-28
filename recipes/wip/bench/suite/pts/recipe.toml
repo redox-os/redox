@@ -1,4 +1,4 @@
-#TODO figure out the installation script - https://github.com/phoronix-test-suite/phoronix-test-suite
+#TODO test
 [source]
 git = "https://github.com/phoronix-test-suite/phoronix-test-suite"
 shallow_clone = true

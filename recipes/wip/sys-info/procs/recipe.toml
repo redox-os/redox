@@ -1,5 +1,6 @@
 #TODO async-io and rustix crates error (after cargo update)
 [source]
 git = "https://github.com/dalance/procs"
+shallow_clone = true
 [build]
 template = "cargo"

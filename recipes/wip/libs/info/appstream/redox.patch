@@ -1,0 +1,87 @@
+diff -ruwN source/AppStream-1.1.2/data/meson.build source-new/AppStream-1.1.2/data/meson.build
+--- source/AppStream-1.1.2/data/meson.build	2026-01-28 20:15:58.000000000 +0000
++++ source-new/AppStream-1.1.2/data/meson.build	2026-10-08 06:16:45.427081991 +0000
+@@ -7,52 +7,6 @@
+ install_data('its/metainfo.loc',
+               install_dir: join_paths(get_option('datadir'), 'gettext', 'its'))
+ 
+-# Do not rely on an exe wrapper for rel-info, use the system one in that case
+-if meson.is_cross_build()
+-    dependency('appstream', version: '>=' + as_version, native: true,
+-               not_found_message: 'Native appstream required for cross-building')
+-    ascli_exe = find_program('appstreamcli', native: true)
+-endif
+-
+-# NOTE: We do not translate the release notes on purpose here.
+-# If you do want to give translators a chance to translate them,
+-# ascli news-to-metainfo needs to produce a temporary file to translate
+-# prior to running (x)gettext on the file.
+-metainfo_with_relinfo = custom_target('gen-output',
+-    input : ['../NEWS', 'org.freedesktop.appstream.cli.metainfo.xml'],
+-    output : ['nol10n_withrelinfo_org.freedesktop.appstream.cli.metainfo.xml'],
+-    command : [ascli_exe, 'news-to-metainfo', '--limit=6', '@INPUT0@', '@INPUT1@', '@OUTPUT@']
+-)
+-
+-metainfo_i18n = i18n.itstool_join(
+-    input:  metainfo_with_relinfo,
+-    output: 'org.freedesktop.appstream.cli.metainfo.xml',
+-    mo_targets: i18n_result[0],
+-    its_files: [join_paths(meson.current_source_dir(), 'its', 'metainfo.its')],
+-    install: true,
+-    install_dir: metainfo_dir,
+-)
+-
+-test('as-validate_metainfo.cli',
+-    ascli_exe,
+-    args: ['validate',
+-           '--pedantic',
+-           '--no-net',
+-           metainfo_i18n]
+-)
+-
+ # install appstream.conf default template
+ install_data('appstream.conf',
+              install_dir: as_data_installdir)
+-
+-if get_option('compose')
+-    ascompose_metainfo = 'org.freedesktop.appstream.compose.metainfo.xml'
+-    test('as-validate_metainfo.compose',
+-         ascli_exe,
+-         args: ['validate',
+-                '--pedantic',
+-                '--no-net',
+-                join_paths(meson.current_source_dir(), ascompose_metainfo)]
+-    )
+-    install_data(ascompose_metainfo, install_dir: metainfo_dir)
+-endif
+diff -ruwN source/AppStream-1.1.2/meson.build source-new/AppStream-1.1.2/meson.build
+--- source/AppStream-1.1.2/meson.build	2026-01-28 20:15:58.000000000 +0000
++++ source-new/AppStream-1.1.2/meson.build	2026-10-08 06:22:27.470986289 +0000
+@@ -193,15 +193,10 @@
+ stemmer_inc_dirs = include_directories()
+ if get_option('stemming')
+     stemmer_lib = cc.find_library('stemmer', required: true)
+-    stemmer_inc_dirs = include_directories(['/usr/include'])
+     if not cc.has_header('libstemmer.h')
+-        if cc.has_header('libstemmer/libstemmer.h')
+-            stemmer_inc_dirs = include_directories('/usr/include/libstemmer')
+-        else
+             error('Unable to find Snowball header "libstemmer.h". Please ensure libstemmer/Snowball is installed properly in order to continue.')
+         endif
+     endif
+-endif
+ 
+ # use gperf for faster string -> enum matching
+ gperf = find_program('gperf')
+diff -ruwN source/AppStream-1.1.2/src/as-system-info.c source-new/AppStream-1.1.2/src/as-system-info.c
+--- source/AppStream-1.1.2/src/as-system-info.c	2026-01-28 20:15:58.000000000 +0000
++++ source-new/AppStream-1.1.2/src/as-system-info.c	2026-10-08 06:23:01.354958074 +0000
+@@ -513,7 +513,7 @@
+ 		return 0;
+ 	}
+ 	return hbi.memory_size / MB_IN_BYTES;
+-#elif defined(__sun)
++#elif defined(__sun) || defined(__redox__)
+ 	long physpages = sysconf (_SC_PHYS_PAGES);
+ 	long pagesize = sysconf (_SC_PAGESIZE);
+ 	if (physpages > 0 && pagesize > 0)

@@ -1,4 +1,4 @@
-#TODO compile and test
+#TODO termios crate error (after cargo update)
 [source]
 git = "https://github.com/Dalamar42/rayt"
 shallow_clone = true

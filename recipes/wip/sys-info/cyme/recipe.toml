@@ -1,5 +1,6 @@
-#TODO port to Redox
+#TODO port
 [source]
 git = "https://github.com/tuna-f1sh/cyme"
+shallow_clone = true
 [build]
 template = "cargo"

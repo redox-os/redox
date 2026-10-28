@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO syntax error near unexpected token `newline'
 # build instructions: https://github.com/jedisct1/Blogbench/blob/master/README#L18
 [source]
 tar = "https://github.com/jedisct1/Blogbench/releases/download/1.2/blogbench-1.2.tar.bz2"

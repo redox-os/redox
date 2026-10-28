@@ -1,0 +1,12 @@
+diff -ruwN source/src/ldo.c source-new/src/ldo.c
+--- source/src/ldo.c	2024-06-13 22:15:09.000000000 +0000
++++ source-new/src/ldo.c	2026-09-30 05:11:35.697677914 +0000
+@@ -60,7 +60,7 @@
+ 	try { a } catch(...) { if ((c)->status == 0) (c)->status = -1; }
+ #define luai_jmpbuf		int  /* dummy variable */
+ 
+-#elif defined(LUA_USE_POSIX)				/* }{ */
++#elif defined(LUA_USE_POSIX) && !defined(__redox__)	/* }{ */
+ 
+ /* in POSIX, try _longjmp/_setjmp (more efficient) */
+ #define LUAI_THROW(L,c)		_longjmp((c)->b, 1)
