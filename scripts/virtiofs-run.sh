@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Runs a command next to one virtiofsd per shared directory, for
 # `make qemu share=...` and `make ch share=...`.
-#   virtiofs-run.sh --share <socket>.sock <tag>=<dir> [--share ...] -- <command...>
+#   virtiofs-run.sh --share <socket>.sock <tag>=<dir>[:ro] [--share ...] -- <command...>
 
 set -euo pipefail
 
@@ -13,19 +13,27 @@ die() {
 }
 
 usage() {
-  echo "usage: $0 --share <socket>.sock <tag>=<dir> [--share ...] -- <command...>" >&2
+  echo "usage: $0 --share <socket>.sock <tag>=<dir>[:ro] [--share ...] -- <command...>" >&2
   exit 2
 }
 
 SOCKS=()
 TAGS=()
 DIRS=()
+OPTS=()
+LABELS=()
 while [[ "${1:-}" == --share ]]; do
   [[ $# -ge 3 ]] || usage
   [[ "$3" == *=* ]] || die "share '$3': expected <tag>=<dir>"
+  entry="$3" opt="" label=""
+  if [[ "${entry}" == *:ro ]]; then
+    entry="${entry%:ro}" opt=--readonly label=" (read-only)"
+  fi
+  OPTS+=("${opt}")
+  LABELS+=("${label}")
   SOCKS+=("$2")
-  TAGS+=("${3%%=*}")
-  DIRS+=("${3#*=}")
+  TAGS+=("${entry%%=*}")
+  DIRS+=("${entry#*=}")
   shift 3
 done
 [[ ${#SOCKS[@]} -gt 0 && "${1:-}" == -- && $# -ge 2 ]] || usage
@@ -48,6 +56,7 @@ validate_share() {
   [[ -n "${dir}" ]] || die "share '${tag}': empty directory"
   [[ "${dir}" != *[[:space:]]* ]] \
     || die "share '${tag}': directories containing whitespace are not supported ('${dir}')"
+  [[ -d "${dir}" ]] || die "share '${tag}': ${dir} is not a directory"
   [[ "${sock}" == *.sock ]] || die "socket '${sock}' must end in .sock"
   [[ ${#sock} -lt 108 ]] \
     || die "socket path too long (${#sock} bytes): ${sock}; use a shorter share_sockdir"
@@ -93,7 +102,7 @@ trap 'exit 143' TERM
 declare -A SHARED_DIRS=()
 start_virtiofsd() {
   local sock="${SOCKS[$1]}" dir
-  mkdir -p "${DIRS[$1]}" "$(dirname "${sock}")"
+  mkdir -p "$(dirname "${sock}")"
   dir="$(cd "${DIRS[$1]}" && pwd)"
   if [[ -n "${SHARED_DIRS[${dir}]:-}" ]]; then
     echo "virtiofs: warning: ${dir} is shared more than once; the instances do not share caches" >&2
@@ -107,6 +116,7 @@ start_virtiofsd() {
     --log-level warn \
     --translate-uid="map:0:$(id -u):1" \
     --translate-gid="map:0:$(id -g):1" \
+    ${OPTS[$1]} \
     </dev/null >"${sock%.sock}.log" 2>&1 &
   PIDS+=("$!")
 }
@@ -133,7 +143,7 @@ for i in "${!SOCKS[@]}"; do
 done
 wait_for_sockets
 for i in "${!SOCKS[@]}"; do
-  echo "virtiofs: sharing '${TAGS[$i]}' = ${DIRS[$i]} (log: ${SOCKS[$i]%.sock}.log)" >&2
+  echo "virtiofs: sharing '${TAGS[$i]}' = ${DIRS[$i]}${LABELS[$i]} (log: ${SOCKS[$i]%.sock}.log)" >&2
 done
 
 # Not exec'd, so cleanup runs when the command ends.
