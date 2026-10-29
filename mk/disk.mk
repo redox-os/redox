@@ -13,7 +13,7 @@ else
 	FILESYSTEM_SIZE=$(shell $(INSTALLER) --filesystem-size -c $(FILESYSTEM_CONFIG)); \
 	fi && \
 	truncate -s "$$FILESYSTEM_SIZE"m $@.partial
-	umask 002 && $(INSTALLER) $(INSTALLER_OPTS) -c $(FILESYSTEM_CONFIG) $@.partial
+	umask 022 && $(INSTALLER) $(INSTALLER_OPTS) -c $(FILESYSTEM_CONFIG) $@.partial
 	mv $@.partial $@
 endif
 
@@ -29,7 +29,7 @@ else
 	FILESYSTEM_SIZE=$(shell $(INSTALLER) --filesystem-size -c $(FILESYSTEM_CONFIG)); \
 	fi && \
 	truncate -s "$$FILESYSTEM_SIZE"m $@.partial
-	umask 002 && $(INSTALLER) $(INSTALLER_OPTS) -c $(FILESYSTEM_CONFIG) --write-bootloader="$(BUILD)/bootloader-live.efi" --live $@.partial
+	umask 022 && $(INSTALLER) $(INSTALLER_OPTS) -c $(FILESYSTEM_CONFIG) --write-bootloader="$(BUILD)/bootloader-live.efi" --live $@.partial
 	mv $@.partial $@
 	cp redox.ipxe $(BUILD)/redox.ipxe
 endif
@@ -52,7 +52,7 @@ else
 	$(REDOXFS) $@.partial $(MOUNT_DIR)
 	sleep 1
 	pgrep redoxfs
-	umask 002 && $(INSTALLER) $(INSTALLER_OPTS) -c $(FILESYSTEM_CONFIG) $(MOUNT_DIR)
+	umask 022 && $(INSTALLER) $(INSTALLER_OPTS) -c $(FILESYSTEM_CONFIG) $(MOUNT_DIR)
 	sync
 	-$(FUMOUNT) $(MOUNT_DIR) || true
 	rm -rf $(MOUNT_DIR)
