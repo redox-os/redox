@@ -7,6 +7,7 @@ shallow_clone = true
 [build]
 template = "custom"
 script = """
+COOKBOOK_NOSTRIP=1
 export PATH=$HOME/.local/go/bin:$PATH
 
 export GOPATH=${COOKBOOK_BUILD}/gopath
@@ -31,7 +32,7 @@ case "${TARGET}" in
     riscv64gc-unknown-redox) export GOARCH=riscv64 GOOS=redox;;
 esac
 
-export CGO_ENABLED=1
+export CC=gcc CXX=g++ CGO_ENABLED=0
 echo "go1.27.3" > VERSION # to set -trimpath
 (cd ./src && bash ./make.bash)
 

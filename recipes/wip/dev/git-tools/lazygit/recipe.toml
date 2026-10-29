@@ -1,7 +1,9 @@
-#TODO: Incomplete std/syscall porting, or vendor patches
+#TODO: require git update
 [source]
-git = "https://github.com/jesseduffield/lazygit"
+git = "https://github.com/willnode/lazygit"
+branch = "redox"
 shallow_clone = true
+
 [build]
 template = "custom"
 dev-dependencies = [
@@ -21,3 +23,8 @@ esac
 mkdir -p $COOKBOOK_STAGE/usr/bin
 go build -C ${COOKBOOK_SOURCE} -o $COOKBOOK_STAGE/usr/bin/lazygit
 """
+
+[package]
+dependencies = [
+    "git"
+]
