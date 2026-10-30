@@ -11,6 +11,7 @@ filesystem_size = 3000
 [packages]
 
 # GUI Apps
+cosmic-monitor = {}
 cosmic-reader = {}
 periodictable = {}
 servo = {}
@@ -44,6 +45,7 @@ sopwith = {}
 syobonaction = {}
 
 # Demos
+gtk3 = {}
 nushell = {}
 orbclient = {}
 pixelcannon = {}
@@ -56,6 +58,12 @@ softbuffer = {}
 
 # MIDI
 freepats = {}
+
+[[files]]
+path = "/usr/lib/init.d/20_glib"
+data = """
+glib-compile-schemas /usr/share/glib-2.0/schemas/
+"""
 
 [[files]]
 path = "/home/user/Welcome.txt"
