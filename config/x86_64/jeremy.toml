@@ -5,23 +5,25 @@ include = ["demo.toml"]
 # General settings
 [general]
 # Filesystem size in MiB
-filesystem_size = 8192
+filesystem_size = 16384
 
 # Package settings
 [packages]
-# apps
+
+# GUI Apps
 #boxedwine = {}
-cosmic-player = {}
-cosmic-reader = {}
-cosmic-settings = {}
-cosmic-store = {}
-cosmic-term = {}
-cosmic-text = {}
+#cosmic-player = {}
+#cosmic-settings = {}
+#cosmic-store = {}
 #qemu = {} # not building
 schismtracker = {}
-servo = {}
 
-# cli
+# GUI Data
+jeremy = {}
+noto-color-emoji = {}
+ttf-hack = {}
+
+# Terminal Apps
 cleye = {}
 ffmpeg6 = {}
 lua54 = {}
@@ -34,26 +36,54 @@ sed = {}
 shellharden = {}
 xz = {}
 
-# demos
+# Emulators
+mgba = {}
+#retroarch = {} # need to package cores
+rs-nes = {} # need game for testing
+rust64 = {} # need roms
+rustual-boy = {} # need game for testing
+scummvm = {} # need game for testing
+#vice = {} # broken on new toolchain
+
+# Games
+devilutionx = {}
+eduke32 = {}
+freeciv = {}
+gigalomania = {}
+love = {}
+mednaffe = {}
+openjazz = {}
+openjk = {}
+openttd = {}
+openttd-opengfx = {}
+openttd-openmsx = {}
+openttd-opensfx = {}
+quakespasm = {}
+sm64ex = {}
+#spacecadetpinball = {} # not building
+#vvvvvv = {} # cannot find -lgcc_s
+
+# Demos
 #cairodemo = {}
 cmatrix = {}
 cpal = {}
-gears = {}
-glutin = {}
+#glutin = {}
 #hematite = {} # not building
-iced = {}
-libcosmic = {}
-osdemo = {} # does not show anything
+#libcosmic = {}
+#osdemo = {} # does not show anything
 #pathfinder = {} # not building
 procedural-wallpapers-rs = {}
 #rust-cairo = {}
 #rust-cairo-demo = {}
-sdl2-gears = {}
 vttest = {}
 #webrender = {}
 winit = {}
 
-# dev
+# MIDI
+generaluser-gs = {}
+timidity = {}
+
+# Development
 autoconf = {}
 automake = {}
 #cookbook = {}
@@ -63,38 +93,4 @@ gnu-make = {}
 nasm = {}
 patch = {}
 pkg-config = {}
-rust = {}
-
-# games
-devilutionx = {}
-eduke32 = {}
-flycast = {}
-freeciv = {}
-gigalomania = {}
-love = {}
-mednafen = {}
-mgba = {}
-openjazz = {}
-openjk = {}
-openttd = {}
-openttd-opengfx = {}
-openttd-openmsx = {}
-openttd-opensfx = {}
-quakespasm = {}
-#retroarch = {} # need to package cores
-rs-nes = {} # need game for testing
-rust64 = {} # need roms
-rustual-boy = {} # need game for testing
-scummvm = {} # need game for testing
-sm64ex = {}
-#spacecadetpinball = {} # not building
-syobonaction = {}
-#vice = {} # broken on new toolchain
-#vvvvvv = {} # cannot find -lgcc_s
-
-# stuff
-generaluser-gs = {}
-jeremy = {}
-noto-color-emoji = {}
-timidity = {}
-ttf-hack = {}
+#rust = {}

@@ -30,13 +30,11 @@ vim = {}
 wget = {}
 
 # Emulators
-
 dosbox = {}
 mednafen = {}
 flycast = {}
 
 # Games
-
 freedoom = {}
 neverball = {}
 prboom = {}
