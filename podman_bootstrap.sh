@@ -498,6 +498,12 @@ virtiofsd_find()
 # Download a static x86_64 virtiofsd build from the upstream CI into
 # ~/.cache/virtiofsd-redox, after asking for confirmation.
 # Override the source with VIRTIOFSD_URL.
+#
+# TODO: this is the CI build of upstream's main branch, so it is neither
+# pinned nor checked: virtiofsd releases do not ship binaries or checksums
+# yet. Once they do, move this download into mk/virtiofs.mk, pinned to a
+# release and checked against its sha256 like Cloud Hypervisor in mk/ch.mk,
+# and pass it to scripts/virtiofs-run.sh through VIRTIOFSD.
 ###############################################################################
 virtiofsd_download()
 {
