@@ -35,6 +35,15 @@ ln -s "libbz2.so.1.0" "${COOKBOOK_STAGE}/usr/lib/libbz2.so.1"
 ln -s "libbz2.so.1.0" "${COOKBOOK_STAGE}/usr/lib/libbz2.so"
 fi
 
-mkdir -p "${COOKBOOK_STAGE}/usr/lib/pkgconfig"
+# Change symlinks in usr/bin as relative
+find "${COOKBOOK_STAGE}/usr/bin" -type l | while read -r link; do
+    target=$(readlink "$link")
+    if [[ "$target" = /* ]]; then
+        ln -snfr "$target" "$link"
+    fi
+done
+
+mkdir -p "${COOKBOOK_STAGE}/usr/lib/pkgconfig" "${COOKBOOK_STAGE}/usr/share/"
 cp "${COOKBOOK_RECIPE}/pkgconfig" "${COOKBOOK_STAGE}/usr/lib/pkgconfig/bzip2.pc"
+mv "${COOKBOOK_STAGE}/usr/man" "${COOKBOOK_STAGE}/usr/share/"
 """
