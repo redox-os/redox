@@ -6,13 +6,20 @@ patches = [
 ]
 [build]
 template = "custom"
+compiler = "no-lto"
 script = """
 DYNAMIC_STATIC_INIT
 export ac_cv_header_stdc=yes
 COOKBOOK_CONFIGURE_FLAGS+=(
     --prefix="${COOKBOOK_STAGE}/usr"
+    --enable-install-termcap
+    --with-termcap="${COOKBOOK_STAGE}/etc/termcap"
+)
+COOKBOOK_MAKE_FLAGS=(
+    infodir="$COOKBOOK_STAGE/usr/share/info"
 )
 # termcap only emit static object
 export CC+=" -fPIC"
+mkdir -p "${COOKBOOK_STAGE}/etc"
 cookbook_configure
 """

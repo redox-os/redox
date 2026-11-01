@@ -16,6 +16,7 @@ CPPFLAGS+=" -fno-lto"
 COOKBOOK_CONFIGURE="${COOKBOOK_SOURCE}/source/configure"
 COOKBOOK_CONFIGURE_FLAGS+=(
     icu_cv_host_frag=mh-linux
+    --sbindir=/usr/bin
 )
 if [ "$TARGET" != "$COOKBOOK_HOST_TARGET" ]; then
 COOKBOOK_CONFIGURE_FLAGS+=(

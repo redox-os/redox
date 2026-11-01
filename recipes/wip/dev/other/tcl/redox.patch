@@ -1,0 +1,23 @@
+diff -ruwN source/generic/tclBasic.c source-new/generic/tclBasic.c
+--- source/generic/tclBasic.c	2026-09-23 18:52:24.000000000 +0000
++++ source-new/generic/tclBasic.c	2026-10-31 22:41:10.290905986 +0000
+@@ -8034,7 +8034,7 @@
+ 	return TCL_ERROR;
+     }
+     errno = 0;
+-    return CheckDoubleResult(interp, fma(d1, d2, d3));
++    return CheckDoubleResult(interp, d1 * d2 + d3);
+ }
+ 
+ static int
+diff -ruwN source/pkgs/sqlite3.53.4/compat/sqlite3/sqlite3.c source-new/pkgs/sqlite3.53.4/compat/sqlite3/sqlite3.c
+--- source/pkgs/sqlite3.53.4/compat/sqlite3/sqlite3.c	2026-09-11 17:37:04.000000000 +0000
++++ source-new/pkgs/sqlite3.53.4/compat/sqlite3/sqlite3.c	2026-10-31 22:44:08.440361284 +0000
+@@ -15688,6 +15688,7 @@
+ 
+ /************** End of parse.h ***********************************************/
+ /************** Continuing where we left off in sqliteInt.h ******************/
++#include <alloca.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
