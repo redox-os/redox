@@ -175,6 +175,7 @@ mesa = {}
 mesa-glu = {}
 mesa-demos = {}
 mesa-demos-x11 = {}
+meson = {}
 mgba = {}
 miniserve = {}
 mpc = {}
