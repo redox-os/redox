@@ -109,6 +109,9 @@
             in
             with pkgs;
             [
+              (pkgs.writeShellScriptBin "${pkgs.stdenv.hostPlatform.system}-gnu-strip" ''
+                ${pkgs.bintools-unwrapped}/bin/strip $@
+              '')
               ant
               autoconf
               autoreconf269 # gnu-binutils
