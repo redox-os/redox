@@ -14,10 +14,11 @@ dependencies = [
     "libgumbo",
     # "freeglut", TODO: HAVE_GLUT=yes
 ]
+compiler = "gcc"
 script = """
 DYNAMIC_INIT
 cd $COOKBOOK_SOURCE
 mkdir -p $COOKBOOK_BUILD/shared-release
-"${COOKBOOK_MAKE}" install-libs install-apps shared=yes build=release USE_SYSTEM_LIBS=yes  \
+"${COOKBOOK_MAKE}" install-libs install-apps shared=yes build=release USE_SYSTEM_LIBS=yes prefix=/usr \
     -j "${COOKBOOK_MAKE_JOBS}" DESTDIR="${COOKBOOK_STAGE}" "OUT=$COOKBOOK_BUILD/shared-release"
 """
