@@ -64,6 +64,9 @@ pub fn package(
         }
 
         if !package_file.is_file() {
+            if cook_config.compressed && cook_config.verbose {
+                log_to_pty!(logger, "DEBUG: compressing '{}'", package_file.display());
+            }
             pkgar::create_with_flags(
                 secret_path,
                 package_file.to_str().unwrap(),
