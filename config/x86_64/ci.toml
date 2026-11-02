@@ -62,6 +62,7 @@ coreutils = {}
 cosmic-edit = {}
 cosmic-files = {}
 cosmic-icons = {}
+cosmic-monitor = {}
 cosmic-reader = {}
 cosmic-term = {}
 cosmic-text = {}
