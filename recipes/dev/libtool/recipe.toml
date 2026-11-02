@@ -1,8 +1,11 @@
 #TODO can build, not tested
 [source]
-git = "https://gitlab.redox-os.org/redox-os/libtool"
-branch = "v2.5.4-redox"
-shallow_clone = true
+tar = "https://ftp.gnu.org/gnu/libtool/libtool-2.6.2.tar.gz"
+blake3 = "0d046e6c2b7ad8253b7420db02f616de004f7eb8ea16446840e070fba9904a65"
+
+patches = [
+    "redox.patch"
+]
 
 [build]
 template = "custom"
@@ -13,10 +16,6 @@ DYNAMIC_INIT
 unset CFLAGS
 
 cp -r "${COOKBOOK_SOURCE}"/. ./
-./bootstrap \
-    --skip-po \
-    --force \
-    --gnulib-srcdir=./gnulib
 COOKBOOK_CONFIGURE="./configure"
 cookbook_configure
 """
