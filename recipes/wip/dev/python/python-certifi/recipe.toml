@@ -1,7 +1,7 @@
 # TODO compiles but needs testing
 [source]
 git = "https://github.com/certifi/python-certifi"
-rev = "2026.06.17"
+rev = "2026.10.23"
 shallow_clone = true
 
 [build]
