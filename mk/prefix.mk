@@ -4,7 +4,15 @@ PREFIX=prefix/$(TARGET)
 
 PREFIX_INSTALL=$(PREFIX)/sysroot/
 PREFIX_PATH=$(ROOT)/$(PREFIX_INSTALL)/bin
-LIBTOOL_PATH=$(ROOT)/$(PREFIX)/libtool-install
+LIBTOOL_INSTALL?=$(ROOT)/$(PREFIX)/libtool-install
+BINUTILS_INSTALL?=$(ROOT)/$(PREFIX)/binutils-install
+CLANG_INSTALL?=$(ROOT)/$(PREFIX)/clang-install
+RELIBC_FREESTANDING_INSTALL?=$(ROOT)/$(PREFIX)/relibc-freestanding-install
+GCC_FREESTANDING_INSTALL?=$(ROOT)/$(PREFIX)/gcc-freestanding-install
+GCC_INSTALL?=$(ROOT)/$(PREFIX)/gcc-install
+RUST_INSTALL?=$(ROOT)/$(PREFIX)/rust-install
+CLANG_INSTALL?=$(ROOT)/$(PREFIX)/clang-install
+WASIP1_LIBC_INSTALL?=$(ROOT)/$(PREFIX)/wasip1-libc-install
 BINUTILS_TARGET=recipes/dev/binutils-gdb/target/$(HOST_TARGET)/$(TARGET)
 LIBTOOL_TARGET=recipes/dev/libtool/target/$(HOST_TARGET)
 GCC_TARGET=recipes/dev/gcc13/target/$(HOST_TARGET)/$(TARGET)
@@ -63,15 +71,15 @@ else
 	@echo "\033[1;36;49mBuilding sysroot\033[0m"
 	rm -rf "$@.partial" "$@"
 	mkdir "$@.partial"
-	cp -r "$(PREFIX)/gcc-install/". "$@.partial"
-	cp -r "$(PREFIX)/rust-install/". "$@.partial"
-	cp -r "$(PREFIX)/clang-install/". "$@.partial"
+	cp -r "$(GCC_INSTALL)/". "$@.partial"
+	cp -r "$(RUST_INSTALL)/". "$@.partial"
+	cp -r "$(CLANG_INSTALL)/". "$@.partial"
 ifneq ($(HOSTED_REDOX),1)
 	rm -rf "$@.partial/$(GNU_TARGET)/include/"*
-	cp -r "$(PREFIX)/gcc-install/$(GNU_TARGET)/include/c++" "$@.partial/$(GNU_TARGET)/include/c++"
+	cp -r "$(GCC_INSTALL)/$(GNU_TARGET)/include/c++" "$@.partial/$(GNU_TARGET)/include/c++"
 else
 	rm -rf "$@.partial/include/"*
-	cp -r "$(PREFIX)/gcc-install/include/c++" "$@.partial/include/c++"
+	cp -r "$(GCC_INSTALL)/include/c++" "$@.partial/include/c++"
 endif
 	$(REPO_BIN) clean-target relibc $(COOKBOOK_OPTS)
 	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
@@ -242,11 +250,11 @@ ifeq ($(PODMAN_BUILD),1)
 else
 	@echo "\033[1;36;49mFetching prefix sources\033[0m"
 	rm -f "$@"
-	export $(PREFIX_CONFIG) COOKBOOK_LIBTOOL_DIR=$(LIBTOOL_PATH) PATH="$(ROOT)/$(PREFIX)/libtool-install/bin:$$PATH" \
+	export $(PREFIX_CONFIG) COOKBOOK_LIBTOOL_DIR=$(LIBTOOL_INSTALL) PATH="$(LIBTOOL_INSTALL)/bin:$$PATH" \
 		COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_TARGET=$(TARGET) COOKBOOK_CROSS_GNU_TARGET=$(GNU_TARGET) && \
 	$(REPO_BIN) fetch host:binutils-gdb host:gcc13 host:llvm21 relibc
 ifneq ($(PREFIX_USE_UPSTREAM_RUST_COMPILER),1)
-	export $(PREFIX_CONFIG) COOKBOOK_LIBTOOL_DIR=$(LIBTOOL_PATH) PATH="$(ROOT)/$(PREFIX)/libtool-install/bin:$$PATH" \
+	export $(PREFIX_CONFIG) COOKBOOK_LIBTOOL_DIR=$(LIBTOOL_INSTALL) PATH="$(LIBTOOL_INSTALL)/bin:$$PATH" \
 		COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_TARGET=$(TARGET) COOKBOOK_CROSS_GNU_TARGET=$(GNU_TARGET) && \
 	$(REPO_BIN) fetch host:wasi-libc host:rust
 endif
@@ -260,7 +268,7 @@ else
 	@echo "\033[1;36;49mBuilding binutils-install\033[0m"
 	rm -rf "$@.partial" "$@"
 	mkdir -p "$@.partial"
-	export $(PREFIX_CONFIG) COOKBOOK_LIBTOOL_DIR=$(LIBTOOL_PATH) PATH="$(ROOT)/$(PREFIX)/libtool-install/bin:$$PATH" \
+	export $(PREFIX_CONFIG) COOKBOOK_LIBTOOL_DIR=$(LIBTOOL_INSTALL) PATH="$(LIBTOOL_INSTALL)/bin:$$PATH" \
 		COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_TARGET=$(TARGET) COOKBOOK_CROSS_GNU_TARGET=$(GNU_TARGET) && \
 	$(REPO_BIN) cook host:binutils-gdb
 	cp -r "$(BINUTILS_TARGET)/stage/usr/". "$@.partial"
@@ -273,17 +281,17 @@ ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
 	@echo "\033[1;36;49mBuilding gcc-freestanding-install\033[0m"
-	rm -rf "$@.partial" "$@" $(PREFIX)/relibc-freestanding-install $(PREFIX)/sysroot
-	mkdir -p "$@.partial" $(PREFIX)/relibc-freestanding-install/$(GNU_TARGET)/include
-	export $(PREFIX_CONFIG) PATH="$(LIBTOOL_PATH)/bin:$(ROOT)/$(PREFIX)/binutils-install/bin:$$PATH" \
-		COOKBOOK_LIBTOOL_DIR=$(LIBTOOL_PATH) COOKBOOK_CROSS_TARGET=$(TARGET) COOKBOOK_CROSS_GNU_TARGET=$(GNU_TARGET) \
-		ACLOCAL_PATH=$(LIBTOOL_PATH)/share/aclocal:$$ACLOCAL_PATH \
-		COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_SYSROOT=$(ROOT)/$(PREFIX)/relibc-freestanding-install/$(GNU_TARGET) && \
+	rm -rf "$@.partial" "$@" $(RELIBC_FREESTANDING_INSTALL) $(PREFIX)/sysroot
+	mkdir -p "$@.partial" $(RELIBC_FREESTANDING_INSTALL)/$(GNU_TARGET)/include
+	export $(PREFIX_CONFIG) PATH="$(LIBTOOL_INSTALL)/bin:$(BINUTILS_INSTALL)/bin:$$PATH" \
+		COOKBOOK_LIBTOOL_DIR=$(LIBTOOL_INSTALL) COOKBOOK_CROSS_TARGET=$(TARGET) COOKBOOK_CROSS_GNU_TARGET=$(GNU_TARGET) \
+		ACLOCAL_PATH=$(LIBTOOL_INSTALL)/share/aclocal:$$ACLOCAL_PATH \
+		COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_SYSROOT=$(RELIBC_FREESTANDING_INSTALL)/$(GNU_TARGET) && \
 	$(REPO_BIN) cook host:gcc13
 	cp -r "$(GCC_TARGET)/stage/usr/". "$@.partial"
 	cp -r "$(GCC_TARGET)/stage.cxx/usr/". "$@.partial"
-	cp -r "$(PREFIX)/binutils-install/". "$@.partial"
-	rm -rf $(PREFIX)/relibc-freestanding-install
+	cp -r "$(BINUTILS_INSTALL)/". "$@.partial"
+	rm -rf "$(RELIBC_FREESTANDING_INSTALL)"
 	touch "$@.partial"
 	mv "$@.partial" "$@"
 endif
@@ -296,7 +304,7 @@ else
 	rm -rf "$@.partial" "$@"
 	mkdir -p "$@.partial"
 	export CARGO="env -u CARGO -u RUSTUP_TOOLCHAIN cargo" RUSTUP="env -u CARGO -u RUSTUP_TOOLCHAIN rustup" && \
-	export PATH="$(ROOT)/$(PREFIX)/gcc-freestanding-install/bin:$$PATH" && \
+	export PATH="$(GCC_FREESTANDING_INSTALL)/bin:$$PATH" && \
 	export CC_$(subst -,_,$(TARGET))="$(GNU_TARGET)-gcc -isystem $(ROOT)/$@.partial/$(GNU_TARGET)/include" LINKFLAGS="" && \
 	export $(PREFIX_CONFIG) COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_TARGET=$(HOST_TARGET) && \
 	$(REPO_BIN) cook relibc
@@ -313,12 +321,12 @@ else
 	rm -rf "$@.partial" "$@-build.partial" "$@"
 	if [ ! -d "$(ROOT)/$(GCC_TARGET)" ]; then \
 		echo "\033[1;38;5;196m Incomplete build stages. Please re-run the build\033[0m"; \
-		rm -rf "$(PREFIX)"/gcc-freestanding-install && "$(PREFIX)"/relibc-freestanding-install && \
+		rm -rf "$(GCC_FREESTANDING_INSTALL)" && "$(RELIBC_FREESTANDING_INSTALL)" && \
 		exit 1; fi
 	mkdir -p "$@.partial" "$@-build.partial"
-	cp -r "$(PREFIX)/gcc-freestanding-install/". "$@.partial"
-	cp -r "$(PREFIX)/relibc-freestanding-install/". "$@.partial"
-	cp -r "$(PREFIX)/libtool-install/". "$@.partial"
+	cp -r "$(GCC_FREESTANDING_INSTALL)/". "$@.partial"
+	cp -r "$(RELIBC_FREESTANDING_INSTALL)/". "$@.partial"
+	cp -r "$(LIBTOOL_INSTALL)/". "$@.partial"
 	@#TODO: how to make this not conflict with libc?
 	rm -f "$@.partial/lib/gcc/$(GNU_TARGET)/13.2.0/include/limits.h"
 # libgcc and freestanding libstdcxx
@@ -334,7 +342,7 @@ else
 	rm -f "$@.partial"/$(GNU_TARGET)/lib/libsupc++.la
 # hosted libstdcxx
 	export PATH="$(ROOT)/$@.partial/bin:$$PATH" \
-		ACLOCAL_PATH="$(LIBTOOL_PATH)/share/aclocal:$$ACLOCAL_PATH" && \
+		ACLOCAL_PATH="$(LIBTOOL_INSTALL)/share/aclocal:$$ACLOCAL_PATH" && \
 	export $(PREFIX_CONFIG) "COOKBOOK_HOST_SYSROOT=$(ROOT)/$@.partial" COOKBOOK_CROSS_TARGET=$(HOST_TARGET) && \
 	rm -rf "$(LIBSTDCXX_TARGET)/stage" && $(REPO_BIN) cook libstdcxx-v3
 	cp -r "$(LIBSTDCXX_TARGET)/stage/usr/". "$@.partial/$(GNU_TARGET)"
@@ -428,7 +436,7 @@ ifeq ($(PODMAN_BUILD),1)
 else
 	@echo "\033[1;36;49mBuilding wasip1-libc-install\033[0m"
 	rm -rf "$@.partial" "$@"
-	export REDOXER_TOOLCHAIN=$(ROOT)/$(PREFIX)/clang-install $(PREFIX_CONFIG) PATH="$(ROOT)/$(PREFIX)/clang-install/bin:$$PATH" \
+	export REDOXER_TOOLCHAIN=$(CLANG_INSTALL) $(PREFIX_CONFIG) PATH="$(CLANG_INSTALL)/bin:$$PATH" \
 		COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_TARGET=wasm32-wasip1 COOKBOOK_CROSS_GNU_TARGET=wasm32-wasip1 && \
 		$(REPO_BIN) cook host:wasi-libc
 	cp -r "$(WASIP1_LIBC_TARGET)/stage/usr/". "$@.partial"
@@ -445,8 +453,8 @@ ifeq ($(PODMAN_BUILD),1)
 else
 	@echo "\033[1;36;49mBuilding rust-install\033[0m"
 	rm -rf "$@.partial" "$@"
-	export PATH="$(LIBTOOL_PATH)/bin:$(ROOT)/$(PREFIX)/gcc-install/bin:$$PATH" WASI_SDK_PATH=$(ROOT)/$(PREFIX)/wasip1-libc-install \
-		$(PREFIX_CONFIG) COOKBOOK_LIBTOOL_DIR=$(LIBTOOL_PATH) COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_TARGET=$(TARGET) COOKBOOK_CROSS_GNU_TARGET=$(GNU_TARGET) && \
+	export PATH="$(LIBTOOL_INSTALL)/bin:$(GCC_INSTALL_INSTALL)/bin:$$PATH" WASI_SDK_PATH=$(WASIP1_LIBC_INSTALL) \
+		$(PREFIX_CONFIG) COOKBOOK_LIBTOOL_DIR=$(LIBTOOL_INSTALL) COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_TARGET=$(TARGET) COOKBOOK_CROSS_GNU_TARGET=$(GNU_TARGET) && \
 		$(REPO_BIN) cook host:rust
 	cp -r "$(RUST_TARGET)/stage/usr/". "$@.partial"
 	mv "$@.partial" "$@"
@@ -464,8 +472,8 @@ ifeq ($(PODMAN_BUILD),1)
 else
 	@echo "\033[1;36;49mBuilding clang-install\033[0m"
 	rm -rf "$@.partial" "$@"
-	export PATH="$(LIBTOOL_PATH)/bin:$$PATH" $(PREFIX_CONFIG) \
-		COOKBOOK_LIBTOOL_DIR=$(LIBTOOL_PATH) COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_TARGET=$(TARGET) && \
+	export PATH="$(LIBTOOL_INSTALL)/bin:$$PATH" $(PREFIX_CONFIG) \
+		COOKBOOK_LIBTOOL_DIR=$(LIBTOOL_INSTALL) COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_TARGET=$(TARGET) && \
 		$(REPO_BIN) cook host:llvm21 host:clang21 host:lld21
 	cp -r "$(LLVM_TARGET)/stage/usr/". "$@.partial"
 	cp -r "$(LLVM_TARGET)/stage.runtime/usr/". "$@.partial"
@@ -473,7 +481,7 @@ else
 	cp -r "$(CLANG_TARGET)/stage/usr/". "$@.partial"
 	cp -r "$(LLD_TARGET)/stage/usr/". "$@.partial"
 	rm -rf "$@.partial/lib/"*.a
-	echo "--sysroot=$(ROOT)/$(PREFIX)/gcc-install" > "$@.partial/bin/$(GNU_TARGET).cfg"
+	echo "--sysroot=$(GCC_INSTALL)" > "$@.partial/bin/$(GNU_TARGET).cfg"
 	ln -s clang-21 "$@.partial/bin/wasm32-wasip1-clang"
 	ln -s clang-21 "$@.partial/bin/$(GNU_TARGET)-clang"
 	ln -s clang++ "$@.partial/bin/$(GNU_TARGET)-clang++"
