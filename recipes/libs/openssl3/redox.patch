@@ -1,19 +1,19 @@
 diff -ruwN source/apps/lib/apps.c source-new/apps/lib/apps.c
---- source/apps/lib/apps.c	2025-09-16 19:05:33.000000000 +0700
-+++ source-new/apps/lib/apps.c	2026-05-05 05:08:40.007422945 +0700
-@@ -2839,7 +2839,7 @@
+--- source/apps/lib/apps.c	2026-09-29 14:05:00.000000000 +0000
++++ source-new/apps/lib/apps.c	2026-11-02 13:12:01.017080874 +0000
+@@ -2863,7 +2863,7 @@
      return ret;
  }
  
--#elif defined(_SC_CLK_TCK)      /* by means of unistd.h */
-+#elif defined(_SC_CLK_TCK) && !defined(__RELIBC__)      /* by means of unistd.h */
- # include <sys/times.h>
+-#elif defined(_SC_CLK_TCK) /* by means of unistd.h */
++#elif defined(_SC_CLK_TCK) && !defined(__RELIBC__) /* by means of unistd.h */
+ #include <sys/times.h>
  
  double app_tminterval(int stop, int usertime)
 diff -ruwN source/Configurations/10-main.conf source-new/Configurations/10-main.conf
---- source/Configurations/10-main.conf	2025-09-16 19:05:33.000000000 +0700
-+++ source-new/Configurations/10-main.conf	2026-05-05 05:08:44.812616321 +0700
-@@ -208,6 +208,40 @@
+--- source/Configurations/10-main.conf	2026-09-29 14:05:00.000000000 +0000
++++ source-new/Configurations/10-main.conf	2026-11-02 13:09:11.387128346 +0000
+@@ -209,6 +209,40 @@
          shared_extension => ".so",
      },
  
@@ -54,7 +54,7 @@ diff -ruwN source/Configurations/10-main.conf source-new/Configurations/10-main.
  #### Solaris configurations
      "solaris-common" => {
          inherit_from     => [ "BASE_unix" ],
-@@ -693,7 +727,6 @@
+@@ -694,7 +728,6 @@
          shared_target    => "linux-shared",
          shared_cflag     => "-fPIC",
          shared_ldflag    => sub { $disabled{pinshared} ? () : "-Wl,-znodelete" },
@@ -62,7 +62,7 @@ diff -ruwN source/Configurations/10-main.conf source-new/Configurations/10-main.
      },
      "linux-latomic" => {
          inherit_from     => [ "linux-generic32" ],
-@@ -890,7 +923,6 @@
+@@ -891,7 +924,6 @@
          bn_ops           => "SIXTY_FOUR_BIT_LONG",
          asm_arch         => 'x86_64',
          perlasm_scheme   => "elf",
@@ -71,14 +71,14 @@ diff -ruwN source/Configurations/10-main.conf source-new/Configurations/10-main.
      "linux-x86_64-clang" => {
          inherit_from     => [ "linux-x86_64" ],
 diff -ruwN source/include/crypto/rand.h source-new/include/crypto/rand.h
---- source/include/crypto/rand.h	2025-09-16 19:05:33.000000000 +0700
-+++ source-new/include/crypto/rand.h	2026-05-05 05:08:40.007980910 +0700
-@@ -41,7 +41,7 @@
+--- source/include/crypto/rand.h	2026-09-29 14:05:00.000000000 +0000
++++ source-new/include/crypto/rand.h	2026-11-02 13:10:37.658190042 +0000
+@@ -40,7 +40,7 @@
   * default, we will try to read at least one of these files
   */
- # define DEVRANDOM "/dev/urandom", "/dev/random", "/dev/hwrng", "/dev/srandom"
--# if defined(__linux) && !defined(__ANDROID__)
-+# if defined(__linux) && !defined(__RELIBC__) && !defined(__ANDROID__) /* needs sys/shm.h */
- #  ifndef DEVRANDOM_WAIT
- #   define DEVRANDOM_WAIT   "/dev/random"
- #  endif
+ #define DEVRANDOM "/dev/urandom", "/dev/random", "/dev/hwrng", "/dev/srandom"
+-#if defined(__linux) && !defined(__ANDROID__)
++#if defined(__linux) && !defined(__ANDROID__) && !defined(__RELIBC__) /* needs sys/shm.h */
+ #ifndef DEVRANDOM_WAIT
+ #define DEVRANDOM_WAIT "/dev/random"
+ #endif
