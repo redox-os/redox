@@ -1,6 +1,6 @@
 [source]
-tar = "https://github.com/nghttp2/nghttp2/releases/download/v1.64.0/nghttp2-1.64.0.tar.xz"
-blake3 = "1bbc08de4816769d800c42f501a00c1ba3f5efa1b76e1f65d2e5bdf3aa30354d"
+tar = "https://github.com/nghttp2/nghttp2/releases/download/v1.69.0/nghttp2-1.69.0.tar.xz"
+blake3 = "dd7432762ac454aaa14ff3b29d40d5b8f641ec3c33e4e24c5ed70e971ac6987b"
 script = """
 autotools_recursive_regenerate
 """
