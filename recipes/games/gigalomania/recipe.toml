@@ -1,3 +1,6 @@
+[package]
+description = "2D real-time strategy god game"
+
 [source]
 git = "https://gitlab.redox-os.org/redox-os/gigalomania.git"
 branch = "master"

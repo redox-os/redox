@@ -9,6 +9,7 @@ cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}"/usr/share/benchmarks
 """
 
 [package]
+description = "Redox benchmarking scripts"
 dependencies = [
     "iperf3"
 ]

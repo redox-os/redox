@@ -1,3 +1,6 @@
+[package]
+description = "Low-level runtime library for software compiled with GCC"
+
 [build]
 template = "custom"
 script = """

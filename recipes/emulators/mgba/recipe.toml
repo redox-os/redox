@@ -1,3 +1,6 @@
+[package]
+description = "Game Boy Advance emulator"
+
 [source]
 tar = "https://github.com/mgba-emu/mgba/archive/0.10.5.tar.gz"
 blake3 = "a1b9e797a5058f5264d276805aef5643b7ea460916e491a0098ba32d87f1519e"

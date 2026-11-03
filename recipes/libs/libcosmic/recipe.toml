@@ -1,3 +1,6 @@
+[package]
+description = "COSMIC design library example"
+
 [source]
 git = "https://gitlab.redox-os.org/redox-os/libcosmic.git"
 branch = "redox"

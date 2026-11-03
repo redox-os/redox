@@ -1,3 +1,6 @@
+[package]
+description = "Modern user-friendly terminal shell"
+
 [source]
 git = "https://github.com/fish-shell/fish-shell"
 rev = "54e8ad7e90a8213c01ba58de0640223bee6846d6"

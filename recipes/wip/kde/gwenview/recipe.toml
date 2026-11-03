@@ -27,4 +27,4 @@ dependencies = [
     "libjpeg",
     "libpng",
     "exiv2",
-#]
+]

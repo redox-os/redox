@@ -5,6 +5,7 @@ git = "https://gitlab.redox-os.org/redox-os/orbital.git"
 template = "cargo"
 
 [package]
+description = "Redox windowing and compositing system"
 dependencies = [
     "orbdata"
 ]

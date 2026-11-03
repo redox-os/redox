@@ -24,6 +24,7 @@ echo "soundfont /usr/share/generaluser-gs/generaluser-gs.sf2" >> "${COOKBOOK_STA
 """
 
 [package]
+description = "Command line MIDI synthesizer, aka TiMidity++"
 dependencies = [
     "generaluser-gs",
 ]

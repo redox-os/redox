@@ -1,3 +1,6 @@
+[package]
+description = "C bindings to the Orbital client library"
+
 [source]
 git = "https://gitlab.redox-os.org/redox-os/liborbital.git"
 

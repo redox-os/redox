@@ -29,6 +29,7 @@ cookbook_configure
 """
 
 [package]
+description = "Library for rich terminal user interfaces"
 dependencies = [
     "terminfo",
 ]

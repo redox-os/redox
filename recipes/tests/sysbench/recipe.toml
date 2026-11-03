@@ -21,4 +21,5 @@ cookbook_configure
 """
 
 [package]
+description = "Scriptable benchmark tool for databases and other systems"
 dependencies = ["luajit"]

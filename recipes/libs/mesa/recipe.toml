@@ -1,3 +1,6 @@
+[package]
+description = "OpenGL and Vulkan CPU and GPU drivers, and also drivers for other Khronos Group standards"
+
 [source]
 git = "https://gitlab.redox-os.org/redox-os/mesa.git"
 upstream = "https://gitlab.freedesktop.org/mesa/mesa"

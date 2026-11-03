@@ -1,3 +1,6 @@
+[package]
+description = "Libre music assets for OpenTTD"
+
 [source]
 git = "https://gitlab.redox-os.org/redox-os/openttd-openmsx.git"
 

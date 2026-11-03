@@ -1,3 +1,6 @@
+[package]
+description = "Mesa3D offscreen rendering (OSMesa) demo using Orbital windowing"
+
 [build]
 template = "custom"
 dependencies = [

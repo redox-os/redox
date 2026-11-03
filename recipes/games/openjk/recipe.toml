@@ -1,3 +1,6 @@
+[package]
+description = "Open-source Star Wars Jedi Academy and Jedi Outcast engine reimplementation (requires original game files)"
+
 [source]
 git = "https://github.com/jackpot51/OpenJK"
 upstream = "https://github.com/JACoders/OpenJK.git"

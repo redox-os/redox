@@ -1,3 +1,6 @@
+[package]
+description = "\"Post-modern\" modal text editor for terminals"
+
 #TODO signal handling is disabled, it should be re-enabled when Redox is ready
 #TODO language files are not built for fennel and crstalline langauges
 #TODO configuration - https://docs.helix-editor.com/install.html#configuring-helixs-runtime-files

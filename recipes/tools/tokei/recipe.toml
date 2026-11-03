@@ -1,3 +1,6 @@
+[package]
+description = "Display statistics about source code in a project (any language)"
+
 [source]
 git = "https://github.com/XAMPPRocky/tokei.git"
 [build]

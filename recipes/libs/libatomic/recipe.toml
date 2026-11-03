@@ -1,3 +1,6 @@
+[package]
+description = "GCC atomics library"
+
 [source]
 same_as = "../../dev/gcc13"
 

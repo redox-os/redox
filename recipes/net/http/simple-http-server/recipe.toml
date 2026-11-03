@@ -1,3 +1,6 @@
+[package]
+description = "Minimal web server written in Rust"
+
 [source]
 git = "https://github.com/TheWaWaR/simple-http-server"
 [build]

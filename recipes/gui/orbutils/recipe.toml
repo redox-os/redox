@@ -1,3 +1,6 @@
+[package]
+description = "Orbital utilities"
+
 [source]
 git = "https://gitlab.redox-os.org/redox-os/orbutils.git"
 

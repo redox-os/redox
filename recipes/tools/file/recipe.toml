@@ -1,3 +1,6 @@
+[package]
+description = "Tool to analyze file properties"
+
 [source]
 tar = "https://astron.com/pub/file/file-5.46.tar.gz"
 [build]

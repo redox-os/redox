@@ -1,3 +1,6 @@
+[package]
+description = "Standard POSIX shell, compatible with sh"
+
 [source]
 git = "https://gitlab.redox-os.org/redox-os/dash.git"
 branch = "redox"

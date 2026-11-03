@@ -1,3 +1,6 @@
+[package]
+description = "Minimal and simple test tool for system scheduler"
+
 [source]
 git = "https://gitlab.redox-os.org/akshitgaur2005/schedrs.git"
 

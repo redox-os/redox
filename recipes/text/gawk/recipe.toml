@@ -1,3 +1,6 @@
+[package]
+description = "GNU implementation of awk text-processing language"
+
 [source]
 tar = "https://ftp.gnu.org/gnu/gawk/gawk-5.2.0.tar.xz"
 blake3 = "31b907e8223fc265b73d94f32a6fce8082993da8558ed6e9f4ec95cdb98ad032"

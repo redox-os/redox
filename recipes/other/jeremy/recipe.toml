@@ -1,3 +1,6 @@
+[package]
+description = "Jeremy Soller's user data for testing. Keep out!"
+
 # This is a private repository that sets up my user
 [source]
 git = "https://gitlab.redox-os.org/jackpot51/jeremy.git"

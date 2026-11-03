@@ -1,3 +1,6 @@
+[package]
+description = "Authorized port of Sopwith, plane game for early MS-DOS"
+
 [source]
 tar = "https://github.com/fragglet/sdl-sopwith/releases/download/sdl-sopwith-2.9.0/sdl-sopwith-2.9.0.tar.gz"
 blake3 = "f06a6d0c826b42989c58074f85ed8e19fbfd5fe53a357ba356bc1109bcf91ef3"

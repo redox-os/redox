@@ -1,3 +1,6 @@
+[package]
+description = "GDB server for remote debugging"
+
 [source]
 git = "https://gitlab.redox-os.org/redox-os/gdbserver.git"
 

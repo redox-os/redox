@@ -1,3 +1,6 @@
+[package]
+description = "Set of sound fonts for use in audio synths, from GNU"
+
 [source]
 git = "https://gitlab.redox-os.org/redox-os/freepats.git"
 

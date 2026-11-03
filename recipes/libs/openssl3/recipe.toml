@@ -1,3 +1,6 @@
+[package]
+description = "Library for SSL/TLS (API version 3.x)"
+
 [source]
 tar = "https://github.com/openssl/openssl/releases/download/openssl-3.5.9/openssl-3.5.9.tar.gz"
 blake3 = "be2f7530fe5cd02a06e67d8916e6574f1c53b8071393aae2364b4ed817cf0354"

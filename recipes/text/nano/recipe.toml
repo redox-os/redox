@@ -9,6 +9,7 @@ dependencies = [
 ]
 
 [package]
+description = "The easy-to-use terminal text editor"
 dependencies = [
     "terminfo"
 ]

@@ -1,3 +1,6 @@
+[package]
+description = "Examples from softbuffer GUI framebuffer library"
+
 # NOTE: Switch to upstream once winit pump events have been upstreamed
 [source]
 git = "https://github.com/willnode/softbuffer.git"

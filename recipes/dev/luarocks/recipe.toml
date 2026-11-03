@@ -1,3 +1,6 @@
+[package]
+description = "Package manager for Lua programming language"
+
 [source]
 git = "https://github.com/luarocks/luarocks.git"
 shallow_clone = true

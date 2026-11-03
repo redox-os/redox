@@ -1,3 +1,6 @@
+[package]
+description = "GNU library for any-precision floating-point math (complement to GMP)"
+
 [source]
 tar = "https://www.mpfr.org/mpfr-current/mpfr-4.2.2.tar.xz"
 blake3 = "11d59d061ef8db588650bc7dc5172594a6e5aad013994801c6f63011a62b191d"

@@ -1,3 +1,6 @@
+[package]
+description = "Modern terminal shell with rich scripting and structured data display"
+
 #TODO: Reduce crate patches
 [source]
 git = "https://github.com/nushell/nushell"

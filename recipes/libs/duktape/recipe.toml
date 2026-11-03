@@ -1,3 +1,6 @@
+[package]
+description = "Embeddable JavaScript engine (ES5 with partial support for ES2015/ES2016)"
+
 [source]
 tar = "https://duktape.org/duktape-2.7.0.tar.xz"
 blake3 = "b0a17da888847bc9c73624ae3ba7f858ec327a9bbce9d287aee6a2489e518448"

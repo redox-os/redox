@@ -1,3 +1,6 @@
+[package]
+description = "Open-source Minecraft Classic client reimplementation"
+
 [source]
 git = "https://github.com/jackpot51/ClassiCube.git"
 

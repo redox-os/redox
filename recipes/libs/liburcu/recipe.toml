@@ -1,3 +1,6 @@
+[package]
+description = "Library for lockfree/\"read-copy-update\" parallel-access data structures"
+
 [source]
 tar = "https://lttng.org/files/urcu/userspace-rcu-0.14.0.tar.bz2"
 patches = ["0001-Fix-compilation-on-Redox-OS.patch"]

@@ -1,3 +1,6 @@
+[package]
+description = "Simple nano-like editor written in Rust"
+
 [source]
 git = "https://gitlab.redox-os.org/redox-os/Smith.git"
 

@@ -1,3 +1,6 @@
+[package]
+description = "Examples from Iced GUI library"
+
 [source]
 git = "https://github.com/pop-os/iced"
 rev = "300fa97" 
