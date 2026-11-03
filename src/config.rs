@@ -313,7 +313,7 @@ mod tests {
                 compressed: false,
                 git_treeless: false,
                 verbose: true,
-                verbose_cmd: true,
+                verbose_cmd: false,
                 clean_build: false,
                 clean_target: false,
                 write_filetree: false
