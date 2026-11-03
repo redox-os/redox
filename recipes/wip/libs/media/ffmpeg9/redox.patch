@@ -1,0 +1,13 @@
+diff -ruwN source/configure source-new/configure
+--- source/configure	2026-08-03 22:14:47.000000000 +0000
++++ source-new/configure	2026-11-02 10:38:23.591367435 +0000
+@@ -6377,6 +6377,9 @@
+         ;;
+     minix)
+         ;;
++    redox)
++        enable section_data_rel_ro
++        ;;
+     none)
+         ;;
+     *)

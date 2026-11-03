@@ -1,0 +1,44 @@
+# TODO: need j1 relibc function
+[source]
+tar = "https://ffmpeg.org/releases/ffmpeg-9.0.2.tar.xz"
+patches = [
+    "redox.patch"
+]
+
+[build]
+template = "custom"
+dependencies = [
+    "liborbital",
+    "mesa",
+    "sdl2",
+    "zlib",
+]
+dev-dependencies = [
+    "libstdcxx"
+]
+compiler = "gcc-no-lto"
+script = """
+DYNAMIC_INIT
+
+export LDFLAGS="$LDFLAGS -lSDL2 -lorbital -lOSMesa"
+ARCH="${TARGET%%-*}"
+COOKBOOK_CONFIGURE_FLAGS=(
+    --enable-cross-compile
+    --target-os=redox
+    --arch="${ARCH}"
+    --cross_prefix="${TARGET}-"
+    --prefix=/usr
+    --disable-doc
+    --enable-shared
+    --disable-static
+    --disable-network
+    --enable-sdl2
+    --enable-zlib
+    --enable-pic
+    --enable-encoder=png
+    --enable-decoder=png
+)
+cookbook_configure
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/ui/apps"
+cp -v "${COOKBOOK_RECIPE}/manifest" "${COOKBOOK_STAGE}/usr/share/ui/apps/ffplay"
+"""
