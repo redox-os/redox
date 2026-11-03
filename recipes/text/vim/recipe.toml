@@ -1,3 +1,6 @@
+[package]
+description = "Vi IMproved, a programmer's text editor"
+
 [source]
 tar = "https://github.com/vim/vim/archive/refs/tags/v9.1.0821.tar.gz"
 blake3 = "d1f5802ceb047b09143f1764bf4016f084cf7e6c026c7047919264c9f262a5dd"

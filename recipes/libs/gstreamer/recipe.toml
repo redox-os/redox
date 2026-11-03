@@ -1,3 +1,6 @@
+[package]
+description = "Tools and libraries for network video streaming"
+
 [source]
 tar = "https://gitlab.freedesktop.org/gstreamer/gstreamer/-/archive/1.24.12/gstreamer-1.24.12.tar.gz"
 blake3 = "181daf73050f7472ec656e7461b7f67028d6002c1133870576033a32e43a364f"

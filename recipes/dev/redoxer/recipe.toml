@@ -1,3 +1,6 @@
+[package]
+description = "Wrapper and command-line tool to quickly test and run Rust, C, and C++ applications and libraries in a minimal Redox virtual machine"
+
 [source]
 git = "https://gitlab.redox-os.org/redox-os/redoxer"
 branch = "master"

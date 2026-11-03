@@ -1,3 +1,6 @@
+[package]
+description = "Orbital client library example"
+
 [source]
 git = "https://gitlab.redox-os.org/redox-os/orbclient.git"
 

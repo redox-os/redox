@@ -1,3 +1,6 @@
+[package]
+description = "Graphical Redox installer"
+
 [source]
 same_as = "../../core/installer"
 

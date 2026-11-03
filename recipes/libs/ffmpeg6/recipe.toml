@@ -1,3 +1,6 @@
+[package]
+description = "Tools and libraries for video conversion and playback"
+
 [source]
 tar = "https://ffmpeg.org/releases/ffmpeg-6.1.5.tar.xz"
 blake3 = "da8e6743d96f27d5b5425339218f9a954d9440cb27ba449b449d686b411292e9"

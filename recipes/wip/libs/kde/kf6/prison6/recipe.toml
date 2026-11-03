@@ -10,7 +10,7 @@ cmakeflags = [
     "-DWITH_MULTIMEDIA=OFF",
 ]
 dependencies = [
-    "qt6-base"
+    "qt6-base",
     "libqrencode",
     #"qt6-multimedia",
     #"libdmtx",

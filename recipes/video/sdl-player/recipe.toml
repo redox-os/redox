@@ -1,3 +1,6 @@
+[package]
+description = "Simple video player based on SDL 1.2 and FFmpeg"
+
 [source]
 git = "https://gitlab.redox-os.org/redox-os/sdl-player.git"
 

@@ -1,3 +1,6 @@
+[package]
+description = "Can't decide which terminal shell you like best? This program picks one randomly"
+
 [source]
 git = "https://gitlab.redox-os.org/redox-os/shellstorm.git"
 

@@ -9,4 +9,5 @@ cp -rv "${COOKBOOK_SOURCE}/tests" "${COOKBOOK_STAGE}/usr/share/relibc-tests"
 """
 
 [package]
+description = "Redox POSIX/C Standard Library Test Suite"
 dependencies = ["gcc13"]

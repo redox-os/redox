@@ -1,3 +1,6 @@
+[package]
+description = "A prettier \"ls\" command"
+
 [source]
 git = "https://github.com/pls-rs/pls"
 [build]

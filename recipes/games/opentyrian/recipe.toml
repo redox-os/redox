@@ -7,6 +7,9 @@
 # anything will break. The last two commits were small fixes, one in 2023
 # and one in 2024.
 
+[package]
+description = "Authorized port of Tyrian, space shooter for MS-DOS"
+
 [source]
 git = "https://github.com/opentyrian/opentyrian"
 shallow_clone = true

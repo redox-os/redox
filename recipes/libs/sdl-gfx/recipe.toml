@@ -1,3 +1,6 @@
+[package]
+description = "High-level graphics function library for SDL (API version 1.2)"
+
 [source]
 tar = "https://sourceforge.net/projects/sdlgfx/files/SDL_gfx-2.0.27.tar.gz"
 blake3 = "6fe0ff88b5084d56e2c9259e50ef2eab14db4c8bc2fa7a4719a3adb4178e266f"

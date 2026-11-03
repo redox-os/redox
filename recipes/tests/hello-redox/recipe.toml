@@ -1,3 +1,6 @@
+[package]
+description = "Minimal \"Hello world\" programs in nine common languages"
+
 [build]
 template = "custom"
 script = """

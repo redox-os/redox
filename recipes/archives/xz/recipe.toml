@@ -1,3 +1,6 @@
+[package]
+description = "Compression library and tools, xz and .lzma format"
+
 [source]
 tar = "https://github.com/tukaani-project/xz/releases/download/v5.2.13/xz-5.2.13.tar.gz"
 blake3 = "edc6350542e8cb7188a878135e5b9bd592d687e5b47451ca1c89d51cc4bc6b53"

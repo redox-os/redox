@@ -1,3 +1,6 @@
+[package]
+description = "Basic command-line networking utilities"
+
 [source]
 git = "https://gitlab.redox-os.org/redox-os/netutils.git"
 

@@ -1,3 +1,6 @@
+[package]
+description = "Core UNIX shell utilities"
+
 [source]
 git = "https://gitlab.redox-os.org/redox-os/coreutils.git"
 

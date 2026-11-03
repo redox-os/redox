@@ -7,7 +7,7 @@ shallow_clone = true
 [build]
 template = "meson"
 mesonflags = [
-    "-Ddocumentation=false"
+    "-Ddocumentation=false",
     "-Dpycamera=false",
     "-Dtracing=false",
     "-Dudev=false",
