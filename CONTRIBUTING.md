@@ -141,6 +141,10 @@ You can see all open issues on [this](https://gitlab.redox-os.org/groups/redox-o
 
 Please follow [our process](https://doc.redox-os.org/book/creating-proper-pull-requests.html) for creating proper pull requests.
 
+### Pull Requests Pipelines
+
+The GitLab CI pipelines is runnable only by maintainer review, otherwise it will be seen as "stuck". Please don't hesitate to ask in Matrix for triggering CI pipelines after being reviewed.
+
 ## Important Places to Contribute
 
 Before starting to contribute, we recommend reading the [General FAQ](https://www.redox-os.org/faq/) and the [Redox Book](https://doc.redox-os.org/book/).
