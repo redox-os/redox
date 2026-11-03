@@ -1,3 +1,6 @@
+[package]
+description = "GNU diff and related tools"
+
 [source]
 tar = "https://ftp.gnu.org/gnu/diffutils/diffutils-3.6.tar.xz"
 blake3 = "086a95093c15edcdb826e75ff4de6c2213de6fbd2eb13538d07bdc3286dfb4a4"

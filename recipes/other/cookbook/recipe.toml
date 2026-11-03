@@ -12,6 +12,7 @@ cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}/usr/share/cookbook"
 """
 
 [package]
+description = "Redox build system"
 # Dependencies below does not include Rust / GCC
 #   because it will be downloaded as prefix binary.
 dependencies = [

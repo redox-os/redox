@@ -1,3 +1,6 @@
+[package]
+description = "Audio mixer library for SDL (API version 1.2)"
+
 [source]
 tar = "https://www.libsdl.org/projects/SDL_mixer/release/SDL_mixer-1.2.12.tar.gz"
 blake3 = "ef23bab2d42250dfdc51ce6939ee7b393973ff11a0dd3481f32180b489d2661c"

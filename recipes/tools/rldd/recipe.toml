@@ -1,3 +1,6 @@
+[package]
+description = "Resolve and print binary or shared library dependencies (ldd implementation in Rust)"
+
 [source]
 git = "https://github.com/zatrazz/rldd"
 rev = "v0.4.0"

@@ -1,3 +1,6 @@
+[package]
+description = "Levels for Neverball"
+
 [source]
 same_as = "../neverball"
 

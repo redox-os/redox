@@ -1,3 +1,6 @@
+[package]
+description = "Mesa3D \"gears\" OpenGL demo ported to SDL2 windowing"
+
 [build]
 template = "custom"
 dependencies = [

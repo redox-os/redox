@@ -1,3 +1,6 @@
+[package]
+description = "Implementation of Jazz Jackrabbit by Epic (requires Jazz Jackrabbit game files)"
+
 [source]
 tar = "https://github.com/AlisterT/openjazz/archive/refs/tags/20240919.tar.gz"
 blake3 = "c419066dd7bf50510c5ef0746fc47450ab8f5a17a0010a1bc0ad67d0e63538da"

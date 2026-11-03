@@ -15,6 +15,7 @@ COOKBOOK_CARGO_PATH=examples/editor cookbook_cargo_build
 """
 
 [package]
+description = "Demo of GUI text editing widget library from COSMIC desktop"
 dependencies = [
     "libxkbcommon",
 ]

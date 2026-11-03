@@ -1,3 +1,6 @@
+[package]
+description = "Simple Minecraft clone implemented on Piston engine"
+
 [source]
 git = "https://gitlab.redox-os.org/redox-os/hematite.git"
 branch = "redox"

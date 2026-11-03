@@ -1,3 +1,6 @@
+[package]
+description = "GNU C++ runtime library"
+
 [build]
 template = "custom"
 script = """

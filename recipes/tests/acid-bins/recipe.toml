@@ -1,3 +1,6 @@
+[package]
+description = "Runner script for Redox OS test suite"
+
 [source]
 same_as = "../acid"
 [build]

@@ -1,3 +1,6 @@
+[package]
+description = "The LLVM linker"
+
 [source]
 same_as = "../llvm21"
 

@@ -1,3 +1,6 @@
+[package]
+description = "FreeDesktop XDG default icon set"
+
 [source]
 git = "https://gitlab.freedesktop.org/xdg/default-icon-theme.git"
 

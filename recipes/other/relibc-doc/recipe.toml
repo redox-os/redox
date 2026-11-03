@@ -1,3 +1,6 @@
+[package]
+description = "Documentation for relibc (Redox POSIX/C Standard Library)"
+
 [source]
 same_as = "../../core/relibc"
 

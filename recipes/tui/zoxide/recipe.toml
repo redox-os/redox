@@ -1,3 +1,6 @@
+[package]
+description = "A smarter \"cd\" command"
+
 [source]
 git = "https://github.com/ajeetdsouza/zoxide"
 shallow_clone = true

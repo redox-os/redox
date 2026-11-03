@@ -1,3 +1,6 @@
+[package]
+description = "Tabset and terminfo databases"
+
 [source]
 git = "https://github.com/sajattack/terminfo"
 branch = "master"

@@ -1,3 +1,6 @@
+[package]
+description = "Library for cross-language foreign function interfaces"
+
 [source]
 tar = "https://github.com/libffi/libffi/releases/download/v3.4.5/libffi-3.4.5.tar.gz"
 blake3 = "f9a2cfe1d2ac8d211c18c99f9cfafe5537925101bfb92c2d44d844680dd82264"

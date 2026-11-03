@@ -1,3 +1,6 @@
+[package]
+description = "Strategy game inspired by Sid Meier's Civilization 2"
+
 [source]
 tar = "https://files.freeciv.org/stable/freeciv-3.1.4.tar.xz"
 blake3 = "212630af5e50fb72662ca62a71cdd57318d0cf309b53e46377dd24c8199923a4"

@@ -1,3 +1,6 @@
+[package]
+description = "GNU library for arbitrary-precision complex math"
+
  # C library for the arithmetic of complex numbers with arbitrarily high
  # precision and correct rounding of the result.
 

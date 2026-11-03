@@ -1,3 +1,6 @@
+[package]
+description = "SSH Client and Server written in Rust"
+
 [source]
 git = "https://gitlab.redox-os.org/redox-os/redox-ssh.git"
 

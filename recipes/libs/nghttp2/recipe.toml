@@ -1,3 +1,6 @@
+[package]
+description = "Library for HTTP/2 (server, client and proxy)"
+
 [source]
 tar = "https://github.com/nghttp2/nghttp2/releases/download/v1.69.0/nghttp2-1.69.0.tar.xz"
 blake3 = "dd7432762ac454aaa14ff3b29d40d5b8f641ec3c33e4e24c5ed70e971ac6987b"

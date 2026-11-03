@@ -1,3 +1,6 @@
+[package]
+description = "GNU Binutils version of GDB debugger"
+
 [source]
 git = "https://gitlab.redox-os.org/redox-os/binutils-gdb"
 branch = "redox-2.43.1"

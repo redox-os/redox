@@ -1,3 +1,6 @@
+[package]
+description = "Example of a dynamic library for Redox"
+
 [source]
 git = "https://gitlab.redox-os.org/redox-os/dynamic-example.git"
 shallow_clone = true

@@ -1,3 +1,6 @@
+[package]
+description = "Basic Redox graphical calculator"
+
 [source]
 git = "https://gitlab.redox-os.org/redox-os/orbcalculator.git"
 

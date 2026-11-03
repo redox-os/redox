@@ -1,3 +1,6 @@
+[package]
+description = "GNOME high-level text rendering library"
+
 [source]
 tar = "https://download.gnome.org/sources/pango/1.56/pango-1.56.3.tar.xz"
 blake3 = "78542feaaf007c1d648b94c4e9b6655ed7515d27ce434766aea99bef886c21ac"

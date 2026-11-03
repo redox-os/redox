@@ -24,6 +24,7 @@ cmakeflags = [
 ]
 
 [package]
+description = "Command line Internet resource downloader"
 dependencies = [
     "ca-certificates"
 ]

@@ -13,6 +13,7 @@ cp -v "${COOKBOOK_SOURCE}/pkg/icon.png" "${COOKBOOK_STAGE}/usr/share/icons/perio
 """
 
 [package]
+description = "Graphical browser for periodic table of the chemical elements"
 dependencies = [
     "orbital",
 ]
