@@ -1,5 +1,5 @@
 [package]
-description = "Simple Directmedia Layer library for games (API version 2)"
+description = "Simple Directmedia Layer library (API version 2.x)"
 
 [source]
 git = "https://gitlab.redox-os.org/redox-os/sdl2.git"

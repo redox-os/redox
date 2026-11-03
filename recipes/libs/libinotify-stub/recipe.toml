@@ -1,5 +1,5 @@
 [package]
-description = "Redox compatibility library for Linux inotify"
+description = "Redox compatibility library for Linux inotify API"
 
 [source]
 tar = "https://github.com/willnode/inotify-stub/archive/refs/tags/v0.2.tar.gz"

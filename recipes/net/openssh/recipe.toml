@@ -1,5 +1,5 @@
 [package]
-description = "SSH and SFTP client, server and tools"
+description = "SSH and SFTP client: server and tools"
 
 [source]
 tar = "https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-10.5p1.tar.gz"

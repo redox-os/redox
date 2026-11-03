@@ -1,5 +1,5 @@
 [package]
-description = "Shell with rich scripting and structured data display"
+description = "Modern terminal shell with rich scripting and structured data display"
 
 #TODO: Reduce crate patches
 [source]

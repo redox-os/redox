@@ -1,5 +1,5 @@
 [package]
-description = "Library for SSL/TLS (API version 1)"
+description = "Library for SSL/TLS (API version 1.x)"
 
 [source]
 git = "https://gitlab.redox-os.org/redox-os/openssl.git"

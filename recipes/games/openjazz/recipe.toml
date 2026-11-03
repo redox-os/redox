@@ -1,5 +1,5 @@
 [package]
-description = "Implementation of Jazz Jackrabbit by Epic (requires legally purchased game files)"
+description = "Implementation of Jazz Jackrabbit by Epic (requires Jazz Jackrabbit game files)"
 
 [source]
 tar = "https://github.com/AlisterT/openjazz/archive/refs/tags/20240919.tar.gz"

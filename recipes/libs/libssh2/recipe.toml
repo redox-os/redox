@@ -1,5 +1,5 @@
 [package]
-description = "Client-side library for ssh"
+description = "Client-side library for SSH protocol"
 
 [source]
 tar = "https://www.libssh2.org/download/libssh2-1.10.0.tar.gz"

@@ -1,5 +1,5 @@
 [package]
-description = "Userspace library for Display Rendering Manager"
+description = "Userspace library for Linux Display Rendering Manager"
 
 [source]
 tar = "https://gitlab.freedesktop.org/mesa/libdrm/-/archive/libdrm-2.4.125/libdrm-libdrm-2.4.125.tar.gz"

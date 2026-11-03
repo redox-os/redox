@@ -1,5 +1,5 @@
 [package]
-description = "Modify ELF files (used for Linux and Redox software binaries)"
+description = "Modify ELF files (used for Linux and Redox binaries)"
 
 [source]
 tar = "https://github.com/NixOS/patchelf/releases/download/0.18.0/patchelf-0.18.0.tar.bz2"

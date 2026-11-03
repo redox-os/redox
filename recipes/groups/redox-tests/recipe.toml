@@ -1,5 +1,5 @@
 [package]
-description = "Components for testing Redox"
+description = "Test suites meta-package"
 dependencies = [
     "acid",
     "acid-bins",

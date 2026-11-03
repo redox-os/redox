@@ -1,5 +1,5 @@
 [package]
-description = "Helper-functions library for OpenGL. Not compatible with OpenGL 4 or OpenGL ES"
+description = "Helper-functions library for OpenGL. Not compatible with OpenGL 4.x or OpenGL ES"
 
 [source]
 tar = "https://archive.mesa3d.org/glu/glu-9.0.3.tar.xz"

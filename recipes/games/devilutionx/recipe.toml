@@ -1,5 +1,5 @@
 [package]
-description = "Implementation of Diablo 1 and Diablo: Hellfire (requires legally purchased game files)"
+description = "Advanced open-source Diablo 1 and Diablo: Hellfire engine reimplementation (requires Diablo game files)"
 
 [source]
 tar = "https://github.com/diasurgical/devilutionX/archive/refs/tags/1.5.4.tar.gz"

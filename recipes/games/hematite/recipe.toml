@@ -1,5 +1,5 @@
 [package]
-description = "Third-party Minecraft Classic client written with Rust/Piston"
+description = "Simple Minecraft clone implemented on Piston engine"
 
 [source]
 git = "https://gitlab.redox-os.org/redox-os/hematite.git"

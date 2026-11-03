@@ -1,5 +1,5 @@
 [package]
-description = "Realtime log analyzer including rich terminal UI"
+description = "Real-time log analyzer including rich terminal UI"
 
 [source]
 tar = "https://tar.goaccess.io/goaccess-1.9.4.tar.gz"

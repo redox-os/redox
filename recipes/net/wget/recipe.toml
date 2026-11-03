@@ -1,5 +1,5 @@
 [package]
-description = "Command line URL downloader (Generation X)"
+description = "Command line HTTP resource downloader (Generation X)"
 
 [source]
 tar = "https://ftp.gnu.org/gnu/wget/wget-1.21.4.tar.gz"

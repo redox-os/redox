@@ -1,5 +1,5 @@
 [package]
-description = "Implementation of Transport Tycoon Deluxe (requires legally purchased game files OR -open packages)"
+description = "Open-source Transport Tycoon Deluxe engine reimplementation (requires original or libre (-open packages) game files)"
 
 [source]
 git = "https://github.com/OpenTTD/OpenTTD.git"

@@ -27,7 +27,7 @@ done
 """
 
 [package]
-description = "Third-party assets and WADs for Id Doom"
+description = "Libre Doom WADs/asset recreation for Doom engines"
 dependencies = [
     "ion",
     "prboom",

@@ -1,5 +1,5 @@
 [package]
-description = "Bourne Again SHell, official shell of GNU"
+description = "Bourne Again SHell, official shell of GNU/Linux"
 
 [source]
 tar = "https://ftp.gnu.org/gnu/bash/bash-5.3.tar.gz"

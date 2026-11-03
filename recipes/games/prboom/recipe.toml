@@ -1,5 +1,5 @@
 [package]
-description = "Authorized port of Id Doom and Doom 2 (requires legally purchased game files OR freedoom package)"
+description = "A classic Doom 1-2 engine fork (requires original or libre (freedoom package) game files)"
 
 [source]
 tar = "https://downloads.sourceforge.net/project/prboom/prboom%20stable/2.5.0/prboom-2.5.0.tar.gz"

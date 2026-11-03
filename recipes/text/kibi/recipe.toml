@@ -1,5 +1,5 @@
 [package]
-description = "Minimal vim-like terminal text editor, written in Rust"
+description = "Minimal terminal text editor like GNU nano, written in Rust"
 
 [source]
 git = "https://github.com/ilai-deutel/kibi"

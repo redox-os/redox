@@ -1,5 +1,5 @@
 [package]
-description = "User-friendly alternative to UNIX \"find\""
+description = "User-friendly alternative to UNIX \"find\", written in Rust"
 
 [source]
 git = "https://github.com/sharkdp/fd.git"

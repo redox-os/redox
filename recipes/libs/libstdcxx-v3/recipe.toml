@@ -1,5 +1,5 @@
 [package]
-description = "GNU C++ runtime library (alternate recipe, forces build-from-scratch from gcc13 sources)"
+description = "GNU C++ runtime library (alternate recipe, forces build-from-scratch from gcc13 recipe sources)"
 
 [source]
 same_as = "../../dev/gcc13"

@@ -1,5 +1,5 @@
 [package]
-description = "Print lines that match patterns (uutils version)"
+description = "Print lines that match patterns (uutils implementation)"
 
 [source]
 git = "https://github.com/uutils/grep"

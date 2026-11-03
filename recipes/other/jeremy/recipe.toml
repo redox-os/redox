@@ -1,5 +1,5 @@
 [package]
-description = "Jeremy Soller's private package. Keep out!!"
+description = "Jeremy Soller's user data for testing. Keep out!"
 
 # This is a private repository that sets up my user
 [source]

@@ -1,5 +1,5 @@
 [package]
-description = "Authorized port of Duke Nukem 3D (requires legally purchased game files)"
+description = "Authorized port of Duke Nukem 3D (requires Duke Nukem 3D game files)"
 
 [source]
 tar = "https://dukeworld.com/eduke32/synthesis/20181010-7067/eduke32_src_20181010-7067.tar.xz"

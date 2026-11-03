@@ -1,5 +1,5 @@
 [package]
-description = "Third-party sound effect assets for OpenTTD"
+description = "Libre sound effect assets for OpenTTD"
 
 [source]
 git = "https://gitlab.redox-os.org/redox-os/openttd-opensfx.git"

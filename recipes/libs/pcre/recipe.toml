@@ -1,5 +1,5 @@
 [package]
-description = "Library for Perl-compatible regular expressions (API version 1)"
+description = "Library for Perl-compatible regular expressions (API version 1.x)"
 
 [source]
 tar = "https://mirrors.gigenet.com/OSDN//sfnet/p/pc/pcre/pcre/8.42/pcre-8.42.tar.gz"

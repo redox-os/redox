@@ -1,5 +1,5 @@
 [package]
-description = "Library for FAT family filesystems"
+description = "Redox FAT filesystem family library"
 
 [source]
 git = "https://gitlab.redox-os.org/redox-os/redox-fatfs.git"

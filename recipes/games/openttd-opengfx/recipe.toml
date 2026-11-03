@@ -1,5 +1,5 @@
 [package]
-description = "Third-party graphics assets for OpenTTD"
+description = "Libre graphics assets for OpenTTD"
 
 [source]
 git = "https://gitlab.redox-os.org/redox-os/openttd-opengfx.git"

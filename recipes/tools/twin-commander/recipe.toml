@@ -1,5 +1,5 @@
 [package]
-description = "Terminal-interface file manager"
+description = "Terminal file manager"
 
 [source]
 git = "https://github.com/kivimango/twin-commander.git"

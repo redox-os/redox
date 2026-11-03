@@ -1,5 +1,5 @@
 [package]
-description = "Tools and libraries for net video streaming"
+description = "Tools and libraries for network video streaming"
 
 [source]
 tar = "https://gitlab.freedesktop.org/gstreamer/gstreamer/-/archive/1.24.12/gstreamer-1.24.12.tar.gz"

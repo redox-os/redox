@@ -1,5 +1,5 @@
 [package]
-description = "High-level graphics function library for SDL (SDL API version 1.2)"
+description = "High-level graphics function library for SDL (API version 1.2)"
 
 [source]
 tar = "https://sourceforge.net/projects/sdlgfx/files/SDL_gfx-2.0.27.tar.gz"

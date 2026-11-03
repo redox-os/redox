@@ -1,5 +1,5 @@
 [package]
-description = "Library for Perl-compatible regular expressions (API version 2)"
+description = "Library for Perl-compatible regular expressions (API version 2.x)"
 
 [source]
 tar = "https://github.com/PCRE2Project/pcre2/releases/download/pcre2-10.45/pcre2-10.45.tar.bz2"

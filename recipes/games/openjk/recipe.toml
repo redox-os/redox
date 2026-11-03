@@ -1,5 +1,5 @@
 [package]
-description = "Port of Jedi Academy and Jedi Outcast (requires legally purchased game files)"
+description = "Open-source Star Wars Jedi Academy and Jedi Outcast engine reimplementation (requires original game files)"
 
 [source]
 git = "https://github.com/jackpot51/OpenJK"

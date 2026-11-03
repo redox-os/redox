@@ -1,5 +1,5 @@
 [package]
-description = "Test suites for POSIX compliance (invoke recipe to build and run tests)"
+description = "Test suites for POSIX compliance (this variant run and get the Redox results from Linux)"
 
 [source]
 same_as = "../os-test"

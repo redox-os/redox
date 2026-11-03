@@ -45,7 +45,7 @@ cp -v "${COOKBOOK_RECIPE}/manifest" "$COOKBOOK_STAGE/usr/share/ui/apps/00_netsur
 """
 
 [package]
-description = "Basic web browser targeting HTML 4.01, from RISC OS project"
+description = "Basic web browser targeting HTML 4.01"
 dependencies = [
     "ca-certificates",
     "orbital",

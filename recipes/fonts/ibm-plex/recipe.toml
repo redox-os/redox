@@ -1,5 +1,5 @@
 [package]
-description = "IBM Plex fonts, Sans, Serif, Mono, and multilingual"
+description = "IBM Plex fonts: Sans, Serif, Mono, and multilingual"
 
 [source]
 tar = "https://github.com/IBM/plex/archive/refs/tags/v6.3.0.tar.gz"

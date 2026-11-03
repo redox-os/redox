@@ -21,4 +21,4 @@ dependencies = [
     "rust",
     "sed",
 ]
-description = "Components for standard development tools"
+description = "Essential development tools meta-package"

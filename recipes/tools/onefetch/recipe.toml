@@ -1,5 +1,5 @@
 [package]
-description = "Displays a one-page terminal summary of a git repo"
+description = "Displays a one-page terminal summary of a Git repository"
 
 [source]
 git = "https://github.com/o2sh/onefetch"

@@ -1,5 +1,5 @@
 [package]
-description = "Redox manual"
+description = "Redox high-level documentation and manual"
 
 [source]
 git = "https://gitlab.redox-os.org/redox-os/book.git"
