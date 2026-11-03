@@ -276,9 +276,21 @@ pub fn build(
     };
     let have_toolchain = !name.is_host() && !dep_host_pkgars.is_empty();
     let (sysroot_cached, toolchain_cached) = (
-        build_deps_dir(logger, &sysroot_dir, deps_sysroot)?,
+        build_deps_dir(
+            logger,
+            &sysroot_dir,
+            deps_sysroot,
+            false,
+            cook_config.clean_target,
+        )?,
         if have_toolchain {
-            build_deps_dir(logger, &toolchain_dir, &dep_host_pkgars)?
+            build_deps_dir(
+                logger,
+                &toolchain_dir,
+                &dep_host_pkgars,
+                false,
+                cook_config.clean_target,
+            )?
         } else {
             true
         },
@@ -301,14 +313,12 @@ pub fn build(
             remove_stage_dir(stage_dir)?;
         }
         if cook_config.clean_target {
-            // no matter what, these two caches are invalid
+            // both caches are invalid without init tag
             if sysroot_cached {
-                fs::remove_all(&sysroot_dir)?;
-                build_deps_dir(logger, &sysroot_dir, deps_sysroot)?;
+                build_deps_dir(logger, &sysroot_dir, deps_sysroot, true, true)?;
             }
             if toolchain_cached && have_toolchain {
-                fs::remove_all(&toolchain_dir)?;
-                build_deps_dir(logger, &toolchain_dir, &dep_host_pkgars)?;
+                build_deps_dir(logger, &toolchain_dir, &dep_host_pkgars, true, true)?;
             }
         }
     } else {
@@ -627,6 +637,8 @@ fn build_deps_dir(
     logger: &PtyOut,
     deps_dir: &PathBuf,
     dep_pkgars: &BTreeSet<(PackageName, PathBuf)>,
+    check_init_tag: bool,
+    write_init_tag: bool,
 ) -> Result<bool> {
     let pkey_path = "build/id_ed25519.pub.toml";
     let pkey_file = match PublicKeyFile::open(pkey_path) {
@@ -675,7 +687,12 @@ fn build_deps_dir(
                 }
             }
         }
-        if cached {
+        if cached
+            && (!check_init_tag || {
+                let init_tag_file = deps_dir.join(".tags-init");
+                std::fs::exists(&init_tag_file).unwrap_or(false)
+            })
+        {
             return Ok(true);
         }
         fs::remove_all(deps_dir)?;
@@ -703,6 +720,13 @@ fn build_deps_dir(
         Transaction::install(&mut package, &deps_dir_tmp)?.commit()?;
         let hash = blake3::Hash::from_bytes(package.header().blake3).to_hex();
         std::fs::write(&tag_file, hash.as_bytes()).map_err(wrap_io_err!("Writing tag"))?;
+    }
+
+    if write_init_tag {
+        let init_tag_file = deps_dir_tmp.join(".tags-init");
+        // this file is used to prevent removing deps dir when clean_target
+        // is enabled, then clean_deps_dir will remove the tag after build.
+        std::fs::write(init_tag_file, "").map_err(wrap_io_err!("Writing init tag"))?;
     }
 
     // Move sysroot.tmp to sysroot atomically
