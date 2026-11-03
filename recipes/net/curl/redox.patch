@@ -1,5 +1,5 @@
 diff --git a/curl-config.in b/curl-config.in
-index a1c8185875..326ea2b9d3 100644
+index a1c81858..326ea2b9 100644
 --- a/curl-config.in
 +++ b/curl-config.in
 @@ -167,7 +167,7 @@ while test "$#" -gt 0; do
@@ -12,7 +12,7 @@ index a1c8185875..326ea2b9d3 100644
        echo 'curl was built with static libraries disabled' >&2
        exit 1
 diff --git a/include/curl/curl.h b/include/curl/curl.h
-index 6961a6c4c1..66221b85e3 100644
+index ccc9a09a..2aa0e69c 100644
 --- a/include/curl/curl.h
 +++ b/include/curl/curl.h
 @@ -88,7 +88,7 @@
@@ -24,7 +24,7 @@ index 6961a6c4c1..66221b85e3 100644
      defined(ANDROID) || defined(__ANDROID__) || defined(__OpenBSD__) || \
      defined(__CYGWIN__) || defined(AMIGA) || defined(__NuttX__) || \
     (defined(__FreeBSD_version) && (__FreeBSD_version < 800000)) || \
-@@ -975,11 +975,11 @@ typedef enum {
+@@ -987,11 +987,11 @@ typedef enum {
  /* Backwards compatibility with older names */
  /* These are scheduled to disappear by 2009 */
  
@@ -42,10 +42,10 @@ index 6961a6c4c1..66221b85e3 100644
  #endif /* !CURL_NO_OLDIES */
  
 diff --git a/libcurl.pc.in b/libcurl.pc.in
-index c0ba5244a8..7898dae358 100644
+index 8f7e35dd..78650251 100644
 --- a/libcurl.pc.in
 +++ b/libcurl.pc.in
-@@ -36,6 +36,6 @@ Version: @CURLVERSION@
+@@ -40,7 +40,7 @@ Source: https://curl.se/download/curl-@CURLVERSION@.tar.gz
  Requires: @LIBCURL_PC_REQUIRES@
  Requires.private: @LIBCURL_PC_REQUIRES_PRIVATE@
  Libs: -L${libdir} -lcurl @LIBCURL_PC_LIBS@
@@ -53,3 +53,4 @@ index c0ba5244a8..7898dae358 100644
 +Libs.private: @LIBCURL_PC_LIBS_PRIVATE@
  Cflags: -I${includedir} @LIBCURL_PC_CFLAGS@
  Cflags.private: @LIBCURL_PC_CFLAGS_PRIVATE@
+ Link.ABI: c

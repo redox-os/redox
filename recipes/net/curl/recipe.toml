@@ -1,7 +1,7 @@
 [source]
 git = "https://github.com/curl/curl.git"
-rev = "curl-8_20_0"
-patches = ["ipv6.patch", "redox.patch"]
+rev = "curl-8_23_0"
+patches = ["redox.patch"]
 shallow_clone = true
 
 [build]
@@ -16,12 +16,10 @@ cmakeflags = [
     "-DCURL_DISABLE_FTP=On",
     "-DCURL_DISABLE_TFTP=On",
     "-DENABLE_IPV6=Off",
-    "-DCURL_DISABLE_NTLM=On",
     "-DENABLE_THREADED_RESOLVER=On",
     "-DCURL_CA_PATH=/etc/ssl/certs",
     "-DUSE_NGHTTP2=On",
     "-DCURL_USE_OPENSSL=On",
-    "-DUSE_ZLIB=On",
     "-DCURL_USE_LIBPSL=Off",
 ]
 

@@ -1,6 +1,6 @@
 [source]
-tar = "https://github.com/openssl/openssl/releases/download/openssl-3.5.3/openssl-3.5.3.tar.gz"
-blake3 = "e1622a4587c71c278355bf38ff5a619918bd51e3cd37214d53dd5345b187fc10"
+tar = "https://github.com/openssl/openssl/releases/download/openssl-3.5.9/openssl-3.5.9.tar.gz"
+blake3 = "be2f7530fe5cd02a06e67d8916e6574f1c53b8071393aae2364b4ed817cf0354"
 patches = [ "redox.patch" ]
 
 [build]
