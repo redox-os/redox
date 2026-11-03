@@ -83,6 +83,16 @@ function DYNAMIC_STATIC_INIT {
 function GNU_CONFIG_GET {
   wget -O "$1" "https://gitlab.redox-os.org/redox-os/gnu-config/-/raw/master/config.sub?inline=false"
 }
+
+# Bash error hook
+error_hook() { 
+    local ec=$?; 
+    echo "Cookbook error : failed at line $1 with code $ec" >&2; 
+    echo "Error command  : $BASH_COMMAND" >&2; 
+    [ -z "${COOKBOOK_VERBOSE_CMD}" ] && echo "Add 'export COOKBOOK_VERBOSE_CMD=1' in .config to see more" >&2;
+    exit "$ec";
+}
+trap 'error_hook $LINENO' ERR
 "#;
 
 pub(crate) static BUILD_PRESCRIPT: &str = r#"
@@ -215,6 +225,17 @@ COOKBOOK_CONFIGURE_FLAGS=(
     --enable-static
 )
 COOKBOOK_MAKE_FLAGS=()
+if [ -n "${COOKBOOK_VERBOSE_CMD}" ]; then
+COOKBOOK_MAKE_FLAGS+=(V=1)
+else
+COOKBOOK_MAKE_FLAGS+=(V=0)
+fi
+
+COOKBOOK_NINJA_FLAGS=()
+if [ -n "${COOKBOOK_VERBOSE_CMD}" ]; then
+COOKBOOK_NINJA_FLAGS+=(--verbose)
+fi
+
 COOKBOOK_MAKE="make"
 
 function cookbook_configure {
@@ -320,7 +341,7 @@ function cookbook_cmake {
         "${COOKBOOK_CMAKE_FLAGS[@]}" \
         "$@"
 
-    "${COOKBOOK_NINJA}" -j"${COOKBOOK_MAKE_JOBS}"
+    "${COOKBOOK_NINJA}" "${COOKBOOK_NINJA_FLAGS[@]}" -j"${COOKBOOK_MAKE_JOBS}"
     DESTDIR="${COOKBOOK_STAGE}" "${COOKBOOK_NINJA}" install -j"${COOKBOOK_MAKE_JOBS}"
 }
 
@@ -381,7 +402,7 @@ function cookbook_meson {
         --cross-file cross_file.txt \
         "${COOKBOOK_MESON_FLAGS[@]}" \
         "$@"
-    "${COOKBOOK_NINJA}" -j"${COOKBOOK_MAKE_JOBS}"
+    "${COOKBOOK_NINJA}" "${COOKBOOK_NINJA_FLAGS[@]}" -j"${COOKBOOK_MAKE_JOBS}"
     DESTDIR="${COOKBOOK_STAGE}" "${COOKBOOK_NINJA}" install -j"${COOKBOOK_MAKE_JOBS}"
 }
 COOKBOOK_PYTHON="${COOKBOOK_TOOLCHAIN}/bin/python3"
@@ -416,27 +437,46 @@ function cookbook_python {
 
 pub(crate) static BUILD_POSTSCRIPT: &str = r#"
 STRIP="${GNU_TARGET}-strip"
+STRIP_ARGS=""
+if [ -n "${COOKBOOK_VERBOSE_CMD}" ]; then
 STRIP_ARGS="-v"
+fi
 
 if [[ "$REDOXER_USE_CLANG" = "1" || "$REDOXER_USE_CLANG" = "true" ]]; then
     STRIP="llvm-strip"
-    STRIP_ARGS="--verbose"
+    # clang 21 does not support verbose flag, only 23 or above
+    # [ -n "${COOKBOOK_VERBOSE_CMD}" ] && STRIP_ARGS="--verbose"
 elif [[ "$REDOXER_USE_LTO" = "1" || "$REDOXER_USE_LTO" = "true" ]]; then
     GCC_BIN=$(command -v "${GNU_TARGET}-gcc")
     GCC_VER=$("${GNU_TARGET}-gcc" -dumpfullversion) 
     PLUGIN_PATH=$(realpath "$(dirname "$GCC_BIN")/../libexec/gcc/${GNU_TARGET}/${GCC_VER}/liblto_plugin.so")
-    [ -f "$PLUGIN_PATH" ] && STRIP_ARGS="--plugin=${PLUGIN_PATH} -v" || echo "DEBUG: $PLUGIN_PATH not found"
+    # binutils 2.41 does not support strip plugins, only 2.44 or above
+    # [ -f "$PLUGIN_PATH" ] && STRIP_ARGS="--plugin=${PLUGIN_PATH} -v" || echo "DEBUG: $PLUGIN_PATH not found"
 fi
 
+strip_directory() {
+  local target_dir="$1"
+  local strip_cmd="${STRIP}"
+  local strip_flags="${STRIP_ARGS:-}"
+
+  find "$target_dir" -type f -print0 | while IFS= read -r -d '' file; do
+    if [ "$(od -An -t x1 -N 4 "$file" | tr -d ' \n')" = "7f454c46" ]; then
+      "${STRIP}" ${STRIP_ARGS} "$file"
+    fi
+
+  done
+}
 # Strip binaries
 for dir in "${COOKBOOK_STAGE}/bin" "${COOKBOOK_STAGE}/usr/bin" "${COOKBOOK_STAGE}/libexec" "${COOKBOOK_STAGE}/usr/libexec"
 do
     if [ -d "${dir}" ] && [ -z "${COOKBOOK_NOSTRIP}" ]
     then
-        find "${dir}" -type f -exec "${STRIP}" ${STRIP_ARGS} {} ';'
+        strip_directory "${dir}"
     fi
 done
 
+# do not strip symbols for libraries
+STRIP_ARGS+=" --strip-debug"
 # Remove libtool files and strip debugging information
 for dir in "${COOKBOOK_STAGE}/lib" "${COOKBOOK_STAGE}/usr/lib"
 do
@@ -445,7 +485,7 @@ do
         find "${dir}" -type f -name '*.la' -exec rm -fv {} ';'
         if [ -z "${COOKBOOK_NOSTRIP}" ]
         then
-            find "${dir}" -type f -exec "${STRIP}" ${STRIP_ARGS} --strip-debug {} ';'
+            strip_directory "${dir}"
         fi
     fi
 done

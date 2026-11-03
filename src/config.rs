@@ -170,11 +170,10 @@ pub fn init_config() {
         config.cook_opt.git_treeless = Some(extract_env("COOKBOOK_GIT_TREELESS", false));
     }
     if config.cook_opt.verbose.is_none() {
-        let default = config.cook_opt.logs.unwrap();
-        config.cook_opt.verbose = Some(extract_env("COOKBOOK_VERBOSE", default));
+        config.cook_opt.verbose = Some(extract_env("COOKBOOK_VERBOSE", true));
     }
     if config.cook_opt.verbose_cmd.is_none() {
-        config.cook_opt.verbose_cmd = Some(extract_env("COOKBOOK_VERBOSE_CMD", true));
+        config.cook_opt.verbose_cmd = Some(extract_env("COOKBOOK_VERBOSE_CMD", false));
     }
     if config.cook_opt.nonstop.is_none() {
         config.cook_opt.nonstop = Some(extract_env("COOKBOOK_NONSTOP", false));

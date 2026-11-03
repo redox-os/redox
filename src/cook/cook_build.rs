@@ -495,8 +495,15 @@ pub fn build(
                 }
             };
             command.env("COOKBOOK_MAKE_JOBS", cli_jobs.to_string());
+            if cook_config.verbose {
+                command.env("COOKBOOK_VERBOSE", "true");
+            } else {
+                command.env_remove("COOKBOOK_VERBOSE");
+            }
             if cook_config.verbose_cmd {
-                command.env("COOKBOOK_VERBOSE", "1");
+                command.env("COOKBOOK_VERBOSE_CMD", "true");
+            } else {
+                command.env_remove("COOKBOOK_VERBOSE_CMD");
             }
             if cook_config.offline && allow_cargo_offline {
                 command.env("COOKBOOK_OFFLINE", "1");
