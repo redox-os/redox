@@ -460,12 +460,17 @@ strip_directory() {
   local strip_flags="${STRIP_ARGS:-}"
 
   find "$target_dir" -type f -print0 | while IFS= read -r -d '' file; do
-    if [ "$(od -An -t x1 -N 4 "$file" | tr -d ' \n')" = "7f454c46" ]; then
+    # check magic bytes for elf and ar before stripping
+    local magic_bytes="$(od -An -t x1 -N 4 "$file" | tr -d ' \n')"
+    if [[ "$magic_bytes" = "7f454c46" || "$magic_bytes" = "213c6172" ]]; then
       "${STRIP}" ${STRIP_ARGS} "$file"
     fi
-
   done
 }
+if [ -z "${COOKBOOK_NOSTRIP}" ]; then
+    [ -z "${COOKBOOK_VERBOSE}" ] || echo "DEBUG: stripping binaries and libraries"
+fi
+
 # Strip binaries
 for dir in "${COOKBOOK_STAGE}/bin" "${COOKBOOK_STAGE}/usr/bin" "${COOKBOOK_STAGE}/libexec" "${COOKBOOK_STAGE}/usr/libexec"
 do
