@@ -1,7 +1,7 @@
 diff -ruwN source/configure source-new/configure
---- source/configure	2026-04-07 18:24:03.000000000 +0700
-+++ source-new/configure	2026-05-07 12:19:48.765197728 +0700
-@@ -4163,6 +4163,9 @@
+--- source/configure	2026-10-25 16:57:51.000000000 +0000
++++ source-new/configure	2026-11-02 05:14:13.172455982 +0000
+@@ -4178,6 +4178,9 @@
  	*-*-wasi*)
  	    ac_sys_system=WASI
  	    ;;
@@ -11,7 +11,7 @@ diff -ruwN source/configure source-new/configure
  	*)
  		# for now, limit cross builds to known configurations
  		MACHDEP="unknown"
-@@ -4189,6 +4192,7 @@
+@@ -4204,6 +4207,7 @@
  	freebsd*) MACHDEP="freebsd";;
  	linux-android*) MACHDEP="android";;
  	linux*) MACHDEP="linux";;
@@ -19,7 +19,7 @@ diff -ruwN source/configure source-new/configure
  	cygwin*) MACHDEP="cygwin";;
  	darwin*) MACHDEP="darwin";;
  	'')	MACHDEP="unknown";;
-@@ -4615,7 +4619,7 @@
+@@ -4630,7 +4634,7 @@
  
  if test "$cross_compiling" = yes; then
  	case "$host" in
@@ -28,7 +28,7 @@ diff -ruwN source/configure source-new/configure
  		case "$host_cpu" in
  		arm*)
  			_host_ident=arm
-@@ -7771,7 +7775,7 @@
+@@ -7813,7 +7817,7 @@
          PY3LIBRARY=libpython3.so
        fi
        ;;
@@ -37,7 +37,7 @@ diff -ruwN source/configure source-new/configure
        LDLIBRARY='libpython$(LDVERSION).so'
        BLDLIBRARY='-L. -lpython$(LDVERSION)'
        RUNSHARED=LD_LIBRARY_PATH=`pwd`${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
-@@ -13777,7 +13781,7 @@
+@@ -14234,7 +14238,7 @@
  	Emscripten*|WASI*)
  		LDSHARED='$(CC) -shared'
  		LDCXXSHARED='$(CXX) -shared';;
@@ -46,7 +46,7 @@ diff -ruwN source/configure source-new/configure
  		LDSHARED='$(CC) -shared'
  		LDCXXSHARED='$(CXX) -shared';;
  	FreeBSD*)
-@@ -13862,7 +13866,7 @@
+@@ -14319,7 +14323,7 @@
  		 then CCSHARED="-fPIC";
  		 else CCSHARED="+z";
  		 fi;;
@@ -55,7 +55,7 @@ diff -ruwN source/configure source-new/configure
  	Emscripten*|WASI*)
  		if test "x$enable_wasm_dynamic_linking" = xyes
  then :
-@@ -13900,7 +13904,7 @@
+@@ -14357,7 +14361,7 @@
  	    LINKFORSHARED="-Wl,-E -Wl,+s";;
  #	    LINKFORSHARED="-Wl,-E -Wl,+s -Wl,+b\$(BINLIBDEST)/lib-dynload";;
  	Linux-android*) LINKFORSHARED="-pie -Xlinker -export-dynamic";;
@@ -65,8 +65,8 @@ diff -ruwN source/configure source-new/configure
  	Darwin/*|iOS/*)
  		LINKFORSHARED="$extra_undefs -framework CoreFoundation"
 diff -ruwN source/Include/internal/pycore_time.h source-new/Include/internal/pycore_time.h
---- source/Include/internal/pycore_time.h	2026-04-07 18:24:03.000000000 +0700
-+++ source-new/Include/internal/pycore_time.h	2026-05-07 12:55:06.797297037 +0700
+--- source/Include/internal/pycore_time.h	2026-10-25 16:57:51.000000000 +0000
++++ source-new/Include/internal/pycore_time.h	2026-11-02 05:14:13.172455982 +0000
 @@ -49,6 +49,10 @@
  
  #ifndef Py_INTERNAL_TIME_H
@@ -79,9 +79,9 @@ diff -ruwN source/Include/internal/pycore_time.h source-new/Include/internal/pyc
  extern "C" {
  #endif
 diff -ruwN source/Include/pyport.h source-new/Include/pyport.h
---- source/Include/pyport.h	2026-04-07 18:24:03.000000000 +0700
-+++ source-new/Include/pyport.h	2026-05-07 12:16:56.305047939 +0700
-@@ -541,7 +541,7 @@
+--- source/Include/pyport.h	2026-10-25 16:57:51.000000000 +0000
++++ source-new/Include/pyport.h	2026-11-02 05:14:13.173456040 +0000
+@@ -502,7 +502,7 @@
  #  endif
  #endif
  
@@ -91,9 +91,9 @@ diff -ruwN source/Include/pyport.h source-new/Include/pyport.h
     // See _Py_GetLocaleEncoding(), PyUnicode_DecodeLocale()
     // and PyUnicode_EncodeLocale().
 diff -ruwN source/Modules/posixmodule.c source-new/Modules/posixmodule.c
---- source/Modules/posixmodule.c	2026-04-07 18:24:03.000000000 +0700
-+++ source-new/Modules/posixmodule.c	2026-05-07 12:57:16.208883903 +0700
-@@ -11253,7 +11253,7 @@
+--- source/Modules/posixmodule.c	2026-10-25 16:57:51.000000000 +0000
++++ source-new/Modules/posixmodule.c	2026-11-02 05:14:13.174456099 +0000
+@@ -11340,7 +11340,7 @@
      struct tms process;
      clock_t elapsed;
      errno = 0;
@@ -103,8 +103,8 @@ diff -ruwN source/Modules/posixmodule.c source-new/Modules/posixmodule.c
          return posix_error();
      }
 diff -ruwN source/Modules/resource.c source-new/Modules/resource.c
---- source/Modules/resource.c	2026-04-07 18:24:03.000000000 +0700
-+++ source-new/Modules/resource.c	2026-05-07 12:16:56.305184305 +0700
+--- source/Modules/resource.c	2026-10-25 16:57:51.000000000 +0000
++++ source-new/Modules/resource.c	2026-11-02 05:14:13.174456099 +0000
 @@ -245,7 +245,7 @@
  {
      struct rlimit rl;
