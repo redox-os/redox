@@ -71,15 +71,14 @@ done
 
 find_virtiofsd() {
   local c
-  for c in "${VIRTIOFSD:-}" virtiofsd /usr/libexec/virtiofsd /usr/lib/qemu/virtiofsd \
-    "${XDG_CACHE_HOME:-${HOME:-/tmp}/.cache}/virtiofsd-redox/virtiofsd"; do
+  for c in "${VIRTIOFSD:-}" virtiofsd /usr/libexec/virtiofsd /usr/lib/qemu/virtiofsd; do
     [[ -n "${c}" ]] && command -v "${c}" && return 0
   done
   return 1
 }
 
 VIRTIOFSD_BIN="$(find_virtiofsd)" \
-  || die "virtiofsd not found. Install it (e.g. 'dnf install virtiofsd' or 'pacman -S virtiofsd'), run ./podman_bootstrap.sh -d, or set VIRTIOFSD=/path/to/virtiofsd"
+  || die "virtiofsd not found. Install it (e.g. 'dnf install virtiofsd' or 'pacman -S virtiofsd'), run 'make virtiofsd-fetch' (x86_64 Linux hosts), or set VIRTIOFSD=/path/to/virtiofsd"
 
 PIDS=()
 

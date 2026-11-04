@@ -472,116 +472,6 @@ solus()
     fi
 }
 
-###############################################################################
-# virtiofsd is needed on the host by `make qemu share=<dir>` to share
-# directories with Redox (scripts/virtiofs-run.sh only looks for it).
-###############################################################################
-virtiofsd_find()
-{
-    local c
-    for c in "${VIRTIOFSD:-}" virtiofsd /usr/libexec/virtiofsd /usr/lib/qemu/virtiofsd \
-        "${XDG_CACHE_HOME:-$HOME/.cache}/virtiofsd-redox/virtiofsd"; do
-        [ -n "$c" ] || continue
-        if [ -f "$c" ] && [ -x "$c" ]; then
-            echo "$c"
-            return 0
-        fi
-        if command -v "$c" >/dev/null 2>&1; then
-            command -v "$c"
-            return 0
-        fi
-    done
-    return 1
-}
-
-###############################################################################
-# Download a static x86_64 virtiofsd build from the upstream CI into
-# ~/.cache/virtiofsd-redox, after asking for confirmation.
-# Override the source with VIRTIOFSD_URL.
-#
-# TODO: this is the CI build of upstream's main branch, so it is neither
-# pinned nor checked: virtiofsd releases do not ship binaries or checksums
-# yet. Once they do, move this download into mk/virtiofs.mk, pinned to a
-# release and checked against its sha256 like Cloud Hypervisor in mk/ch.mk,
-# and pass it to scripts/virtiofs-run.sh through VIRTIOFSD.
-###############################################################################
-virtiofsd_download()
-{
-    local url cache dest tmp answer
-    url="${VIRTIOFSD_URL:-https://gitlab.com/virtio-fs/virtiofsd/-/jobs/artifacts/main/raw/target/x86_64-unknown-linux-musl/release/virtiofsd?job=publish}"
-    cache="${XDG_CACHE_HOME:-$HOME/.cache}/virtiofsd-redox"
-    dest="$cache/virtiofsd"
-
-    if [ "$(uname -m)" != "x86_64" ]; then
-        echo "No prebuilt virtiofsd is available for $(uname -m)."
-        return 1
-    fi
-    echo "A static virtiofsd build can be downloaded from"
-    echo "  gitlab.com/virtio-fs/virtiofsd (CI artifact of the main branch)"
-    echo "to $dest"
-    printf "Download it now? (y/N): "
-    read answer || answer=""
-    if ! echo "$answer" | grep -iq "^y"; then
-        return 1
-    fi
-
-    mkdir -p "$cache"
-    tmp="$(mktemp "$cache/virtiofsd.XXXXXX")"
-    if command -v curl >/dev/null 2>&1; then
-        curl -fL --retry 3 --retry-delay 1 -o "$tmp" "$url" || { rm -f "$tmp"; return 1; }
-    elif command -v wget >/dev/null 2>&1; then
-        wget -O "$tmp" "$url" || { rm -f "$tmp"; return 1; }
-    else
-        echo "Need curl or wget to download virtiofsd."
-        rm -f "$tmp"
-        return 1
-    fi
-    if [ "$(head -c 4 "$tmp")" != "$(printf '\177ELF')" ]; then
-        echo "The download is not an ELF binary (see $url)."
-        rm -f "$tmp"
-        return 1
-    fi
-    chmod +x "$tmp"
-    mv -f "$tmp" "$dest"
-    echo "virtiofsd installed at $dest"
-}
-
-###############################################################################
-# This function makes sure virtiofsd is available: it looks for an existing
-# one, then tries the distribution package, then offers a download.
-# It never fails the bootstrap, virtiofsd is only needed for `share=`.
-# @params:	$1 the package manager to use on Debian-based Linux
-###############################################################################
-virtiofsd_setup()
-{
-    local found
-    echo "Checking for virtiofsd (used by 'make qemu share=<dir>')..."
-    if found="$(virtiofsd_find)"; then
-        echo "virtiofsd found at $found"
-        return 0
-    fi
-    echo "virtiofsd not found."
-
-    if command -v pacman >/dev/null 2>&1; then
-        sudo pacman -S --needed virtiofsd || true
-    elif command -v dnf >/dev/null 2>&1; then
-        sudo dnf install virtiofsd || true
-    elif command -v apt-get >/dev/null 2>&1 && apt-cache show virtiofsd >/dev/null 2>&1; then
-        sudo "$1" install virtiofsd || true
-    fi
-
-    if found="$(virtiofsd_find)"; then
-        echo "virtiofsd found at $found"
-        return 0
-    fi
-    if virtiofsd_download; then
-        return 0
-    fi
-    echo "Continuing without virtiofsd. 'make qemu share=<dir>' will not work until"
-    echo "it is installed (or set VIRTIOFSD=/path/to/virtiofsd), re-run this script"
-    echo "with -d to retry."
-}
-
 ######################################################################
 # This function outlines the different options available for bootstrap
 ######################################################################
@@ -767,11 +657,6 @@ else
     else
         printf "\e[31;1mFatal error: \e[0;31mUnsupported platform, please open an issue\e[0m\n"
     fi
-fi
-
-# Directory sharing with `make qemu share=<dir>` needs virtiofsd and a Linux host
-if [ "$emulator" == "qemu" ] && [ "$(uname -s)" == "Linux" ]; then
-    virtiofsd_setup "$defpackman"
 fi
 
 if [ "$dependenciesonly" = false ]; then

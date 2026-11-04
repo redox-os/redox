@@ -17,11 +17,28 @@
 # WARNING: share=redox exposes the whole build tree to the guest, including
 # the harddrive.img Redox is booted from, .git and .config. Writing to them
 # from Redox can corrupt the build system. share=redox:ro avoids that.
+#
+# virtiofsd runs on the host. The first one found is used: VIRTIOFSD, then
+# virtiofsd in PATH, /usr/libexec/virtiofsd or /usr/lib/qemu/virtiofsd. When
+# there is none, x86_64 Linux hosts download a static build into
+# build/virtiofsd/$(HOST_ARCH) (make virtiofsd-fetch does only that). Other
+# hosts must install virtiofsd, e.g. from their distribution (the package is
+# virtiofsd on Fedora, Arch and recent Debian/Ubuntu).
+#
+# TODO: the download is the CI build of upstream's main branch, so it is
+# neither pinned nor checked: virtiofsd releases do not ship binaries or
+# checksums yet (their CI only builds main, and those artifacts expire). Once
+# they do, pin it to a release and check its sha256 like Cloud Hypervisor in
+# mk/ch.mk.
 
 share?=
 share_tag?=host
 share_sockdir?=$(BUILD)
 VIRTIOFS_RUN=
+VIRTIOFS_DEPS=
+
+VIRTIOFSD_URL?=https://gitlab.com/virtio-fs/virtiofsd/-/jobs/artifacts/main/raw/target/x86_64-unknown-linux-musl/release/virtiofsd?job=publish
+VIRTIOFSD_DOWNLOAD=build/virtiofsd/$(HOST_ARCH)/virtiofsd
 
 ifneq ($(strip $(share)),)
 	share_norm:=$(foreach s,$(share),$(if $(filter redox redox:ro,$(s)),redox=$(ROOT)$(if $(filter %:ro,$(s)),:ro),$(s)))
@@ -40,5 +57,28 @@ $(error share: every entry must be tag=dir when sharing several directories (bad
 	vfs_tag=$(firstword $(subst =, ,$(call vfs_entry,$(1))))
 	vfs_sock=$(share_sockdir)/virtiofsd-$(1).sock
 
-	VIRTIOFS_RUN=scripts/virtiofs-run.sh $(foreach i,$(share_idx),--share "$(call vfs_sock,$(i))" "$(call vfs_entry,$(i))") --
+	ifeq ($(strip $(VIRTIOFSD)),)
+		VIRTIOFSD:=$(firstword $(shell command -v virtiofsd 2>/dev/null) $(wildcard /usr/libexec/virtiofsd /usr/lib/qemu/virtiofsd) $(VIRTIOFSD_DOWNLOAD))
+	endif
+	VIRTIOFS_DEPS=$(filter $(VIRTIOFSD_DOWNLOAD),$(VIRTIOFSD))
+
+	VIRTIOFS_RUN=VIRTIOFSD="$(VIRTIOFSD)" scripts/virtiofs-run.sh $(foreach i,$(share_idx),--share "$(call vfs_sock,$(i))" "$(call vfs_entry,$(i))") --
 endif
+
+.PHONY: virtiofsd-fetch
+
+virtiofsd-fetch: $(VIRTIOFSD_DOWNLOAD)
+
+# Goes through $@.partial, so $@ only ever holds a complete ELF binary.
+$(VIRTIOFSD_DOWNLOAD):
+	$(if $(and $(filter x86_64,$(HOST_ARCH)),$(filter Linux,$(shell uname -s))),,$(error virtiofsd: no prebuilt virtiofsd for this $(shell uname -s) $(HOST_ARCH) host. Install virtiofsd (e.g. dnf install virtiofsd or pacman -S virtiofsd) or set VIRTIOFSD=/path/to/virtiofsd))
+	@echo "virtiofsd: downloading the CI build of upstream's main branch (not pinned or checked)"
+	mkdir -p "$(@D)"
+	curl -fL --retry 3 --retry-delay 1 -o "$@.partial" "$(VIRTIOFSD_URL)"
+	@if [ "$$(head -c 4 "$@.partial")" != "$$(printf '\177ELF')" ]; then \
+		rm -f "$@.partial"; \
+		echo "virtiofsd: the download is not an ELF binary (see $(VIRTIOFSD_URL))" >&2; \
+		exit 1; \
+	fi
+	chmod +x "$@.partial"
+	mv "$@.partial" "$@"

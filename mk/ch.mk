@@ -117,7 +117,7 @@ ch-check:
 	$(call ch_check_set,CH_FIRMWARE)
 	$(if $(filter tap,$(net)),$(if $(ch_tap_found),,$(error no tap device $(CH_TAP). Create it with scripts/ch-tap-setup.sh or leave out net=tap to use passt)))
 
-ch-deps: $(DISK) $(EXTRA_DISK) $(CH_DOWNLOADS)
+ch-deps: $(DISK) $(EXTRA_DISK) $(CH_DOWNLOADS) $(VIRTIOFS_DEPS)
 
 ch-fetch: ch-check $(CH_DOWNLOADS)
 

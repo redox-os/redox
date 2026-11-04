@@ -17,7 +17,7 @@ PREFIX_USE_UPSTREAM_RUST_COMPILER?=0
 ## Enable to use binary packages (much faster)
 REPO_BINARY?=
 ## Name of the configuration to include in the image name e.g. desktop or server
-CONFIG_NAME?=desktop
+CONFIG_NAME?=server
 ## Build appstream data for repo
 REPO_APPSTREAM?=0
 ## Ignore errors when building the repo, attempt to build every package

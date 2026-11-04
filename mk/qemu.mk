@@ -352,7 +352,7 @@ endif
 
 .PHONY: qemu-deps
 
-qemu-deps: $(DISK)
+qemu-deps: $(DISK) $(VIRTIOFS_DEPS)
 
 ifeq ($(disk),usb)
 else ifeq ($(disk),sdcard)
