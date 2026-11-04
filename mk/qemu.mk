@@ -189,6 +189,20 @@ else
 	QEMUFLAGS+=-machine $(QEMU_MACHINE)
 endif
 
+# virtio-fs shares (share=...): the list is parsed in mk/virtiofs.mk.
+ifneq ($(strip $(share)),)
+	# vhost-user needs guest RAM to be shared with the virtiofsd processes, and
+	# the NUMA memdev must be exactly as large as -m. One backend serves all
+	# shares.
+	ifeq ($(UNAME),Linux)
+		QEMUFLAGS+=-object memory-backend-memfd,id=mem,size=$(QEMU_MEM)M,share=on
+	else
+		QEMUFLAGS+=-object memory-backend-file,id=mem,size=$(QEMU_MEM)M,mem-path=/dev/shm,share=on
+	endif
+	QEMUFLAGS+=-numa node,memdev=mem
+	QEMUFLAGS+=$(foreach i,$(share_idx),-chardev socket,id=vfs$(i),path=$(call vfs_sock,$(i)) -device vhost-user-fs-pci,queue-size=1024,chardev=vfs$(i),tag=$(call vfs_tag,$(i)))
+endif
+
 ifeq ($(audio),no)
 	# No audio
 else ifeq ($(audio),ac97)
@@ -338,7 +352,7 @@ endif
 
 .PHONY: qemu-deps
 
-qemu-deps: $(DISK)
+qemu-deps: $(DISK) $(VIRTIOFS_DEPS)
 
 ifeq ($(disk),usb)
 else ifeq ($(disk),sdcard)
@@ -383,9 +397,9 @@ $(BUILD)/qemu_uboot.rom:
 
 qemu: qemu-deps
 ifeq ($(wildcard $(MOUNT_DIR)),)
-	$(QEMU) $(QEMUFLAGS)
+	$(VIRTIOFS_RUN) $(QEMU) $(QEMUFLAGS)
 else
 	@echo "\033[1;38;5;196mDisk is mounted. Unmounting the disk...\033[0m";
 	$(MAKE) unmount
-	$(QEMU) $(QEMUFLAGS)
+	$(VIRTIOFS_RUN) $(QEMU) $(QEMUFLAGS)
 endif
