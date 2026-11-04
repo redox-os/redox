@@ -75,6 +75,7 @@ fi
 alias ll='ls -alF'
 alias la='ls -A'
 alias l='ls -CF'
+#alias cl='clear' # optional alias for the "clear" command
 
 # TODO
 # Add an "alert" alias for long running commands.  Use like so:
@@ -97,3 +98,7 @@ if ! shopt -oq posix; then
    . /etc/bash_completion
  fi
 fi
+
+# set orbital screen resolution to workaround shell quirks and avoid x11 or wayland fallback for applications in a orbital session
+export DISPLAY=/scheme/orbital/99.0
+export ORBITAL_DISPLAY=/scheme/orbital
