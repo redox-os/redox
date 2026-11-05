@@ -257,6 +257,9 @@ else ifeq ($(gpu),vga)
 	else
 		QEMUFLAGS+=-vga none -device secondary-vga
 	endif
+	ifeq ($(UNAME),Linux)
+		QEMUFLAGS+=-display gtk,zoom-to-fit=on
+	endif
 else ifeq ($(gpu),ramfb)
 	QEMUFLAGS+=-vga none -device ramfb
 else ifeq ($(gpu),multi)
