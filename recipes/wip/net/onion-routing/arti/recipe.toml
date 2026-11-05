@@ -1,9 +1,17 @@
-#TODO fix secmem-proc crate
 [source]
 git = "https://gitlab.torproject.org/tpo/core/arti"
+rev = "arti-v2.7.0"
 shallow_clone = true
+# TODO: Check if this patch is still necessary after
+# we've updated our Rust toolchains on Redox.
+patches = ["redox.patch"]
 [build]
 template = "cargo"
+# TODO: Remove `static-sqlite` feature once Redox' sqlite3-package is fully functional.
+cargoflags = [
+    "--no-default-features",
+    "--features=default-runtime,dns-proxy,compression,bridge-client,pt-client,onion-service-client,vanguards,flowctl-cc,static-sqlite",
+]
 cargopackages = ["arti"]
 dependencies = [
     "openssl3",
