@@ -1,6 +1,6 @@
 diff -ruwN source/configure source-new/configure
---- source/configure	2025-10-09 18:07:00.000000000 +0700
-+++ source-new/configure	2025-12-09 22:14:30.781035339 +0700
+--- source/configure	2026-10-25 18:24:37.000000000 +0000
++++ source-new/configure	2026-11-02 11:01:28.809597992 +0000
 @@ -4283,6 +4283,9 @@
  	*-*-wasi)
  	    ac_sys_system=WASI
@@ -92,8 +92,8 @@ diff -ruwN source/configure source-new/configure
  	Darwin/*)
  		LINKFORSHARED="$extra_undefs -framework CoreFoundation"
 diff -ruwN source/Include/pyport.h source-new/Include/pyport.h
---- source/Include/pyport.h	2025-10-09 18:07:00.000000000 +0700
-+++ source-new/Include/pyport.h	2025-12-09 22:14:30.781035339 +0700
+--- source/Include/pyport.h	2026-10-25 18:24:37.000000000 +0000
++++ source-new/Include/pyport.h	2026-11-02 11:01:28.809597992 +0000
 @@ -684,7 +684,7 @@
  #  error "Py_TRACE_REFS ABI is not compatible with release and debug ABI"
  #endif
@@ -104,8 +104,8 @@ diff -ruwN source/Include/pyport.h source-new/Include/pyport.h
     // See _Py_GetLocaleEncoding(), PyUnicode_DecodeLocale()
     // and PyUnicode_EncodeLocale().
 diff -ruwN source/Modules/_cryptmodule.c source-new/Modules/_cryptmodule.c
---- source/Modules/_cryptmodule.c	2025-10-09 18:07:00.000000000 +0700
-+++ source-new/Modules/_cryptmodule.c	2025-12-09 22:14:30.781035339 +0700
+--- source/Modules/_cryptmodule.c	2026-10-25 18:24:37.000000000 +0000
++++ source-new/Modules/_cryptmodule.c	2026-11-02 11:01:28.810598051 +0000
 @@ -38,13 +38,7 @@
  /*[clinic end generated code: output=0512284a03d2803c input=0e8edec9c364352b]*/
  {
@@ -121,8 +121,8 @@ diff -ruwN source/Modules/_cryptmodule.c source-new/Modules/_cryptmodule.c
          return PyErr_SetFromErrno(PyExc_OSError);
      }
 diff -ruwN source/Modules/fcntlmodule.c source-new/Modules/fcntlmodule.c
---- source/Modules/fcntlmodule.c	2025-10-09 11:07:00.000000000 +0000
-+++ source-new/Modules/fcntlmodule.c	2026-10-15 10:21:56.351900218 +0000
+--- source/Modules/fcntlmodule.c	2026-10-25 18:24:37.000000000 +0000
++++ source-new/Modules/fcntlmodule.c	2026-11-02 11:01:28.810598051 +0000
 @@ -159,7 +159,7 @@
         in their unsigned long ioctl codes this will break and need
         special casing based on the platform being built on.
@@ -133,8 +133,8 @@ diff -ruwN source/Modules/fcntlmodule.c source-new/Modules/fcntlmodule.c
      Py_buffer pstr;
      char *str;
 diff -ruwN source/Modules/resource.c source-new/Modules/resource.c
---- source/Modules/resource.c	2025-10-09 18:07:00.000000000 +0700
-+++ source-new/Modules/resource.c	2025-12-09 22:14:30.781035339 +0700
+--- source/Modules/resource.c	2026-10-25 18:24:37.000000000 +0000
++++ source-new/Modules/resource.c	2026-11-02 11:01:28.810598051 +0000
 @@ -216,7 +216,7 @@
  {
      struct rlimit rl;
