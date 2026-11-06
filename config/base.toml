@@ -52,6 +52,7 @@ schemes = [
   "uds_dgram",
   # File schemes
   "file",
+  "tmp",
   # Display schemes
   "display*",
   # Other schemes
