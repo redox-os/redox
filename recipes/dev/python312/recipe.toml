@@ -2,8 +2,8 @@
 description = "Object-oriented interpreted programming language, version 3.12.x"
 
 [source]
-tar = "https://www.python.org/ftp/python/3.12.12/Python-3.12.12.tar.xz"
-blake3 = "29636fdae3e0ee8d0fe585e528c9376fe43876f5f3f0f7892140567946fd907b"
+tar = "https://www.python.org/ftp/python/3.12.16/Python-3.12.16.tar.xz"
+blake3 = "64f6bad790874696e4b6cbcf02d5e1d6ec668044857fca97e82d9f894abc1817"
 patches = [
     "redox.patch"
 ]

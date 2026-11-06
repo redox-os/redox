@@ -1,10 +1,9 @@
-#TODO not compiled or tested
-# build instructions: https://github.com/google/brotli#cmake
 [source]
 git = "https://github.com/google/brotli"
 patches = [ "redox.patch" ]
-branch = "v1.2"
+rev = "v1.2.1"
 shallow_clone = true
+
 [build]
 template = "cmake"
 cmakeflags = [

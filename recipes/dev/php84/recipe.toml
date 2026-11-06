@@ -2,8 +2,8 @@
 description = "Web-centric programming language"
 
 [source]
-tar = "https://www.php.net/distributions/php-8.4.17.tar.xz"
-blake3 = "a8478dddd948d4b26e51c5727ac0895440da76e8ad9be947098a4284ca0b7f2a"
+tar = "https://www.php.net/distributions/php-8.4.27.tar.xz"
+blake3 = "46a605ee5ddc43d17fddf0364b23e44a85889c29eee47609d4a9aaeccf9952a3"
 patches = [
     "redox.patch"
 ]
