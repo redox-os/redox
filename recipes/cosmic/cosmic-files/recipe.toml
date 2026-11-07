@@ -1,5 +1,7 @@
 [source]
 git = "https://github.com/pop-os/cosmic-files.git"
+#TODO: compio and fork don't compile on Redox anymore
+rev = "a9bc7c11e5e09a8b4d4463662ed597b95dde7f56"
 
 [build]
 template = "custom"
