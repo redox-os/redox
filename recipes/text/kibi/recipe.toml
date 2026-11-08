@@ -8,6 +8,7 @@ rev = "v0.3.3"
 [build]
 template = "custom"
 script = """
+DYNAMIC_INIT
 mkdir -pv "${COOKBOOK_STAGE}"/usr/share/kibi
 cp -rv "${COOKBOOK_SOURCE}"/syntax.d "${COOKBOOK_STAGE}"/usr/share/kibi
 cookbook_cargo
