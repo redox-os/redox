@@ -1,5 +1,6 @@
 [source]
-git = "https://gitlab.redox-os.org/redox-os/acid.git"
+git = "https://gitlab.redox-os.org/Ibuki.O/acid.git"
+branch = "libredox"
 shallow_clone = true
 [build]
 template = "custom"

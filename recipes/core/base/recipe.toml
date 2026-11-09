@@ -2,7 +2,8 @@
 description = "Essential system components and drivers for Redox"
 
 [source]
-git = "https://gitlab.redox-os.org/redox-os/base.git"
+git = "https://gitlab.redox-os.org/Ibuki.O/base.git"
+branch = "avoid-blocking-nsmgr"
 
 [build]
 template = "custom"
