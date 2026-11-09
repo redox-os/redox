@@ -291,6 +291,7 @@ sopwith = {}
 spadesx = {}
 spinners = {}
 sqlite3 = {}
+stars-sdl = {}
 strace = {}
 syobonaction = {}
 taffy = {}

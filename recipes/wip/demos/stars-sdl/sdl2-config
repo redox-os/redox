@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+if [ "$1" = "--cflags" ]
+then
+    echo $CFLAGS $CPPFLAGS $($PKG_CONFIG --cflags sdl2)
+else
+    echo $LDFLAGS
+fi
