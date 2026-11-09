@@ -1,0 +1,48 @@
+diff --git a/fire/Makefile b/fire/Makefile
+index 0ff8f3c..7304ee7 100644
+--- a/fire/Makefile
++++ b/fire/Makefile
+@@ -8,7 +8,6 @@ CFLAGS += $(LIBS)
+ 
+ # CFLAGS += -Wno-switch
+ CFLAGS += -Wno-overlength-strings
+-CFLAGS += -fsanitize=undefined -fno-sanitize-recover=undefined
+ 
+ all: fire
+ 
+diff --git a/plasma/Makefile b/plasma/Makefile
+index bba08ec..bf9c7ad 100644
+--- a/plasma/Makefile
++++ b/plasma/Makefile
+@@ -6,7 +6,6 @@ LIBS += $(shell sdl2-config --libs)
+ CFLAGS += $(LIBS)
+ 
+ CFLAGS += -Wno-overlength-strings
+-CFLAGS += -fsanitize=undefined -fno-sanitize-recover=undefined
+ 
+ all: plasma
+ 
+diff --git a/stars/Makefile b/stars/Makefile
+index 60f1834..40a4779 100644
+--- a/stars/Makefile
++++ b/stars/Makefile
+@@ -6,7 +6,6 @@ LIBS += $(shell sdl2-config --libs)
+ CFLAGS += $(LIBS)
+ 
+ CFLAGS += -Wno-overlength-strings
+-CFLAGS += -fsanitize=undefined -fno-sanitize-recover=undefined
+ 
+ PROGRAM := stars
+ 
+diff --git a/tunnel/Makefile b/tunnel/Makefile
+index cc9f109..595da0b 100644
+--- a/tunnel/Makefile
++++ b/tunnel/Makefile
+@@ -6,7 +6,6 @@ LIBS += $(shell sdl2-config --libs)
+ CFLAGS += $(LIBS)
+ 
+ CFLAGS += -Wno-overlength-strings
+-CFLAGS += -fsanitize=undefined -fno-sanitize-recover=undefined
+ 
+ PROGRAM := tunnel
+ 
