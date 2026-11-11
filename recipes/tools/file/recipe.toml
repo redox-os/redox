@@ -2,6 +2,11 @@
 description = "Tool to analyze file properties"
 
 [source]
-tar = "https://astron.com/pub/file/file-5.46.tar.gz"
+tar = "https://astron.com/pub/file/file-5.48.tar.gz"
+blake3 = "9b75907db0d23cc8e123acd137c88da627ab98e001ed05960a2fd871a5abe4f2"
+
 [build]
 template = "configure"
+dev-dependencies = [
+    "host:file",
+]
