@@ -116,16 +116,7 @@
               cmake
               curl
               doxygen
-              (file.overrideAttrs (attrs: {
-                version = "5.46";
-                src = fetchurl {
-                  urls = [
-                    "https://astron.com/pub/file/file-5.46.tar.gz"
-                    "https://distfiles.macports.org/file/file-5.46.tar.gz"
-                  ];
-                  hash = "sha256-ycx3x8VgxUMTXtxVWvYJ1WGdvvARmX6YjOQKPXXYYIg=";
-                };
-              }))
+              file
               flex
               gettext
               gnumake

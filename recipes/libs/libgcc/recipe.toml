@@ -6,4 +6,5 @@ template = "custom"
 script = """
 mkdir -p "${COOKBOOK_STAGE}/usr/lib"
 cp -av ${COOKBOOK_HOST_SYSROOT}/${GNU_TARGET}/lib/libgcc_s.so* ${COOKBOOK_STAGE}/usr/lib/
+chmod 644 ${COOKBOOK_STAGE}/usr/lib/libgcc_s.so*
 """

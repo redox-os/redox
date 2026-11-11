@@ -17,7 +17,7 @@ dependencies = [
     "target:ncursesw",
     "target:readline",
     "target:sqlite3",
-    "target:zlib",
+    "zlib",
     "target:xz",
     "target:zstd",
 ]
