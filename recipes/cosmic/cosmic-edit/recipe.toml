@@ -1,5 +1,7 @@
 [source]
 git = "https://github.com/pop-os/cosmic-edit.git"
+#TODO: issues compiling fork 0.11
+rev = "ec8375c65090ee9547885a2d9bf94a6630f5fbd9"
 
 [build]
 template = "custom"
