@@ -61,11 +61,11 @@ CONTAINERFILE?=podman/redox-base-containerfile
 NPROC=nproc
 SED=sed
 FIND=find
-REPO_BIN=./target/release/repo
+REPO_BIN?=./target/release/repo
 
 ifneq ($(PODMAN_BUILD),1)
 FSTOOLS_IN_PODMAN=0
-HOST_TARGET := $(shell env -u RUSTUP_TOOLCHAIN rustc -vV | grep host | cut -d: -f2 | tr -d " ")
+HOST_TARGET?= $(shell env -u RUSTUP_TOOLCHAIN rustc -vV | grep host | cut -d: -f2 | tr -d " ")
 # x86_64 linux hosts have all toolchains
 ifeq ($(PREFIX_BINARY),1)
 ifeq ($(HOST_TARGET),aarch64-unknown-linux-gnu)
