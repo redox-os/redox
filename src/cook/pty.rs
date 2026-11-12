@@ -2,6 +2,7 @@ use libc::{self, winsize};
 use std::io::{self, PipeReader, PipeWriter, Read, Write};
 use std::os::fd::FromRawFd;
 use std::os::unix::{io::AsRawFd, io::RawFd, process::CommandExt};
+use std::path::PathBuf;
 use std::process::{Child, Command};
 use std::{fs::File, mem, ptr, time::Duration};
 
@@ -98,14 +99,20 @@ pub fn flush_pty(logger: &mut PtyOut) {
 pub fn spawn_to_pipe(command: &mut Command, stdout_pipe: &PtyOut) -> Result<Child> {
     match stdout_pipe {
         Some(stdout) => stdout.0.spawn_command(command),
-        None => Ok(command.spawn().map_err(wrap_io_err!("Spawning"))?),
+        None => command.spawn().map_err(wrap_io_err!(
+            PathBuf::from(command.get_program()),
+            "Spawning"
+        )),
     }
 }
 
 pub fn spawn_to_pipe_with_stdin(command: &mut Command, stdout_pipe: &PtyOut) -> Result<Child> {
     match stdout_pipe {
         Some(stdout) => stdout.0.spawn_command_stdin(command),
-        None => Ok(command.spawn().map_err(wrap_io_err!("Spawning"))?),
+        None => command.spawn().map_err(wrap_io_err!(
+            PathBuf::from(command.get_program()),
+            "Spawning"
+        )),
     }
 }
 
