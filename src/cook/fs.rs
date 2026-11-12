@@ -2,7 +2,7 @@ use blake3::Hash;
 use serde::{Serialize, de::DeserializeOwned};
 use std::{
     collections::BTreeSet,
-    fs,
+    env, fs,
     io::{self, Write},
     path::{Path, PathBuf},
     process::{self, Command, Stdio},
@@ -629,4 +629,23 @@ pub fn get_git_rev_before_date(dir: &PathBuf, date: &str) -> Result<String> {
         )));
     }
     Ok(rev)
+}
+
+pub fn get_relative_exe(exe_name: &str) -> Result<PathBuf> {
+    env::current_exe()
+        .and_then(|exe| exe.with_file_name(exe_name).canonicalize())
+        .map_err(wrap_io_err!(
+            PathBuf::from(exe_name),
+            "Getting exe relative to the running process"
+        ))
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::cook::fs::*;
+
+    #[test]
+    fn test_get_relative_exe() {
+        assert!(get_relative_exe("some-unknown-bin").is_err());
+    }
 }

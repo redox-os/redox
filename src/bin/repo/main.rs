@@ -3,7 +3,7 @@ use cookbook::cook::cook_build::{build, get_stage_dirs, remove_stage_dir};
 use cookbook::cook::fetch::{FetchResult, fetch, fetch_offline};
 use cookbook::cook::fs::{
     create_dir, create_target_dir, get_git_commit_date, get_git_head_rev, get_git_rev_before_date,
-    remove_all, run_command,
+    get_relative_exe, remove_all, run_command,
 };
 use cookbook::cook::package::{package, package_handle_push};
 use cookbook::cook::pty::{PtyOut, flush_pty, write_to_pty};
@@ -445,11 +445,7 @@ fn repo_inner(config: &CliConfig, command: &CliCommand, recipe: &CookRecipe) -> 
 }
 
 fn publish_packages(recipe_names: &Vec<CookRecipe>, repo_path: &PathBuf) -> Result<()> {
-    let repo_bin = env::current_exe()
-        .map_err(|e| Error::from_io_error(e, "Getting exe path"))?
-        .parent()
-        .unwrap()
-        .join("repo_builder");
+    let repo_bin = get_relative_exe("repo_builder")?;
     let mut command = Command::new(repo_bin);
     command
         .arg(repo_path)
