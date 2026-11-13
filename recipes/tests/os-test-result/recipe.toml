@@ -10,8 +10,9 @@ dev-dependencies = [
     "host:redoxer",
 # allows rebuilding relibc without updating prefix
     "relibc",
-    "gnu-grep",
+    "uutils-grep",
     "libarchive",
+    "uutils-sed",
 ]
 script = """
 if [ "$TARGET" = "$COOKBOOK_HOST_TARGET" ]; then
@@ -54,16 +55,11 @@ if [ "$OS" = "Redox" ]; then
 skips+=(
     # Skip hanging tests on Redox with relibc
     # https://gitlab.redox-os.org/redox-os/redox/-/issues/1752
-    basic/sys_socket/accept
-    basic/sys_socket/recv
-    basic/sys_socket/send
-    basic/sys_socket/shutdown
-    signal/ppoll-block-close
-    signal/ppoll-block-close-raise
-    signal/ppoll-block-raise
+    basic/sys_wait/waitpid
     signal/ppoll-block-sleep-raise-write
-    signal/ppoll-block-sleep-raise
     signal/ppoll-block-sleep-write-raise
+    stdio/asprintf-failure-null-clobber-enomem
+    stdio/asprintf-failure-null-clobber-eoverflow
 )
 fi
 
