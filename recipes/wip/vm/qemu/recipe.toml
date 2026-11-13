@@ -29,6 +29,7 @@ COOKBOOK_CONFIGURE_FLAGS=(
     --cross-prefix="${TARGET}"
     --disable-coroutine-pool
     --disable-dbus-display
+    --enable-slirp
     --enable-zstd
     --disable-tpm
 )
