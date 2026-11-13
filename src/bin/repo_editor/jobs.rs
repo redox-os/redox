@@ -6,6 +6,7 @@ use std::sync::mpsc;
 use std::thread;
 use std::{collections::HashMap, io::Write};
 
+use cookbook::cook::fs::get_relative_exe;
 use cookbook::cook::pty::{setup_pty_with_stdin, spawn_to_pipe};
 use cookbook::cook::tui::drain_buffer_to_lines;
 use pkg::PackageName;
@@ -125,11 +126,7 @@ impl ExecutionManager {
         spawn_log_reader(log_reader, job_id, status_tx.clone());
 
         let mut cmd = std::process::Command::new(
-            std::env::current_exe()
-                .unwrap()
-                .parent()
-                .unwrap()
-                .join("repo"),
+            get_relative_exe("repo").expect("Failed to find \"repo\" bin"),
         );
         cmd.arg(command);
         for target in &targets {
