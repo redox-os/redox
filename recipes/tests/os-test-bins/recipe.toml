@@ -40,10 +40,11 @@ make OS=Redox \
 
 skips=(
     # These tests hang https://gitlab.redox-os.org/redox-os/redox/-/issues/1752
-    basic/pthread/pthread_testcancel
     basic/sys_wait/waitpid
     signal/ppoll-block-sleep-raise-write
     signal/ppoll-block-sleep-write-raise
+    stdio/asprintf-failure-null-clobber-enomem
+    stdio/asprintf-failure-null-clobber-eoverflow
 )
 
 for skip in "${skips[@]}"
@@ -70,10 +71,10 @@ chmod +x "${COOKBOOK_STAGE}/usr/bin/os-test-runner"
 [package]
 description = "Test suites for POSIX compliance (cross-compiled variant)"
 dependencies = [
-    "gnu-grep",
+    "uutils-grep",
     "gnu-make",
     "libarchive",
-    "sed",
+    "uutils-sed",
 ]
 
 # The installation order must be exact in order to satisfy Makefile requirement
