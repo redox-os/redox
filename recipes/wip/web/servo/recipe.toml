@@ -35,6 +35,11 @@ export TARGET_CC="$CC"
 export TARGET_CXX="$CXX"
 export MOZJS_FROM_SOURCE=1
 
+# to force libz-sys build.rs to do dylib link
+export LIBZ_SYS_STATIC=0
+export CFLAGS="-L${COOKBOOK_SYSROOT}/usr/lib"
+reexport_flags
+
 # pkg-config crate can only recognize one path to pkgconfig
 export PKG_CONFIG_PATH_x86_64_unknown_redox="${COOKBOOK_SYSROOT}/lib/pkgconfig"
 export PKG_CONFIG_SYSROOT_DIR_x86_64_unknown_redox="${COOKBOOK_SYSROOT}/lib/pkgconfig"
