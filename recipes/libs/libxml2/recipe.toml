@@ -4,9 +4,6 @@ description = "Library and tools for processing XML"
 [source]
 tar = "https://download.gnome.org/sources/libxml2/2.11/libxml2-2.11.3.tar.xz"
 blake3 = "0653d3750576299c4cb88740942165671b576ff93019f3d669b3f37136225ab7"
-script = """
-autotools_recursive_regenerate
-"""
 
 [build]
 template = "custom"
@@ -15,9 +12,11 @@ dependencies = [
     "zlib"
 ]
 script = """
-DYNAMIC_STATIC_INIT
-COOKBOOK_CONFIGURE_FLAGS+=(
-    --without-python
+DYNAMIC_INIT
+COOKBOOK_CMAKE_FLAGS+=(
+    -DLIBXML2_WITH_PYTHON=Off
+    -DLIBXML2_WITH_TESTS=Off
+    -DLIBXML2_WITH_ICONV=Off
 )
-cookbook_configure
+cookbook_cmake
 """

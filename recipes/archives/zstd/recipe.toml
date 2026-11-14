@@ -7,6 +7,7 @@ blake3 = "730dca31244abd219e995f03a55d95b2cfb4b3e16cda055a79fa6f30a4f0e1db"
 
 [build]
 template = "custom"
+compiler = "no-lto"
 script = """
 DYNAMIC_STATIC_INIT
 # TODO: fPIC is the default on linux but not on redox and
