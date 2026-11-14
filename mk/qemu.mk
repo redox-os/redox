@@ -124,6 +124,7 @@ else ifeq ($(ARCH),riscv64gc)
 		$(wildcard $(QEMU_BASE_DIR)/share/qemu/edk2-riscv-vars.fd) \
 	)
 	PFLASH1_NEEDED=yes
+	PFLASH_SIZE=32M
 	ifneq ($(usb),no)
 		QEMUFLAGS+=-device qemu-xhci -device usb-kbd -device usb-tablet
 	endif
@@ -343,7 +344,7 @@ ifeq ($(UNAME),Darwin)
 endif
 
 ifneq ($(PFLASH0),)
-	QEMUFLAGS+=-drive if=pflash,format=raw,unit=0,file=$(PFLASH0),readonly=on
+	QEMUFLAGS+=-drive if=pflash,format=raw,unit=0,file=$(BUILD)/fw_code.bin,readonly=on
 endif
 
 ifneq ($(PFLASH1),)
@@ -366,7 +367,18 @@ qemu-deps:$(FIRMWARE)
 
 qemu-deps:$(QEMU_KERNEL)
 
-qemu-deps: $(PFLASH0)
+ifneq ($(PFLASH0),)
+qemu-deps: $(BUILD)/fw_code.bin
+
+$(BUILD)/fw_code.bin: $(PFLASH0)
+	cp "$<" "$@"
+
+ifneq ($(PFLASH_SIZE),)
+	chmod +w "$@"
+	qemu-img resize -f raw "$@" $(PFLASH_SIZE)
+	chmod -w "$@"
+endif
+endif
 
 ifneq ($(PFLASH1),)
 qemu-deps: $(BUILD)/fw_vars.bin
@@ -375,6 +387,11 @@ qemu-deps: $(BUILD)/fw_vars.bin
 $(BUILD)/fw_vars.bin: $(PFLASH1)
 	cp "$<" "$@"
 	chmod +w "$@"
+
+ifneq ($(PFLASH_SIZE),)
+	qemu-img resize -f raw "$@" $(PFLASH_SIZE)
+endif
+
 endif
 
 qemu-deps:
