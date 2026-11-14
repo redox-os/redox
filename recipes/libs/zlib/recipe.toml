@@ -1,25 +1,41 @@
 [package]
 description = "Library for data compression and decompression"
 
+# zlib-rs is compatible with zlib
 [source]
-tar = "https://www.zlib.net/fossils/zlib-1.3.tar.gz"
-blake3 = "ec1abc6f672a7a6ee6f49ba544cc9529f73121b478310473be44fee22a140ebf"
+tar = "https://github.com/trifectatechfoundation/zlib-rs/archive/refs/tags/v0.6.8.tar.gz"
+blake3 = "933487029f0a79a923545d60e3828da151194fcbff521acccecfb128ca738ee9"
 
 [build]
 template = "custom"
+compiler = "no-lto"
 script = """
-DYNAMIC_STATIC_INIT
-COOKBOOK_CONFIGURE_FLAGS=(--prefix="/usr" --shared --static)
-# TODO: fPIC is the default on linux but not on redox and
-#       required by libz-sys as zlib statically linked there
-export CFLAGS="$CFLAGS -fPIC"
-# See https://stackoverflow.com/questions/21396988/zlib-build-not-configuring-properly-with-cross-compiler-ignores-ar.
-env CHOST="${TARGET}" "${COOKBOOK_CONFIGURE}" "${COOKBOOK_CONFIGURE_FLAGS[@]}"
-"${COOKBOOK_MAKE}" -j "$(nproc)"
-"${COOKBOOK_MAKE}" install DESTDIR="${COOKBOOK_STAGE}"
-solib="${COOKBOOK_STAGE}/usr/lib/libz.so.1.3"
-if [ -e "${solib}" ]
-then
-    patchelf --set-soname 'libz.so.1.3' "${solib}"
+# the dynamic and static lib must exist
+COOKBOOK_SOURCE+="/libz-rs-sys-cdylib"
+COOKBOOK_CARGO_FLAGS+=(
+        --no-default-features --features "c-allocator,std,gz,gzprintf"
+)
+
+# NOTE: relocation-model=pic is the default on linux and redox,
+# it is required by libz-sys as zlib statically linked there
+"${COOKBOOK_CARGO}" build \
+        --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
+        ${build_flags} -j "${COOKBOOK_MAKE_JOBS}" \
+       "${COOKBOOK_CARGO_FLAGS[@]}"
+
+mkdir -p "${COOKBOOK_STAGE}/usr/lib/pkgconfig" "${COOKBOOK_STAGE}/usr/include"
+cp "./target/$TARGET/$build_type/libz_rs.a" "${COOKBOOK_STAGE}/usr/lib/libz.a"
+cp "${COOKBOOK_SOURCE}/include"/*.h "${COOKBOOK_STAGE}/usr/include/"
+cp "${COOKBOOK_RECIPE}/zlib.pc" "${COOKBOOK_STAGE}/usr/lib/pkgconfig/"
+
+DYNAMIC_INIT
+if [ "${COOKBOOK_DYNAMIC}" = "1" ]; then
+export "${REDOXER_RUSTFLAGS_KEY}+= -C link-arg=-Wl,-soname,libz.so.1"
+"${COOKBOOK_CARGO}" build \
+        --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
+        ${build_flags} -j "${COOKBOOK_MAKE_JOBS}" \
+        "${COOKBOOK_CARGO_FLAGS[@]}"
+cp "./target/$TARGET/$build_type/libz_rs.so" "${COOKBOOK_STAGE}/usr/lib/libz.so.1"
+ln -s "libz.so.1" "${COOKBOOK_STAGE}/usr/lib/libz.so"
 fi
 """
