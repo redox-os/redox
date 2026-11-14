@@ -14,6 +14,6 @@ patches = [
 [build]
 template = "custom"
 script = """
-DYNAMIC_STATIC_INIT
+DYNAMIC_INIT
 cookbook_configure
 """

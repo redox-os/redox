@@ -15,6 +15,6 @@ autotools_recursive_regenerate
 template = "custom"
 dependencies = ["zlib"]
 script = """
-DYNAMIC_STATIC_INIT
+DYNAMIC_INIT
 cookbook_cmake
 """

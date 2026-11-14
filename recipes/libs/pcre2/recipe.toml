@@ -11,6 +11,6 @@ autotools_recursive_regenerate
 [build]
 template = "custom"
 script = """
-DYNAMIC_STATIC_INIT
+DYNAMIC_INIT
 cookbook_configure
 """

@@ -22,7 +22,7 @@ autotools_recursive_regenerate -I$(realpath ./m4) -I$(realpath ./srcm4)
 [build]
 template = "custom"
 script = """
-DYNAMIC_STATIC_INIT
+DYNAMIC_INIT
 COOKBOOK_CONFIGURE_FLAGS+=(
     # riscv64gc does not work without this
     ac_cv_c_bigendian=no
