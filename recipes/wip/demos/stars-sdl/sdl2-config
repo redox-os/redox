@@ -4,5 +4,5 @@ if [ "$1" = "--cflags" ]
 then
     echo $CFLAGS $CPPFLAGS $($PKG_CONFIG --cflags sdl2)
 else
-    echo $LDFLAGS
+    echo $LDFLAGS $($PKG_CONFIG $1 sdl2)
 fi
