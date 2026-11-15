@@ -590,7 +590,11 @@ fn build_is_source_newer(
     if newer {
         log_to_pty!(
             logger,
-            "DEBUG: updating build: {} is newer",
+            "DEBUG: updating build of {}: {} is newer",
+            recipe_dir
+                .file_name()
+                .and_then(|s| s.to_str())
+                .unwrap_or("??"),
             if recipe_is_newest { "recipe" } else { "source" }
         );
     }
