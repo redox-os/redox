@@ -11,8 +11,19 @@ pub const WALK_DEPTH: usize = 16;
 /// This is overridable with mirrors config (via `cookbook.toml`).
 pub const REMOTE_PKG_SOURCE: &str = "https://static.redox-os.org/pkg";
 
+// TODO: remove if possible
 pub fn is_redox() -> bool {
     cfg!(target_os = "redox")
+}
+
+#[cfg(target_os = "redox")]
+pub fn is_hosted() -> bool {
+    redoxer::host_target() == redoxer::target()
+}
+
+#[cfg(not(target_os = "redox"))]
+pub fn is_hosted() -> bool {
+    false
 }
 
 pub fn cross_target() -> Option<String> {

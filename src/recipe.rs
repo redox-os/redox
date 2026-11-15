@@ -308,7 +308,13 @@ impl CookRecipe {
         if name.is_host() {
             let thisname = name.without_host();
             let fn_map = |p: PackageName| {
-                if p.is_host() {
+                if crate::is_hosted() {
+                    if p.name() == thisname {
+                        None
+                    } else {
+                        Some(p.with_prefix(pkg::PackagePrefix::Any))
+                    }
+                } else if p.is_host() {
                     if p.name() == thisname { None } else { Some(p) }
                 } else if p.is_target() {
                     None
