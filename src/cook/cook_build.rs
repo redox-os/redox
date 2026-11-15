@@ -469,9 +469,12 @@ pub fn build(
             command.env("COOKBOOK_STAGE", &cookbook_stage);
             command.env("COOKBOOK_SOURCE", &cookbook_source);
             command.env("COOKBOOK_SYSROOT", &cookbook_sysroot);
+            if crate::is_hosted() {
+                command.env("COOKBOOK_HOSTED", "1");
+            }
             if let Some(cookbook_toolchain) = &cookbook_toolchain {
                 command.env("COOKBOOK_TOOLCHAIN", cookbook_toolchain);
-            } else if name.is_host() {
+            } else if name.is_host() || crate::is_hosted() {
                 command.env("COOKBOOK_TOOLCHAIN", &cookbook_sysroot);
             }
             if let Some(compiler) = recipe.build.compiler.as_ref() {

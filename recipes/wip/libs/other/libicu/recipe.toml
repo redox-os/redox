@@ -27,7 +27,7 @@ fi
 # libicu uses TARGET for something else
 (unset TARGET && cookbook_configure)
 
-if [ "$TARGET" = "$COOKBOOK_HOST_TARGET" ]; then
+if [ "$TARGET" = "$COOKBOOK_HOST_TARGET" ] && [ -z "$COOKBOOK_HOSTED" ]; then
 # this is not ideal, but there's no other better way
 rsync -a ./ "${COOKBOOK_STAGE}/usr"
 fi
