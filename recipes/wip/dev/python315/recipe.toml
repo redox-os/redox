@@ -22,6 +22,7 @@ dependencies = [
 dev-dependencies = [
     "host:python315"
 ]
+compiler = "no-lto"
 script = """
 DYNAMIC_INIT
 

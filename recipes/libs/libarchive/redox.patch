@@ -1,0 +1,32 @@
+diff -ruwN source/libarchive/CMakeLists.txt source-new/libarchive/CMakeLists.txt
+--- source/libarchive/CMakeLists.txt	2025-11-17 22:04:25.000000000 +0000
++++ source-new/libarchive/CMakeLists.txt	2026-11-15 05:05:27.219933661 +0000
+@@ -260,6 +260,7 @@
+ ENDIF(BUILD_SHARED_LIBS)
+ 
+ # archive_static is a static library
++IF(BUILD_STATIC_LIBS)
+ ADD_LIBRARY(archive_static STATIC ${libarchive_SOURCES} ${include_HEADERS})
+ TARGET_INCLUDE_DIRECTORIES(archive_static PUBLIC .)
+ TARGET_LINK_LIBRARIES(archive_static ${ADDITIONAL_LIBS})
+@@ -272,6 +273,7 @@
+ IF(NOT WIN32 OR CYGWIN OR NOT BUILD_SHARED_LIBS)
+   SET_TARGET_PROPERTIES(archive_static PROPERTIES OUTPUT_NAME archive)
+ ENDIF(NOT WIN32 OR CYGWIN OR NOT BUILD_SHARED_LIBS)
++ENDIF(BUILD_STATIC_LIBS)
+ 
+ IF(ENABLE_INSTALL)
+   # How to install the libraries
+@@ -281,10 +283,12 @@
+             LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+             ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+   ENDIF(BUILD_SHARED_LIBS)
++  IF(BUILD_STATIC_LIBS)
+   INSTALL(TARGETS archive_static
+           RUNTIME DESTINATION bin
+           LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+           ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
++  ENDIF(BUILD_STATIC_LIBS)
+   INSTALL_MAN(${libarchive_MANS})
+   INSTALL(FILES ${include_HEADERS} DESTINATION include)
+ ENDIF()

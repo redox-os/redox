@@ -19,19 +19,19 @@ dependencies = [
 dev-dependencies = [
     "libstdcxx"
 ]
-compiler = "gcc-no-lto"
+compiler = "gcc"
 script = """
 DYNAMIC_INIT
 
-export LDFLAGS="$LDFLAGS -lSDL2 -lorbital -lOSMesa"
 ARCH="${TARGET%%-*}"
 COOKBOOK_CONFIGURE_FLAGS=(
     --enable-cross-compile
     --target-os=redox
     --arch="${ARCH}"
-    --cross_prefix="${TARGET}-"
+    --cross_prefix="${GNU_TARGET}-"
     --prefix=/usr
     --disable-doc
+    --disable-stripping
     --enable-shared
     --disable-static
     --disable-network
@@ -41,6 +41,10 @@ COOKBOOK_CONFIGURE_FLAGS=(
     --enable-encoder=png
     --enable-decoder=png
 )
+if [[ "$REDOXER_USE_LTO" = "1" || "$REDOXER_USE_LTO" = "true" ]]; then
+COOKBOOK_CONFIGURE_FLAGS+=(--enable-lto)
+fi
+
 cookbook_configure
 mkdir -pv "${COOKBOOK_STAGE}/usr/share/ui/apps"
 cp -v "${COOKBOOK_RECIPE}/manifest" "${COOKBOOK_STAGE}/usr/share/ui/apps/ffplay"

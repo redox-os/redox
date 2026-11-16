@@ -9,6 +9,7 @@ template = "configure"
 dependencies = [
     "liborbital"
 ]
+compiler = "no-lto"
 configure = [
     "--disable-loadso",
     "--disable-pulseaudio",

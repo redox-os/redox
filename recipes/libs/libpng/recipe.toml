@@ -16,5 +16,10 @@ template = "custom"
 dependencies = ["zlib"]
 script = """
 DYNAMIC_INIT
+if [ "${COOKBOOK_DYNAMIC}" = "1" ]; then
+    COOKBOOK_CMAKE_FLAGS+=(
+        -DPNG_STATIC=OFF
+    )
+fi
 cookbook_cmake
 """
