@@ -4,12 +4,10 @@ description = "Multi-format archive/compression library and tools "
 [source]
 tar = "https://libarchive.org/downloads/libarchive-3.8.7.tar.xz"
 blake3 = "6b7f744132368a53ecf98a4586af09c255f81cebf37687edd857528a1bfd3bd3"
+patches = [ "redox.patch" ]
 
 [build]
-template = "cmake"
-cmakeflags = [
-    "-DENABLE_TEST=OFF"
-]
+template = "custom"
 dependencies = [
     "openssl3",
     "libxml2",
@@ -17,3 +15,18 @@ dependencies = [
     "zlib",
     "zstd",
 ]
+script = """
+DYNAMIC_INIT
+COOKBOOK_CMAKE_FLAGS+=(
+    -DENABLE_TEST=OFF
+)
+if [ "${COOKBOOK_DYNAMIC}" = "1" ]; then
+    COOKBOOK_CMAKE_FLAGS+=(
+        -DENABLE_TAR_SHARED=ON
+        -DENABLE_CAT_SHARED=ON
+        -DENABLE_CPIO_SHARED=ON
+        -DENABLE_UNZIP_SHARED=ON
+    )
+fi
+cookbook_cmake
+"""

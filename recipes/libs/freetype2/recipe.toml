@@ -12,6 +12,6 @@ dependencies = [
     "zlib"
 ]
 script = """
-DYNAMIC_STATIC_INIT
+DYNAMIC_INIT
 cookbook_meson -Dharfbuzz=disabled
 """

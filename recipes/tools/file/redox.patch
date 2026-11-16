@@ -1,0 +1,30 @@
+diff -ruwN source/configure source-new/configure
+--- source/configure	2026-06-07 23:44:46.000000000 +0000
++++ source-new/configure	2026-11-15 10:44:58.974273843 +0000
+@@ -7244,7 +7244,7 @@
+   ;;
+ 
+ # This must be glibc/ELF.
+-linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu*)
++linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu* | redox*)
+   lt_cv_deplibs_check_method=pass_all
+   ;;
+ 
+@@ -11035,7 +11035,7 @@
+       archive_expsym_cmds='$SED "s|^|_|" $export_symbols >$output_objdir/$soname.expsym~$CC -shared $pic_flag $libobjs $deplibs $compiler_flags $wl-h,$soname $wl--retain-symbols-file,$output_objdir/$soname.expsym $wl--image-base,`expr ${RANDOM-$$} % 4096 / 2 \* 262144 + 1342177280` -o $lib'
+       ;;
+ 
+-    gnu* | linux* | tpf* | k*bsd*-gnu | kopensolaris*-gnu)
++    gnu* | linux* | redox* | tpf* | k*bsd*-gnu | kopensolaris*-gnu)
+       tmp_diet=no
+       if test linux-dietlibc = "$host_os"; then
+ 	case $cc_basename in
+@@ -12866,7 +12866,7 @@
+   ;;
+ 
+ # This must be glibc/ELF.
+-linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu*)
++linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu* | redox*)
+   version_type=linux # correct to gnu/linux during the next big refactor
+   need_lib_prefix=no
+   need_version=no

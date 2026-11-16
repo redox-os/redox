@@ -1,5 +1,7 @@
 [source]
 git = "https://github.com/argp-standalone/argp-standalone"
+rev = "8ded2bc"
 shallow_clone = true
+patches = ["redox.patch"]
 [build]
 template = "meson"

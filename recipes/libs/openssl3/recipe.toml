@@ -35,6 +35,10 @@ else
 fi
 
 "${COOKBOOK_CONFIGURE}" "${COOKBOOK_CONFIGURE_FLAGS[@]}"
-"${COOKBOOK_MAKE}" -j1 # bug in make/ar
+"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}" "${COOKBOOK_MAKE_FLAGS[@]}"
 "${COOKBOOK_MAKE}" install_sw install_ssldirs DESTDIR="${COOKBOOK_STAGE}"
+
+if [ "${COOKBOOK_DYNAMIC}" = "1" ]; then
+    rm "${COOKBOOK_STAGE}/usr/lib"/*.a
+fi
 """
