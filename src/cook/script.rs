@@ -22,6 +22,7 @@ function DYNAMIC_INIT {
 
     COOKBOOK_CMAKE_FLAGS=(
         -DBUILD_SHARED_LIBS=True
+        -DBUILD_STATIC_LIBS=False
         -DENABLE_SHARED=True
         -DENABLE_STATIC=False
     )
@@ -67,6 +68,7 @@ function DYNAMIC_STATIC_INIT {
 
         COOKBOOK_CMAKE_FLAGS=(
             -DBUILD_SHARED_LIBS=True
+            -DBUILD_STATIC_LIBS=True
             -DENABLE_SHARED=True
             -DENABLE_STATIC=True
         )

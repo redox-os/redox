@@ -1,0 +1,11 @@
+#TODO compiled but not tested
+[source]
+git = "https://github.com/google/highway"
+rev = "1.4.0"
+shallow_clone = true
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DHWY_ENABLE_TESTS=OFF",
+    "-DHWY_ENABLE_EXAMPLES=OFF",
+]

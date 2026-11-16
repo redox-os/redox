@@ -8,9 +8,9 @@ patches = ["redox.patch"]
 
 [build]
 template = "custom"
+compiler = "no-lto"
 script = """
 DYNAMIC_INIT
-
 COOKBOOK_CMAKE_FLAGS+=(
     -DBUILD_TESTING=Off
 )

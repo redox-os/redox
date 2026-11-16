@@ -8,6 +8,7 @@ shallow_clone = true
 
 [build]
 template = "cmake"
+compiler = "no-lto"
 dependencies = [
     "liborbital",
     "mesa",

@@ -1,0 +1,13 @@
+diff --git a/lib/jxl_extras.cmake b/lib/jxl_extras.cmake
+index 0f8df98..bc0911c 100644
+--- a/lib/jxl_extras.cmake
++++ b/lib/jxl_extras.cmake
+@@ -153,8 +153,3 @@ set_target_properties(jxl_extras_codec PROPERTIES
+   VERSION ${JPEGXL_LIBRARY_VERSION}
+   SOVERSION ${JPEGXL_LIBRARY_SOVERSION}
+ )
+-install(TARGETS jxl_extras_codec
+-  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+-)

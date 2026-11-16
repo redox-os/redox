@@ -10,6 +10,7 @@ autotools_recursive_regenerate
 
 [build]
 template = "custom"
+compiler = "gcc"
 dependencies = [
     "libgmp",
 ]
