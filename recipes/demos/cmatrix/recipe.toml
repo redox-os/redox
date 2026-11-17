@@ -10,6 +10,8 @@ dependencies = [
     "ncursesw"
 ]
 script = """
+DYNAMIC_INIT
+
 export LIBS="-lncursesw"
 
 COOKBOOK_CONFIGURE_FLAGS+=(
