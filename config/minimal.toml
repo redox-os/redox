@@ -15,6 +15,7 @@ extrautils = {}
 ion = {}
 pkgutils = {}
 kibi = {}
+uutils-grep = {}
 uutils-procps = {}
 
 [[files]]
