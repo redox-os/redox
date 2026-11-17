@@ -10,6 +10,7 @@ patches = [
 
 [build]
 template = "custom"
+compiler = "no-lto"
 script = """
 DYNAMIC_INIT
 rsync -av --delete "${COOKBOOK_SOURCE}/" ./

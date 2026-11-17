@@ -1,0 +1,15 @@
+diff --git a/cmake/compilerFlags.cmake b/cmake/compilerFlags.cmake
+index 5420650..884c658 100644
+--- a/cmake/compilerFlags.cmake
++++ b/cmake/compilerFlags.cmake
+@@ -29,8 +29,8 @@ if ( MINGW OR UNIX OR MSYS ) # MINGW, Linux, APPLE, CYGWIN
+ 
+ 
+     if (COMPILER_IS_GCC OR COMPILER_IS_CLANG)
+-        # This fails under Fedora - MinGW - Gcc 8.3
+-        if (NOT (MINGW OR CYGWIN OR CMAKE_HOST_SOLARIS))
++        # This fails under Fedora - MinGW - Gcc 8.3 - Redox GCC
++        if (NOT (MINGW OR CYGWIN OR CMAKE_HOST_SOLARIS OR REDOX))
+             if (NOT APPLE) # Don't know why this isn't working correctly on Apple with M1 processor
+                 check_cxx_compiler_flag(-fstack-clash-protection HAS_FSTACK_CLASH_PROTECTION)
+             endif()
