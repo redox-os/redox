@@ -1,0 +1,21 @@
+# TODO: compiles but requires testing
+[source]
+git = "https://github.com/libraries/pywasm"
+rev = "v2.2.3"
+
+[build]
+template = "python"
+dev-dependencies = [
+  "host:python312",
+  "python312",
+  "host:python3-hatchling",
+  "host:python3-pathspec",
+  "host:python3-pluggy",
+  "host:python3-packaging",
+  "host:python3-trove-classifiers",
+]
+
+[package]
+dependencies = [
+  "python312",
+]
