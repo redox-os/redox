@@ -2,7 +2,7 @@
 description = "Package format utilities for Redox"
 
 [source]
-git = "https://gitlab.redox-os.org/redox-os/pkgar.git"
+same_as = "../pkgutils"
 
 [build]
 template = "cargo"
