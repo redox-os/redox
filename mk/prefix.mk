@@ -162,14 +162,12 @@ else
 endif
 
 
-$(PREFIX)/gcc-install: $(PREFIX)/gcc13.pkgar $(PREFIX)/gcc13.cxx.pkgar $(PREFIX)/libgcc.pkgar $(PREFIX)/libstdcxx.pkgar $(CONTAINER_TAG)
+$(PREFIX)/gcc-install: $(PREFIX)/libgcc.pkgar $(PREFIX)/libstdcxx.pkgar $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
 	rm -rf "$@.partial" "$@"
 	mkdir -p "$@.partial"
-	pkgar extract --pkey $(PREFIX)/id_ed25519.pub.toml --archive "$(PREFIX)/gcc13.pkgar" "$@.partial"
-	pkgar extract --pkey $(PREFIX)/id_ed25519.pub.toml --archive "$(PREFIX)/gcc13.cxx.pkgar" "$@.partial"
 	pkgar extract --pkey $(PREFIX)/id_ed25519.pub.toml --archive "$(PREFIX)/libgcc.pkgar" "$@.partial"
 	pkgar extract --pkey $(PREFIX)/id_ed25519.pub.toml --archive "$(PREFIX)/libstdcxx.pkgar" "$@.partial"
 	mv "$@.partial/usr"/* "$@.partial"
@@ -178,33 +176,20 @@ else
 	mv "$@.partial" "$@"
 endif
 
-$(PREFIX)/rust-install: $(PREFIX)/llvm21.pkgar $(PREFIX)/rust.pkgar $(CONTAINER_TAG)
+$(PREFIX)/rust-install: $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
 	rm -rf "$@.partial" "$@"
-	mkdir -p "$@.partial"
-	pkgar extract --pkey $(PREFIX)/id_ed25519.pub.toml --archive "$(PREFIX)/llvm21.pkgar" "$@.partial"
-	pkgar extract --pkey $(PREFIX)/id_ed25519.pub.toml --archive "$(PREFIX)/rust.pkgar" "$@.partial"
-	mv "$@.partial/usr"/* "$@.partial"
-	rmdir "$@.partial/usr"
-	touch "$@.partial"
-	mv "$@.partial" "$@"
+	mkdir -p "$@"
 endif
 
-$(PREFIX)/clang-install: $(PREFIX)/llvm21.runtime.pkgar $(PREFIX)/clang21.pkgar $(PREFIX)/lld21.pkgar $(CONTAINER_TAG)
+$(PREFIX)/clang-install: $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
 	rm -rf "$@.partial" "$@"
-	mkdir -p "$@.partial"
-	pkgar extract --pkey $(PREFIX)/id_ed25519.pub.toml --archive "$(PREFIX)/llvm21.runtime.pkgar" "$@.partial"
-	pkgar extract --pkey $(PREFIX)/id_ed25519.pub.toml --archive "$(PREFIX)/clang21.pkgar" "$@.partial"
-	pkgar extract --pkey $(PREFIX)/id_ed25519.pub.toml --archive "$(PREFIX)/lld21.pkgar" "$@.partial"
-	mv "$@.partial/usr"/* "$@.partial"
-	rmdir "$@.partial/usr"
-	touch "$@.partial"
-	mv "$@.partial" "$@"
+	mkdir -p "$@"
 endif
 
 endif
