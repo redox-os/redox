@@ -840,18 +840,36 @@ is_os_redox()
 redox()
 {
     echo "Detected Redox OS"
-    
-    # Check if git is installed
-    if [ -z "$(which git)" ]; then
-        echo "Installing git..."
-        sudo pkg install git
-    fi
+
+    echo "Installing necessary build tools..."
+
+    # Core development packages that are available on x86_64 Redox
+    # This list is based on list of "cookbook" and "dev-essential" recipe
+    packages="autotools \
+    cbindgen \
+    cmake \
+    curl \
+    expat \
+    gcc13 \
+    gcc13.cxx \
+    git \
+    gnu-make \
+    llvm21-common \
+    meson \
+    nasm \
+    patch \
+    pkgar \
+    pkg-config \
+    python312 \
+    rust \
+    uutils-grep \
+    uutils-sed \
+    vim \
+    wget"
 
     # Handle emulator selection
     if [ "$1" == "qemu" ]; then
-        echo "QEMU is not available on Redox OS yet, but it is mandatory for running the built system."
-        echo "Please install QEMU manually on a compatible host or use another machine to run the emulator."
-        exit 1
+        packages="$packages qemu"
     elif [ "$1" == "virtualbox" ]; then
         echo "VirtualBox is not supported on Redox OS."
         exit 1
@@ -860,52 +878,8 @@ redox()
         exit 1
     fi
 
-    echo "Installing necessary build tools..."
-    
-    # Core development packages that are available on x86_64 Redox
-    # This list is based on list of "cookbook" and "dev-essential" recipe
-    packages="autoconf \
-    automake \
-    cbindgen \
-    expat \
-    gcc13 \
-    gcc13.cxx \
-    git \
-    gnu-grep \
-    gnu-make \
-    installer \
-    libgmp \
-    libjpeg \
-    libpng \
-    nasm \
-    patch \
-    pkgar \
-    pkg-config \
-    python312 \
-    rust \
-    sdl1 \
-    sdl2-ttf \
-    vim \
-    wget"
-
-    
-    # Try to install packages, but don't fail if some are unavailable
-    # since Redox package ecosystem is still developing
-    for pkg in $PKGS; do
-        if ! pkg list | grep -q "^${pkg}"; then
-            echo "Attempting to install ${pkg}..."
-            if ! sudo pkg install ${pkg} 2>/dev/null; then
-                echo "Warning: ${pkg} could not be installed. It may not be available yet."
-            fi
-        else
-            echo "${pkg} is already installed."
-        fi
-    done
-    
-    echo ""
     echo "Note: Building Redox on Redox itself is experimental."
-    echo "Some dependencies may not be available yet in the Redox package repository."
-    echo "For the best build experience, consider using podman_bootstrap.sh on another system."
+    sudo pkg install $packages
 }
 
 ######################################################################

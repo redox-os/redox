@@ -4,35 +4,20 @@ shallow_clone = true
 [build]
 template = "custom"
 script = """
-DYNAMIC_INIT
-cookbook_cargo
-
-mkdir -pv "${COOKBOOK_STAGE}/usr/share/cookbook"
-cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}/usr/share/cookbook"
+mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
+cp -rv "${COOKBOOK_SOURCE}/native_bootstrap.sh" "${COOKBOOK_STAGE}/usr/bin/redox_bootstrap"
 """
 
 [package]
 description = "Redox build system"
-# Dependencies below does not include Rust / GCC
-#   because it will be downloaded as prefix binary.
 dependencies = [
-    "autoconf",
-    "automake",
-    "git",
     "cbindgen",
-    "gnu-binutils",
-    "gnu-grep",
-    "gnu-make",
-    "installer",
-    "nasm",
-    "pkg-config",
-    "pkgar",
-    "python312",
-    "sed",
-    "wget",
-# toolchains are dynamically linked, so this is needed
-    "libgmp",
-    "libmpfr",
-    "mpc",
     "curl",
+    "dev-essential",
+    "git",
+    "gnu-make",
+    "llvm21-common",
+    "pkgar",
+    "qemu",
+    "wget",
 ]
