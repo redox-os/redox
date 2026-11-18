@@ -3,6 +3,8 @@
 git = "https://github.com/Exiv2/exiv2"
 rev = "v0.28.8"
 shallow_clone = true
+patches = ["redox.patch"]
+
 [build]
 template = "cmake"
 cmakeflags = [
