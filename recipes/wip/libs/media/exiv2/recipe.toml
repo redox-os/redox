@@ -11,6 +11,7 @@ cmakeflags = [
     "-DEXIV2_ENABLE_XMP=OFF",
     "-DEXIV2_ENABLE_BROTLI=OFF",
     "-DBUILD_WITH_CCACHE=ON",
+    "-DREDOX=1"
 ]
 dependencies = [
     "zlib",
