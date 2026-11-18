@@ -83,6 +83,8 @@ else
 
 fi
 
+ln -s clang-21 "$COOKBOOK_STAGE/usr/bin/${GNU_TARGET}-clang"
+ln -s clang-21 "$COOKBOOK_STAGE/usr/bin/${GNU_TARGET}-clang++"
 """
 
 [[optional-packages]]
