@@ -2,13 +2,12 @@
 description = "Rust compiler and tooling"
 
 [source]
-git = "https://gitlab.redox-os.org/redox-os/rust.git"
-branch = "redox-2026-05-24"
+git = "https://gitlab.redox-os.org/willnode/rust.git"
+branch = "linux"
 shallow_clone = true
 
 [build]
 template = "custom"
-compiler = "gcc"
 dependencies = [
     "llvm21",
     "zlib",
@@ -22,7 +21,7 @@ dev-dependencies = [
 ]
 
 script = """
-if [ "${COOKBOOK_HOST_SYSROOT}" = "/usr" ]; then
+if [ "${COOKBOOK_HOST_SYSROOT}" = "/usr" ] && [ -z "$COOKBOOK_HOSTED" ]; then
 
 cat ${COOKBOOK_RECIPE}/config-cross.toml > config.toml
 sed -i "s|COOKBOOK_TOOLCHAIN|${COOKBOOK_TOOLCHAIN}|g" config.toml
@@ -48,9 +47,30 @@ cat ${COOKBOOK_RECIPE}/config.toml > config.toml
 sed -i "s|COOKBOOK_SYSROOT|${COOKBOOK_SYSROOT}|g" config.toml
 sed -i "s|COOKBOOK_TOOLCHAIN|${COOKBOOK_HOST_SYSROOT}|g" config.toml
 sed -i "s|COOKBOOK_TARGET|${TARGET}|g" config.toml
-sed -i "s|COOKBOOK_GNU_TARGET|${GNU_TARGET}|g" config.toml
-
+sed -i "s|\"CC\"|\"${CC##* }\"|g" config.toml
+sed -i "s|\"CXX\"|\"${CXX##* }\"|g" config.toml
+sed -i "s|\"AR\"|\"${AR##* }\"|g" config.toml
 fi
+
+# the cookbook LTO config need to be moved to rust LTO config
+# see https://github.com/rust-lang/rust/issues/147902
+if [[ "$REDOXER_USE_LTO" = "1" || "$REDOXER_USE_LTO" = "true" ]]; then
+    LTO_MODE="thin"
+    export CPPFLAGS="${CPPFLAGS//-flto=auto/}"
+    export CPPFLAGS="${CPPFLAGS//-flto=thin/}"
+    RUSTFLAGS="${!REDOXER_RUSTFLAGS_KEY}"
+    RUSTFLAGS="${RUSTFLAGS//-C linker-plugin-lto/}"
+    RUSTFLAGS="${RUSTFLAGS//-C lto=thin/}"
+    export "${REDOXER_RUSTFLAGS_KEY}=${RUSTFLAGS}"
+else
+    LTO_MODE="off"
+fi
+sed -i "s|COOKBOOK_LTO_MODE|${LTO_MODE}|g" config.toml
+
+# to force libz-sys build.rs to do dylib link
+export LIBZ_SYS_STATIC=0
+export CFLAGS="-L${COOKBOOK_SYSROOT}/usr/lib"
+reexport_flags
 
 # Don't poison the stage1 compiler (host -> host)
 unset AR AS CC CXX LD LDFLAGS NM OBJCOPY OBJDUMP RANLIB READELF RUSTFLAGS CARGO_ENCODED_RUSTFLAGS STRIP
