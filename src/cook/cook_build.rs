@@ -16,7 +16,7 @@ use std::{
     str,
 };
 
-use crate::{Error, Result, is_redox, log_to_pty, wrap_io_err};
+use crate::{Error, Result, log_to_pty, wrap_io_err};
 
 fn auto_deps_from_dynamic_linking(
     stage_dirs: &[PathBuf],
@@ -445,19 +445,9 @@ pub fn build(
             let cookbook_sysroot = sysroot_dir.canonicalize().unwrap();
             let cookbook_toolchain = toolchain_dir.canonicalize().ok();
             let bash_args = if cook_config.verbose_cmd { "-ex" } else { "-e" };
-            let local_redoxer = Path::new("target/release/cookbook_redoxer");
-            let mut command = if is_redox() && !local_redoxer.is_file() {
-                let mut command = Command::new("cookbook_redoxer");
-                command.env("COOKBOOK_REDOXER", "cookbook_redoxer");
-                command
-            } else {
-                let cookbook_redoxer = local_redoxer
-                    .canonicalize()
-                    .unwrap_or(PathBuf::from("/bin/false"));
-                let mut command = Command::new(&cookbook_redoxer);
-                command.env("COOKBOOK_REDOXER", &cookbook_redoxer);
-                command
-            };
+            let cookbook_redoxer_bin = fs::get_relative_exe("cookbook_redoxer")?;
+            let mut command = Command::new(&cookbook_redoxer_bin);
+            command.env("COOKBOOK_REDOXER", &cookbook_redoxer_bin);
             command.arg("env").arg("bash").arg(bash_args);
             command.current_dir(&cookbook_build);
             command.env("TARGET", package_target(name));

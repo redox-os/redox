@@ -680,15 +680,8 @@ pub(crate) fn fetch_cargo(
         source_dir = source_dir.join(cargopath);
     }
 
-    let local_redoxer = Path::new("target/release/cookbook_redoxer");
-    let mut command = if is_redox() && !local_redoxer.is_file() {
-        Command::new("cookbook_redoxer")
-    } else {
-        let cookbook_redoxer = local_redoxer
-            .canonicalize()
-            .unwrap_or(PathBuf::from("cargo"));
-        Command::new(&cookbook_redoxer)
-    };
+    let command_path = get_relative_exe("cookbook_redoxer").unwrap_or(PathBuf::from("cargo"));
+    let mut command = Command::new(command_path);
     command.arg("fetch");
     command.arg("--manifest-path");
     command.arg(source_dir.join("Cargo.toml").into_os_string());
