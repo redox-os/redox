@@ -1,0 +1,59 @@
+[source]
+same_as = "../redox-posix-tests"
+
+[build]
+#dependencies = [
+#    "gettext",
+#    "libarchive",
+#    "libiconv",
+#]
+template = "custom"
+script = """
+DYNAMIC_INIT
+
+# Copy source to /usr/share/redox-posix-tests
+mkdir -p "${COOKBOOK_STAGE}/usr/share/redox-posix-tests"
+cd "${COOKBOOK_STAGE}/usr/share/redox-posix-tests"
+rsync -a "${COOKBOOK_SOURCE}/" "./"
+
+# Pre-compile tests for Redox
+make OS=Redox \
+    CC="${CC_WRAPPER} ${GNU_TARGET}-gcc" \
+    CFLAGS="-I${COOKBOOK_SYSROOT}/include" \
+    CPPFLAGS="-I${COOKBOOK_SYSROOT}/include" \
+    LDFLAGS="-L${COOKBOOK_SYSROOT}/lib" \
+    EXTRA_LDFLAGS= \
+    CC_FOR_BUILD="${CC_WRAPPER} cc" \
+    CFLAGS_FOR_BUILD= \
+    CPPFLAGS_FOR_BUILD= \
+    LDFLAGS_FOR_BUILD= \
+    -j "${COOKBOOK_MAKE_JOBS}" \
+    all
+
+
+
+
+# Create runner script
+mkdir -p "${COOKBOOK_STAGE}/usr/bin"
+cat > "${COOKBOOK_STAGE}/usr/bin/redox-posix-tests-runner" <<EOF
+#!/usr/bin/env bash
+set -e
+cd /usr/share/redox-posix-tests
+
+echo "Ensuring executables are newer than sources"
+find . -type f -perm /111 -exec touch '{}' ';'
+
+make run_anyway
+EOF
+
+chmod +x "${COOKBOOK_STAGE}/usr/bin/redox-posix-tests-runner"
+"""
+
+[package]
+dependencies = [
+    "gnu-binutils",
+    "gnu-grep",
+    "gnu-make",
+    "libarchive",
+    "sed",
+]
