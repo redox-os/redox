@@ -27,6 +27,7 @@ COOKBOOK_CMAKE_FLAGS+=(
     -DCLANG_LINK_CLANG_DYLIB=ON
     -DLIBCLANG_BUILD_STATIC=1
     -DLLVM_BUILD_UTILS=On
+    -DLLVM_LINK_LLVM_DYLIB=On
 
 # the shared options from llvm
     -DCMAKE_CXX_FLAGS="--std=gnu++11"
