@@ -8,7 +8,7 @@ host = ["COOKBOOK_TARGET"]
 target = ["COOKBOOK_TARGET"]
 submodules = false
 docs = false
-tools = ["cargo", "clippy", "rustdoc", "rustfmt", "src"]
+tools = ["cargo", "cargo-miri", "clippy", "miri", "rustdoc", "rustfmt", "src"]
 extended = true
 verbose = 1
 
@@ -19,12 +19,13 @@ sysconfdir = "etc"
 [rust]
 backtrace = false
 codegen-tests = false
+lto = "COOKBOOK_LTO_MODE"
 
 [target.COOKBOOK_TARGET]
-cc = "COOKBOOK_GNU_TARGET-gcc"
-cxx = "COOKBOOK_GNU_TARGET-g++"
-ar = "COOKBOOK_GNU_TARGET-ar"
-linker = "COOKBOOK_GNU_TARGET-gcc"
+cc = "CC"
+cxx = "CXX"
+ar = "AR"
+linker = "CC"
 crt-static = false
 llvm-config = "COOKBOOK_SYSROOT/bin/llvm-config"
 

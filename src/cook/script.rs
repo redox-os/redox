@@ -37,7 +37,6 @@ function DYNAMIC_INIT {
     # TODO: check paths for spaces
     export LDFLAGS="${USER_LDFLAGS}-Wl,-rpath-link,${COOKBOOK_SYSROOT}/lib -L${COOKBOOK_SYSROOT}/lib -Wl,--export-dynamic"
     rustflags="-C target-feature=-crt-static -L native=${COOKBOOK_SYSROOT}/lib -C link-arg=-Wl,-rpath-link,${COOKBOOK_SYSROOT}/lib"
-    REDOXER_RUSTFLAGS_KEY=${REDOXER_RUSTFLAGS_KEY:-RUSTFLAGS}
     export "${REDOXER_RUSTFLAGS_KEY}=${!REDOXER_RUSTFLAGS_KEY} ${rustflags}"
     export COOKBOOK_DYNAMIC=1
 
@@ -85,6 +84,9 @@ function DYNAMIC_STATIC_INIT {
 function GNU_CONFIG_GET {
   wget -O "$1" "https://gitlab.redox-os.org/redox-os/gnu-config/-/raw/master/config.sub?inline=false"
 }
+
+# This ensure REDOXER_RUSTFLAGS_KEY always available or fallback
+REDOXER_RUSTFLAGS_KEY=${REDOXER_RUSTFLAGS_KEY:-RUSTFLAGS}
 
 # Bash error hook
 error_hook() { 
