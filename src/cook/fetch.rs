@@ -211,6 +211,9 @@ pub fn fetch(recipe: &CookRecipe, check_source: bool, logger: &PtyOut) -> Result
                 shallow_clone.unwrap_or_else(|| crate::config::get_config().cook.git_treeless);
             let mut fetch_is_ran = false;
             let patches_ident = get_patches_blake3(recipe_dir, patches, script)?;
+            let was_patched = cached_info
+                .as_ref()
+                .is_some_and(|s| !s.patch_identifier.is_empty());
             let cached = if !source_dir.is_dir() {
                 // Create source.tmp
                 let source_dir_tmp = recipe_dir.join("source.tmp");
@@ -302,7 +305,7 @@ pub fn fetch(recipe: &CookRecipe, check_source: bool, logger: &PtyOut) -> Result
                     // git fetch upstream
                 }
 
-                if !patches.is_empty() || script.is_some() {
+                if !patches.is_empty() || script.is_some() || was_patched {
                     // Hard reset
                     let mut command = Command::new("git");
                     command.arg("-C").arg(&source_dir);
