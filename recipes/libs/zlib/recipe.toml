@@ -30,12 +30,21 @@ cp "${COOKBOOK_RECIPE}/zlib.pc" "${COOKBOOK_STAGE}/usr/lib/pkgconfig/"
 
 DYNAMIC_INIT
 if [ "${COOKBOOK_DYNAMIC}" = "1" ]; then
-export "${REDOXER_RUSTFLAGS_KEY}+= -C link-arg=-Wl,-soname,libz.so.1"
-"${COOKBOOK_CARGO}" build \
+if [[ "${TARGET}" == *-linux-* ]]; then
+    ${CC} -shared \
+        -Wl,-soname,libz.so.1 \
+        -Wl,--version-script="${COOKBOOK_SOURCE}/include/zlib.map" \
+        -Wl,--whole-archive "./target/$TARGET/$build_type/libz_rs.a" -Wl,--no-whole-archive \
+        -Wl,--gc-sections \
+        -o "${COOKBOOK_STAGE}/usr/lib/libz.so.1"
+else
+    export "${REDOXER_RUSTFLAGS_KEY}+= -C link-arg=-Wl,-soname,libz.so.1"
+    "${COOKBOOK_CARGO}" build \
         --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
         ${build_flags} -j "${COOKBOOK_MAKE_JOBS}" \
         "${COOKBOOK_CARGO_FLAGS[@]}"
-cp "./target/$TARGET/$build_type/libz_rs.so" "${COOKBOOK_STAGE}/usr/lib/libz.so.1"
+    cp "./target/$TARGET/$build_type/libz_rs.so" "${COOKBOOK_STAGE}/usr/lib/libz.so.1"
+fi
 ln -s "libz.so.1" "${COOKBOOK_STAGE}/usr/lib/libz.so"
 fi
 """
