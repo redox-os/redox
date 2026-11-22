@@ -199,10 +199,6 @@ ifeq ($(SCCACHE_BUILD),1)
 	export RUSTC_WRAPPER:=$(CC_WRAPPER)
 endif
 
-ifeq ($(HOSTED_REDOX),1)
-FSTOOLS_TAG=
-endif
-
 ## If Podman is being used, a container is required
 ifeq ($(PODMAN_BUILD),1)
 CONTAINER_TAG=build/container.tag
