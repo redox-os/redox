@@ -1,0 +1,130 @@
+From 62766863e78908c90faf17f902ffed477a4523cb Mon Sep 17 00:00:00 2001
+From: Anhad Singh <andypython@protonmail.com>
+Date: Mon, 2 Dec 2024 14:48:43 +1100
+Subject: [PATCH] Redox
+
+Signed-off-by: Anhad Singh <andypython@protonmail.com>
+---
+ m4/libtool.m4 | 42 +++++++++++++++++++++++++++++++++++++++---
+ m4/ltdl.m4    |  3 +++
+ 2 files changed, 42 insertions(+), 3 deletions(-)
+
+diff --git a/m4/libtool.m4 b/m4/libtool.m4
+index 8d323b3e..57b91cdb 100644
+--- a/m4/libtool.m4
++++ b/m4/libtool.m4
+@@ -1725,9 +1725,9 @@ AC_CACHE_VAL([lt_cv_sys_max_cmd_len], [dnl
+     lt_cv_sys_max_cmd_len=12288;    # 12K is about right
+     ;;
+ 
+-  gnu* | ironclad*)
+-    # Under GNU Hurd and Ironclad, this test is not required because there
+-    # is no limit to the length of command line arguments.
++  gnu* | ironclad* | redox*)
++    # Under GNU Hurd, Ironclad and Redox, this test is not required 
++    # because there is no limit to the length of command line arguments.
+     # Libtool will interpret -1 as no limit whatsoever
+     lt_cv_sys_max_cmd_len=-1;
+     ;;
+@@ -3008,6 +3008,18 @@ netbsd*)
+   hardcode_into_libs=yes
+   ;;
+ 
++redox*)
++  version_type=linux # correct to gnu/linux during the next big refactor
++  need_lib_prefix=no
++  need_version=no
++  library_names_spec='$libname$release$shared_ext$versuffix $libname$release$shared_ext$major $libname$shared_ext'
++  soname_spec='$libname$release$shared_ext$major'
++  dynamic_linker='relibc ld64.so'
++  shlibpath_var=LD_LIBRARY_PATH
++  shlibpath_overrides_runpath=no
++  hardcode_into_libs=yes
++  ;;
++
+ newsos6)
+   version_type=linux # correct to gnu/linux during the next big refactor
+   library_names_spec='$libname$release$shared_ext$versuffix $libname$release$shared_ext$major $libname$shared_ext'
+@@ -3678,6 +3690,10 @@ linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu*)
+   lt_cv_deplibs_check_method=pass_all
+   ;;
+ 
++redox*)
++  lt_cv_deplibs_check_method=pass_all
++  ;;
++
+ netbsd* | netbsdelf*-gnu)
+   if echo __ELF__ | $CC -E - | $GREP __ELF__ > /dev/null; then
+     lt_cv_deplibs_check_method='match_pattern /lib[[^/]]+(\.so\.[[0-9]]+\.[[0-9]]+|_pic\.a)$'
+@@ -4565,6 +4581,8 @@ m4_if([$1], [CXX], [
+ 	;;
+       *-mlibc)
+ 	;;
++      redox*)
++	;;
+       *qnx* | *nto*)
+         # QNX uses GNU C++, but need to define -shared option too, otherwise
+         # it will coredump.
+@@ -4927,6 +4945,12 @@ m4_if([$1], [CXX], [
+       _LT_TAGVAR(lt_prog_compiler_static, $1)='-static'
+       ;;
+ 
++    redox*)
++      _LT_TAGVAR(lt_prog_compiler_wl, $1)='-Wl,'
++      _LT_TAGVAR(lt_prog_compiler_pic, $1)='-fPIC'
++      _LT_TAGVAR(lt_prog_compiler_static, $1)='-static'
++      ;;
++
+     *nto* | *qnx*)
+       # QNX uses GNU C++, but need to define -shared option too, otherwise
+       # it will coredump.
+@@ -5413,6 +5437,11 @@ _LT_EOF
+ 	_LT_TAGVAR(archive_expsym_cmds, $1)='$CC -shared $pic_flag $libobjs $deplibs $compiler_flags $wl-soname $wl$soname $wl-retain-symbols-file $wl$export_symbols -o $lib'
+       ;;
+ 
++    redox*)
++	_LT_TAGVAR(archive_cmds, $1)='$CC -shared $pic_flag $libobjs $deplibs $compiler_flags $wl-soname $wl$soname -o $lib'
++	_LT_TAGVAR(archive_expsym_cmds, $1)='$CC -shared $pic_flag $libobjs $deplibs $compiler_flags $wl-soname $wl$soname $wl-retain-symbols-file $wl$export_symbols -o $lib'
++      ;;
++
+     netbsd* | netbsdelf*-gnu)
+       if echo __ELF__ | $CC -E - | $GREP __ELF__ >/dev/null; then
+ 	_LT_TAGVAR(archive_cmds, $1)='$LD -Bshareable $libobjs $deplibs $linker_flags -o $lib'
+@@ -5959,6 +5988,9 @@ _LT_EOF
+     *-mlibc)
+       ;;
+ 
++    redox*)
++      ;;
++
+     netbsd* | netbsdelf*-gnu)
+       if echo __ELF__ | $CC -E - | $GREP __ELF__ >/dev/null; then
+ 	_LT_TAGVAR(archive_cmds, $1)='$LD -Bshareable -o $lib $libobjs $deplibs $linker_flags'  # a.out
+@@ -7266,6 +7298,10 @@ if test yes != "$_lt_caught_CXX_error"; then
+         _LT_TAGVAR(ld_shlibs, $1)=yes
+ 	;;
+ 
++      redox*)
++        _LT_TAGVAR(ld_shlibs, $1)=yes
++	;;
++
+       netbsd*)
+         if echo __ELF__ | $CC -E - | $GREP __ELF__ >/dev/null; then
+ 	  _LT_TAGVAR(archive_cmds, $1)='$LD -Bshareable  -o $lib $predep_objects $libobjs $deplibs $postdep_objects $linker_flags'
+diff --git a/m4/ltdl.m4 b/m4/ltdl.m4
+index c7790ffd..d29cf1cd 100644
+--- a/m4/ltdl.m4
++++ b/m4/ltdl.m4
+@@ -498,6 +498,9 @@ AC_CACHE_CHECK([whether deplibs are loaded by dlopen],
+   *-mlibc)
+     lt_cv_sys_dlopen_deplibs=yes
+     ;;
++  redox*)
++    lt_cv_sys_dlopen_deplibs=yes
++    ;;
+   netbsd* | netbsdelf*-gnu)
+     lt_cv_sys_dlopen_deplibs=yes
+     ;;
+-- 
+GitLab
+
