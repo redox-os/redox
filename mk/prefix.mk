@@ -77,9 +77,6 @@ else
 ifneq ($(HOSTED_REDOX),1)
 	rm -rf "$@.partial/$(GNU_TARGET)/include/"*
 	cp -r "$(GCC_INSTALL)/$(GNU_TARGET)/include/c++" "$@.partial/$(GNU_TARGET)/include/c++"
-else
-	rm -rf "$@.partial/include/"*
-	cp -r "$(GCC_INSTALL)/include/c++" "$@.partial/include/c++"
 endif
 	$(REPO_BIN) clean-target relibc $(COOKBOOK_OPTS)
 	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
@@ -143,48 +140,7 @@ endif
 # PREFIX_BINARY FOR REDOX -----------------------------------------
 else
 
-$(PREFIX)/id_ed25519.pub.toml: | $(CONTAINER_TAG)
-ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) make $@
-else
-	mkdir -p "$(@D)"
-	wget -O $@.partial "https://static.redox-os.org/pkg/id_ed25519.pub.toml"
-	mv $@.partial $@
-endif
-
-$(PREFIX)/%.pkgar: $(PREFIX)/id_ed25519.pub.toml | $(CONTAINER_TAG)
-ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) make $@
-else
-	mkdir -p "$(@D)"
-	wget -O $@.partial "https://static.redox-os.org/pkg/$(TARGET)/$(@F)"
-	mv $@.partial $@
-endif
-
-
-$(PREFIX)/gcc-install: $(PREFIX)/libgcc.pkgar $(PREFIX)/libstdcxx.pkgar $(CONTAINER_TAG)
-ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) make $@
-else
-	rm -rf "$@.partial" "$@"
-	mkdir -p "$@.partial"
-	pkgar extract --pkey $(PREFIX)/id_ed25519.pub.toml --archive "$(PREFIX)/libgcc.pkgar" "$@.partial"
-	pkgar extract --pkey $(PREFIX)/id_ed25519.pub.toml --archive "$(PREFIX)/libstdcxx.pkgar" "$@.partial"
-	mv "$@.partial/usr"/* "$@.partial"
-	rmdir "$@.partial/usr"
-	touch "$@.partial"
-	mv "$@.partial" "$@"
-endif
-
-$(PREFIX)/rust-install: $(CONTAINER_TAG)
-ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) make $@
-else
-	rm -rf "$@.partial" "$@"
-	mkdir -p "$@"
-endif
-
-$(PREFIX)/clang-install: $(CONTAINER_TAG)
+$(PREFIX)/%-install: $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
