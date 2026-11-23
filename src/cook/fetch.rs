@@ -113,8 +113,8 @@ pub fn fetch_offline(recipe: &CookRecipe, logger: &PtyOut) -> Result<FetchResult
             let cached = source_dir.is_dir();
             if !cached {
                 let source_tar = recipe_dir.join("source.tar");
-                let source_tar_blake3 = get_file_blake3(&source_tar)?;
                 if source_tar.exists() {
+                    let source_tar_blake3 = get_file_blake3(&source_tar)?;
                     if let Some(blake3) = blake3 {
                         if source_tar_blake3 != *blake3 {
                             bail_other_err!(
