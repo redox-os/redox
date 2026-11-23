@@ -2,15 +2,19 @@
 
 This document tracks the current hardware compatibility of Redox OS.
 
-- [Why are hardware reports needed?](#why-are-hardware-reports-needed)
-- [What if my computer is customized?](#what-if-my-computer-is-customized)
-- [Status](#status)
-- [Contribute to this document](#contribute-to-this-document)
+- [Hardware Compatibility](#hardware-compatibility)
+  - [Why are hardware reports needed?](#why-are-hardware-reports-needed)
+  - [What if my computer is customized?](#what-if-my-computer-is-customized)
+  - [Status](#status)
+    - [Recommended](#recommended)
+    - [Booting](#booting)
+    - [Broken](#broken)
+  - [Contribute to this document](#contribute-to-this-document)
     - [Template](#template)
     - [Table row ordering](#table-row-ordering)
-- [Recommended](#recommended)
-- [Booting](#booting)
-- [Broken](#broken)
+  - [Recommended](#recommended-1)
+  - [Booting](#booting-1)
+  - [Broken](#broken-1)
 
 ## Why are hardware reports needed?
 
@@ -99,11 +103,13 @@ Each "Vendor" has its own alphabetical order in "Model", independent from models
 | ASUS | ROG g55vw | 0.8.0 | 2023-11-11 | desktop | x86-64 | BIOS | Boots to Orbital, UEFI panic in SETUP |
 | ASUS | X554L | 0.8.0 | 2022-11-11 | desktop | x86-64 | BIOS | Boots to Orbital, No audio, HDA driver cannot find output pins |
 | ASUS | Vivobook 15 OLED (M1503Q) | 0.9.0 | 2025-08-04 | desktop | x86-64 | UEFI | Boots to Orbital, touchpad and usb do not work, cannot connect to the internet, right maximum display resolution 2880x1620 |
+| Dell | Latitude 3450 | 0.9.0 | 2026-11-16 | desktop | x86-64 | UEFI | Booted to Orbital from a USB LiveDisk with Secure Boot disabled. The touchpad stopped responding once during use, but worked normally on every subsequent boot. I could not reproduce the issue. The USB mouse (04d9:fc61) was detected, but did not move the pointer or register clicks. |
 | Dell | XPS 13 (9350) | 0.8.0 | 2022-11-11 | desktop | i686 | BIOS | Boots to Orbital, NVMe driver livelocks |
 | Dell | XPS 13 (9350) | 0.8.0 | 2022-11-11 | desktop | x86-64 | BIOS, UEFI | Boots to Orbital, NVMe driver livelocks |
 | Dell | XPS L502X | 0.9.0 | 2026-05-01 | desktop | x86-64 | BIOS | Does not find the bootloader without patching the partition type byte to FAT32 (LBA), Boots to orbital with the patch in live mode, The entire system freezes after the orblogin screen appears unless recompiling the kernel without ACPI support, almost everything works out of box when using the kernel without ACPI, except the touchpad scrolling, WiFi and Intel graphics |
 | HP | Dev One | 0.8.0 | 2022-11-11 | desktop | x86-64 | UEFI | Boots to Orbital, No touchpad support, requires I2C HID |
 | HP | EliteBook Folio 9480M | 0.9.0 | 2025-11-04 | desktop | x86-64 | UEFI | Boots to Orbital, touchpad and usb work, cannot connect to the Internet, install failed, right maximum display resolution 1600x900
+| Lenovo | IdeaPad 3 15ALC6 (82MF) | 0.9.0 | 2026-11-16 | desktop | x86-64 | Unknown | Booted to Orbital from a USB LiveDisk. The touchpad did not work. The USB mouse (04d9:fc61) was detected, but did not move the pointer or register clicks. |
 | Lenovo | Thinkbook 14 Gen 2 ARE (AMD Ryzen Edition) Laptop | 0.9.0 | 2026-05-02 | desktop | x86-64 | UEFI | Boots to Orbital, but trackpad and USB mouse doesn't work so unable to test further |
 | Lenovo | ThinkPad Yoga 260 Laptop - Type 20FE | 0.9.0 | 2024-09-07 | demo | x86-64 | UEFI | Boots to Orbital, No audio |
 | Lenovo | Yoga S730-13IWL | 0.9.0 | 2024-11-09 | desktop | x86-64 | UEFI | Boots to Orbital, No trackpad or USB mouse input support |
