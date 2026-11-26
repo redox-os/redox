@@ -10,6 +10,7 @@ dependencies = [
     "libpng",
     "zlib",
 ]
+rev = "208c76f08199c19629efed630ca78aea2149a6e9"
 script = """
 DYNAMIC_INIT
 export BINDGEN_EXTRA_CLANG_ARGS="--sysroot=${COOKBOOK_HOST_SYSROOT}/${GNU_TARGET} -I${COOKBOOK_HOST_SYSROOT}/${GNU_TARGET}/include"

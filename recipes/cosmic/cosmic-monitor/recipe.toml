@@ -1,6 +1,6 @@
 [source]
 git = "https://github.com/pop-os/cosmic-monitor.git"
-branch = "master"
+rev = "2f5aa4d6a8c8333659f3c95388a1a6db450af327"
 
 [build]
 template = "custom"
