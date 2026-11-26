@@ -1,0 +1,24 @@
+diff -ruwN source/configure source-new/configure
+--- source/configure	2026-10-17 21:43:46.000000000 +0000
++++ source-new/configure	2026-11-24 11:51:40.633033573 +0000
+@@ -18909,7 +18909,7 @@
+   ;;
+ 
+ # This must be glibc/ELF.
+-linux* | ironclad*-gnu | k*bsd*-gnu | kopensolaris*-gnu | gnu*)
++linux* | ironclad*-gnu | k*bsd*-gnu | kopensolaris*-gnu | gnu* | redox*)
+   version_type=linux # correct to gnu/linux during the next big refactor
+   need_lib_prefix=no
+   need_version=no
+diff -ruwN source/lib/getlocalename_l-unsafe.c source-new/lib/getlocalename_l-unsafe.c
+--- source/lib/getlocalename_l-unsafe.c	2026-08-10 17:43:00.000000000 +0000
++++ source-new/lib/getlocalename_l-unsafe.c	2026-11-24 12:02:05.008869887 +0000
+@@ -461,6 +461,8 @@
+       struct gl_locale_category_t *plc =
+         &locale->category[_gl_log2_lcmask_to_index (_gl_log2_lc_mask (category))];
+       return (struct string_with_storage) { plc->name, STORAGE_OBJECT };
++#elif defined(__redox__)
++      const char *name = NULL; /* need NL_LOCALE_NAME */
+ #elif __GLIBC__ >= 2 && !defined __UCLIBC__
+       /* Work around an incorrect definition of the _NL_LOCALE_NAME macro in
+          glibc < 2.12.
