@@ -18,13 +18,14 @@ script = """
 # only regenerated when not building for the host
 rsync -a --delete "${COOKBOOK_SOURCE}/" ./
 COOKBOOK_SOURCE="${COOKBOOK_BUILD}"
-if [ "$TARGET" != "$COOKBOOK_HOST_TARGET" ]; then
+if [ "$TARGET" = "$COOKBOOK_HOST_TARGET" ] && [ -z "$COOKBOOK_HOSTED" ]; then
+    DYNAMIC_STATIC_INIT
+else
     autotools_recursive_regenerate
-    # need to invoke configure in specific way to make shared libs work
-    ./configure --host="${GNU_TARGET}" --prefix="/usr"
-    COOKBOOK_CONFIGURE=true
+    DYNAMIC_INIT
+    COOKBOOK_CONFIGURE=./configure
 fi
 
-DYNAMIC_STATIC_INIT
+COOKBOOK_CONFIGURE_FLAGS+=(--enable-cxx)
 cookbook_configure
 """

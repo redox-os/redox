@@ -1,5 +1,9 @@
-#TODO port the fseterr function
+#TODO compiled but not tested
 [source]
-tar = "https://ftp.gnu.org/gnu/libunistring/libunistring-1.1.tar.gz"
+tar = "https://ftp.gnu.org/gnu/libunistring/libunistring-1.5.tar.gz"
+blake3 = "d9fba159d09f38da7a2e07f63fd3ee5fd517e8d33c10a84d00cb126fbb77f7df"
+patches = [
+    "redox.patch"
+]
 [build]
 template = "configure"

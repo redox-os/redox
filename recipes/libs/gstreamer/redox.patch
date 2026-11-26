@@ -1,6 +1,6 @@
 diff -ruwN source/subprojects/gst-plugins-bad/ext/dtls/gstdtlsconnection.c source-new/subprojects/gst-plugins-bad/ext/dtls/gstdtlsconnection.c
---- source/subprojects/gst-plugins-bad/ext/dtls/gstdtlsconnection.c	2025-01-29 20:12:29.000000000 +0000
-+++ source-new/subprojects/gst-plugins-bad/ext/dtls/gstdtlsconnection.c	2026-09-13 01:22:57.407426034 +0000
+--- source/subprojects/gst-plugins-bad/ext/dtls/gstdtlsconnection.c	2026-11-06 12:54:37.000000000 +0000
++++ source-new/subprojects/gst-plugins-bad/ext/dtls/gstdtlsconnection.c	2026-11-24 12:05:43.626783251 +0000
 @@ -49,6 +49,10 @@
  #include <errno.h>
  #endif
@@ -13,9 +13,9 @@ diff -ruwN source/subprojects/gst-plugins-bad/ext/dtls/gstdtlsconnection.c sourc
  #define GST_CAT_DEFAULT gst_dtls_connection_debug
  
 diff -ruwN source/subprojects/gst-plugins-base/gst-libs/gst/tag/meson.build source-new/subprojects/gst-plugins-base/gst-libs/gst/tag/meson.build
---- source/subprojects/gst-plugins-base/gst-libs/gst/tag/meson.build	2025-01-29 20:12:29.000000000 +0000
-+++ source-new/subprojects/gst-plugins-base/gst-libs/gst/tag/meson.build	2026-09-13 01:22:57.408426091 +0000
-@@ -136,10 +136,10 @@
+--- source/subprojects/gst-plugins-base/gst-libs/gst/tag/meson.build	2026-11-06 12:54:37.000000000 +0000
++++ source-new/subprojects/gst-plugins-base/gst-libs/gst/tag/meson.build	2026-11-24 12:05:43.626783251 +0000
+@@ -145,10 +145,10 @@
      install: false)
  endif
  
@@ -32,9 +32,9 @@ diff -ruwN source/subprojects/gst-plugins-base/gst-libs/gst/tag/meson.build sour
  
  gst_tag_dir = meson.current_source_dir()
 diff -ruwN source/subprojects/gstreamer/gst/gstregistry.c source-new/subprojects/gstreamer/gst/gstregistry.c
---- source/subprojects/gstreamer/gst/gstregistry.c	2025-01-29 20:12:29.000000000 +0000
-+++ source-new/subprojects/gstreamer/gst/gstregistry.c	2026-09-29 02:59:06.518249721 +0000
-@@ -174,7 +174,8 @@
+--- source/subprojects/gstreamer/gst/gstregistry.c	2026-11-06 12:54:37.000000000 +0000
++++ source-new/subprojects/gstreamer/gst/gstregistry.c	2026-11-24 12:05:43.627783310 +0000
+@@ -183,7 +183,8 @@
  static GstRegistry *_gst_registry_default = NULL;
  
  /* defaults */

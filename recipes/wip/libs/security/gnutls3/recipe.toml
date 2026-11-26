@@ -1,18 +1,16 @@
 #TODO: promote
 [source]
-tar = "https://www.gnupg.org/ftp/gcrypt/gnutls/v3.7/gnutls-3.7.10.tar.xz"
-blake3 = "edcd8a505867226722ae50e0e9bb2bf57a1f38b5674a3028e26f69d2d61957e6"
-patches = ["redox.patch"]
+tar = "https://www.gnupg.org/ftp/gcrypt/gnutls/v3.8/gnutls-3.8.14.tar.xz"
+blake3 = "b762a331e48049a648c1bd272b60d1dbf47945af701de0bc3613ed77f4c98327"
 script = """
 autotools_recursive_regenerate
 """
 [build]
 template = "configure"
 configureflags = [
-    "--with-included-libtasn1",
-    "--with-included-unistring",
     "--with-default-trust-store-file=/etc/ssl/certs/ca-certificates.crt",
     "--without-p11-kit",
+    "--disable-tests",
     "gl_cv_func_malloc_posix=no",
     "gl_cv_socket_ipv6=no",
 ]
@@ -20,6 +18,8 @@ dependencies = [
     "libbrotli",
     "libgmp",
     "libnettle",
+    "libunistring",
+    "libtasn1",
     "zlib",
     "zstd",
 ]
