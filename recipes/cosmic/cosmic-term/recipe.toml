@@ -1,5 +1,6 @@
 [source]
 git = "https://github.com/pop-os/cosmic-term.git"
+rev = "fec18d4ab10f53a27c8b997cae354c6ae9d630a6"
 
 [build]
 template = "custom"
