@@ -203,18 +203,3 @@ index 8b5ea488..1a20e0b7 100644
  	setsockopt(fd, SOL_TCP, TCP_NODELAY, (const void *)&optval, optlen);
  #else
  	struct protoent *tcp_proto = getprotobyname("TCP");
-diff --git a/core/rend/TexCache.cpp b/core/rend/TexCache.cpp
-index 35b41b70..b62edfc2 100644
---- a/core/rend/TexCache.cpp
-+++ b/core/rend/TexCache.cpp
-@@ -242,6 +242,10 @@ bool BaseTextureCacheData::NeedsUpdate() {
- 
- void BaseTextureCacheData::protectVRam()
- {
-+	// TODO: No SIGSEGV handler on redox
-+	#ifdef __redox__
-+		return;
-+	#endif
- 	u32 end = mmStartAddress + size - 1;
- 	if (end >= VRAM_SIZE)
- 	{
