@@ -9,7 +9,13 @@ autotools_recursive_regenerate
 """
 
 [build]
-template = "configure"
+template = "custom"
 dependencies = [
     "libgmp"
 ]
+script = """
+DYNAMIC_INIT
+# TODO: sccache regression
+export CC="${CC##* }"
+cookbook_configure
+"""
