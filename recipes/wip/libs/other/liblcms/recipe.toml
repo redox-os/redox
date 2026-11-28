@@ -1,8 +1,9 @@
 #TODO compiled but not tested
 [source]
 tar = "https://github.com/mm2/Little-CMS/releases/download/lcms2.15/lcms2-2.15.tar.gz"
+blake3 = "baebf40aac99bfd6cad1238d4488b409bd29b4cd361d456db131d878b1532ff2"
 [build]
-template = "configure"
+template = "meson"
 dependencies = [
     "libtiff",
 ]
