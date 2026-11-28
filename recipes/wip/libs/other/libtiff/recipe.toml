@@ -1,5 +1,6 @@
 #TODO compiled but not tested
 [source]
 tar = "https://download.osgeo.org/libtiff/tiff-4.5.0.tar.xz"
+blake3 = "11189c225acd16acce33856da4f2fdb09556e91f2ea23052e2372a0fc39c3a3e"
 [build]
-template = "configure"
+template = "cmake"
