@@ -1,7 +1,22 @@
 #TODO compiled but not tested
+#TODO main have broken submodule, preventing to use git source
 [source]
-git = "https://github.com/nidhoggfgg/rsille"
-shallow_clone = true
+tar = "https://github.com/nidhoggfgg/rsille/archive/refs/tags/v3.3.0.tar.gz"
+blake3 = "2177a276d286f1b37c36b779072175e29881a6d6acd5c926f458bf4c07bec984"
 [build]
-template = "cargo"
-cargopath = "examples/rsille-showcase"
+template = "custom"
+cargopath = ""
+script = """
+DYNAMIC_INIT
+COOKBOOK_CARGO_FLAGS=() # remove --locked
+COOKBOOK_CARGO_PATH="examples/canvas" bin_name="rsille-canvas-debug" cookbook_cargo_build
+COOKBOOK_CARGO_PATH="examples/clockwork" cookbook_cargo_build
+COOKBOOK_CARGO_PATH="examples/folded-harbor" cookbook_cargo_build
+COOKBOOK_CARGO_PATH="examples/lumen" bin_name="rsille-lumen" cookbook_cargo_build
+COOKBOOK_CARGO_PATH="examples/minecraft" bin_name="rsille-minecraft" cookbook_cargo_build
+COOKBOOK_CARGO_PATH="examples/neon-observatory" cookbook_cargo_build
+COOKBOOK_CARGO_PATH="examples/orbit-files" bin_name="rsille-orbit-files" cookbook_cargo_build
+# COOKBOOK_CARGO_PATH="examples/pokemon-battle" cookbook_cargo_build # copyright issue?
+COOKBOOK_CARGO_PATH="examples/rsille-showcase" cookbook_cargo_build
+COOKBOOK_CARGO_PATH="examples/tui-showcase" cookbook_cargo_build
+"""
