@@ -19,6 +19,6 @@ script = """
 DYNAMIC_INIT
 COOKBOOK_CARGO_FLAGS=()
 CARGOPATH="glutin_examples"
-export RUSTFLAGS="$RUSTFLAGS -Clink-arg=-lOSMesa"
+export ${REDOXER_RUSTFLAGS_KEY}="${!REDOXER_RUSTFLAGS_KEY} -Clink-arg=-lOSMesa"
 cookbook_cargo_examples window
 """
