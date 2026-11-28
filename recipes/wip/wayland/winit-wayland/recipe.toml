@@ -7,9 +7,11 @@ shallow_clone = true
 dependencies = [
     "libwayland"
 ]
-template = "custom"
-script = """
-DYNAMIC_INIT
-export RUSTFLAGS="${RUSTFLAGS} -lffi"
-cookbook_cargo_examples child_window control_flow pump_events window
-"""
+template = "cargo"
+cargoexamples = [
+    "child_window",
+    "control_flow",
+    "pump_events",
+    "run_on_demand",
+    "window",
+]
